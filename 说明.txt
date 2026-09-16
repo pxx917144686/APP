@@ -1,0 +1,6 @@
+1、Apple验证码的推码:  idmsa SRP 登录（idmsa.apple.com，纯 HTTPS）→ 自动推送验证码到受信设备
+2、登录:  MZFinance authenticate（buy.itunes.apple.com）+ 远程 SAP 签名（x-apple-actionsignature）
+         → 密码直登拿弱 token + token包 cookie；输入推送的验证码（拼接在密码后）再认证 → 强token包
+3、登录页面:  cookie 同名合并 + 按账号（sap_real_cookies_v1_<dsid>）→ 每请求前自动恢复
+4、下载:  volumeStoreDownloadProduct?guid= + X-Token + token包 cookie（无签名）→ songList
+签名: /sign {guid, bodyBase64} → signature

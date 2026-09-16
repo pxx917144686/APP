@@ -14,6 +14,10 @@ class AuthenticationManager: @unchecked Sendable {
             do {
                 _ = try await LegacyIDMSAuthenticator.shared.authenticate(email: email, password: password)
             } catch StoreError.codeRequired {
+                // idmsa 409 时验证码已推送到受信设备；此处立即返回让 UI 弹出输入框，
+                // 若继续走下面的 storeAuthenticate 还要等签名服务和 MZFinance 全跑完。
+                // 用户输入验证码后由 authenticateWith2FA（密码+验证码）换强 token。
+                throw StoreError.codeRequired
             } catch {
             }
         }
