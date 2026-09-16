@@ -28,7 +28,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
             .store(in: &cancellables)
     }
 
-    nonisolated deinit {
+    deinit {
         Task { @MainActor [cancellables, sessionTimer] in
             var c = cancellables
             c.removeAll()

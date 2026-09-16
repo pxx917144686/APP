@@ -443,13 +443,17 @@ final class GSAClient {
             ?? (statusBox?["passwordToken"] as? String)
             ?? (dict["pt"] as? String)
             ?? (accountInfo["passwordToken"] as? String)
-        let dsPersonId: String? = ({
-            let v = dict["dsPersonId"] ?? statusBox?["dsPersonId"] ?? dict["DsPrsId"] ?? statusBox?["DsPrsId"] ?? dict["DsPrsID"] ?? statusBox?["DsPrsID"] ?? dict["dsID"] ?? statusBox?["dsID"] ?? dict["AdsID"] ?? statusBox?["AdsID"] ?? accountInfo["directoryServicesIdentifier"] ?? accountInfo["dsPersonId"] ?? accountInfo["DsPrsId"]
+        let dsPersonId: String? = {
+            let v1: Any? = dict["dsPersonId"] ?? statusBox?["dsPersonId"] ?? dict["DsPrsId"] ?? statusBox?["DsPrsId"]
+            let v2: Any? = dict["DsPrsID"] ?? statusBox?["DsPrsID"] ?? dict["dsID"] ?? statusBox?["dsID"]
+            let v3: Any? = dict["AdsID"] ?? statusBox?["AdsID"]
+            let v4: Any? = accountInfo["directoryServicesIdentifier"] ?? accountInfo["dsPersonId"] ?? accountInfo["DsPrsId"]
+            let v = v1 ?? v2 ?? v3 ?? v4
             if let s = v as? String { return s }
             if let n = v as? NSNumber { return n.stringValue }
             if let d = v as? Data { return String(data: d, encoding: .utf8) }
             return nil
-        })()
+        }()
         return CompleteResult(
             passwordToken: passwordToken,
             dsPersonId: dsPersonId,
