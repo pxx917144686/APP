@@ -462,7 +462,6 @@ extension SettingsView {
             case .systemDefault:
                 VStack(spacing: 0) {
                     Spacer()
-                    Divider()
                     HStack(spacing: 0) {
                         ForEach(TabEnum.allCases, id: \.self) { tab in
                             VStack(spacing: 3) {
@@ -518,37 +517,6 @@ extension SettingsView {
                     }
                     .padding(.horizontal, 8)
                     .padding(.bottom, 10)
-                }
-                    VStack(spacing: 0) {
-                    Spacer()
-                    Divider()
-                    HStack(spacing: 0) {
-                        ForEach([TabEnum.settings, .tfapps, .downloads], id: \.self) { tab in
-                            VStack(spacing: 3) {
-                                Text(tab.emojiIcon)
-                                    .font(.system(size: 18))
-                                Text(tab.title)
-                                    .font(.system(size: 9, weight: .regular))
-                                    .foregroundStyle(.secondary.opacity(0.6))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.5)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        VStack(spacing: 3) {
-                            Text(TabEnum.search.emojiIcon)
-                                .font(.system(size: 18))
-                            Text(TabEnum.search.title)
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(themeManager.accentColor)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.5)
-                        }
-                        .frame(width: 56)
-                    }
-                    .padding(.top, 6)
-                    .padding(.bottom, 8)
-                    .background(Color(.systemBackground))
                 }
             }
         }

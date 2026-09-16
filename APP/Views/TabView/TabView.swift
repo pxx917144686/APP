@@ -148,6 +148,10 @@ struct TabbarView: View {
                 }
                 .tag(TabEnum.search)
         }
+        // iOS 26 的玻璃底栏会透出页面内容，图标后面像叠了第二个图标；
+        // 强制不透明背景，让"默认"样式的底栏图标干净可读
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(Color(.systemBackground), for: .tabBar)
     }
 
     @available(iOS 18.0, *)
@@ -266,7 +270,9 @@ struct TabbarView: View {
 
         switch style {
         case .systemDefault:
-            appearance.configureWithDefaultBackground()
+            // 不透明背景：iOS 26 的悬浮玻璃底栏半透明，页面内容会透出来
+            // 叠在图标后面，看起来像每个位置有两个图标
+            appearance.configureWithOpaqueBackground()
             UITabBar.appearance().isHidden = false
         case .floatingCard:
             appearance.configureWithTransparentBackground()
