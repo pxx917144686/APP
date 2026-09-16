@@ -4,7 +4,6 @@ import SwiftUI
 enum TabBarStyle: String, CaseIterable, Identifiable {
     case systemDefault
     case floatingCard
-    case searchIndependent
 
     var id: String { rawValue }
 
@@ -12,7 +11,6 @@ enum TabBarStyle: String, CaseIterable, Identifiable {
         switch self {
         case .systemDefault: return "tab_style_default".localized
         case .floatingCard: return "tab_style_floating".localized
-        case .searchIndependent: return "tab_style_search_independent".localized
         }
     }
 
@@ -20,7 +18,6 @@ enum TabBarStyle: String, CaseIterable, Identifiable {
         switch self {
         case .systemDefault: return "square"
         case .floatingCard: return "square.stack.3d.up"
-        case .searchIndependent: return "magnifyingglass.circle"
         }
     }
 }

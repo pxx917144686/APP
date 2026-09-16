@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Inställningar";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Nedladdningar";
 "tab_search" = "Sök";
 
-// MARK: - Common
 "cancel" = "Avbryt";
 "confirm" = "Bekräfta";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Försök igen";
 "got_it" = "Förstått";
 
-// MARK: - Settings
 "settings" = "Inställningar";
 "appearance" = "Utseende";
 "theme" = "Tema";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Kroatiska";
 "lang_catalan" = "Katalanska";
 
-// MARK: - Download
 "download_title" = "Nedladdningar";
 "downloading" = "Laddar ner";
 "download_paused" = "Pausad";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Max samtidiga nedladdningar";
 "download_path" = "Nedladdningssökväg";
 
-// MARK: - Account
 "account" = "Konto";
 "apple_id" = "Apple ID";
 "add_account" = "Lägg till Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-post";
 "country" = "Land/Region";
 
-// MARK: - App Icon
 "app_icon_settings" = "Appikon";
 "default_icon" = "Standard";
 
-// MARK: - Search
 "search_placeholder" = "Sök efter appar, spel, utvecklare";
 "search_history" = "Sökhistorik";
 "search_suggestions" = "Sökförslag";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Prova andra sökord";
 "searching" = "Söker...";
 
-// MARK: - Version Picker
 "version_picker" = "Välj version";
 "current_version" = "Aktuell version";
 "available_versions" = "Tillgängliga versioner";
@@ -193,7 +185,6 @@
 "size" = "Storlek";
 "build_number" = "Byggnummer";
 
-// MARK: - App Detail
 "app_detail" = "Appuppgifter";
 "get" = "Hämta";
 "icloud_sync" = "iCloud-synkronisering";
@@ -211,7 +202,6 @@
 "no_reviews" = "Inga recensioner";
 "no_reviews_description" = "Denna app har inga användarrecensioner ännu";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Inga TestFlight-appar";
@@ -225,7 +215,6 @@
 "redeem_code" = "Inlösenkod";
 "enter_redeem_code" = "Ange inlösenkod";
 
-// MARK: - Filter & Sort
 "filter" = "Filter";
 "sort" = "Sortera";
 "sort_by_name" = "Sortera efter namn";
@@ -235,7 +224,6 @@
 "ascending" = "Stigande";
 "descending" = "Fallande";
 
-// MARK: - Notification
 "notifications" = "Aviseringar";
 "push_notifications" = "Push-aviseringar";
 "download_complete_notification" = "Avisering när nedladdning är klar";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Vibrera";
 "notification_badge" = "Märke";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Sekretess och säkerhet";
 "clear_cache" = "Rensa cache";
 "cache_size" = "Cachestorlek";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Är du säker på att du vill rensa all cache? Detta tar inte bort nedladdade appar.";
 "cache_cleared" = "Cache rensad";
 
-// MARK: - Storage
 "storage" = "Lagring";
 "total_storage" = "Totalt";
 "used_storage" = "Använt";
@@ -260,14 +246,12 @@
 "app_size" = "Appstorlek";
 "documents_size" = "Dokumentstorlek";
 
-// MARK: - Download Manager
 "download_manager" = "Nedladdningshanterare";
 "batch_operations" = "Batchåtgärder";
 "select_all" = "Välj alla";
 "deselect_all" = "Avmarkera alla";
 "selected_count" = "%@ valda";
 
-// MARK: - App Information
 "app_name" = "Appnamn";
 "app_version" = "Appversion";
 "app_rating" = "Appbetyg";
@@ -277,7 +261,6 @@
 "language_support" = "Språkstöd";
 "content_rating" = "Innehållsbetyg";
 
-// MARK: - Account Management
 "account_management" = "Kontohantering";
 "login_status" = "Inloggningsstatus";
 "two_factor_auth" = "Tvåfaktorsautentisering";
@@ -286,7 +269,6 @@
 "login_expired" = "Inloggning har upphört";
 "please_relogin" = "Logga in igen";
 
-// MARK: - Settings More
 "advanced_settings" = "Avancerade inställningar";
 "developer_options" = "Utvecklaralternativ";
 "check_update" = "Sök efter uppdateringar";
@@ -296,7 +278,6 @@
 "rate_app" = "Betygsätt appen";
 "share_app" = "Dela app";
 
-// MARK: - Network
 "network" = "Nätverk";
 "network_status" = "Nätverksstatus";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Nätverkshastighet";
 "network_usage" = "Dataanvändning";
 
-// MARK: - Installation
 "installation" = "Installation";
 "installing" = "Installerar...";
 "install_success" = "Installationen lyckades";
@@ -321,7 +301,6 @@
 "signed" = "Signerad";
 "unsigned" = "Osignerad";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Testinbjudan";
 "testflight_build" = "Byggnad";
@@ -333,7 +312,6 @@
 "testflight_join" = "Gå med i testet";
 "testflight_leave" = "Lämna testet";
 
-// MARK: - Search More
 "search_filter" = "Sökfilter";
 "search_result_count" = "%@ resultat hittades";
 "exact_match" = "Exakt matchning";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Rekommenderade appar";
 "top_charts" = "Topplistor";
 
-// MARK: - Status
 "status" = "Status";
 "status_normal" = "Normal";
 "status_abnormal" = "Onormal";
@@ -358,7 +335,6 @@
 "status_idle" = "Väntar";
 "status_busy" = "Upptagen";
 
-// MARK: - Tips
 "tips" = "Tips";
 "tip_download_speed" = "Nedladdningshastigheten beror på din nätverksanslutning";
 "tip_wifi_download" = "Det rekommenderas att ladda ner stora filer via Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Visa detaljer";
 "learn_more" = "Läs mer";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ t sedan";
 "days_ago" = "%@ dag sedan";
 
-// MARK: - Actions
 "action_open" = "Öppna";
 "action_close" = "Stäng";
 "action_view" = "Visa";
@@ -435,7 +409,6 @@
 "action_declined" = "Avvisad";
 "action_accepted" = "Accepterad";
 
-// MARK: - Theme
 "theme_settings" = "Temainställningar";
 "light_theme" = "Ljust tema";
 "dark_theme" = "Mörkt tema";
@@ -449,7 +422,6 @@
 "font_size" = "Teckenstorlek";
 "font_style" = "Teckenstil";
 
-// MARK: - App Detail More
 "feature_tags" = "Funktionstaggar";
 "free" = "Hämta";
 "get" = "Hämta";
@@ -464,7 +436,6 @@
 "last_updated" = "Senast uppdaterad";
 "requires_ios" = "Kräver iOS %@ eller senare";
 
-// MARK: - Search More
 "search_placeholder" = "Sök efter spel, appar";
 "login" = "Logga in";
 "clear_all" = "Rensa alla";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versioner";
 "version_x_date" = "Version %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Logga in";
 "current" = "Aktuell";
 "switch" = "Byt";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Kontrollera verifieringskoden på din Apple-enhet";
 "wrong_verification_code" = "Felaktig verifieringskod. Försök igen.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Ogiltig IPA-fil";
 "install_failed_with_reason" = "Installationen misslyckades: %@";
 "install_timeout" = "Installationstidsgräns uppnådd";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Inga IPA-filer hittades";
 "no_ipa_found_desc" = "Inga IPA-filer hittades i appens lagringskatalog";
 
-// MARK: - Account Detail
 "basic_info" = "Grundläggande information";
 "account_identifier" = "Kontoidentifierare";
 "country_region" = "Land/Region";
@@ -585,8 +553,40 @@
 "no_value" = "Ingen";
 "region_title" = "Region";
 
-// MARK: - Appearance More
 "overall_color" = "Accentfärg";
 "quick_select" = "Snabbval";
 "auto" = "Auto";
 "unknown" = "Okänd";
+
+"pick_color" = "Välj färg";
+"auto_theme_description" = "Växlar automatiskt mellan ljust och mörkt utseende baserat på soluppgång och solnedgång.";
+"tab_bar_style" = "Flikfältsstil";
+"tab_style_default" = "Standard";
+"tab_style_default_desc" = "Systemets standardflikfält";
+"tab_style_frosted" = "Mattglas";
+"tab_style_floating" = "Flytande kort";
+"tab_style_floating_desc" = "Elegant matt glaseffekt";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Separat sökning";
+"tab_style_search_independent_desc" = "Sökknappen till höger";
+"floating_tabbar_customize" = "Anpassa flytande fält";
+"floating_tabbar_horizontal_padding" = "Horisontell marginal";
+"floating_tabbar_bottom_offset" = "Nedre förskjutning";
+"floating_tabbar_height" = "Höjd";
+"floating_tabbar_corner_radius" = "Hörnradie";
+"information" = "Information";
+"expand" = "Expandera";
+"collapse" = "Fäll ihop";
+"session_tokens_header" = "Sessionstokens";
+"session_tokens" = "Sessionstokens";
+"show_session_tokens" = "Visa sessionstokens";
+"hide_session_tokens" = "Dölj sessionstokens";
+"session_tokens_hint" = "Sessionstokens används för automatisk återautentisering. Dela dem inte.";
+"no_screenshots" = "Inga skärmbilder";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Kontrollera din betrodda Apple-enhet eller SMS och ange den 6-siffriga verifieringskoden nedan.";

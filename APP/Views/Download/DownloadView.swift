@@ -1,8 +1,4 @@
 
-
-
-
-
 import SwiftUI
 import Combine
 import Foundation
@@ -15,7 +11,6 @@ import SafariServices
 #if canImport(Vapor)
 import Vapor
 #endif
-
 
 public struct AppInfo {
     public let name: String
@@ -32,13 +27,10 @@ public struct AppInfo {
         self.localPath = localPath
     }
 
-
     public var bundleId: String {
         return bundleIdentifier
     }
 }
-
-
 
 @MainActor
 class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
@@ -60,7 +52,6 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
         currentInstallingRequestId = nil
     }
 
-
     func finishInstallation(for requestId: UUID) {
 
         if currentInstallingRequestId == requestId || currentInstallingRequestId == nil {
@@ -69,7 +60,6 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
         }
     }
 }
-
 
 @MainActor
 class HTTPServerManager: ObservableObject, @unchecked Sendable {
@@ -82,27 +72,22 @@ class HTTPServerManager: ObservableObject, @unchecked Sendable {
         let server = SimpleHTTPServer(port: port, ipaPath: ipaPath, appInfo: appInfo)
         server.start()
         activeServers[requestId] = server
-        NSLog("🚀 [HTTPServerManager] 启动服务器，端口: \(port)，请求ID: \(requestId)")
     }
 
     func stopServer(for requestId: UUID) {
         if let server = activeServers[requestId] {
             server.stop()
             activeServers.removeValue(forKey: requestId)
-            NSLog("🛑 [HTTPServerManager] 停止服务器，请求ID: \(requestId)")
         }
     }
 
     func stopAllServers() {
-        for (requestId, server) in activeServers {
+        for server in activeServers.values {
             server.stop()
-            NSLog("🛑 [HTTPServerManager] 停止服务器，请求ID: \(requestId)")
         }
         activeServers.removeAll()
-        NSLog("🛑 [HTTPServerManager] 已停止所有服务器")
     }
 }
-
 
 struct ModernCard<Content: SwiftUI.View>: SwiftUI.View {
     let content: Content
@@ -136,7 +121,6 @@ struct ModernCard<Content: SwiftUI.View>: SwiftUI.View {
     }
 }
 
-
 #if canImport(UIKit)
 private var SafariViewDismissDelegateAssociatedKey: UInt8 = 0
 
@@ -153,7 +137,6 @@ class SafariViewDismissDelegate: NSObject, SFSafariViewControllerDelegate {
     }
 }
 #endif
-
 
 #if canImport(UIKit)
 struct SafariWebView: UIViewControllerRepresentable {
@@ -200,15 +183,12 @@ struct SafariWebView: UIViewControllerRepresentable {
 
         func safariViewController(_ controller: SFSafariViewController, didCompleteInitialLoad didLoadSuccessfully: Bool) {
             if didLoadSuccessfully {
-                NSLog("✅ [Safari WebView] 页面加载成功: \(parent.url)")
             } else {
-                NSLog("❌ [Safari WebView] 页面加载失败: \(parent.url)")
             }
         }
     }
 }
 #endif
-
 
 public enum PackageInstallationError: Error, LocalizedError {
     case invalidIPAFile
@@ -230,7 +210,6 @@ public enum PackageInstallationError: Error, LocalizedError {
     }
 }
 
-
 #if canImport(Vapor)
 struct CORSMiddleware: Middleware {
     func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
@@ -244,7 +223,6 @@ struct CORSMiddleware: Middleware {
 }
 #endif
 
-
 #if canImport(Vapor)
 class SimpleHTTPServer: NSObject, @unchecked Sendable {
     public let port: Int
@@ -255,7 +233,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
     private let serverQueue = DispatchQueue(label: "simple.server.queue", qos: .userInitiated)
     private var plistData: Data?
     private var plistFileName: String?
-
 
     static func randomPort() -> Int {
         return Int.random(in: 4000...8000)
@@ -268,7 +245,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         super.init()
     }
 
-
     static let userDefaultsKey = "SimpleHTTPServer"
 
     static func getSavedPort() -> Int? {
@@ -280,8 +256,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
     }
 
     func start() {
-        NSLog("🚀 [HTTP服务器] 启动服务器，端口: \(port)")
-
 
         requestLocalNetworkPermission { [weak self] granted in
             if granted {
@@ -310,7 +284,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
         monitor.start(queue: queue)
 
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             monitor.cancel()
             completion(true)
@@ -323,7 +296,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             let config = Environment(name: "development", arguments: ["serve"])
             app = try await Application.make(config)
 
-
             app?.http.server.configuration.port = port
             app?.http.server.configuration.address = .hostname("0.0.0.0", port: port)
             app?.http.server.configuration.tcpNoDelay = true
@@ -332,19 +304,14 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             app?.threadPool = .init(numberOfThreads: 2)
             app?.http.server.configuration.tlsConfiguration = nil
 
-
             app?.middleware.use(CORSMiddleware())
-
 
             setupSimpleRoutes()
 
-
             try await app?.execute()
             isRunning = true
-            NSLog("✅ [HTTP服务器] 服务器已启动，端口: \(port)")
 
         } catch {
-            NSLog("❌ [HTTP服务器] 启动失败: \(error)")
             isRunning = false
         }
     }
@@ -352,11 +319,9 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
     private func setupSimpleRoutes() {
         guard let app = app else { return }
 
-
         app.get("health") { req -> String in
             return "OK"
         }
-
 
         app.get("ipa", ":filename") { [weak self] req -> Response in
             guard let self = self,
@@ -378,7 +343,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
         app.get(":filename") { [weak self] req -> Response in
             guard let self = self,
                   let filename = req.parameters.get("filename"),
@@ -386,9 +350,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 return Response(status: .notFound)
             }
 
-
             let shouldSign = req.parameters.get("sign") == "1"
-
 
             var ipaData: Data
             if shouldSign {
@@ -423,7 +385,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
         app.get("plist", ":filename") { [weak self] req -> Response in
             guard let self = self,
                   let filename = req.parameters.get("filename"),
@@ -441,20 +402,16 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
         app.get("i", ":encodedPath") { [weak self] req -> Response in
             guard let self = self,
                   let encodedPath = req.parameters.get("encodedPath") else {
                 return Response(status: .notFound)
             }
 
-
             guard let decodedData = Data(base64Encoded: encodedPath.replacingOccurrences(of: ".plist", with: "")),
-                  let decodedPath = String(data: decodedData, encoding: .utf8) else {
+                  String(data: decodedData, encoding: .utf8) != nil else {
                 return Response(status: .notFound)
             }
-
-            NSLog("📄 [APP] 请求plist文件，解码路径: \(decodedPath)")
 
             let response = Response(status: .ok)
             response.headers.add(name: "Content-Type", value: "application/xml")
@@ -465,15 +422,12 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
         app.get("install") { [weak self] req -> Response in
             guard let self = self else {
                 return Response(status: .internalServerError)
             }
 
-
             let externalManifestURL = self.generateExternalManifestURL()
-
 
             let installPage = """
             <!DOCTYPE html>
@@ -622,31 +576,27 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 <script>
                     let manifestURL = '';
                     let itmsURL = '';
-                    let isInstalling = false; // 防止重复安装
-                    let installSuccess = false; // 标记是否已成功启动安装
+                    let isInstalling = false;
+                    let installSuccess = false;
 
-                    // 页面加载完成后立即自动执行安装
                     window.onload = function() {
                         console.log('页面加载完成，开始自动安装...');
                         initializeInstallation();
                     };
 
                     function initializeInstallation() {
-                        // 使用外部manifest URL
                         manifestURL = '\(externalManifestURL)';
-                        itmsURL = 'itms-services://?action=download-manifest&url=' + encodeURIComponent(manifestURL);
+                        itmsURL = 'itms-services:
 
                         console.log('Manifest URL:', manifestURL);
                         console.log('ITMS URL:', itmsURL);
 
-                        // 延迟一点时间确保页面完全加载
                         setTimeout(function() {
                             autoInstall();
                         }, 1000);
                     }
 
                     function autoInstall() {
-                        // 防止重复安装
                         if (isInstalling || installSuccess) {
                             console.log('安装正在进行中或已成功，跳过重复调用');
                             return;
@@ -661,14 +611,12 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                         console.log('开始安装尝试');
 
                         try {
-                            // 只使用直接跳转方法触发安装
                             window.location.href = itmsURL;
                             status.innerHTML = '<span class="success">✅ 已启动安装程序...</span>';
                             installSuccess = true;
 
                             console.log('安装程序启动成功');
 
-                            // 如果跳转成功，3秒后显示成功信息
                             setTimeout(function() {
                                 if (installSuccess) {
                                     status.innerHTML = '<span class="success">✅ \("install_success_desc".localized)</span>';
@@ -721,12 +669,10 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
         app.get("icon", "display") { [weak self] req -> Response in
             guard let self = self else {
                 return Response(status: .internalServerError)
             }
-
 
             let iconData = self.getDefaultIconData()
             let response = Response(status: .ok)
@@ -743,7 +689,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 return Response(status: .internalServerError)
             }
 
-
             let iconData = self.getDefaultIconData()
             let response = Response(status: .ok)
             response.headers.add(name: "Content-Type", value: "image/png")
@@ -754,8 +699,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-
-
         app.get("health") { req -> Response in
             let response = Response(status: .ok)
             response.headers.add(name: "Content-Type", value: "application/json")
@@ -765,7 +708,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
     }
 
     func stop() {
-        NSLog("🛑 [Simple HTTP功能器] 停止功能器")
 
         serverQueue.async { [weak self] in
             self?.app?.shutdown()
@@ -778,23 +720,17 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         self.plistFileName = fileName
     }
 
-
     private func generateExternalManifestURL() -> String {
 
         let localIP = "127.0.0.1"
         let ipaURL = "http://\(localIP):\(port)/\(appInfo.bundleIdentifier).ipa"
 
-
         let fullIPAURL = "\(ipaURL)?sign=1"
-
 
         let proxyURL = "https://api.palera.in/genPlist?bundleid=\(appInfo.bundleIdentifier)&name=\(appInfo.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? appInfo.name)&version=\(appInfo.version)&fetchurl=\(fullIPAURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? fullIPAURL)"
 
-        NSLog("🔗 [APP] 外部manifest URL: \(proxyURL)")
-
         return proxyURL
     }
-
 
     private func generatePlistData() -> Data {
         let ipaURL = "http://127.0.0.1:\(port)/\(appInfo.bundleIdentifier).ipa"
@@ -827,12 +763,10 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         return plistData
     }
 
-
     private func signIPAIfNeeded() throws -> String {
 
         return ipaPath
     }
-
 
     private func getDisplayImageURL() -> String {
 
@@ -883,7 +817,7 @@ struct DownloadView: SwiftUI.View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject private var globalInstallManager: GlobalInstallationManager
     @EnvironmentObject private var tabBarStyleManager: TabBarStyleManager
-    
+
     @State private var lastScrollOffset: CGFloat = 0
     @State private var lastScrollTime: Date = Date()
 
@@ -953,17 +887,13 @@ struct DownloadView: SwiftUI.View {
         .environmentObject(GlobalInstallationManager.shared)
     }
 
-
     private func handleAppEnteredBackground() {
 
         vm.saveDownloadTasks()
 
-
         if !vm.activeDownloads.isEmpty {
-            print("[DownloadView] 应用进入后台，有\(vm.activeDownloads.count)个活跃下载任务")
         }
     }
-
 
     private func handleAppBecameActive() {
         vm.syncDownloadStatus()
@@ -1006,20 +936,18 @@ struct DownloadView: SwiftUI.View {
                                 }
                                 .tint(.blue)
                             }
-                            
+
                             Button(role: .destructive) {
                                 UnifiedDownloadManager.shared.deleteDownload(request: request)
                                 UnifiedDownloadManager.shared.saveDownloadTasks()
-                                
+
                                 if let localFilePath = request.localFilePath, FileManager.default.fileExists(atPath: localFilePath) {
                                     do {
                                         try FileManager.default.removeItem(atPath: localFilePath)
-                                        print("[DownloadView] 左滑删除 - 已删除本地文件: \(localFilePath)")
                                     } catch {
-                                        print("[DownloadView] 左滑删除 - 删除本地文件失败: \(error.localizedDescription)")
                                     }
                                 }
-                                
+
                                 NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
                             } label: {
                                 Label("delete".localized, systemImage: "trash")
@@ -1048,37 +976,33 @@ struct DownloadView: SwiftUI.View {
             vm.syncDownloadStatus()
         }
     }
-    
+
     private func detectScrollVelocity(offset: CGFloat) {
         let now = Date()
         let timeDiff = now.timeIntervalSince(lastScrollTime)
-        
+
         if timeDiff > 0 {
             let offsetDiff = abs(offset - lastScrollOffset)
             let velocity = offsetDiff / timeDiff
             scrollVelocity = velocity
-            
+
             let fastThreshold: CGFloat = 800
             let isFast = velocity > fastThreshold
-            
+
             if isFast != isScrollingFast {
                 withAnimation(.easeInOut(duration: 0.1)) {
                     isScrollingFast = isFast
                 }
             }
         }
-        
+
         lastScrollOffset = offset
         lastScrollTime = now
     }
 
-
-
     private func shareIPAFile(path: String, name: String) {
-        print("[DownloadView] 分享文件: \(name), 路径: \(path)")
 
         guard FileManager.default.fileExists(atPath: path) else {
-            print("[DownloadView] 分享失败: 文件不存在: \(path)")
             return
         }
 
@@ -1086,7 +1010,6 @@ struct DownloadView: SwiftUI.View {
 
         #if canImport(UIKit)
         guard let topViewController = getTopViewController() else {
-            print("[DownloadView] 分享失败: 无法获取顶层视图控制器")
             return
         }
 
@@ -1175,7 +1098,6 @@ struct DownloadView: SwiftUI.View {
             .frame(maxWidth: 200)
             .padding(.horizontal, 8)
 
-
             VStack(spacing: 8) {
                 Text("no_downloads".localized)
                     .font(.system(size: 22, weight: .semibold))
@@ -1186,17 +1108,13 @@ struct DownloadView: SwiftUI.View {
         .padding(.vertical, 32)
     }
 
-
     private func deleteDownload() {
 
-        print("[DownloadView] deleteDownload called")
     }
 
     private func retryDownload() {
 
-        print("[DownloadView] retryDownload called")
     }
-
 
     private func isUnpurchasedAppError() -> Bool {
 
@@ -1208,29 +1126,22 @@ struct DownloadView: SwiftUI.View {
         let appStoreURL = "https://apps.apple.com/"
 
         guard let url = URL(string: appStoreURL) else {
-            print("❌ [App Store] 无法创建App Store链接: \(appStoreURL)")
             return
         }
-
-        print("🔗 [App Store] 正在打开App Store链接: \(appStoreURL)")
 
         #if canImport(UIKit)
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url) { success in
                 if success {
-                    print("✅ [App Store] 成功打开App Store")
                 } else {
-                    print("❌ [App Store] 打开App Store失败")
                 }
             }
         } else {
-            print("❌ [App Store] 无法打开App Store链接")
         }
         #endif
     }
 
 }
-
 
 struct DownloadScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
@@ -1266,7 +1177,7 @@ struct DownloadProgressView: SwiftUI.View {
     let status: DownloadStatus
     let error: String?
     let accentColor: Color
-    
+
     private var progressLabel: String {
         switch status {
         case .waiting:
@@ -1283,7 +1194,7 @@ struct DownloadProgressView: SwiftUI.View {
             return "download_cancelled".localized
         }
     }
-    
+
     private var progressColor: Color {
         switch status {
         case .waiting, .paused:
@@ -1296,7 +1207,7 @@ struct DownloadProgressView: SwiftUI.View {
             return .gray
         }
     }
-    
+
     var body: some SwiftUI.View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
@@ -1334,32 +1245,26 @@ struct DownloadProgressView: SwiftUI.View {
     }
 }
 
-
 struct DownloadCardView: SwiftUI.View {
     @ObservedObject var request: DownloadRequest
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var themeManager: ThemeManager
     var isPreview: Bool = false
 
-
     @State private var showDetailView = false
     @State private var showInstallView = false
-
 
     @State private var isInstalling = false
     @State private var installationProgress: Double = 0.0
     @State private var installationMessage: String = ""
-    
+
     private var progress: Double {
         request.runtime.progressValue
     }
-    
+
     private var status: DownloadStatus {
         request.runtime.status
     }
-
-
-
 
     var body: some SwiftUI.View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1553,10 +1458,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-
-
-
-
     private func handleCardTap() {
         switch request.runtime.status {
         case DownloadStatus.completed:
@@ -1579,10 +1480,8 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-
     private func shareIPAFile(path: String) {
         guard FileManager.default.fileExists(atPath: path) else {
-            print("❌ 文件不存在: \(path)")
             return
         }
 
@@ -1595,9 +1494,7 @@ struct DownloadCardView: SwiftUI.View {
             applicationActivities: nil
         )
 
-
         activityViewController.setValue("share_ipa".localized, forKey: "subject")
-
 
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
@@ -1612,7 +1509,6 @@ struct DownloadCardView: SwiftUI.View {
             }
 
             rootViewController.present(activityViewController, animated: true) {
-                print("✅ 分享界面已显示")
             }
         }
         #else
@@ -1638,7 +1534,6 @@ struct DownloadCardView: SwiftUI.View {
         }
         .font(.title2)
     }
-
 
     private var progressView: some SwiftUI.View {
         VStack(spacing: 6) {
@@ -1675,7 +1570,6 @@ struct DownloadCardView: SwiftUI.View {
             }
         }
     }
-
 
     private func getProgressLabel() -> String {
         switch request.runtime.status {
@@ -1738,7 +1632,6 @@ struct DownloadCardView: SwiftUI.View {
                 return formatter.string(fromByteCount: fileSize)
             }
         } catch {
-            print("获取文件大小失败: \(error)")
         }
         return nil
     }
@@ -1749,7 +1642,6 @@ struct DownloadCardView: SwiftUI.View {
     }
 
     private func openAppStore() {
-
 
         if let appStoreURL = URL(string: "https://apps.apple.com/") {
             UIApplication.shared.open(appStoreURL)
@@ -1764,42 +1656,31 @@ struct DownloadCardView: SwiftUI.View {
 
     private func deleteDownload() {
 
-        print("[DownloadCardView] 删除下载: \(request.package.name)")
-
-
         UnifiedDownloadManager.shared.deleteDownload(request: request)
 
-
         UnifiedDownloadManager.shared.saveDownloadTasks()
-
 
         if let localFilePath = request.localFilePath, FileManager.default.fileExists(atPath: localFilePath) {
             do {
                 try FileManager.default.removeItem(atPath: localFilePath)
-                print("[DownloadCardView] 已删除本地文件: \(localFilePath)")
             } catch {
-                print("[DownloadCardView] 删除本地文件失败: \(error.localizedDescription)")
             }
         }
-
 
         NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
     }
 
     private func cancelDownload() {
 
-        print("[DownloadCardView] 取消下载: \(request.package.name)")
         UnifiedDownloadManager.shared.cancelDownload(request: request)
 
     }
 
     private func pauseDownload() {
-        print("[DownloadCardView] 暂停下载: \(request.package.name)")
         UnifiedDownloadManager.shared.pauseDownload(request: request)
     }
 
     private func resumeDownload() {
-        print("[DownloadCardView] 恢复下载: \(request.package.name)")
         UnifiedDownloadManager.shared.resumeDownload(request: request)
     }
 
@@ -1814,7 +1695,6 @@ struct DownloadCardView: SwiftUI.View {
         installationMessage = "preparing_install".localized
 
         let backgroundTaskID = UIApplication.shared.beginBackgroundTask {
-            NSLog("⏰ [DownloadView] 后台任务即将过期")
         }
 
         Task {
@@ -1861,24 +1741,21 @@ struct DownloadCardView: SwiftUI.View {
 
                 let healthURL = "http://127.0.0.1:\(port)/health"
                 var serverReady = false
-                for attempt in 1...20 {
+                for _ in 1...20 {
                     try await Task.sleep(nanoseconds: 500_000_000)
                     if let url = URL(string: healthURL) {
                         do {
                             let (_, response) = try await URLSession.shared.data(from: url)
                             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                                 serverReady = true
-                                NSLog("✅ [DownloadView] 服务器已就绪，第\(attempt)次尝试成功")
                                 break
                             }
                         } catch {
-                            NSLog("⏳ [DownloadView] 等待服务器启动... 第\(attempt)次尝试")
                         }
                     }
                 }
 
                 guard serverReady else {
-                    NSLog("❌ [DownloadView] HTTP服务器启动超时")
                     await MainActor.run {
                         installationMessage = "install_service_timeout".localized
                         cleanupInstallation(request.id)
@@ -1891,11 +1768,9 @@ struct DownloadCardView: SwiftUI.View {
                     installationProgress = 0.8
                     installationMessage = "opening_install_page".localized
 
-                    NSLog("🌐 [DownloadView] 使用 itms-services 唤起系统安装")
-
                     let localIP = "127.0.0.1"
                     let ipaURL = "http://\(localIP):\(port)/\(request.bundleIdentifier).ipa?sign=1"
-                    
+
                     var manifestComponents = URLComponents(string: "https://api.palera.in/genPlist")
                     manifestComponents?.queryItems = [
                         URLQueryItem(name: "bundleid", value: request.bundleIdentifier),
@@ -1903,56 +1778,44 @@ struct DownloadCardView: SwiftUI.View {
                         URLQueryItem(name: "version", value: request.version),
                         URLQueryItem(name: "fetchurl", value: ipaURL)
                     ]
-                    
+
                     guard let manifestURL = manifestComponents?.url?.absoluteString else {
-                        NSLog("❌ [DownloadView] 无法构造 manifest URL")
-                        installationMessage = "install_start_failed".localized
-                        cleanupInstallation(request.id)
-                        return
-                    }
-                    
-                    let actionItem = URLQueryItem(name: "action", value: "download-manifest")
-                    let urlItem = URLQueryItem(name: "url", value: manifestURL)
-                    
-                    var comps = URLComponents()
-                    comps.queryItems = [actionItem, urlItem]
-                    
-                    guard let percentEncodedQuery = comps.percentEncodedQuery else {
-                        NSLog("❌ [DownloadView] 无法编码查询参数")
-                        installationMessage = "install_start_failed".localized
-                        cleanupInstallation(request.id)
-                        return
-                    }
-                    
-                    let itmsURLString = "itms-services://?" + percentEncodedQuery
-                    
-                    guard let itmsURL = URL(string: itmsURLString) else {
-                        NSLog("❌ [DownloadView] 无法构造 itms-services URL: \(itmsURLString)")
                         installationMessage = "install_start_failed".localized
                         cleanupInstallation(request.id)
                         return
                     }
 
-                    NSLog("🔗 [DownloadView] Manifest URL: \(manifestURL)")
-                    NSLog("📱 [DownloadView] ITMS URL: \(itmsURL.absoluteString)")
-                    
-                    guard UIApplication.shared.canOpenURL(itmsURL) else {
-                        NSLog("❌ [DownloadView] 无法打开 itms-services URL (canOpenURL 返回 false)")
-                        NSLog("❌ [DownloadView] 请检查 Info.plist 中是否配置了 itms-services URL Scheme")
+                    let actionItem = URLQueryItem(name: "action", value: "download-manifest")
+                    let urlItem = URLQueryItem(name: "url", value: manifestURL)
+
+                    var comps = URLComponents()
+                    comps.queryItems = [actionItem, urlItem]
+
+                    guard let percentEncodedQuery = comps.percentEncodedQuery else {
                         installationMessage = "install_start_failed".localized
                         cleanupInstallation(request.id)
                         return
                     }
-                    
-                    NSLog("✅ [DownloadView] canOpenURL 检查通过，准备打开")
+
+                    let itmsURLString = "itms-services://?" + percentEncodedQuery
+
+                    guard let itmsURL = URL(string: itmsURLString) else {
+                        installationMessage = "install_start_failed".localized
+                        cleanupInstallation(request.id)
+                        return
+                    }
+
+                    guard UIApplication.shared.canOpenURL(itmsURL) else {
+                        installationMessage = "install_start_failed".localized
+                        cleanupInstallation(request.id)
+                        return
+                    }
 
                     UIApplication.shared.open(itmsURL, options: [:]) { success in
                         DispatchQueue.main.async {
                             if success {
-                                NSLog("✅ [DownloadView] 成功唤起系统安装对话框")
                                 isInstalling = false
                             } else {
-                                NSLog("❌ [DownloadView] 唤起系统安装失败 (open 返回 false)")
                                 installationMessage = "install_start_failed".localized
                                 cleanupInstallation(request.id)
                             }
@@ -1975,7 +1838,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-
     private func cleanupInstallation(_ requestId: UUID, keepServer: Bool = false) {
 
         Task {
@@ -1984,14 +1846,11 @@ struct DownloadCardView: SwiftUI.View {
                 installationProgress = 0.0
                 installationMessage = ""
 
-                NSLog("🧹 [DownloadView] 清理安装资源，请求ID: \(requestId)，是否保留服务器: \(keepServer)")
-
                 if !keepServer {
                     HTTPServerManager.shared.stopServer(for: requestId)
                 } else {
 
                     DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 300) {
-                        NSLog("⏰ [DownloadView] 自动停止HTTP服务器，请求ID: \(requestId)")
 
                         Task {
                             await MainActor.run {
@@ -2004,8 +1863,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 }
-
-
 
 struct IPAListView: SwiftUI.View {
     @EnvironmentObject var themeManager: ThemeManager
@@ -2130,7 +1987,6 @@ struct IPAListView: SwiftUI.View {
         .padding(.top, 8)
     }
 
-
     private func loadIPAFiles() {
         isLoading = true
         DispatchQueue.global(qos: .userInitiated).async {
@@ -2189,13 +2045,9 @@ struct IPAListView: SwiftUI.View {
         }
     }
 
-
     private func shareIPAFile(path: String, name: String) {
-        print("[IPAListView] 分享文件: \(name), 路径: \(path)")
-
 
         guard FileManager.default.fileExists(atPath: path) else {
-            print("[IPAListView] 分享失败: 文件不存在: \(path)")
             return
         }
 
@@ -2203,21 +2055,16 @@ struct IPAListView: SwiftUI.View {
 
         #if canImport(UIKit)
 
-
         guard let topViewController = getTopViewController() else {
-            print("[IPAListView] 分享失败: 无法获取顶层视图控制器")
             return
         }
-
 
         let activityViewController = UIActivityViewController(
             activityItems: [fileURL],
             applicationActivities: nil
         )
 
-
         activityViewController.title = name
-
 
         if UIDevice.current.userInterfaceIdiom == .pad {
             if let popover = activityViewController.popoverPresentationController {
@@ -2232,16 +2079,12 @@ struct IPAListView: SwiftUI.View {
             }
         }
 
-
         topViewController.present(activityViewController, animated: true) {
-            print("[IPAListView] 分享界面已显示: \(name)")
         }
         #else
 
-        print("[IPAListView] 分享功能在当前平台未实现")
         #endif
     }
-
 
     private func getTopViewController() -> UIViewController? {
         #if canImport(UIKit)
@@ -2253,7 +2096,6 @@ struct IPAListView: SwiftUI.View {
             return nil
         }
 
-
         while let presentedVC = topVC.presentedViewController {
             topVC = presentedVC
         }
@@ -2264,48 +2106,37 @@ struct IPAListView: SwiftUI.View {
         #endif
     }
 
-
     private func showDeleteConfirmation(for path: String, name: String) {
-        print("[IPAListView] 显示删除确认: \(name)")
         deleteFilePath = path
         deleteFileName = name
         showDeleteAlert = true
     }
 
-
     private func confirmDelete() {
         guard let filePath = deleteFilePath else {
-            print("[IPAListView] 删除失败: 文件路径为空")
             return
         }
 
         do {
 
             guard FileManager.default.fileExists(atPath: filePath) else {
-                print("[IPAListView] 删除失败: 文件不存在 - \(filePath)")
                 return
             }
 
-
             try FileManager.default.removeItem(atPath: filePath)
-            print("[IPAListView] 已成功删除文件: \(filePath)")
-
 
             if let index = ipaFiles.firstIndex(where: { $0.path == filePath }) {
                 ipaFiles.remove(at: index)
             }
 
-
             deleteFilePath = nil
             deleteFileName = nil
 
         } catch {
-            print("[IPAListView] 删除文件失败: \(error.localizedDescription)")
 
         }
     }
 }
-
 
 struct DownloadView_Previews: PreviewProvider {
     static var previews: some SwiftUI.View {

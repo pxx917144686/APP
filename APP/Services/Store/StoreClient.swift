@@ -32,110 +32,164 @@ public struct StoreAppVersion: Codable, Identifiable {
     }
 }
 
-private struct AppVersionInfo: Codable {
+private struct BilinResponse: Codable {
+    let code: Int?
+    let msg: String?
+    let total: Int?
+    let data: [BilinAppVersion]?
+}
+
+private struct BilinAppVersion: Codable {
     let bundle_version: String
-    let external_identifier: Int
-    let created_at: String
+    let external_identifier: String
+    let created_at: String?
+    let size: String?
+}
+
+private struct AgzyResponse: Codable {
+    let code: Int?
+    let msg: String?
+    let count: Int?
+    let data: [AgzyAppVersion]?
+}
+
+private struct AgzyAppVersion: Codable {
+    let version: String
+    let versionId: Int
+    let createTime: String?
+    let size: String?
 }
 
 @MainActor
 public class StoreClient: @unchecked Sendable {
     public static let shared = StoreClient()
-    private init() {}
+    private let session: URLSession
+    private init() {
+        let config = URLSessionConfiguration.default
+        config.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0,
+            "HTTPProxy": "",
+            "HTTPSProxy": "",
+            "SOCKSProxy": ""
+        ]
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 30
+        config.tlsMinimumSupportedProtocolVersion = .TLSv12
+        config.tlsMaximumSupportedProtocolVersion = .TLSv13
+        self.session = URLSession(configuration: config)
+    }
 
     public func getAppVersions(
         trackId: String,
         account: Account,
         countryCode: String? = nil
     ) async -> Result<[StoreAppVersion], StoreError> {
-        AuthenticationManager.shared.setCookies(account.cookies)
-        let regionToUse = countryCode ?? account.countryCode
-        print("[StoreClient] 获取应用版本，使用地区: \(regionToUse)")
-        do {
-            if let thirdPartyVersions = try await fetchVersionsFromThirdPartyAPI(appId: trackId), !thirdPartyVersions.isEmpty {
-                print("[调试] 成功从第三方API获取版本: \(thirdPartyVersions.count) 个版本")
-                return .success(thirdPartyVersions)
-            }
-            print("[调试] 第三方API失败、无数据或返回空数组，回退到苹果官方API")
-            let result = try await StoreRequest.shared.download(
-                appIdentifier: trackId,
-                directoryServicesIdentifier: account.directoryServicesIdentifier,
-                appVersion: nil,
-                passwordToken: account.passwordToken,
-                storeFront: account.storeResponse.storeFront
-            )
-            guard !result.songList.isEmpty else {
-                return .failure(.invalidItem)
-            }
-            let item = result.songList[0]
-            var versions: [StoreAppVersion] = []
-            let currentVersion = StoreAppVersion(
-                versionString: item.metadata.bundleShortVersionString,
-                versionId: item.metadata.softwareVersionExternalIdentifier,
-                isCurrent: true
-            )
-            versions.append(currentVersion)
-            if let historicalVersionIds = item.metadata.softwareVersionExternalIdentifiers {
-                let reversedIds = Array(historicalVersionIds.reversed())
-                var versionCounter = 1
-                for versionId in reversedIds {
-                    let versionIdString = String(versionId)
-                    if versionIdString != item.metadata.softwareVersionExternalIdentifier {
-                        let historicalVersion = StoreAppVersion(
-                            versionString: "历史版本 \(versionCounter)",
-                            versionId: versionIdString,
-                            isCurrent: false
+        if let thirdPartyVersions = try? await fetchVersionsFromThirdPartyAPI(appId: trackId), !thirdPartyVersions.isEmpty {
+            return .success(thirdPartyVersions)
+        }
+        if let trackIdInt = Int(trackId) {
+            let regionToUse = countryCode ?? account.countryCode
+            let primaryCountry = regionToUse.isEmpty ? "US" : regionToUse
+            let countries = primaryCountry.uppercased() == "US" ? ["US"] : [primaryCountry, "US"]
+            for cc in countries {
+                if let infos = try? await iTunesClient.shared.versionHistory(id: trackIdInt, country: cc), !infos.isEmpty {
+                    let list = infos.enumerated().map { idx, info in
+                        StoreAppVersion(
+                            versionString: info.version,
+                            versionId: "",
+                            isCurrent: idx == 0,
+                            releaseDate: info.releaseDate,
+                            releaseNotes: info.releaseNotes
                         )
-                        versions.append(historicalVersion)
-                        versionCounter += 1
-                        if versionCounter > 20 { break }
+                    }
+                    if !list.isEmpty {
+                        return .success(list)
                     }
                 }
             }
-            return .success(versions)
-        } catch {
-            print("[调试] getAppVersions中出错: \(error)")
-            return .failure(.genericError)
         }
+        return .failure(.invalidItem)
     }
 
     private func fetchVersionsFromThirdPartyAPI(appId: String) async throws -> [StoreAppVersion]? {
-        let apiUrl = "https://api.timbrd.com/apple/app-version/index.php?id=\(appId)"
+        if let v = try? await fetchVersionsFromBilin(appId: appId), !v.isEmpty {
+            return v
+        }
+        if let v = try? await fetchVersionsFromAgzy(appId: appId), !v.isEmpty {
+            return v
+        }
+        return nil
+    }
+
+    private func fetchVersionsFromBilin(appId: String) async throws -> [StoreAppVersion]? {
+        let apiUrl = "https://apis.bilin.eu.org/history/\(appId)"
         guard let url = URL(string: apiUrl) else { return nil }
-        do {
-            let request = URLRequest(url: url, timeoutInterval: 10.0)
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
-            let decoder = JSONDecoder()
-            let versionData = try decoder.decode([AppVersionInfo].self, from: data)
-            if versionData.isEmpty { return nil }
-            let versions = versionData.sorted { version1, version2 -> Bool in
-                if let date1 = parseDate(version1.created_at), let date2 = parseDate(version2.created_at) {
-                    return date1 > date2
-                }
-                return compareVersionStrings(version1.bundle_version, version2.bundle_version) > 0
-            }.map { versionInfo -> StoreAppVersion in
-                let isCurrent = versionInfo.bundle_version == versionData.first?.bundle_version
-                let releaseDate = parseDate(versionInfo.created_at)
-                return StoreAppVersion(
-                    versionString: versionInfo.bundle_version,
-                    versionId: String(versionInfo.external_identifier),
-                    isCurrent: isCurrent,
-                    releaseDate: releaseDate
-                )
+        var request = URLRequest(url: url, timeoutInterval: 15.0)
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
+        let decoder = JSONDecoder()
+        let wrapped = try decoder.decode(BilinResponse.self, from: data)
+        guard let list = wrapped.data, !list.isEmpty else { return nil }
+        let sorted = list.sorted { a, b -> Bool in
+            let d1 = (a.created_at ?? ""), d2 = (b.created_at ?? "")
+            if let date1 = parseDate(d1), let date2 = parseDate(d2) {
+                return date1 > date2
             }
-            return versions
-        } catch {
-            print("[调试] 从第三方API获取数据时出错: \(error)")
-            return nil
+            return compareVersionStrings(a.bundle_version, b.bundle_version) > 0
+        }
+        let currentVer = sorted.first?.bundle_version
+        return sorted.enumerated().map { idx, info in
+            StoreAppVersion(
+                versionString: info.bundle_version,
+                versionId: info.external_identifier,
+                isCurrent: info.bundle_version == currentVer,
+                releaseDate: parseDate(info.created_at ?? "")
+            )
+        }
+    }
+
+    private func fetchVersionsFromAgzy(appId: String) async throws -> [StoreAppVersion]? {
+        let apiUrl = "https://app.agzy.cn/searchVersion?appid=\(appId)"
+        guard let url = URL(string: apiUrl) else { return nil }
+        var request = URLRequest(url: url, timeoutInterval: 15.0)
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
+        let decoder = JSONDecoder()
+        let wrapped = try decoder.decode(AgzyResponse.self, from: data)
+        guard let list = wrapped.data, !list.isEmpty else { return nil }
+        let sorted = list.sorted { a, b -> Bool in
+            let d1 = (a.createTime ?? ""), d2 = (b.createTime ?? "")
+            if let date1 = parseDate(d1), let date2 = parseDate(d2) {
+                return date1 > date2
+            }
+            return compareVersionStrings(a.version, b.version) > 0
+        }
+        let currentVer = sorted.first?.version
+        return sorted.enumerated().map { idx, info in
+            StoreAppVersion(
+                versionString: info.version,
+                versionId: String(info.versionId),
+                isCurrent: info.version == currentVer,
+                releaseDate: parseDate(info.createTime ?? "")
+            )
         }
     }
 
     private func parseDate(_ dateString: String) -> Date? {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return dateFormatter.date(from: dateString)
+        let formats = ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd"]
+        for fmt in formats {
+            dateFormatter.dateFormat = fmt
+            if let d = dateFormatter.date(from: dateString) {
+                return d
+            }
+        }
+        return nil
     }
 
     private func compareVersionStrings(_ v1: String, _ v2: String) -> Int {

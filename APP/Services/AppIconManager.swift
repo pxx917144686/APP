@@ -35,12 +35,10 @@ final class AppIconManager: NSObject {
             if UIApplication.shared.supportsAlternateIcons {
                 UIApplication.shared.setAlternateIconName(iconName) { error in
                     if let error = error {
-                        NSLog("[AppIcon] 系统API切换失败: \(error.localizedDescription)")
                         DispatchQueue.main.async {
                             completion?(false, error)
                         }
                     } else {
-                        NSLog("[AppIcon] 系统API切换成功")
                         UserDefaults.standard.set(iconName, forKey: "APP.currentAlternateIconName")
                         DispatchQueue.main.async {
                             completion?(true, nil)
@@ -48,7 +46,6 @@ final class AppIconManager: NSObject {
                     }
                 }
             } else {
-                NSLog("[AppIcon] 系统不支持备用图标")
                 let error = NSError(domain: "AppIconManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "设备不支持备用图标"])
                 completion?(false, error)
             }
@@ -60,11 +57,9 @@ final class AppIconManager: NSObject {
             guard let self = self else { return }
 
             let targetName = iconName ?? "AppIcon"
-            NSLog("[AppIcon] [文件替换] 开始切换图标到: \(targetName)")
 
             do {
                 let replacedCount = try self.replaceAllAppIcons(with: targetName)
-                NSLog("[AppIcon] [文件替换] 成功替换 \(replacedCount) 个图标文件")
 
                 guard replacedCount > 0 else {
                     throw NSError(
@@ -86,7 +81,6 @@ final class AppIconManager: NSObject {
                     }
                 }
             } catch {
-                NSLog("[AppIcon] [文件替换] 切换失败: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     completion?(false, error)
                 }
@@ -151,10 +145,8 @@ final class AppIconManager: NSObject {
                     if let pngData = resized.pngData() {
                         try pngData.write(to: destURL, options: .atomic)
                         successCount += 1
-                        NSLog("[AppIcon] 成功写入: \(icon.fileName)")
                     }
                 } catch {
-                    NSLog("[AppIcon] 写入失败 \(icon.fileName): \(error.localizedDescription)")
                 }
             }
         }
@@ -175,21 +167,18 @@ final class AppIconManager: NSObject {
             let uicacheSel = Selector(("uicache"))
             if workspace.responds(to: uicacheSel) {
                 workspace.perform(uicacheSel)
-                NSLog("[AppIcon] 已调用 LSApplicationWorkspace.uicache")
             }
 
             if let bundleId = Bundle.main.bundleIdentifier {
                 let notifySel = Selector(("noteIconChangeForDisplayIdentifier:observer:"))
                 if workspace.responds(to: notifySel) {
                     workspace.perform(notifySel, with: bundleId, with: nil)
-                    NSLog("[AppIcon] 已调用 noteIconChangeForDisplayIdentifier")
                 }
             }
 
             let invalidateSel = Selector(("invalidateIconCache:"))
             if workspace.responds(to: invalidateSel) {
                 workspace.perform(invalidateSel, with: nil)
-                NSLog("[AppIcon] 已调用 invalidateIconCache")
             }
         }
 
@@ -199,7 +188,6 @@ final class AppIconManager: NSObject {
             let reloadSel = Selector(("reloadAllIcons"))
             if sb.responds(to: reloadSel) {
                 sb.perform(reloadSel)
-                NSLog("[AppIcon] 已调用 SBApplicationController.reloadAllIcons")
             }
         }
     }

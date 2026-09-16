@@ -16,7 +16,7 @@ enum AppTheme: Int, CaseIterable {
     case light = 1
     case dark = 2
     case system = 0
-    
+
     var displayName: String {
         switch self {
         case .system: return "follow_system".localized
@@ -32,7 +32,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     @Published var selectedTheme: AppTheme = .system {
         didSet {
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "Feather.userInterfaceStyle")
-            print("🎨 [ThemeManager] 主题已更新为: \(selectedTheme)")
+
             DispatchQueue.main.async { [weak self] in
                 self?.updateUserInterfaceStyle()
             }
@@ -181,7 +181,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     }
 
     func updateUserInterfaceStyle() {
-        // Find the active window scene and all its windows
+
         let windowScenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         for scene in windowScenes {
             for window in scene.windows {
@@ -197,7 +197,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
         }
 
         UserDefaults.standard.set(selectedTheme.rawValue, forKey: "Feather.userInterfaceStyle")
-        print("🎨 [ThemeManager] 主题已更新为: \(selectedTheme)")
+
     }
 
     func syncFromSettings() {
@@ -213,17 +213,17 @@ public struct ModernDarkColors {
     static let backgroundPrimary = Color(red: 0.07, green: 0.07, blue: 0.09)
     static let backgroundSecondary = Color(red: 0.11, green: 0.11, blue: 0.13)
     static let backgroundTertiary = Color(red: 0.15, green: 0.15, blue: 0.17)
-    
+
     static let surfacePrimary = Color(red: 0.12, green: 0.12, blue: 0.14)
     static let surfaceSecondary = Color(red: 0.18, green: 0.18, blue: 0.20)
-    
+
     static let borderPrimary = Color(red: 0.24, green: 0.24, blue: 0.26)
     static let borderSecondary = Color(red: 0.32, green: 0.32, blue: 0.34)
-    
+
     static let textPrimary = Color.white
     static let textSecondary = Color(red: 0.65, green: 0.65, blue: 0.67)
     static let textTertiary = Color(red: 0.45, green: 0.45, blue: 0.47)
-    
+
     static let fillPrimary = Color(red: 0.25, green: 0.25, blue: 0.27)
     static let fillSecondary = Color(red: 0.20, green: 0.20, blue: 0.22)
     static let fillTertiary = Color(red: 0.15, green: 0.15, blue: 0.17)
@@ -232,7 +232,7 @@ public struct ModernDarkColors {
 enum ThemeMode: String, CaseIterable {
     case light
     case dark
-    
+
     var displayName: String {
         switch self {
         case .light:

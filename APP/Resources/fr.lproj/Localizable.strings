@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Réglages";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Téléchargements";
 "tab_search" = "Rechercher";
 
-// MARK: - Common
 "cancel" = "Annuler";
 "confirm" = "Confirmer";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Veuillez réessayer";
 "got_it" = "Compris";
 
-// MARK: - Settings
 "settings" = "Réglages";
 "appearance" = "Apparence";
 "theme" = "Thème";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Croate";
 "lang_catalan" = "Catalan";
 
-// MARK: - Download
 "download_title" = "Téléchargements";
 "downloading" = "Téléchargement en cours";
 "download_paused" = "En pause";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Max téléchargements simultanés";
 "download_path" = "Chemin de téléchargement";
 
-// MARK: - Account
 "account" = "Compte";
 "apple_id" = "Apple ID";
 "add_account" = "Ajouter un Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-mail";
 "country" = "Pays/Région";
 
-// MARK: - App Icon
 "app_icon_settings" = "Icône de l'app";
 "default_icon" = "Par défaut";
 
-// MARK: - Search
 "search_placeholder" = "Rechercher apps, jeux, développeurs";
 "search_history" = "Historique de recherche";
 "search_suggestions" = "Suggestions de recherche";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Essayez des mots-clés différents";
 "searching" = "Recherche en cours...";
 
-// MARK: - Version Picker
 "version_picker" = "Sélectionner la version";
 "current_version" = "Version actuelle";
 "available_versions" = "Versions disponibles";
@@ -193,7 +185,6 @@
 "size" = "Taille";
 "build_number" = "Numéro de build";
 
-// MARK: - App Detail
 "app_detail" = "Détails de l'app";
 "get" = "Obtenir";
 "icloud_sync" = "Synchronisation iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Aucun avis";
 "no_reviews_description" = "Cette app n'a pas encore d'avis utilisateur";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Aucune app TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Code de réclamation";
 "enter_redeem_code" = "Saisir le code de réclamation";
 
-// MARK: - Filter & Sort
 "filter" = "Filtrer";
 "sort" = "Trier";
 "sort_by_name" = "Trier par nom";
@@ -235,7 +224,6 @@
 "ascending" = "Croissant";
 "descending" = "Décroissant";
 
-// MARK: - Notification
 "notifications" = "Notifications";
 "push_notifications" = "Notifications push";
 "download_complete_notification" = "Notification de fin de téléchargement";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Vibreur";
 "notification_badge" = "Badge";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Confidentialité et sécurité";
 "clear_cache" = "Vider le cache";
 "cache_size" = "Taille du cache";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Êtes-vous sûr de vouloir vider tout le cache ? Cela ne supprimera pas les apps téléchargées.";
 "cache_cleared" = "Cache vidé";
 
-// MARK: - Storage
 "storage" = "Stockage";
 "total_storage" = "Total";
 "used_storage" = "Utilisé";
@@ -260,14 +246,12 @@
 "app_size" = "Taille de l'app";
 "documents_size" = "Taille des documents";
 
-// MARK: - Download Manager
 "download_manager" = "Gestionnaire de téléchargements";
 "batch_operations" = "Opérations par lot";
 "select_all" = "Tout sélectionner";
 "deselect_all" = "Tout désélectionner";
 "selected_count" = "%@ sélectionné(s)";
 
-// MARK: - App Information
 "app_name" = "Nom de l'app";
 "app_version" = "Version de l'app";
 "app_rating" = "Note de l'app";
@@ -277,7 +261,6 @@
 "language_support" = "Support linguistique";
 "content_rating" = "Classification du contenu";
 
-// MARK: - Account Management
 "account_management" = "Gestion des comptes";
 "login_status" = "Statut de connexion";
 "two_factor_auth" = "Authentification à deux facteurs";
@@ -286,7 +269,6 @@
 "login_expired" = "Connexion expirée";
 "please_relogin" = "Veuillez vous reconnecter";
 
-// MARK: - Settings More
 "advanced_settings" = "Réglages avancés";
 "developer_options" = "Options développeur";
 "check_update" = "Vérifier les mises à jour";
@@ -296,7 +278,6 @@
 "rate_app" = "Nous évaluer";
 "share_app" = "Partager l'app";
 
-// MARK: - Network
 "network" = "Réseau";
 "network_status" = "Statut du réseau";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Vitesse du réseau";
 "network_usage" = "Utilisation des données";
 
-// MARK: - Installation
 "installation" = "Installation";
 "installing" = "Installation en cours...";
 "install_success" = "Installation réussie";
@@ -321,7 +301,6 @@
 "signed" = "Signé";
 "unsigned" = "Non signé";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Invitation de test";
 "testflight_build" = "Build";
@@ -333,7 +312,6 @@
 "testflight_join" = "Rejoindre le test";
 "testflight_leave" = "Quitter le test";
 
-// MARK: - Search More
 "search_filter" = "Filtre de recherche";
 "search_result_count" = "%@ résultats trouvés";
 "exact_match" = "Correspondance exacte";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Apps recommandées";
 "top_charts" = "Top charts";
 
-// MARK: - Status
 "status" = "Statut";
 "status_normal" = "Normal";
 "status_abnormal" = "Anormal";
@@ -358,7 +335,6 @@
 "status_idle" = "Inactif";
 "status_busy" = "Occupé";
 
-// MARK: - Tips
 "tips" = "Conseils";
 "tip_download_speed" = "La vitesse de téléchargement dépend de votre connexion réseau";
 "tip_wifi_download" = "Il est recommandé de télécharger les fichiers volumineux en Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Voir les détails";
 "learn_more" = "En savoir plus";
 
-// MARK: - Units
 "unit_bytes" = "o";
 "unit_kilobytes" = "Ko";
 "unit_megabytes" = "Mo";
@@ -390,7 +365,6 @@
 "hours_ago" = "il y a %@ h";
 "days_ago" = "il y a %@ jour";
 
-// MARK: - Actions
 "action_open" = "Ouvrir";
 "action_close" = "Fermer";
 "action_view" = "Voir";
@@ -435,7 +409,6 @@
 "action_declined" = "Refusé";
 "action_accepted" = "Accepté";
 
-// MARK: - Theme
 "theme_settings" = "Réglages du thème";
 "light_theme" = "Thème clair";
 "dark_theme" = "Thème sombre";
@@ -449,7 +422,6 @@
 "font_size" = "Taille de police";
 "font_style" = "Style de police";
 
-// MARK: - App Detail More
 "feature_tags" = "Tags de fonctionnalités";
 "free" = "Obtenir";
 "get" = "Obtenir";
@@ -464,7 +436,6 @@
 "last_updated" = "Dernière mise à jour";
 "requires_ios" = "Nécessite iOS %@ ou version ultérieure";
 
-// MARK: - Search More
 "search_placeholder" = "Rechercher jeux, apps";
 "login" = "Connexion";
 "clear_all" = "Tout effacer";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versions";
 "version_x_date" = "Version %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Connexion";
 "current" = "Actuel";
 "switch" = "Changer";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Vérifiez votre appareil Apple pour le code de vérification";
 "wrong_verification_code" = "Code de vérification incorrect. Veuillez réessayer.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Fichier IPA invalide";
 "install_failed_with_reason" = "Échec de l'installation : %@";
 "install_timeout" = "Délai d'installation dépassé";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Aucun fichier IPA trouvé";
 "no_ipa_found_desc" = "Aucun fichier IPA trouvé dans le répertoire de stockage de l'app";
 
-// MARK: - Account Detail
 "basic_info" = "Informations de base";
 "account_identifier" = "Identifiant de compte";
 "country_region" = "Pays/Région";
@@ -585,8 +553,40 @@
 "no_value" = "Aucun";
 "region_title" = "Région";
 
-// MARK: - Appearance More
 "overall_color" = "Couleur d'accent";
 "quick_select" = "Sélection rapide";
 "auto" = "Auto";
 "unknown" = "Inconnu";
+
+"pick_color" = "Choisir une couleur";
+"auto_theme_description" = "Bascule automatique entre les modes clair et sombre selon le lever et le coucher du soleil.";
+"tab_bar_style" = "Style de barre d'onglets";
+"tab_style_default" = "Par défaut";
+"tab_style_default_desc" = "Barre d'onglets système standard";
+"tab_style_frosted" = "Verre dépoli";
+"tab_style_floating" = "Carte flottante";
+"tab_style_floating_desc" = "Élégant effet de verre dépoli";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Recherche indépendante";
+"tab_style_search_independent_desc" = "Bouton de recherche à droite";
+"floating_tabbar_customize" = "Personnaliser la barre flottante";
+"floating_tabbar_horizontal_padding" = "Marge horizontale";
+"floating_tabbar_bottom_offset" = "Décalage inférieur";
+"floating_tabbar_height" = "Hauteur";
+"floating_tabbar_corner_radius" = "Rayon des coins";
+"information" = "Informations";
+"expand" = "Déplier";
+"collapse" = "Replier";
+"session_tokens_header" = "Jetons de session";
+"session_tokens" = "Jetons de session";
+"show_session_tokens" = "Afficher les jetons de session";
+"hide_session_tokens" = "Masquer les jetons de session";
+"session_tokens_hint" = "Les jetons de session servent à la reconnexion automatique. Ne les partagez pas.";
+"no_screenshots" = "Aucune capture d'écran";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Consultez votre appareil Apple de confiance ou vos SMS, puis saisissez le code à 6 chiffres ci-dessous.";

@@ -8,26 +8,26 @@ struct AppSearchResultCardView: View {
     var isPreview: Bool = false
     var showLicenseHint: Bool = false
     var isOwned: Bool? = nil
-    
+
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.sizeCategory) private var sizeCategory
-    
+
     private var ratingText: String {
         guard let rating = app.averageUserRating, rating > 0 else { return "" }
         return String(format: "%.1f", rating)
     }
-    
+
     private var ratingCountText: String {
         guard let count = app.userRatingCount, count > 0 else { return "" }
         return formatRatingCount(count)
     }
-    
+
     private var hasRating: Bool {
         guard let rating = app.averageUserRating, rating > 0,
               let count = app.userRatingCount, count > 0 else { return false }
         return true
     }
-    
+
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 16) {
@@ -43,7 +43,7 @@ struct AppSearchResultCardView: View {
         .buttonStyle(PlainButtonStyle())
         .id(app.trackId)
     }
-    
+
     private var topSection: some View {
         HStack(alignment: .top, spacing: 12) {
             appIconView
@@ -52,7 +52,7 @@ struct AppSearchResultCardView: View {
             getButtonView
         }
     }
-    
+
     private var appIconView: some View {
         Group {
             if let iconURL = app.artworkUrl100, let url = URL(string: iconURL) {
@@ -78,7 +78,7 @@ struct AppSearchResultCardView: View {
             }
         }
     }
-    
+
     private var appInfoView: some View {
         VStack(alignment: .leading, spacing: 3) {
             if let genre = app.primaryGenreName {
@@ -91,12 +91,12 @@ struct AppSearchResultCardView: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.clear)
             }
-            
+
             Text(app.name)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.primary)
                 .lineLimit(1)
-            
+
             if let developer = app.artistName {
                 Text(developer)
                     .font(.system(size: 15))
@@ -107,7 +107,7 @@ struct AppSearchResultCardView: View {
                     .font(.system(size: 15))
                     .foregroundColor(.clear)
             }
-            
+
             if hasRating, let rating = app.averageUserRating {
                 ratingView(rating: rating)
             } else {
@@ -123,25 +123,25 @@ struct AppSearchResultCardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func ratingView(rating: Double) -> some View {
         HStack(spacing: 4) {
             StarRatingView(rating: rating, size: 12)
-            
+
             Text(ratingText)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
-            
+
             Text("·")
                 .font(.system(size: 12))
                 .foregroundColor(.secondary.opacity(0.6))
-            
+
             Text(ratingCountText)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
     }
-    
+
     private var getButtonView: some View {
         VStack(spacing: 2) {
             Group {
@@ -170,7 +170,7 @@ struct AppSearchResultCardView: View {
                 .foregroundColor(.secondary)
         }
     }
-    
+
     @ViewBuilder
     private var screenshotsSection: some View {
         let screenshots = app.screenshotUrls ?? app.ipadScreenshotUrls ?? []
@@ -200,15 +200,15 @@ struct AppSearchResultCardView: View {
             }
         }
     }
-    
+
     private var screenshotWidth: CGFloat {
         140
     }
-    
+
     private var screenshotHeight: CGFloat {
         250
     }
-    
+
     private var buttonTitle: String {
         if let fp = app.formattedPrice {
             let lower = fp.lowercased()
@@ -219,7 +219,7 @@ struct AppSearchResultCardView: View {
         }
         return "get".localized
     }
-    
+
     private func formatRatingCount(_ count: Int) -> String {
         if count >= 10000 {
             return "\(count / 10000)万"
@@ -230,5 +230,3 @@ struct AppSearchResultCardView: View {
         }
     }
 }
-
-

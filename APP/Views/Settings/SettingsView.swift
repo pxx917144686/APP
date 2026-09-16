@@ -83,6 +83,7 @@ struct SettingsView: View {
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
+
                     VStack(spacing: 0) {
                         tabBarRowContent
                     }
@@ -117,14 +118,14 @@ struct SettingsView: View {
                 selectedColor = Color(hex: selectedColorHex)
                 currentIcon = AppIconManager.shared.currentAlternateIconName
             }
-            .onChange(of: selectedColorHex, perform: { newValue in
+            .onChange(of: selectedColorHex) { _, newValue in
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                     for window in windowScene.windows {
                         window.tintColor = UIColor(Color(hex: newValue))
                     }
                 }
                 themeManager.objectWillChange.send()
-            })
+            }
             .sheet(isPresented: $showAccountSheet) {
                 AccountSheetView()
                     .environmentObject(appStore)
@@ -151,12 +152,12 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(account.name.isEmpty ? account.email : account.name)
+                        Text(account.fullName.isEmpty ? account.email : account.fullName)
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.primary)
                             .lineLimit(1)
 
-                        if !account.name.isEmpty {
+                        if !account.fullName.isEmpty {
                             Text(account.email)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -315,7 +316,7 @@ extension SettingsView {
                                 Circle()
                                     .strokeBorder(Color.primary.opacity(0.2), lineWidth: 1)
                             )
-                        
+
                         Text("🎨")
                             .font(.system(size: 14))
                     }
@@ -324,14 +325,14 @@ extension SettingsView {
                         Text("color".localized)
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
-                        
+
                         Text(selectedColorHex)
                             .font(.system(.caption, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
 
                     Spacer()
-                    
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.secondary.opacity(0.6))
@@ -356,7 +357,7 @@ extension SettingsView {
                         }
                 }
             }
-            .onChange(of: selectedColor) { newColor in
+            .onChange(of: selectedColor) { _, newColor in
                 selectedColorHex = newColor.toHex()
                 themeManager.accentColor = newColor
             }
@@ -448,8 +449,6 @@ extension SettingsView {
             return "tab_style_default_desc".localized
         case .floatingCard:
             return "tab_style_floating_desc".localized
-        case .searchIndependent:
-            return "tab_style_search_independent_desc".localized
         }
     }
 
@@ -520,8 +519,7 @@ extension SettingsView {
                     .padding(.horizontal, 8)
                     .padding(.bottom, 10)
                 }
-            case .searchIndependent:
-                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
                     Spacer()
                     Divider()
                     HStack(spacing: 0) {
@@ -713,8 +711,6 @@ extension SettingsView {
                     currentIcon = AppIconManager.shared.currentAlternateIconName
                     if success {
                         showingIconSuccess = true
-                    } else if let error = error {
-                        print("❌ [AppIcon] 设置图标失败: \(error.localizedDescription)")
                     }
                 }
             }
@@ -731,3 +727,4 @@ extension SettingsView {
         .buttonStyle(ScaleButtonStyle())
     }
 }
+

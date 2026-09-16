@@ -7,6 +7,7 @@ struct AccountDetailView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @State private var showingDeleteAlert = false
     @State private var isPasswordVisible = false
+    @State private var areSessionTokensVisible = false
 
     var body: some View {
         List {
@@ -17,21 +18,18 @@ struct AccountDetailView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
 
-
             Section {
                 infoRow(title: "apple_id".localized, value: account.email, isEmail: true)
-                infoRow(title: "name".localized, value: account.name)
+                infoRow(title: "name".localized, value: account.fullName)
             } header: {
                 Text("basic_info".localized)
             }
 
-
             Section {
-                infoRow(title: "dsid".localized, value: account.directoryServicesIdentifier, isMonospaced: true)
+                infoRow(title: "DSID", value: account.dsPersonId, isMonospaced: true)
             } header: {
                 Text("account_identifier".localized)
             }
-
 
             Section {
                 HStack {
@@ -46,7 +44,6 @@ struct AccountDetailView: View {
             } header: {
                 Text("region_title".localized)
             }
-
 
             Section {
                 HStack {
@@ -82,6 +79,7 @@ struct AccountDetailView: View {
             } footer: {
                 Text("password_token_hint".localized)
             }
+
 
 
             Section {
@@ -121,18 +119,16 @@ struct AccountDetailView: View {
         }
     }
 
-
-
     private var accountHeader: some View {
         VStack(spacing: 12) {
             AccountAvatarButton(size: 80)
 
             VStack(spacing: 4) {
-                Text(account.name.isEmpty ? account.email : account.name)
+                Text(account.fullName.isEmpty ? account.email : account.fullName)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.primary)
 
-                if !account.name.isEmpty {
+                if !account.fullName.isEmpty {
                     Text(account.email)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -157,8 +153,6 @@ struct AccountDetailView: View {
         .padding(.horizontal, 16)
     }
 
-
-
     private func infoRow(title: String, value: String, isEmail: Bool = false, isMonospaced: Bool = false) -> some View {
         HStack {
             Text(title)
@@ -177,9 +171,41 @@ struct AccountDetailView: View {
                     .truncationMode(.middle)
             }
         }
+        .padding(.vertical, 2)
     }
 
+    private func tokenRow(title: String, value: String, visible: Bool) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(title)
+                .font(.system(size: 15))
+                .foregroundColor(.primary)
+                .frame(minWidth: 96, alignment: .leading)
 
+            Spacer()
+
+            if value.isEmpty {
+                Text("no_value".localized)
+                    .font(.system(size: 13, design: .monospaced))
+                    .foregroundColor(.secondary.opacity(0.5))
+            } else if visible {
+                Text(value)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .lineLimit(6)
+                    .truncationMode(.tail)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .textSelection(.enabled)
+            } else {
+                Text(String(repeating: "•", count: min(value.count, 24)))
+                    .font(.system(size: 13, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .padding(.vertical, 4)
+    }
 
     private func deleteAccount() {
         if appStore.savedAccounts.count == 1 {
@@ -189,8 +215,6 @@ struct AccountDetailView: View {
         }
         dismiss()
     }
-
-
 
     private func flag(country: String) -> String {
         let base: UInt32 = 127397

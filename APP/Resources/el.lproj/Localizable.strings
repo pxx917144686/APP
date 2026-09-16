@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Ρυθμίσεις";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Λήψεις";
 "tab_search" = "Αναζήτηση";
 
-// MARK: - Common
 "cancel" = "Ακύρωση";
 "confirm" = "Επιβεβαίωση";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Δοκιμάστε ξανά";
 "got_it" = "Το κατάλαβα";
 
-// MARK: - Settings
 "settings" = "Ρυθμίσεις";
 "appearance" = "Εμφάνιση";
 "theme" = "Θέμα";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Κροατικά";
 "lang_catalan" = "Καταλανικά";
 
-// MARK: - Download
 "download_title" = "Λήψεις";
 "downloading" = "Λήψη";
 "download_paused" = "Παύση";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Μέγιστος αριθμός ταυτόχρονων λήψεων";
 "download_path" = "Διαδρομή λήψης";
 
-// MARK: - Account
 "account" = "Λογαριασμός";
 "apple_id" = "Apple ID";
 "add_account" = "Προσθήκη Apple ID";
@@ -166,11 +161,9 @@
 "email" = "Ηλεκτρονικό ταχυδρομείο";
 "country" = "Χώρα/Περιοχή";
 
-// MARK: - App Icon
 "app_icon_settings" = "Εικονίδιο εφαρμογής";
 "default_icon" = "Προεπιλογή";
 
-// MARK: - Search
 "search_placeholder" = "Αναζήτηση εφαρμογών, παιχνιδιών, προγραμματιστών";
 "search_history" = "Ιστορικό αναζήτησης";
 "search_suggestions" = "Προτάσεις αναζήτησης";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Δοκιμάστε διαφορετικές λέξεις-κλειδιά";
 "searching" = "Αναζήτηση...";
 
-// MARK: - Version Picker
 "version_picker" = "Επιλογή έκδοσης";
 "current_version" = "Τρέχουσα έκδοση";
 "available_versions" = "Διαθέσιμες εκδόσεις";
@@ -193,7 +185,6 @@
 "size" = "Μέγεθος";
 "build_number" = "Αριθμός κατασκευής";
 
-// MARK: - App Detail
 "app_detail" = "Λεπτομέρειες εφαρμογής";
 "get" = "Λήψη";
 "icloud_sync" = "Συγχρονισμός iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Χωρίς κριτικές";
 "no_reviews_description" = "Αυτή η εφαρμογή δεν έχει ακόμα κριτικές χρηστών";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Δεν υπάρχουν εφαρμογές TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Κωδικός εξαργύρωσης";
 "enter_redeem_code" = "Εισαγάγετε τον κωδικό εξαργύρωσης";
 
-// MARK: - Filter & Sort
 "filter" = "Φίλτρο";
 "sort" = "Ταξινόμηση";
 "sort_by_name" = "Ταξινόμηση ανά όνομα";
@@ -235,7 +224,6 @@
 "ascending" = "Αύξουσα";
 "descending" = "Φθίνουσα";
 
-// MARK: - Notification
 "notifications" = "Ειδοποιήσεις";
 "push_notifications" = "Ειδοποιήσεις push";
 "download_complete_notification" = "Ειδοποίηση ολοκλήρωσης λήψης";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Δόνηση";
 "notification_badge" = "Σήμα";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Απόρρητο και ασφάλεια";
 "clear_cache" = "Εκκαθάριση προσωρινής μνήμης";
 "cache_size" = "Μέγεθος προσωρινής μνήμης";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Είστε βέβαιοι ότι θέλετε να εκκαθαρίσετε όλη την προσωρινή μνήμη; Αυτό δεν θα διαγράψει τις ληφθείσες εφαρμογές.";
 "cache_cleared" = "Η προσωρινή μνήμη εκκαθαρίστηκε";
 
-// MARK: - Storage
 "storage" = "Αποθηκευτικός χώρος";
 "total_storage" = "Σύνολο";
 "used_storage" = "Χρησιμοποιούμενο";
@@ -260,14 +246,12 @@
 "app_size" = "Μέγεθος εφαρμογής";
 "documents_size" = "Μέγεθος εγγράφων";
 
-// MARK: - Download Manager
 "download_manager" = "Διαχειριστής λήψεων";
 "batch_operations" = "Μαζικές λειτουργίες";
 "select_all" = "Επιλογή όλων";
 "deselect_all" = "Απεπιλογή όλων";
 "selected_count" = "%@ επιλεγμένα";
 
-// MARK: - App Information
 "app_name" = "Όνομα εφαρμογής";
 "app_version" = "Έκδοση εφαρμογής";
 "app_rating" = "Βαθμολογία εφαρμογής";
@@ -277,7 +261,6 @@
 "language_support" = "Υποστήριξη γλωσσών";
 "content_rating" = "Βαθμολογία περιεχομένου";
 
-// MARK: - Account Management
 "account_management" = "Διαχείριση λογαριασμών";
 "login_status" = "Κατάσταση σύνδεσης";
 "two_factor_auth" = "Έλεγχος ταυτότητας δύο παραγόντων";
@@ -286,7 +269,6 @@
 "login_expired" = "Η σύνδεση έληξε";
 "please_relogin" = "Συνδεθείτε ξανά";
 
-// MARK: - Settings More
 "advanced_settings" = "Για προχωρημένους";
 "developer_options" = "Επιλογές προγραμματιστή";
 "check_update" = "Έλεγχος για ενημερώσεις";
@@ -296,7 +278,6 @@
 "rate_app" = "Αξιολόγηση";
 "share_app" = "Κοινή χρήση εφαρμογής";
 
-// MARK: - Network
 "network" = "Δίκτυο";
 "network_status" = "Κατάσταση δικτύου";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Ταχύτητα δικτύου";
 "network_usage" = "Χρήση δεδομένων";
 
-// MARK: - Installation
 "installation" = "Εγκατάσταση";
 "installing" = "Εγκατάσταση...";
 "install_success" = "Επιτυχής εγκατάσταση";
@@ -321,7 +301,6 @@
 "signed" = "Υπογεγραμμένο";
 "unsigned" = "Μη υπογεγραμμένο";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Πρόσκληση δοκιμής";
 "testflight_build" = "Κατασκευή";
@@ -333,7 +312,6 @@
 "testflight_join" = "Συμμετοχή στη δοκιμή";
 "testflight_leave" = "Έξοδος από τη δοκιμή";
 
-// MARK: - Search More
 "search_filter" = "Φίλτρο αναζήτησης";
 "search_result_count" = "Βρέθηκαν %@ αποτελέσματα";
 "exact_match" = "Ακριβής αντιστοιχία";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Προτεινόμενες εφαρμογές";
 "top_charts" = "Κορυφαίες λίστες";
 
-// MARK: - Status
 "status" = "Κατάσταση";
 "status_normal" = "Κανονική";
 "status_abnormal" = "Ανώμαλη";
@@ -358,7 +335,6 @@
 "status_idle" = "Αδρανές";
 "status_busy" = "Απασχολημένο";
 
-// MARK: - Tips
 "tips" = "Συμβουλές";
 "tip_download_speed" = "Η ταχύτητα λήψης εξαρτάται από τη σύνδεσή σας στο δίκτυο";
 "tip_wifi_download" = "Συνιστάται η λήψη μεγάλων αρχείων μέσω Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Προβολή λεπτομερειών";
 "learn_more" = "Μάθετε περισσότερα";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "πριν %@ ώρες";
 "days_ago" = "πριν %@ ημέρες";
 
-// MARK: - Actions
 "action_open" = "Άνοιγμα";
 "action_close" = "Κλείσιμο";
 "action_view" = "Προβολή";
@@ -435,7 +409,6 @@
 "action_declined" = "Απορρίφθηκε";
 "action_accepted" = "Αποδέχτηκε";
 
-// MARK: - Theme
 "theme_settings" = "Ρυθμίσεις θέματος";
 "light_theme" = "Φωτεινό θέμα";
 "dark_theme" = "Σκοτεινό θέμα";
@@ -449,7 +422,6 @@
 "font_size" = "Μέγεθος γραμματοσειράς";
 "font_style" = "Στυλ γραμματοσειράς";
 
-// MARK: - App Detail More
 "feature_tags" = "Ετικέτες λειτουργιών";
 "free" = "Λήψη";
 "get" = "Λήψη";
@@ -464,7 +436,6 @@
 "last_updated" = "Τελευταία ενημέρωση";
 "requires_ios" = "Απαιτεί iOS %@ ή νεότερη έκδοση";
 
-// MARK: - Search More
 "search_placeholder" = "Αναζήτηση παιχνιδιών, εφαρμογών";
 "login" = "Σύνδεση";
 "clear_all" = "Εκκαθάριση όλων";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ εκδόσεις";
 "version_x_date" = "Έκδοση %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Σύνδεση";
 "current" = "Τρέχων";
 "switch" = "Εναλλαγή";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Ελέγξτε τη συσκευή Apple για τον κωδικό επαλήθευσης";
 "wrong_verification_code" = "Λανθασμένος κωδικός επαλήθευσης. Δοκιμάστε ξανά.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Μη έγκυρο αρχείο IPA";
 "install_failed_with_reason" = "Η εγκατάσταση απέτυχε: %@";
 "install_timeout" = "Λήξη χρόνου εγκατάστασης";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Δεν βρέθηκαν αρχεία IPA";
 "no_ipa_found_desc" = "Δεν βρέθηκαν αρχεία IPA στον κατάλογο αποθήκευσης της εφαρμογής";
 
-// MARK: - Account Detail
 "basic_info" = "Βασικές πληροφορίες";
 "account_identifier" = "Αναγνωριστικό λογαριασμού";
 "country_region" = "Χώρα/Περιοχή";
@@ -585,8 +553,40 @@
 "no_value" = "Κανένα";
 "region_title" = "Περιοχή";
 
-// MARK: - Appearance More
 "overall_color" = "Χρώμα έμφασης";
 "quick_select" = "Γρήγορη επιλογή";
 "auto" = "Αυτόματο";
 "unknown" = "Άγνωστο";
+
+"pick_color" = "Επιλογή χρώματος";
+"auto_theme_description" = "Αυτόματη εναλλαγή φωτεινής και σκοτεινής εμφάνισης με βάση την ανατολή και τη δύση.";
+"tab_bar_style" = "Στυ γραμμής καρτελών";
+"tab_style_default" = "Προεπιλογή";
+"tab_style_default_desc" = "Τυπική γραμμή καρτελών συστήματος";
+"tab_style_frosted" = "Παγωμένο γυαλί";
+"tab_style_floating" = "Επιπλέουσα κάρτα";
+"tab_style_floating_desc" = "Κομψό εφέ παγωμένου γυαλιού";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Ανεξάρτητη αναζήτηση";
+"tab_style_search_independent_desc" = "Κουμπί αναζήτησης στα δεξιά";
+"floating_tabbar_customize" = "Προσαρμογή αιωρούμενης γραμμής";
+"floating_tabbar_horizontal_padding" = "Οριζόντια περιθώρια";
+"floating_tabbar_bottom_offset" = "Κάτω μετατόπιση";
+"floating_tabbar_height" = "Ύψος";
+"floating_tabbar_corner_radius" = "Ακτίνα γωνιών";
+"information" = "Πληροφορίες";
+"expand" = "Ανάπτυξη";
+"collapse" = "Σύμπτυξη";
+"session_tokens_header" = "Τόκεν συνεδρίας";
+"session_tokens" = "Τόκεν συνεδρίας";
+"show_session_tokens" = "Εμφάνιση τόκεν";
+"hide_session_tokens" = "Απόκρυψη τόκεν";
+"session_tokens_hint" = "Τα τόκεν συνεδρίας χρησιμοποιούνται για αυτόματη επαναποίηση. Μην τα μοιράζεστε.";
+"no_screenshots" = "Χωρίς στιγμιότυπα";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Ελέγξτε την αξιόπιστη συσκευή Apple ή τα SMS και εισάγετε τον 6ψήφιο κωδικό παρακάτω.";

@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "सेटिंग्स";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "डाउनलोड";
 "tab_search" = "खोजें";
 
-// MARK: - Common
 "cancel" = "रद्द करें";
 "confirm" = "पुष्टि करें";
 "ok" = "ठीक है";
@@ -47,7 +45,6 @@
 "try_again" = "कृपया पुनः प्रयास करें";
 "got_it" = "समझ गया";
 
-// MARK: - Settings
 "settings" = "सेटिंग्स";
 "appearance" = "दिखावट";
 "theme" = "थीम";
@@ -114,7 +111,6 @@
 "lang_croatian" = "क्रोएशियाई";
 "lang_catalan" = "कातालान";
 
-// MARK: - Download
 "download_title" = "डाउनलोड";
 "downloading" = "डाउनलोड हो रहा है";
 "download_paused" = "रुका हुआ";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "अधिकतम समवर्ती डाउनलोड";
 "download_path" = "डाउनलोड पथ";
 
-// MARK: - Account
 "account" = "खाता";
 "apple_id" = "Apple ID";
 "add_account" = "Apple ID जोड़ें";
@@ -166,11 +161,9 @@
 "email" = "ईमेल";
 "country" = "देश/क्षेत्र";
 
-// MARK: - App Icon
 "app_icon_settings" = "ऐप आइकन";
 "default_icon" = "डिफ़ॉल्ट";
 
-// MARK: - Search
 "search_placeholder" = "ऐप, गेम, डेवलपर खोजें";
 "search_history" = "खोज इतिहास";
 "search_suggestions" = "खोज सुझाव";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "अलग कीवर्ड आज़माएं";
 "searching" = "खोज रहे हैं...";
 
-// MARK: - Version Picker
 "version_picker" = "संस्करण चुनें";
 "current_version" = "वर्तमान संस्करण";
 "available_versions" = "उपलब्ध संस्करण";
@@ -193,7 +185,6 @@
 "size" = "आकार";
 "build_number" = "बिल्ड संख्या";
 
-// MARK: - App Detail
 "app_detail" = "ऐप विवरण";
 "get" = "प्राप्त करें";
 "icloud_sync" = "iCloud सिंक";
@@ -211,7 +202,6 @@
 "no_reviews" = "कोई समीक्षा नहीं";
 "no_reviews_description" = "इस ऐप की अभी कोई उपयोगकर्ता समीक्षा नहीं है";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "कोई TestFlight ऐप नहीं";
@@ -225,7 +215,6 @@
 "redeem_code" = "रिडीम कोड";
 "enter_redeem_code" = "रिडीम कोड दर्ज करें";
 
-// MARK: - Filter & Sort
 "filter" = "फ़िल्टर";
 "sort" = "क्रमबद्ध करें";
 "sort_by_name" = "नाम से क्रमबद्ध करें";
@@ -235,7 +224,6 @@
 "ascending" = "आरोही";
 "descending" = "अवरोही";
 
-// MARK: - Notification
 "notifications" = "सूचनाएं";
 "push_notifications" = "पुश सूचनाएं";
 "download_complete_notification" = "डाउनलोड पूर्ण सूचना";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "कंपन";
 "notification_badge" = "बैज";
 
-// MARK: - Privacy & Security
 "privacy_security" = "गोपनीयता और सुरक्षा";
 "clear_cache" = "कैश साफ़ करें";
 "cache_size" = "कैश आकार";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "क्या आप वाकई सभी कैश साफ़ करना चाहते हैं? यह डाउनलोड की गई ऐप्स को हटाएगा नहीं।";
 "cache_cleared" = "कैश साफ़ हो गया";
 
-// MARK: - Storage
 "storage" = "स्टोरेज";
 "total_storage" = "कुल";
 "used_storage" = "उपयोग किया गया";
@@ -260,14 +246,12 @@
 "app_size" = "ऐप आकार";
 "documents_size" = "दस्तावेज़ आकार";
 
-// MARK: - Download Manager
 "download_manager" = "डाउनलोड मैनेजर";
 "batch_operations" = "बैच ऑपरेशन";
 "select_all" = "सभी चुनें";
 "deselect_all" = "सभी अचयनित करें";
 "selected_count" = "%@ चुने गए";
 
-// MARK: - App Information
 "app_name" = "ऐप का नाम";
 "app_version" = "ऐप संस्करण";
 "app_rating" = "ऐप रेटिंग";
@@ -277,7 +261,6 @@
 "language_support" = "भाषा समर्थन";
 "content_rating" = "सामग्री रेटिंग";
 
-// MARK: - Account Management
 "account_management" = "खाता प्रबंधन";
 "login_status" = "लॉगिन स्थिति";
 "two_factor_auth" = "दो-कारक प्रमाणीकरण";
@@ -286,7 +269,6 @@
 "login_expired" = "लॉगिन समाप्त";
 "please_relogin" = "कृपया फिर से साइन इन करें";
 
-// MARK: - Settings More
 "advanced_settings" = "उन्नत सेटिंग्स";
 "developer_options" = "डेवलपर विकल्प";
 "check_update" = "अपडेट की जाँच करें";
@@ -296,7 +278,6 @@
 "rate_app" = "हमें रेट करें";
 "share_app" = "ऐप साझा करें";
 
-// MARK: - Network
 "network" = "नेटवर्क";
 "network_status" = "नेटवर्क स्थिति";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "नेटवर्क गति";
 "network_usage" = "डेटा उपयोग";
 
-// MARK: - Installation
 "installation" = "इंस्टॉलेशन";
 "installing" = "इंस्टॉल हो रहा है...";
 "install_success" = "इंस्टॉलेशन सफल";
@@ -321,7 +301,6 @@
 "signed" = "हस्ताक्षरित";
 "unsigned" = "अहस्ताक्षरित";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "परीक्षण निमंत्रण";
 "testflight_build" = "बिल्ड";
@@ -333,7 +312,6 @@
 "testflight_join" = "परीक्षण में शामिल हों";
 "testflight_leave" = "परीक्षण छोड़ें";
 
-// MARK: - Search More
 "search_filter" = "खोज फ़िल्टर";
 "search_result_count" = "%@ परिणाम मिले";
 "exact_match" = "सटीक मेल";
@@ -343,7 +321,6 @@
 "recommended_apps" = "अनुशंसित ऐप्स";
 "top_charts" = "टॉप चार्ट";
 
-// MARK: - Status
 "status" = "स्थिति";
 "status_normal" = "सामान्य";
 "status_abnormal" = "असामान्य";
@@ -358,7 +335,6 @@
 "status_idle" = "निष्क्रिय";
 "status_busy" = "व्यस्त";
 
-// MARK: - Tips
 "tips" = "युक्तियाँ";
 "tip_download_speed" = "डाउनलोड गति आपके नेटवर्क कनेक्शन पर निर्भर करती है";
 "tip_wifi_download" = "Wi-Fi पर बड़ी फ़ाइलें डाउनलोड करने की सलाह दी जाती है";
@@ -369,7 +345,6 @@
 "view_details" = "विवरण देखें";
 "learn_more" = "और जानें";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ घंटे पहले";
 "days_ago" = "%@ दिन पहले";
 
-// MARK: - Actions
 "action_open" = "खोलें";
 "action_close" = "बंद करें";
 "action_view" = "देखें";
@@ -435,7 +409,6 @@
 "action_declined" = "अस्वीकृत";
 "action_accepted" = "स्वीकृत";
 
-// MARK: - Theme
 "theme_settings" = "थीम सेटिंग्स";
 "light_theme" = "लाइट थीम";
 "dark_theme" = "डार्क थीम";
@@ -449,7 +422,6 @@
 "font_size" = "फ़ॉन्ट आकार";
 "font_style" = "फ़ॉन्ट शैली";
 
-// MARK: - App Detail More
 "feature_tags" = "विशेषता टैग";
 "free" = "प्राप्त करें";
 "get" = "प्राप्त करें";
@@ -464,7 +436,6 @@
 "last_updated" = "अंतिम अपडेट";
 "requires_ios" = "iOS %@ या बाद का संस्करण आवश्यक है";
 
-// MARK: - Search More
 "search_placeholder" = "गेम, ऐप खोजें";
 "login" = "साइन इन करें";
 "clear_all" = "सभी साफ़ करें";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ संस्करण";
 "version_x_date" = "संस्करण %@ · %@";
 
-// MARK: - Account More
 "login_account" = "साइन इन करें";
 "current" = "वर्तमान";
 "switch" = "बदलें";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "सत्यापन कोड के लिए अपने Apple डिवाइस की जाँच करें";
 "wrong_verification_code" = "गलत सत्यापन कोड। कृपया पुनः प्रयास करें।";
 
-// MARK: - Download More
 "invalid_ipa_file" = "अमान्य IPA फ़ाइल";
 "install_failed_with_reason" = "इंस्टॉलेशन असफल: %@";
 "install_timeout" = "इंस्टॉलेशन टाइमआउट";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "कोई IPA फ़ाइल नहीं मिली";
 "no_ipa_found_desc" = "ऐप स्टोरेज डायरेक्टरी में कोई IPA फ़ाइल नहीं मिली";
 
-// MARK: - Account Detail
 "basic_info" = "मूल जानकारी";
 "account_identifier" = "खाता पहचानकर्ता";
 "country_region" = "देश/क्षेत्र";
@@ -585,8 +553,40 @@
 "no_value" = "कोई नहीं";
 "region_title" = "क्षेत्र";
 
-// MARK: - Appearance More
 "overall_color" = "एक्सेंट रंग";
 "quick_select" = "क्विक चुनें";
 "auto" = "ऑटो";
 "unknown" = "अज्ञात";
+
+"pick_color" = "रंग चुनें";
+"auto_theme_description" = "सूर्योदय और सूर्यास्त के आधार पर लाइट और डार्क रूप के बीच स्वचालित स्विच।";
+"tab_bar_style" = "टैब बार शैली";
+"tab_style_default" = "डिफ़ॉल्ट";
+"tab_style_default_desc" = "सिस्टम मानक टैब बार";
+"tab_style_frosted" = "फ्रॉस्टेड ग्लास";
+"tab_style_floating" = "फ़्लोटिंग कार्ड";
+"tab_style_floating_desc" = "सुरुचिपूर्ण फ्रॉस्टेड ग्लास प्रभाव";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "अलग खोज";
+"tab_style_search_independent_desc" = "खोज बटन दाईं ओर";
+"floating_tabbar_customize" = "फ़्लोटिंग बार अनुकूलित करें";
+"floating_tabbar_horizontal_padding" = "क्षैतिज पैडिंग";
+"floating_tabbar_bottom_offset" = "निचला ऑफ़सेट";
+"floating_tabbar_height" = "ऊंचाई";
+"floating_tabbar_corner_radius" = "कोने की त्रिज्या";
+"information" = "जानकारी";
+"expand" = "विस्तारित करें";
+"collapse" = "संकुचित करें";
+"session_tokens_header" = "सेशन टोकन";
+"session_tokens" = "सेशन टोकन";
+"show_session_tokens" = "सेशन टोकन दिखाएं";
+"hide_session_tokens" = "सेशन टोकन छिपाएं";
+"session_tokens_hint" = "सेशन टोकन स्वचालित पुनः प्रमाणीकरण के लिए उपयोग होते हैं। दूसरों के साथ साझा न करें।";
+"no_screenshots" = "कोई स्क्रीनशॉट नहीं";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "अपना भरोसेमंद Apple डिवाइस या SMS देखें और नीचे 6 अंकों का सत्यापन कोड दर्ज करें।";

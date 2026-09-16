@@ -24,8 +24,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
     private override init() {}
 
-
-
     func unzipFile(atPath path: String, toDestination destination: String) -> Bool {
         let fileManager = FileManager.default
         let destURL = URL(fileURLWithPath: destination)
@@ -34,7 +32,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             try fileManager.createDirectory(at: destURL, withIntermediateDirectories: true)
 
             guard let zipHandle = FileHandle(forReadingAtPath: path) else {
-                print("❌ [FastZip] 无法打开文件: \(path)")
+
                 return false
             }
             defer { zipHandle.closeFile() }
@@ -42,12 +40,11 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             let fileData = try Data(contentsOf: URL(fileURLWithPath: path))
 
             guard let eocd = Self.findEndOfCentralDirectoryImpl(in: fileData) else {
-                print("❌ [FastZip] 未找到中央目录结束标记")
+
                 return false
             }
 
             let entries = try Self.readCentralDirectoryImpl(from: fileData, eocd: eocd)
-            print("📦 [FastZip] 找到 \(entries.count) 个文件条目")
 
             let group = DispatchGroup()
             let queue = DispatchQueue(label: "com.fastzip.unzip", attributes: .concurrent)
@@ -69,7 +66,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                             errorLock.lock()
                             hasError = true
                             errorLock.unlock()
-                            print("❌ [FastZip] 解压失败: \(entry.filename) - \(error)")
+
                         }
                     }
                 }
@@ -80,12 +77,10 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             return !hasError
 
         } catch {
-            print("❌ [FastZip] 解压错误: \(error)")
+
             return false
         }
     }
-
-
 
     func createZipFile(atPath path: String, withContentsOfDirectory directory: String) -> Bool {
         let fileManager = FileManager.default
@@ -95,7 +90,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             at: sourceURL,
             includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey]
         ) else {
-            print("❌ [FastZip] 无法枚举目录: \(directory)")
+
             return false
         }
 
@@ -148,7 +143,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                     centralDirectory.append(central)
                 }
             } catch {
-                print("❌ [FastZip] 添加文件失败: \(relativePath) - \(error)")
+
                 return false
             }
         }
@@ -167,14 +162,12 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         return FileManager.default.createFile(atPath: path, contents: outputData)
     }
 
-
-
     func addFiles(toZipAtPath zipPath: String, files: [(path: String, data: Data)]) -> Bool {
         let fileManager = FileManager.default
         let tempPath = zipPath + ".tmp"
 
         guard fileManager.fileExists(atPath: zipPath) else {
-            print("❌ [FastZip] 源文件不存在: \(zipPath)")
+
             return false
         }
 
@@ -182,7 +175,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             let sourceData = try Data(contentsOf: URL(fileURLWithPath: zipPath))
 
             guard let eocd = Self.findEndOfCentralDirectoryImpl(in: sourceData) else {
-                print("❌ [FastZip] 未找到中央目录")
+
                 return false
             }
 
@@ -226,7 +219,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
                 newCentralDir.append(centralHeader)
 
-                print("✅ [FastZip] 增量添加: \(filePath) (\(fileData.count) -> \(compressedData.count) 字节)")
             }
 
             let centralDirOffset = currentOffset
@@ -250,13 +242,11 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             return true
 
         } catch {
-            print("❌ [FastZip] 增量添加失败: \(error)")
+
             try? fileManager.removeItem(atPath: tempPath)
             return false
         }
     }
-
-
 
     private func compressData(data: Data) -> (Data, UInt32) {
         let crc = crc32(data: data)
@@ -329,8 +319,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         }
     }
 
-
-
     struct CentralDirectoryEntry {
         let signature: UInt32
         let versionMadeBy: UInt16
@@ -366,8 +354,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         let fileOffset: Int
     }
 
-
-
     static func findEndOfCentralDirectory(in data: Data) -> EndOfCentralDirectory? {
         return findEndOfCentralDirectoryImpl(in: data)
     }
@@ -382,8 +368,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
     ) throws -> Data {
         return try extractSingleEntryImpl(from: data, entry: entry)
     }
-
-
 
     private static func findEndOfCentralDirectoryImpl(in data: Data) -> EndOfCentralDirectory? {
         guard data.count >= 22 else { return nil }
@@ -617,8 +601,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
         return data[localHeaderOffset..<localHeaderOffset+totalEntrySize]
     }
-
-
 
     private func createLocalFileHeader(
         filename: String,

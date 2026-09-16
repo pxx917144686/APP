@@ -10,7 +10,8 @@ class PurchaseManager: @unchecked Sendable {
     func checkAppOwnership(
         appIdentifier: String,
         account: Account,
-        countryCode: String = ""
+        countryCode: String = "",
+        isFree: Bool = false
     ) async -> Result<Bool, PurchaseError> {
         do {
             let trackId = try await resolveTrackId(appIdentifier: appIdentifier, countryCode: countryCode)
@@ -22,8 +23,8 @@ class PurchaseManager: @unchecked Sendable {
                 )
                 return .success(!downloadResponse.songList.isEmpty)
             } catch let storeError as StoreError {
-                if case .licenseExpired = storeError {
-                    print("🔐 [购买验证] 许可证过期，尝试 redownload 模式")
+                switch storeError {
+                case .licenseExpired:
                     do {
                         let redownloadResponse = try await StoreRequest.shared.redownload(
                             appIdentifier: trackId,
@@ -31,12 +32,17 @@ class PurchaseManager: @unchecked Sendable {
                         )
                         return .success(!redownloadResponse.songList.isEmpty)
                     } catch {
-                        return handleOwnershipError(error)
+                        return handleOwnershipError(error, isFree: isFree)
                     }
+                case .notOwned, .invalidLicense:
+                    if isFree {
+                    }
+                    return handleOwnershipError(storeError, isFree: isFree)
+                default:
+                    return handleOwnershipError(storeError, isFree: isFree)
                 }
-                return handleOwnershipError(storeError)
             } catch {
-                return handleOwnershipError(error)
+                return handleOwnershipError(error, isFree: isFree)
             }
         } catch {
             return .failure(.appNotFound(error.localizedDescription))
@@ -60,17 +66,24 @@ class PurchaseManager: @unchecked Sendable {
         }
     }
 
-    private func handleOwnershipError(_ error: Error) -> Result<Bool, PurchaseError> {
+    private func handleOwnershipError(_ error: Error, isFree: Bool) -> Result<Bool, PurchaseError> {
         if let storeError = error as? StoreError {
             switch storeError {
-            case .invalidLicense, .licenseExpired:
-                print("🔐 [购买验证] 检测到许可证错误，用户未购买此应用")
+            case .invalidLicense, .notOwned:
+                if isFree {
+                    return .success(false)
+                }
                 return .success(false)
+            case .codeRequired:
+                return .failure(.passwordTokenExpired("iTunes 会话已失效且需要双重认证验证码，请重新登录该 Apple ID 完成验证后重试"))
+            case .authenticationFailed, .userInteractionRequired, .paymentVerificationRequired, .lockedAccount, .invalidCredentials:
+                if isFree {
+                    return .success(false)
+                }
+                return .failure(.passwordTokenExpired(storeError.localizedDescription))
             case .appNotAvailableInStorefront:
-                print("🌍 [购买验证] 此应用在当前地区商店不可用")
                 return .failure(.licenseCheckFailed("此应用在当前地区商店不可用"))
             case .tooManyRequests:
-                print("⏳ [购买验证] 请求过于频繁")
                 return .failure(.networkError(storeError))
             default:
                 return .failure(.networkError(storeError))
@@ -83,12 +96,56 @@ class PurchaseManager: @unchecked Sendable {
         appIdentifier: String,
         account: Account,
         countryCode: String = "",
+        isFree: Bool = false,
         deviceFamily: DeviceFamily = .phone
     ) async -> Result<PurchaseResult, PurchaseError> {
+        if isFree {
+            let purchaseRes = await performPurchase(appIdentifier: appIdentifier, account: account)
+            if case .success = purchaseRes {
+                return purchaseRes
+            }
+            let ownershipFallback = await checkAppOwnership(
+                appIdentifier: appIdentifier,
+                account: account,
+                countryCode: countryCode,
+                isFree: true
+            )
+            switch ownershipFallback {
+            case .success(let owned):
+                if owned {
+                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "应用已通过现有许可证获取", licenseInfo: nil))
+                }
+                if case .failure(let pe) = purchaseRes {
+                    switch pe {
+                    case .passwordTokenExpired:
+                        return purchaseRes
+                    case .paymentRequired, .licenseCheckFailed, .networkError, .unknownError:
+                        return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "免费应用：跳过购买验证，下载时最终判定", licenseInfo: nil))
+                    default:
+                        return purchaseRes
+                    }
+                }
+                return purchaseRes
+            case .failure(let pe):
+                switch pe {
+                case .passwordTokenExpired:
+                    return .failure(pe)
+                case .paymentRequired, .licenseCheckFailed, .networkError, .unknownError:
+                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "免费应用：跳过所有权检查，下载时最终判定", licenseInfo: nil))
+                default:
+                    if case .failure = purchaseRes {
+                        return purchaseRes
+                    }
+                    return .failure(pe)
+                }
+            }
+        }
+
         let ownershipResult = await checkAppOwnership(
             appIdentifier: appIdentifier,
             account: account,
-            countryCode: countryCode
+            countryCode: countryCode,
+            isFree: false
         )
         switch ownershipResult {
         case .success(let isOwned):
@@ -125,10 +182,44 @@ class PurchaseManager: @unchecked Sendable {
             )
             return .success(result)
         } catch let storeError as StoreError {
+            switch storeError {
+            case .authenticationFailed, .invalidCredentials:
+                if let refreshed = await attemptRefreshToken(account: account) {
+                    do {
+                        let _ = try await StoreRequest.shared.purchase(
+                            appIdentifier: String(appIdentifier),
+                            account: refreshed
+                        )
+                        NotificationCenter.default.post(name: .accountStoreTokensRefreshed, object: refreshed)
+                        let result = PurchaseResult(
+                            trackId: appIdentifier,
+                            success: true,
+                            message: "自动刷新令牌后完成获取",
+                            licenseInfo: nil
+                        )
+                        return .success(result)
+                    } catch {
+                        return await handlePurchaseError(
+                            error as? StoreError ?? .unknownError,
+                            appIdentifier: appIdentifier,
+                            account: refreshed
+                        )
+                    }
+                }
+            default:
+                break
+            }
             return await handlePurchaseError(storeError, appIdentifier: appIdentifier, account: account)
         } catch {
             return .failure(.networkError(error))
         }
+    }
+
+    private func attemptRefreshToken(account: Account) async -> Account? {
+        if !account.passwordToken.isEmpty {
+            return account
+        }
+        return nil
     }
 
     private func handlePurchaseError(
@@ -138,7 +229,6 @@ class PurchaseManager: @unchecked Sendable {
     ) async -> Result<PurchaseResult, PurchaseError> {
         switch error {
         case .licenseExpired, .invalidLicense:
-            print("🔄 [购买] 购买失败，尝试 redownload 模式")
             do {
                 let redownloadResponse = try await StoreRequest.shared.redownload(
                     appIdentifier: appIdentifier,
@@ -157,6 +247,11 @@ class PurchaseManager: @unchecked Sendable {
             } catch {
                 return .failure(.networkError(error))
             }
+        case .codeRequired:
+            return .failure(.passwordTokenExpired("iTunes 会话已失效且需要双重认证验证码，请重新登录该 Apple ID 完成验证后重试"))
+        case .authenticationFailed, .invalidCredentials:
+            let detail = "iTunes 会话已失效，请重新登录 Apple ID 刷新密码令牌 (\(error.localizedDescription))"
+            return .failure(.passwordTokenExpired(detail))
         case .userInteractionRequired:
             return .failure(.paymentRequired("需要在 App Store 完成一次身份验证"))
         case .paymentVerificationRequired:
@@ -172,7 +267,7 @@ class PurchaseManager: @unchecked Sendable {
         case .lockedAccount:
             return .failure(.licenseCheckFailed("账户已被锁定"))
         default:
-            return .failure(.networkError(error))
+            return .failure(.unknownError(error.localizedDescription))
         }
     }
 
@@ -214,7 +309,7 @@ enum PurchaseError: LocalizedError {
         case .invalidCountry(let message):
             return "无效的国家/地区: \(message)"
         case .passwordTokenExpired(let message):
-            return "密码令牌已过期: \(message)"
+            return "Apple ID 会话已过期，请退出当前账户并重新登录 (\(message))"
         case .licenseAlreadyExists(let message):
             return "许可证已存在: \(message)"
         case .paymentRequired(let message):

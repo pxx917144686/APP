@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "الإعدادات";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "التنزيلات";
 "tab_search" = "بحث";
 
-// MARK: - Common
 "cancel" = "إلغاء";
 "confirm" = "تأكيد";
 "ok" = "موافق";
@@ -47,7 +45,6 @@
 "try_again" = "يرجى المحاولة مرة أخرى";
 "got_it" = "فهمت";
 
-// MARK: - Settings
 "settings" = "الإعدادات";
 "appearance" = "المظهر";
 "theme" = "السمة";
@@ -114,7 +111,6 @@
 "lang_croatian" = "الكرواتية";
 "lang_catalan" = "الكتالانية";
 
-// MARK: - Download
 "download_title" = "التنزيلات";
 "downloading" = "جارٍ التنزيل";
 "download_paused" = "متوقف مؤقتًا";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "الحد الأقصى للتنزيلات المتزامنة";
 "download_path" = "مسار التنزيل";
 
-// MARK: - Account
 "account" = "الحساب";
 "apple_id" = "Apple ID";
 "add_account" = "إضافة Apple ID";
@@ -166,11 +161,9 @@
 "email" = "البريد الإلكتروني";
 "country" = "البلد/المنطقة";
 
-// MARK: - App Icon
 "app_icon_settings" = "أيقونة التطبيق";
 "default_icon" = "افتراضي";
 
-// MARK: - Search
 "search_placeholder" = "البحث عن تطبيقات، ألعاب، مطورين";
 "search_history" = "سجل البحث";
 "search_suggestions" = "اقتراحات البحث";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "جرّب كلمات مفتاحية مختلفة";
 "searching" = "جارٍ البحث...";
 
-// MARK: - Version Picker
 "version_picker" = "اختر الإصدار";
 "current_version" = "الإصدار الحالي";
 "available_versions" = "الإصدارات المتاحة";
@@ -193,7 +185,6 @@
 "size" = "الحجم";
 "build_number" = "رقم البناء";
 
-// MARK: - App Detail
 "app_detail" = "تفاصيل التطبيق";
 "get" = "الحصول";
 "icloud_sync" = "مزامنة iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "لا توجد مراجعات";
 "no_reviews_description" = "هذا التطبيق ليس لديه مراجعات مستخدمين بعد";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "لا توجد تطبيقات TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "استرداد الرمز";
 "enter_redeem_code" = "أدخل رمز الاسترداد";
 
-// MARK: - Filter & Sort
 "filter" = "تصفية";
 "sort" = "ترتيب";
 "sort_by_name" = "ترتيب حسب الاسم";
@@ -235,7 +224,6 @@
 "ascending" = "تصاعدي";
 "descending" = "تنازلي";
 
-// MARK: - Notification
 "notifications" = "الإشعارات";
 "push_notifications" = "إشعارات الدفع";
 "download_complete_notification" = "إشعار اكتمال التنزيل";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "الاهتزاز";
 "notification_badge" = "الشارة";
 
-// MARK: - Privacy & Security
 "privacy_security" = "الخصوصية والأمان";
 "clear_cache" = "مسح ذاكرة التخزين المؤقت";
 "cache_size" = "حجم ذاكرة التخزين المؤقت";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "هل أنت متأكد من أنك تريد مسح ذاكرة التخزين المؤقت بالكامل؟ لن يؤدي هذا إلى حذف التطبيقات التي تم تنزيلها.";
 "cache_cleared" = "تم مسح ذاكرة التخزين المؤقت";
 
-// MARK: - Storage
 "storage" = "التخزين";
 "total_storage" = "المجموع";
 "used_storage" = "المستخدم";
@@ -260,14 +246,12 @@
 "app_size" = "حجم التطبيق";
 "documents_size" = "حجم المستندات";
 
-// MARK: - Download Manager
 "download_manager" = "مدير التنزيلات";
 "batch_operations" = "عمليات مجمعة";
 "select_all" = "تحديد الكل";
 "deselect_all" = "إلغاء تحديد الكل";
 "selected_count" = "%@ محددة";
 
-// MARK: - App Information
 "app_name" = "اسم التطبيق";
 "app_version" = "إصدار التطبيق";
 "app_rating" = "تقييم التطبيق";
@@ -277,7 +261,6 @@
 "language_support" = "دعم اللغات";
 "content_rating" = "تصنيف المحتوى";
 
-// MARK: - Account Management
 "account_management" = "إدارة الحسابات";
 "login_status" = "حالة تسجيل الدخول";
 "two_factor_auth" = "المصادقة الثنائية";
@@ -286,7 +269,6 @@
 "login_expired" = "انتهت صلاحية تسجيل الدخول";
 "please_relogin" = "يرجى تسجيل الدخول مرة أخرى";
 
-// MARK: - Settings More
 "advanced_settings" = "الإعدادات المتقدمة";
 "developer_options" = "خيارات المطور";
 "check_update" = "التحقق من التحديثات";
@@ -296,7 +278,6 @@
 "rate_app" = "قيّم التطبيق";
 "share_app" = "مشاركة التطبيق";
 
-// MARK: - Network
 "network" = "الشبكة";
 "network_status" = "حالة الشبكة";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "سرعة الشبكة";
 "network_usage" = "استخدام البيانات";
 
-// MARK: - Installation
 "installation" = "التثبيت";
 "installing" = "جارٍ التثبيت...";
 "install_success" = "تم التثبيت بنجاح";
@@ -321,7 +301,6 @@
 "signed" = "موقّع";
 "unsigned" = "غير موقع";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "دعوة اختبار";
 "testflight_build" = "البناء";
@@ -333,7 +312,6 @@
 "testflight_join" = "الانضمام إلى الاختبار";
 "testflight_leave" = "مغادرة الاختبار";
 
-// MARK: - Search More
 "search_filter" = "فلتر البحث";
 "search_result_count" = "تم العثور على %@ نتيجة";
 "exact_match" = "تطابق تام";
@@ -343,7 +321,6 @@
 "recommended_apps" = "تطبيقات موصى بها";
 "top_charts" = "أفضل المخططات";
 
-// MARK: - Status
 "status" = "الحالة";
 "status_normal" = "طبيعي";
 "status_abnormal" = "غير طبيعي";
@@ -358,7 +335,6 @@
 "status_idle" = "خامل";
 "status_busy" = "مشغول";
 
-// MARK: - Tips
 "tips" = "نصائح";
 "tip_download_speed" = "سرعة التنزيل تعتمد على اتصال الشبكة الخاص بك";
 "tip_wifi_download" = "يوصى بتنزيل الملفات الكبيرة عبر Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "عرض التفاصيل";
 "learn_more" = "معرفة المزيد";
 
-// MARK: - Units
 "unit_bytes" = "ب";
 "unit_kilobytes" = "كيلوبايت";
 "unit_megabytes" = "ميجابايت";
@@ -390,7 +365,6 @@
 "hours_ago" = "منذ %@ ساعة";
 "days_ago" = "منذ %@ يوم";
 
-// MARK: - Actions
 "action_open" = "فتح";
 "action_close" = "إغلاق";
 "action_view" = "عرض";
@@ -435,7 +409,6 @@
 "action_declined" = "مرفوض";
 "action_accepted" = "مقبول";
 
-// MARK: - Theme
 "theme_settings" = "إعدادات السمة";
 "light_theme" = "سمة فاتحة";
 "dark_theme" = "سمة داكنة";
@@ -449,7 +422,6 @@
 "font_size" = "حجم الخط";
 "font_style" = "نمط الخط";
 
-// MARK: - App Detail More
 "feature_tags" = "علامات الميزات";
 "free" = "الحصول";
 "get" = "الحصول";
@@ -464,7 +436,6 @@
 "last_updated" = "آخر تحديث";
 "requires_ios" = "يتطلب iOS %@ أو أحدث";
 
-// MARK: - Search More
 "search_placeholder" = "البحث عن ألعاب، تطبيقات";
 "login" = "تسجيل الدخول";
 "clear_all" = "مسح الكل";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ إصدارات";
 "version_x_date" = "الإصدار %@ · %@";
 
-// MARK: - Account More
 "login_account" = "تسجيل الدخول";
 "current" = "الحالي";
 "switch" = "تبديل";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "تحقق من جهاز Apple الخاص بك للحصول على رمز التحقق";
 "wrong_verification_code" = "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "ملف IPA غير صالح";
 "install_failed_with_reason" = "فشل التثبيت: %@";
 "install_timeout" = "انتهت مهلة التثبيت";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "لم يتم العثور على ملفات IPA";
 "no_ipa_found_desc" = "لم يتم العثور على ملفات IPA في دليل تخزين التطبيق";
 
-// MARK: - Account Detail
 "basic_info" = "المعلومات الأساسية";
 "account_identifier" = "معرف الحساب";
 "country_region" = "البلد/المنطقة";
@@ -585,8 +553,40 @@
 "no_value" = "لا شيء";
 "region_title" = "المنطقة";
 
-// MARK: - Appearance More
 "overall_color" = "لون التمييز";
 "quick_select" = "اختيار سريع";
 "auto" = "تلقائي";
 "unknown" = "غير معروف";
+
+"pick_color" = "اختيار اللون";
+"auto_theme_description" = "التبديل التلقائي بين المظهر الفاتح والداكن حسب شروق الشمس وغروبها.";
+"tab_bar_style" = "نمط شريط التبويبات";
+"tab_style_default" = "افتراضي";
+"tab_style_default_desc" = "شريط التبويبات القياسي للنظام";
+"tab_style_frosted" = "زجاج مصنفر";
+"tab_style_floating" = "بطاقة عائمة";
+"tab_style_floating_desc" = "تأثير زجاج مصنفر أنيق";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "بحث مستقل";
+"tab_style_search_independent_desc" = "زر البحث على اليمين";
+"floating_tabbar_customize" = "تخصيص الشريط العائم";
+"floating_tabbar_horizontal_padding" = "الحواف الجانبية";
+"floating_tabbar_bottom_offset" = "إزاحة سفلية";
+"floating_tabbar_height" = "الارتفاع";
+"floating_tabbar_corner_radius" = "نصف قطر الزوايا";
+"information" = "معلومات";
+"expand" = "توسيع";
+"collapse" = "طي";
+"session_tokens_header" = "رموز الجلسة";
+"session_tokens" = "رموز الجلسة";
+"show_session_tokens" = "إظهار رموز الجلسة";
+"hide_session_tokens" = "إخفاء رموز الجلسة";
+"session_tokens_hint" = "تُستخدم رموز الجلسة لإعادة المصادقة التلقائية. لا تشاركها مع الآخرين.";
+"no_screenshots" = "لا توجد لقطات شاشة";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "تحقق من جهاز Apple الموثوق أو الرسائل النصية، ثم أدخل رمز التحقق المكون من 6 أرقام أدناه.";

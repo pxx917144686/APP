@@ -7,57 +7,57 @@ final class SearchViewModel: ObservableObject {
     @Published var suggestions: [String] = []
     @Published var isFetchingSuggestions = false
     @Published var isFocused = false
-    
+
     var onSuggestionsNeeded: (String) async -> [String] = { _ in [] }
-    
+
     private let debounceDelay: TimeInterval = 0.1
     private var debounceTask: Task<Void, Never>?
     private let suggestionsCache = LRUCache<String, [String]>(capacity: 50)
-    
+
     func onSearchTextChanged(_ text: String) {
         debounceTask?.cancel()
-        
+
         guard !text.isEmpty else {
             suggestions = []
             return
         }
-        
+
         if let cached = suggestionsCache.value(forKey: text) {
             suggestions = cached
             return
         }
-        
+
         debounceTask = Task {
             try? await Task.sleep(nanoseconds: UInt64(debounceDelay * 1_000_000_000))
             guard !Task.isCancelled else { return }
             await fetchSuggestions(for: text)
         }
     }
-    
+
     func onFocusedChanged(_ focused: Bool) {
         self.isFocused = focused
-        
+
         if focused, !searchText.isEmpty, suggestions.isEmpty {
             if let cached = suggestionsCache.value(forKey: searchText) {
                 suggestions = cached
             }
         }
     }
-    
+
     func clearSearch() {
         searchText = ""
         suggestions = []
         debounceTask?.cancel()
     }
-    
+
     private func fetchSuggestions(for term: String) async {
         isFetchingSuggestions = true
         defer { isFetchingSuggestions = false }
-        
+
         let results = await onSuggestionsNeeded(term)
-        
+
         guard !Task.isCancelled else { return }
-        
+
         suggestionsCache.setValue(results, forKey: term)
         suggestions = results
     }
@@ -67,23 +67,23 @@ struct SearchInputView: View {
     @Binding var text: String
     @Binding var isFocused: Bool
     @FocusState private var isInputFocused: Bool
-    
+
     var placeholder: String = "search_placeholder".localized
     var onSubmit: (() -> Void)?
-    
+
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.secondary)
-            
+
             TextField(placeholder, text: $text)
                 .font(.body)
                 .focused($isInputFocused)
                 .onSubmit {
                     onSubmit?()
                 }
-            
+
             if !text.isEmpty {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -109,7 +109,7 @@ struct SearchInputView: View {
                     lineWidth: 2
                 )
         )
-        .onChange(of: isInputFocused) { newValue in
+        .onChange(of: isInputFocused) { _, newValue in
             isFocused = newValue
         }
     }
@@ -119,7 +119,7 @@ struct SearchSuggestionsListView: View {
     let suggestions: [String]
     var isLoading: Bool = false
     let onSelect: (String) -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if isLoading && suggestions.isEmpty {
@@ -139,14 +139,14 @@ struct SearchSuggestionsListView: View {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
-                            
+
                             Text(suggestion)
                                 .font(.body)
                                 .foregroundColor(.primary)
                                 .lineLimit(1)
-                            
+
                             Spacer()
-                            
+
                             Image(systemName: "arrow.up.left")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
@@ -156,7 +156,7 @@ struct SearchSuggestionsListView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
+
                     if index < suggestions.count - 1 {
                         Divider()
                             .padding(.leading, 44)

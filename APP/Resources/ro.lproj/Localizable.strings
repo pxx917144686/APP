@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Setări";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Descărcări";
 "tab_search" = "Căutare";
 
-// MARK: - Common
 "cancel" = "Anulare";
 "confirm" = "Confirmare";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Vă rugăm să încercați din nou";
 "got_it" = "Am înțeles";
 
-// MARK: - Settings
 "settings" = "Setări";
 "appearance" = "Aspect";
 "theme" = "Temă";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Croată";
 "lang_catalan" = "Catalană";
 
-// MARK: - Download
 "download_title" = "Descărcări";
 "downloading" = "Se descarcă";
 "download_paused" = "Întrerupt";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Număr maxim descărcări simultane";
 "download_path" = "Cale descărcare";
 
-// MARK: - Account
 "account" = "Cont";
 "apple_id" = "Apple ID";
 "add_account" = "Adăugare Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-mail";
 "country" = "Țară/Regiune";
 
-// MARK: - App Icon
 "app_icon_settings" = "Pictogramă aplicație";
 "default_icon" = "Implicit";
 
-// MARK: - Search
 "search_placeholder" = "Căutați aplicații, jocuri, dezvoltatori";
 "search_history" = "Istoric căutări";
 "search_suggestions" = "Sugestii căutare";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Încercați cuvinte cheie diferite";
 "searching" = "Se caută...";
 
-// MARK: - Version Picker
 "version_picker" = "Selectare versiune";
 "current_version" = "Versiune curentă";
 "available_versions" = "Versiuni disponibile";
@@ -193,7 +185,6 @@
 "size" = "Dimensiune";
 "build_number" = "Număr build";
 
-// MARK: - App Detail
 "app_detail" = "Detalii aplicație";
 "get" = "Obțineți";
 "icloud_sync" = "Sincronizare iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Fără recenzii";
 "no_reviews_description" = "Această aplicație nu are încă recenzii de utilizatori";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Fără aplicații TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Cod de răscumpărare";
 "enter_redeem_code" = "Introduceți codul de răscumpărare";
 
-// MARK: - Filter & Sort
 "filter" = "Filtru";
 "sort" = "Sortare";
 "sort_by_name" = "Sortare după nume";
@@ -235,7 +224,6 @@
 "ascending" = "Crescător";
 "descending" = "Descrescător";
 
-// MARK: - Notification
 "notifications" = "Notificări";
 "push_notifications" = "Notificări push";
 "download_complete_notification" = "Notificare finalizare descărcare";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Vibrație";
 "notification_badge" = "Insemnă";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Confidențialitate și securitate";
 "clear_cache" = "Ștergere cache";
 "cache_size" = "Dimensiune cache";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Sigur doriți să ștergeți tot cache-ul? Aceasta nu va șterge aplicațiile descărcate.";
 "cache_cleared" = "Cache șters";
 
-// MARK: - Storage
 "storage" = "Stocare";
 "total_storage" = "Total";
 "used_storage" = "Utilizat";
@@ -260,14 +246,12 @@
 "app_size" = "Dimensiune aplicație";
 "documents_size" = "Dimensiune documente";
 
-// MARK: - Download Manager
 "download_manager" = "Manager descărcări";
 "batch_operations" = "Operații în lot";
 "select_all" = "Selectează toate";
 "deselect_all" = "Deselectează toate";
 "selected_count" = "%@ selectate";
 
-// MARK: - App Information
 "app_name" = "Nume aplicație";
 "app_version" = "Versiune aplicație";
 "app_rating" = "Evaluare aplicație";
@@ -277,7 +261,6 @@
 "language_support" = "Suport lingvistic";
 "content_rating" = "Clasificare conținut";
 
-// MARK: - Account Management
 "account_management" = "Gestionare conturi";
 "login_status" = "Stare conectare";
 "two_factor_auth" = "Autentificare cu doi factori";
@@ -286,7 +269,6 @@
 "login_expired" = "Sesiune expirată";
 "please_relogin" = "Vă rugăm să vă conectați din nou";
 
-// MARK: - Settings More
 "advanced_settings" = "Setări avansate";
 "developer_options" = "Opțiuni dezvoltator";
 "check_update" = "Căutare actualizări";
@@ -296,7 +278,6 @@
 "rate_app" = "Evaluați-ne";
 "share_app" = "Partajați aplicația";
 
-// MARK: - Network
 "network" = "Rețea";
 "network_status" = "Stare rețea";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Viteză rețea";
 "network_usage" = "Utilizare date";
 
-// MARK: - Installation
 "installation" = "Instalare";
 "installing" = "Se instalează...";
 "install_success" = "Instalare reușită";
@@ -321,7 +301,6 @@
 "signed" = "Semnat";
 "unsigned" = "Nesemnat";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Invitație test";
 "testflight_build" = "Build";
@@ -333,7 +312,6 @@
 "testflight_join" = "Alătură-te testului";
 "testflight_leave" = "Părăsește testul";
 
-// MARK: - Search More
 "search_filter" = "Filtru căutare";
 "search_result_count" = "%@ rezultate găsite";
 "exact_match" = "Potrivire exactă";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Aplicații recomandate";
 "top_charts" = "Top liste";
 
-// MARK: - Status
 "status" = "Stare";
 "status_normal" = "Normal";
 "status_abnormal" = "Anormal";
@@ -358,7 +335,6 @@
 "status_idle" = "Inactiv";
 "status_busy" = "Ocupat";
 
-// MARK: - Tips
 "tips" = "Sfaturi";
 "tip_download_speed" = "Viteza de descărcare depinde de conexiunea la rețea";
 "tip_wifi_download" = "Este recomandat să descărcați fișiere mari prin Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Vizualizare detalii";
 "learn_more" = "Aflați mai mult";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "acum %@ ore";
 "days_ago" = "acum %@ zile";
 
-// MARK: - Actions
 "action_open" = "Deschidere";
 "action_close" = "Închidere";
 "action_view" = "Vizualizare";
@@ -435,7 +409,6 @@
 "action_declined" = "Respins";
 "action_accepted" = "Acceptat";
 
-// MARK: - Theme
 "theme_settings" = "Setări temă";
 "light_theme" = "Temă luminoasă";
 "dark_theme" = "Temă întunecată";
@@ -449,7 +422,6 @@
 "font_size" = "Dimensiune font";
 "font_style" = "Stil font";
 
-// MARK: - App Detail More
 "feature_tags" = "Etichete caracteristici";
 "free" = "Obțineți";
 "get" = "Obțineți";
@@ -464,7 +436,6 @@
 "last_updated" = "Ultima actualizare";
 "requires_ios" = "Necesită iOS %@ sau mai recent";
 
-// MARK: - Search More
 "search_placeholder" = "Căutați jocuri, aplicații";
 "login" = "Conectare";
 "clear_all" = "Șterge toate";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versiuni";
 "version_x_date" = "Versiunea %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Conectare";
 "current" = "Curent";
 "switch" = "Schimbare";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Verificați dispozitivul Apple pentru codul de verificare";
 "wrong_verification_code" = "Cod de verificare incorect. Vă rugăm să încercați din nou.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Fișier IPA invalid";
 "install_failed_with_reason" = "Instalare eșuată: %@";
 "install_timeout" = "Timp expirat pentru instalare";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Nu au fost găsite fișiere IPA";
 "no_ipa_found_desc" = "Nu au fost găsite fișiere IPA în directorul de stocare al aplicației";
 
-// MARK: - Account Detail
 "basic_info" = "Informații de bază";
 "account_identifier" = "Identificator cont";
 "country_region" = "Țară/Regiune";
@@ -585,8 +553,40 @@
 "no_value" = "Niciuna";
 "region_title" = "Regiune";
 
-// MARK: - Appearance More
 "overall_color" = "Culoare accent";
 "quick_select" = "Selectare rapidă";
 "auto" = "Automat";
 "unknown" = "Necunoscut";
+
+"pick_color" = "Alege culoarea";
+"auto_theme_description" = "Comutare automată între aspectul deschis și întunecat în funcție de răsărit și apus.";
+"tab_bar_style" = "Stil bară de file";
+"tab_style_default" = "Implicit";
+"tab_style_default_desc" = "Bară de file standard de sistem";
+"tab_style_frosted" = "Sticlă mată";
+"tab_style_floating" = "Card plutitor";
+"tab_style_floating_desc" = "Efect elegant de sticlă mată";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Căutare separată";
+"tab_style_search_independent_desc" = "Buton de căutare în dreapta";
+"floating_tabbar_customize" = "Personalizează bara plutitoare";
+"floating_tabbar_horizontal_padding" = "Spațiere orizontală";
+"floating_tabbar_bottom_offset" = "Decalaj inferior";
+"floating_tabbar_height" = "Înălțime";
+"floating_tabbar_corner_radius" = "Raza colțurilor";
+"information" = "Informații";
+"expand" = "Extinde";
+"collapse" = "Restrânge";
+"session_tokens_header" = "Tokenuri de sesiune";
+"session_tokens" = "Tokenuri de sesiune";
+"show_session_tokens" = "Afișează tokenurile de sesiune";
+"hide_session_tokens" = "Ascunde tokenurile de sesiune";
+"session_tokens_hint" = "Tokenurile de sesiune sunt folosite pentru reautentificare automată. Nu le partajați.";
+"no_screenshots" = "Fără capturi de ecran";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Verifică dispozitivul Apple de încredere sau SMS-ul și introdu codul de 6 cifre mai jos.";

@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Innstillinger";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Nedlastinger";
 "tab_search" = "Søk";
 
-// MARK: - Common
 "cancel" = "Avbryt";
 "confirm" = "Bekreft";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Prøv igjen";
 "got_it" = "Forstått";
 
-// MARK: - Settings
 "settings" = "Innstillinger";
 "appearance" = "Utseende";
 "theme" = "Tema";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Kroatisk";
 "lang_catalan" = "Katalansk";
 
-// MARK: - Download
 "download_title" = "Nedlastinger";
 "downloading" = "Laster ned";
 "download_paused" = "Pauset";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Maks samtidige nedlastinger";
 "download_path" = "Nedlastingsbane";
 
-// MARK: - Account
 "account" = "Konto";
 "apple_id" = "Apple ID";
 "add_account" = "Legg til Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-post";
 "country" = "Land/Region";
 
-// MARK: - App Icon
 "app_icon_settings" = "App-ikon";
 "default_icon" = "Standard";
 
-// MARK: - Search
 "search_placeholder" = "Søk etter apper, spill, utviklere";
 "search_history" = "Søkehistorikk";
 "search_suggestions" = "Søgeforslag";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Prøv andre søkeord";
 "searching" = "Søker...";
 
-// MARK: - Version Picker
 "version_picker" = "Velg versjon";
 "current_version" = "Gjeldende versjon";
 "available_versions" = "Tilgjengelige versjoner";
@@ -193,7 +185,6 @@
 "size" = "Størrelse";
 "build_number" = "Build-nummer";
 
-// MARK: - App Detail
 "app_detail" = "App-detaljer";
 "get" = "Hent";
 "icloud_sync" = "iCloud-synkronisering";
@@ -211,7 +202,6 @@
 "no_reviews" = "Ingen anmeldelser";
 "no_reviews_description" = "Denne appen har ingen brukeranmeldelser ennå";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Ingen TestFlight-apper";
@@ -225,7 +215,6 @@
 "redeem_code" = "Innløsningskode";
 "enter_redeem_code" = "Skriv inn innløsningskode";
 
-// MARK: - Filter & Sort
 "filter" = "Filter";
 "sort" = "Sorter";
 "sort_by_name" = "Sorter etter navn";
@@ -235,7 +224,6 @@
 "ascending" = "Stigende";
 "descending" = "Synkende";
 
-// MARK: - Notification
 "notifications" = "Varsler";
 "push_notifications" = "Push-varsler";
 "download_complete_notification" = "Varsel ved ferdig nedlasting";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Vibrer";
 "notification_badge" = "Merke";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Personvern og sikkerhet";
 "clear_cache" = "Tøm cache";
 "cache_size" = "Cache-størrelse";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Er du sikker på at du vil tømme all cache? Dette sletter ikke nedlastede apper.";
 "cache_cleared" = "Cache tømt";
 
-// MARK: - Storage
 "storage" = "Lagring";
 "total_storage" = "Totalt";
 "used_storage" = "Brukt";
@@ -260,14 +246,12 @@
 "app_size" = "App-størrelse";
 "documents_size" = "Dokumenter-størrelse";
 
-// MARK: - Download Manager
 "download_manager" = "Nedlastingshåndtering";
 "batch_operations" = "Batch-handlinger";
 "select_all" = "Velg alle";
 "deselect_all" = "Velg bort alle";
 "selected_count" = "%@ valgt";
 
-// MARK: - App Information
 "app_name" = "App-navn";
 "app_version" = "App-versjon";
 "app_rating" = "App-vurdering";
@@ -277,7 +261,6 @@
 "language_support" = "Språkstøtte";
 "content_rating" = "Innholdsvurdering";
 
-// MARK: - Account Management
 "account_management" = "Kontohåndtering";
 "login_status" = "Påloggingsstatus";
 "two_factor_auth" = "Tofaktorautentisering";
@@ -286,7 +269,6 @@
 "login_expired" = "Pålogging utløpt";
 "please_relogin" = "Logg på igjen";
 
-// MARK: - Settings More
 "advanced_settings" = "Avanserte innstillinger";
 "developer_options" = "Utvikleralternativer";
 "check_update" = "Sjekk etter oppdateringer";
@@ -296,7 +278,6 @@
 "rate_app" = "Vurder app";
 "share_app" = "Del app";
 
-// MARK: - Network
 "network" = "Nettverk";
 "network_status" = "Nettverksstatus";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Nettverkshastighet";
 "network_usage" = "Dataforbruk";
 
-// MARK: - Installation
 "installation" = "Installasjon";
 "installing" = "Installerer...";
 "install_success" = "Installasjonen var vellykket";
@@ -321,7 +301,6 @@
 "signed" = "Signert";
 "unsigned" = "Usignert";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Testinvitasjon";
 "testflight_build" = "Bygge";
@@ -333,7 +312,6 @@
 "testflight_join" = "Bli med i testen";
 "testflight_leave" = "Forlat testen";
 
-// MARK: - Search More
 "search_filter" = "Søkefilter";
 "search_result_count" = "%@ resultater funnet";
 "exact_match" = "Eksakt match";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Anbefalte apper";
 "top_charts" = "Topplister";
 
-// MARK: - Status
 "status" = "Status";
 "status_normal" = "Normal";
 "status_abnormal" = "Unormal";
@@ -358,7 +335,6 @@
 "status_idle" = "Inaktiv";
 "status_busy" = "Opptatt";
 
-// MARK: - Tips
 "tips" = "Tips";
 "tip_download_speed" = "Nedlastingshastigheten avhenger av nettverkstilkoblingen din";
 "tip_wifi_download" = "Det anbefales å laste ned store filer via Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Vis detaljer";
 "learn_more" = "Les mer";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ t siden";
 "days_ago" = "%@ dag siden";
 
-// MARK: - Actions
 "action_open" = "Åpne";
 "action_close" = "Lukk";
 "action_view" = "Vis";
@@ -435,7 +409,6 @@
 "action_declined" = "Avvist";
 "action_accepted" = "Akseptert";
 
-// MARK: - Theme
 "theme_settings" = "Temainnstilling";
 "light_theme" = "Lyst tema";
 "dark_theme" = "Mørkt tema";
@@ -449,7 +422,6 @@
 "font_size" = "Skriftstørrelse";
 "font_style" = "Skriftstil";
 
-// MARK: - App Detail More
 "feature_tags" = "Funksjonskoder";
 "free" = "Hent";
 "get" = "Hent";
@@ -464,7 +436,6 @@
 "last_updated" = "Sist oppdatert";
 "requires_ios" = "Krever iOS %@ eller nyere";
 
-// MARK: - Search More
 "search_placeholder" = "Søk etter spill, apper";
 "login" = "Logg inn";
 "clear_all" = "Tøm alle";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versjoner";
 "version_x_date" = "Versjon %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Logg inn";
 "current" = "Gjeldende";
 "switch" = "Bytt";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Sjekk bekreftelseskoden på Apple-enheten din";
 "wrong_verification_code" = "Feil bekreftelseskode. Prøv igjen.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Ugyldig IPA-fil";
 "install_failed_with_reason" = "Installasjonen mislyktes: %@";
 "install_timeout" = "Installasjon tidsavbrutt";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Ingen IPA-filer funnet";
 "no_ipa_found_desc" = "Ingen IPA-filer funnet i appens lagringsmappe";
 
-// MARK: - Account Detail
 "basic_info" = "Grunnleggende informasjon";
 "account_identifier" = "Kontoidentifikator";
 "country_region" = "Land/Region";
@@ -585,8 +553,40 @@
 "no_value" = "Ingen";
 "region_title" = "Region";
 
-// MARK: - Appearance More
 "overall_color" = "Akkentfarge";
 "quick_select" = "Hurtigvalg";
 "auto" = "Auto";
 "unknown" = "Ukjent";
+
+"pick_color" = "Velg farge";
+"auto_theme_description" = "Bytter automatisk mellom lyst og mørkt utseende basert på soloppgang og solnedgang.";
+"tab_bar_style" = "Fanelinjestil";
+"tab_style_default" = "Standard";
+"tab_style_default_desc" = "Systemets standardfanelinje";
+"tab_style_frosted" = "Mattet glass";
+"tab_style_floating" = "Flytende kort";
+"tab_style_floating_desc" = "Elegant mattet glass-effekt";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Separat søk";
+"tab_style_search_independent_desc" = "Søkeknapp til høyre";
+"floating_tabbar_customize" = "Tilpass flytende linje";
+"floating_tabbar_horizontal_padding" = "Horisontal marg";
+"floating_tabbar_bottom_offset" = "Nedre forskyvning";
+"floating_tabbar_height" = "Høyde";
+"floating_tabbar_corner_radius" = "Hjørneradius";
+"information" = "Informasjon";
+"expand" = "Utvid";
+"collapse" = "Fold sammen";
+"session_tokens_header" = "Sesjonstokens";
+"session_tokens" = "Sesjonstokens";
+"show_session_tokens" = "Vis sesjonstokens";
+"hide_session_tokens" = "Skjul sesjonstokens";
+"session_tokens_hint" = "Sesjonstokens brukes til automatisk gjentatt autentisering. Ikke del dem.";
+"no_screenshots" = "Ingen skjermbilder";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Sjekk den betrodde Apple-enheten din eller SMS og angi den 6-sifrede verifikasjonskoden nedenfor.";

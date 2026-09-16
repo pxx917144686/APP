@@ -10,17 +10,17 @@ struct ArtworkView: View {
     var loadingAnimation: Bool = true
     var isPreview: Bool = false
     var onImageLoaded: ((UIImage) -> Void)?
-    
+
     @State private var loadedImage: UIImage?
     @State private var previewImage: UIImage?
     @State private var isLoading = false
     @State private var hasFailed = false
     @State private var loadTask: Task<Void, Never>?
-    
+
     var body: some View {
         ZStack {
             placeholderBackground
-            
+
             if let image = loadedImage ?? previewImage {
                 Image(uiImage: image)
                     .resizable()
@@ -28,12 +28,12 @@ struct ArtworkView: View {
                     .opacity(isLoading && loadedImage == nil ? 0 : 1)
                     .animation(loadingAnimation ? .easeInOut(duration: 0.2) : nil, value: isLoading)
             }
-            
+
             if isLoading && loadingAnimation && !isPreview && loadedImage == nil && previewImage == nil {
                 LoadingPlaceholderView()
                     .transition(.opacity)
             }
-            
+
             if hasFailed {
                 FailedPlaceholderView()
             }
@@ -51,20 +51,20 @@ struct ArtworkView: View {
         .onDisappear {
             loadTask?.cancel()
         }
-        .onChange(of: url) { newValue in
+        .onChange(of: url) { _, _ in
             loadedImage = nil
             previewImage = nil
             hasFailed = false
             loadTask?.cancel()
             loadImage()
         }
-        .onChange(of: isPreview) { newValue in
+        .onChange(of: isPreview) { _, newValue in
             if !newValue && previewImage != nil && loadedImage == nil {
                 loadFullQualityImage()
             }
         }
     }
-    
+
     @ViewBuilder
     private var placeholderBackground: some View {
         if let color = placeholderColor {
@@ -76,29 +76,29 @@ struct ArtworkView: View {
             Color(.systemGray6)
         }
     }
-    
+
     private func loadImage() {
         guard let url = url else {
             hasFailed = true
             return
         }
-        
+
         if let cached = ImageLoader.shared.getCachedImage(for: url) {
             loadedImage = cached
             isLoading = false
             onImageLoaded?(cached)
             return
         }
-        
+
         if isPreview {
             if let lowQuality = ImageLoader.shared.getLowQualityCachedImage(for: url) {
                 previewImage = lowQuality
                 return
             }
-            
+
             isLoading = true
             hasFailed = false
-            
+
             loadTask = Task {
                 let image = await ImageLoader.shared.loadLowQualityImage(from: url)
                 await MainActor.run {
@@ -114,19 +114,19 @@ struct ArtworkView: View {
             if let lowQuality = ImageLoader.shared.getLowQualityCachedImage(for: url) {
                 previewImage = lowQuality
             }
-            
+
             loadFullQualityImage()
         }
     }
-    
+
     private func loadFullQualityImage() {
         guard let url = url else { return }
-        
+
         isLoading = true
         hasFailed = false
-        
+
         loadTask?.cancel()
-        
+
         loadTask = Task {
             let image = await ImageLoader.shared.loadImage(from: url)
             await MainActor.run {
@@ -145,11 +145,11 @@ struct ArtworkView: View {
 
 private struct LoadingPlaceholderView: View {
     @State private var isAnimating = false
-    
+
     var body: some View {
         ZStack {
             Color(.systemGray6)
-            
+
             LinearGradient(
                 colors: [
                     Color(.systemGray6),
@@ -181,7 +181,7 @@ private struct FailedPlaceholderView: View {
     var body: some View {
         ZStack {
             Color(.systemGray6)
-            
+
             Image(systemName: "photo")
                 .font(.system(size: 20))
                 .foregroundColor(.secondary)

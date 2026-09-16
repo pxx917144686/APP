@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Cài đặt";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Tải xuống";
 "tab_search" = "Tìm kiếm";
 
-// MARK: - Common
 "cancel" = "Hủy";
 "confirm" = "Xác nhận";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Vui lòng thử lại";
 "got_it" = "Đã hiểu";
 
-// MARK: - Settings
 "settings" = "Cài đặt";
 "appearance" = "Giao diện";
 "theme" = "Chủ đề";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Tiếng Croatia";
 "lang_catalan" = "Tiếng Catalan";
 
-// MARK: - Download
 "download_title" = "Tải xuống";
 "downloading" = "Đang tải xuống";
 "download_paused" = "Đã tạm dừng";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Số lượng tải xuống đồng thời tối đa";
 "download_path" = "Đường dẫn tải xuống";
 
-// MARK: - Account
 "account" = "Tài khoản";
 "apple_id" = "Apple ID";
 "add_account" = "Thêm Apple ID";
@@ -166,11 +161,9 @@
 "email" = "Email";
 "country" = "Quốc gia/Khu vực";
 
-// MARK: - App Icon
 "app_icon_settings" = "Biểu tượng ứng dụng";
 "default_icon" = "Mặc định";
 
-// MARK: - Search
 "search_placeholder" = "Tìm kiếm ứng dụng, trò chơi, nhà phát triển";
 "search_history" = "Lịch sử tìm kiếm";
 "search_suggestions" = "Gợi ý tìm kiếm";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Thử các từ khóa khác";
 "searching" = "Đang tìm kiếm...";
 
-// MARK: - Version Picker
 "version_picker" = "Chọn phiên bản";
 "current_version" = "Phiên bản hiện tại";
 "available_versions" = "Các phiên bản có sẵn";
@@ -193,7 +185,6 @@
 "size" = "Kích thước";
 "build_number" = "Số bản dựng";
 
-// MARK: - App Detail
 "app_detail" = "Chi tiết ứng dụng";
 "get" = "Nhận";
 "icloud_sync" = "Đồng bộ iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Không có nhận xét";
 "no_reviews_description" = "Ứng dụng này chưa có nhận xét từ người dùng";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Không có ứng dụng TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Mã đổi thưởng";
 "enter_redeem_code" = "Nhập mã đổi thưởng";
 
-// MARK: - Filter & Sort
 "filter" = "Bộ lọc";
 "sort" = "Sắp xếp";
 "sort_by_name" = "Sắp xếp theo tên";
@@ -235,7 +224,6 @@
 "ascending" = "Tăng dần";
 "descending" = "Giảm dần";
 
-// MARK: - Notification
 "notifications" = "Thông báo";
 "push_notifications" = "Thông báo đẩy";
 "download_complete_notification" = "Thông báo hoàn thành tải xuống";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Rung";
 "notification_badge" = "Huy hiệu";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Quyền riêng tư và bảo mật";
 "clear_cache" = "Xóa bộ đệm";
 "cache_size" = "Kích thước bộ đệm";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Bạn có chắc chắn muốn xóa tất cả bộ đệm không? Điều này sẽ không xóa các ứng dụng đã tải xuống.";
 "cache_cleared" = "Đã xóa bộ đệm";
 
-// MARK: - Storage
 "storage" = "Lưu trữ";
 "total_storage" = "Tổng cộng";
 "used_storage" = "Đã sử dụng";
@@ -260,14 +246,12 @@
 "app_size" = "Kích thước ứng dụng";
 "documents_size" = "Kích thước tài liệu";
 
-// MARK: - Download Manager
 "download_manager" = "Trình quản lý tải xuống";
 "batch_operations" = "Thao tác hàng loạt";
 "select_all" = "Chọn tất cả";
 "deselect_all" = "Bỏ chọn tất cả";
 "selected_count" = "Đã chọn %@";
 
-// MARK: - App Information
 "app_name" = "Tên ứng dụng";
 "app_version" = "Phiên bản ứng dụng";
 "app_rating" = "Đánh giá ứng dụng";
@@ -277,7 +261,6 @@
 "language_support" = "Hỗ trợ ngôn ngữ";
 "content_rating" = "Xếp hạng nội dung";
 
-// MARK: - Account Management
 "account_management" = "Quản lý tài khoản";
 "login_status" = "Trạng thái đăng nhập";
 "two_factor_auth" = "Xác thực hai yếu tố";
@@ -286,7 +269,6 @@
 "login_expired" = "Đăng nhập đã hết hạn";
 "please_relogin" = "Vui lòng đăng nhập lại";
 
-// MARK: - Settings More
 "advanced_settings" = "Cài đặt nâng cao";
 "developer_options" = "Tùy chọn nhà phát triển";
 "check_update" = "Kiểm tra cập nhật";
@@ -296,7 +278,6 @@
 "rate_app" = "Đánh giá ứng dụng";
 "share_app" = "Chia sẻ ứng dụng";
 
-// MARK: - Network
 "network" = "Mạng";
 "network_status" = "Trạng thái mạng";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Tốc độ mạng";
 "network_usage" = "Sử dụng dữ liệu";
 
-// MARK: - Installation
 "installation" = "Cài đặt";
 "installing" = "Đang cài đặt...";
 "install_success" = "Cài đặt thành công";
@@ -321,7 +301,6 @@
 "signed" = "Đã ký";
 "unsigned" = "Chưa ký";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Lời mời thử nghiệm";
 "testflight_build" = "Bản dựng";
@@ -333,7 +312,6 @@
 "testflight_join" = "Tham gia thử nghiệm";
 "testflight_leave" = "Rời thử nghiệm";
 
-// MARK: - Search More
 "search_filter" = "Bộ lọc tìm kiếm";
 "search_result_count" = "Tìm thấy %@ kết quả";
 "exact_match" = "Khớp chính xác";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Ứng dụng đề xuất";
 "top_charts" = "Bảng xếp hạng";
 
-// MARK: - Status
 "status" = "Trạng thái";
 "status_normal" = "Bình thường";
 "status_abnormal" = "Bất thường";
@@ -358,7 +335,6 @@
 "status_idle" = "Nhàn rỗi";
 "status_busy" = "Bận";
 
-// MARK: - Tips
 "tips" = "Mẹo";
 "tip_download_speed" = "Tốc độ tải xuống phụ thuộc vào kết nối mạng của bạn";
 "tip_wifi_download" = "Nên tải xuống các tệp lớn qua Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Xem chi tiết";
 "learn_more" = "Tìm hiểu thêm";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ giờ trước";
 "days_ago" = "%@ ngày trước";
 
-// MARK: - Actions
 "action_open" = "Mở";
 "action_close" = "Đóng";
 "action_view" = "Xem";
@@ -435,7 +409,6 @@
 "action_declined" = "Đã từ chối";
 "action_accepted" = "Đã chấp nhận";
 
-// MARK: - Theme
 "theme_settings" = "Cài đặt chủ đề";
 "light_theme" = "Chủ đề sáng";
 "dark_theme" = "Chủ đề tối";
@@ -449,7 +422,6 @@
 "font_size" = "Cỡ chữ";
 "font_style" = "Kiểu chữ";
 
-// MARK: - App Detail More
 "feature_tags" = "Thẻ tính năng";
 "free" = "Nhận";
 "get" = "Nhận";
@@ -464,7 +436,6 @@
 "last_updated" = "Cập nhật lần cuối";
 "requires_ios" = "Yêu cầu iOS %@ trở lên";
 
-// MARK: - Search More
 "search_placeholder" = "Tìm kiếm trò chơi, ứng dụng";
 "login" = "Đăng nhập";
 "clear_all" = "Xóa tất cả";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ phiên bản";
 "version_x_date" = "Phiên bản %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Đăng nhập";
 "current" = "Hiện tại";
 "switch" = "Chuyển đổi";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Kiểm tra mã xác minh trên thiết bị Apple của bạn";
 "wrong_verification_code" = "Mã xác minh không đúng. Vui lòng thử lại.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Tệp IPA không hợp lệ";
 "install_failed_with_reason" = "Cài đặt thất bại: %@";
 "install_timeout" = "Hết thời gian cài đặt";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Không tìm thấy tệp IPA";
 "no_ipa_found_desc" = "Không tìm thấy tệp IPA trong thư mục lưu trữ ứng dụng";
 
-// MARK: - Account Detail
 "basic_info" = "Thông tin cơ bản";
 "account_identifier" = "Mã định danh tài khoản";
 "country_region" = "Quốc gia/Khu vực";
@@ -585,8 +553,40 @@
 "no_value" = "Không có";
 "region_title" = "Khu vực";
 
-// MARK: - Appearance More
 "overall_color" = "Màu nhấn";
 "quick_select" = "Chọn nhanh";
 "auto" = "Tự động";
 "unknown" = "Không xác định";
+
+"pick_color" = "Chọn màu";
+"auto_theme_description" = "Tự động chuyển đổi giữa giao diện sáng và tối theo thời điểm mặt trời mọc và lặn.";
+"tab_bar_style" = "Kiểu thanh tab";
+"tab_style_default" = "Mặc định";
+"tab_style_default_desc" = "Thanh tab chuẩn của hệ thống";
+"tab_style_frosted" = "Kính mờ";
+"tab_style_floating" = "Thẻ nổi";
+"tab_style_floating_desc" = "Hiệu ứng kính mờ thanh lịch";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Tìm kiếm riêng";
+"tab_style_search_independent_desc" = "Nút tìm kiếm ở bên phải";
+"floating_tabbar_customize" = "Tùy chỉnh thanh nổi";
+"floating_tabbar_horizontal_padding" = "Khoảng cách ngang";
+"floating_tabbar_bottom_offset" = "Độ lệch dưới";
+"floating_tabbar_height" = "Chiều cao";
+"floating_tabbar_corner_radius" = "Bán kính bo góc";
+"information" = "Thông tin";
+"expand" = "Mở rộng";
+"collapse" = "Thu gọn";
+"session_tokens_header" = "Token phiên";
+"session_tokens" = "Token phiên";
+"show_session_tokens" = "Hiện token phiên";
+"hide_session_tokens" = "Ẩn token phiên";
+"session_tokens_hint" = "Token phiên dùng để tự động xác thực lại. Đừng chia sẻ với người khác.";
+"no_screenshots" = "Không có ảnh chụp màn hình";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Kiểm tra thiết bị Apple đáng tin cậy hoặc SMS, sau đó nhập mã xác minh 6 chữ số bên dưới.";

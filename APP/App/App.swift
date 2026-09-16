@@ -10,6 +10,7 @@ struct App: SwiftUI.App {
     @State private var languageToggle = false
     @State private var isAppInitialized = false
 
+
     var body: some SwiftUI.Scene {
         WindowGroup {
             Group {
@@ -34,7 +35,7 @@ struct App: SwiftUI.App {
             }
         }
     }
-    
+
     private var colorScheme: ColorScheme? {
         switch themeManager.selectedTheme {
         case .light: return .light
@@ -42,34 +43,35 @@ struct App: SwiftUI.App {
         case .system: return nil
         }
     }
-    
+
     private func performDelayedInitialization() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isAppInitialized = true
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             Task { @MainActor in
                 _ = ImageLoader.shared
             }
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task { @MainActor in
                 _ = UnifiedDownloadManager.shared
             }
         }
+
     }
 }
 
 struct LaunchScreenView: View {
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         ZStack {
             themeManager.backgroundColor
                 .ignoresSafeArea()
-            
+
             Image("AppLogo")
                 .resizable()
                 .scaledToFit()

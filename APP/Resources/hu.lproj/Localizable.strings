@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Beállítások";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Letöltések";
 "tab_search" = "Keresés";
 
-// MARK: - Common
 "cancel" = "Mégse";
 "confirm" = "Megerősítés";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Próbálkozzon újra";
 "got_it" = "Értem";
 
-// MARK: - Settings
 "settings" = "Beállítások";
 "appearance" = "Megjelenés";
 "theme" = "Téma";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Horvát";
 "lang_catalan" = "Katalán";
 
-// MARK: - Download
 "download_title" = "Letöltések";
 "downloading" = "Letöltés";
 "download_paused" = "Szüneteltetve";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Maximális párhuzamos letöltések";
 "download_path" = "Letöltési útvonal";
 
-// MARK: - Account
 "account" = "Fiók";
 "apple_id" = "Apple ID";
 "add_account" = "Apple ID hozzáadása";
@@ -166,11 +161,9 @@
 "email" = "E-mail";
 "country" = "Ország/régió";
 
-// MARK: - App Icon
 "app_icon_settings" = "Alkalmazásikon";
 "default_icon" = "Alapértelmezett";
 
-// MARK: - Search
 "search_placeholder" = "Alkalmazások, játékok, fejlesztők keresése";
 "search_history" = "Keresési előzmények";
 "search_suggestions" = "Keresési javaslatok";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Próbáljon más kulcsszavakat";
 "searching" = "Keresés...";
 
-// MARK: - Version Picker
 "version_picker" = "Verzió kiválasztása";
 "current_version" = "Aktuális verzió";
 "available_versions" = "Elérhető verziók";
@@ -193,7 +185,6 @@
 "size" = "Méret";
 "build_number" = "Építésszám";
 
-// MARK: - App Detail
 "app_detail" = "Alkalmazás részletei";
 "get" = "Letöltés";
 "icloud_sync" = "iCloud szinkronizálás";
@@ -211,7 +202,6 @@
 "no_reviews" = "Nincsenek vélemények";
 "no_reviews_description" = "Ennek az alkalmazásnak még nincsenek felhasználói véleményei";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Nincsenek TestFlight alkalmazások";
@@ -225,7 +215,6 @@
 "redeem_code" = "Beváltási kód";
 "enter_redeem_code" = "Adja meg a beváltási kódot";
 
-// MARK: - Filter & Sort
 "filter" = "Szűrés";
 "sort" = "Rendezés";
 "sort_by_name" = "Rendezés név szerint";
@@ -235,7 +224,6 @@
 "ascending" = "Növekvő";
 "descending" = "Csökkenő";
 
-// MARK: - Notification
 "notifications" = "Értesítések";
 "push_notifications" = "Leküldött értesítések";
 "download_complete_notification" = "Letöltés befejezési értesítés";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Rezgés";
 "notification_badge" = "Jelvény";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Adatvédelem és biztonság";
 "clear_cache" = "Gyorsítótár törlése";
 "cache_size" = "Gyorsítótár mérete";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Biztosan törli az összes gyorsítótárat? Ez nem törli a letöltött alkalmazásokat.";
 "cache_cleared" = "Gyorsítótár törölve";
 
-// MARK: - Storage
 "storage" = "Tárhely";
 "total_storage" = "Összesen";
 "used_storage" = "Használt";
@@ -260,14 +246,12 @@
 "app_size" = "Alkalmazás mérete";
 "documents_size" = "Dokumentumok mérete";
 
-// MARK: - Download Manager
 "download_manager" = "Letöltéskezelő";
 "batch_operations" = "Kötegelt műveletek";
 "select_all" = "Összes kijelölése";
 "deselect_all" = "Összes kijelölésének megszüntetése";
 "selected_count" = "%@ kijelölve";
 
-// MARK: - App Information
 "app_name" = "Alkalmazás neve";
 "app_version" = "Alkalmazás verziója";
 "app_rating" = "Alkalmazás értékelése";
@@ -277,7 +261,6 @@
 "language_support" = "Nyelvtámogatás";
 "content_rating" = "Tartalomértékelés";
 
-// MARK: - Account Management
 "account_management" = "Fiókkezelés";
 "login_status" = "Bejelentkezési állapot";
 "two_factor_auth" = "Kétfaktoros hitelesítés";
@@ -286,7 +269,6 @@
 "login_expired" = "Bejelentkezés lejárt";
 "please_relogin" = "Jelentkezzen be újra";
 
-// MARK: - Settings More
 "advanced_settings" = "Speciális beállítások";
 "developer_options" = "Fejlesztői beállítások";
 "check_update" = "Frissítések keresése";
@@ -296,7 +278,6 @@
 "rate_app" = "Értékelés";
 "share_app" = "Alkalmazás megosztása";
 
-// MARK: - Network
 "network" = "Hálózat";
 "network_status" = "Hálózati állapot";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Hálózati sebesség";
 "network_usage" = "Adathasználat";
 
-// MARK: - Installation
 "installation" = "Telepítés";
 "installing" = "Telepítés...";
 "install_success" = "Telepítés sikeres";
@@ -321,7 +301,6 @@
 "signed" = "Aláírt";
 "unsigned" = "Aláírás nélküli";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Tesztmeghívás";
 "testflight_build" = "Építés";
@@ -333,7 +312,6 @@
 "testflight_join" = "Teszthez csatlakozás";
 "testflight_leave" = "Teszt elhagyása";
 
-// MARK: - Search More
 "search_filter" = "Keresési szűrő";
 "search_result_count" = "%@ találat";
 "exact_match" = "Pontos egyezés";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Ajánlott alkalmazások";
 "top_charts" = "Top listák";
 
-// MARK: - Status
 "status" = "Állapot";
 "status_normal" = "Normál";
 "status_abnormal" = "Rendellenes";
@@ -358,7 +335,6 @@
 "status_idle" = "Tétlen";
 "status_busy" = "Foglalt";
 
-// MARK: - Tips
 "tips" = "Tippek";
 "tip_download_speed" = "A letöltési sebesség a hálózati kapcsolatótól függ";
 "tip_wifi_download" = "A nagy fájlok letöltését Wi-Fi hálózaton javasoljuk";
@@ -369,7 +345,6 @@
 "view_details" = "Részletek megtekintése";
 "learn_more" = "További információ";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ órával ezelőtt";
 "days_ago" = "%@ nappal ezelőtt";
 
-// MARK: - Actions
 "action_open" = "Megnyitás";
 "action_close" = "Bezárás";
 "action_view" = "Megtekintés";
@@ -435,7 +409,6 @@
 "action_declined" = "Elutasítva";
 "action_accepted" = "Elfogadva";
 
-// MARK: - Theme
 "theme_settings" = "Téma beállítások";
 "light_theme" = "Világos téma";
 "dark_theme" = "Sötét téma";
@@ -449,7 +422,6 @@
 "font_size" = "Betűméret";
 "font_style" = "Betűstílus";
 
-// MARK: - App Detail More
 "feature_tags" = "Funkciócímkék";
 "free" = "Letöltés";
 "get" = "Letöltés";
@@ -464,7 +436,6 @@
 "last_updated" = "Utolsó frissítés";
 "requires_ios" = "iOS %@ vagy újabb szükséges";
 
-// MARK: - Search More
 "search_placeholder" = "Játékok, alkalmazások keresése";
 "login" = "Bejelentkezés";
 "clear_all" = "Összes törlése";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ verzió";
 "version_x_date" = "%@ verzió · %@";
 
-// MARK: - Account More
 "login_account" = "Bejelentkezés";
 "current" = "Aktuális";
 "switch" = "Váltás";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Ellenőrizze Apple-eszközét az ellenőrző kódért";
 "wrong_verification_code" = "Helytelen ellenőrző kód. Próbálkozzon újra.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Érvénytelen IPA fájl";
 "install_failed_with_reason" = "Telepítés sikertelen: %@";
 "install_timeout" = "Telepítési időtúllépés";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Nem találhatók IPA fájlok";
 "no_ipa_found_desc" = "Nem találhatók IPA fájlok az alkalmazás tárhelykönyvtárában";
 
-// MARK: - Account Detail
 "basic_info" = "Alapvető információ";
 "account_identifier" = "Fiókazonosító";
 "country_region" = "Ország/régió";
@@ -585,8 +553,40 @@
 "no_value" = "Nincs";
 "region_title" = "Régió";
 
-// MARK: - Appearance More
 "overall_color" = "Kiemelőszín";
 "quick_select" = "Gyorsválasztás";
 "auto" = "Automatikus";
 "unknown" = "Ismeretlen";
+
+"pick_color" = "Színválasztás";
+"auto_theme_description" = "Automatikus váltás világos és sötét megjelenés között napkelte és napnyugta alapján.";
+"tab_bar_style" = "Lábsáv stílusa";
+"tab_style_default" = "Alapértelmezett";
+"tab_style_default_desc" = "Rendszer standard lábsáv";
+"tab_style_frosted" = "Homályos üveg";
+"tab_style_floating" = "Lebegő kártya";
+"tab_style_floating_desc" = "Elegáns homályos üveg hatás";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Külön keresés";
+"tab_style_search_independent_desc" = "Keresés gomb jobbra";
+"floating_tabbar_customize" = "Lebegő sáv testreszabása";
+"floating_tabbar_horizontal_padding" = "Vízszintes térköz";
+"floating_tabbar_bottom_offset" = "Alsó eltolás";
+"floating_tabbar_height" = "Magasság";
+"floating_tabbar_corner_radius" = "Sarok sugár";
+"information" = "Információ";
+"expand" = "Kibontás";
+"collapse" = "Összecsukás";
+"session_tokens_header" = "Munkamenet tokenek";
+"session_tokens" = "Munkamenet tokenek";
+"show_session_tokens" = "Munkamenet tokenek megjelenítése";
+"hide_session_tokens" = "Munkamenet tokenek elrejtése";
+"session_tokens_hint" = "A munkamenet tokenek automatikus újrahitelesítésre szolgálnak. Ne ossza meg őket.";
+"no_screenshots" = "Nincsenek képernyőképek";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Ellenőrizd a megbízható Apple-eszközödet vagy az SMS-t, majd add meg alább a 6 számjegyű ellenőrző kódot.";

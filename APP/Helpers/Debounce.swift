@@ -5,11 +5,11 @@ import Combine
 final class Debounce: ObservableObject {
     private let delay: TimeInterval
     private var task: Task<Void, Never>?
-    
+
     init(delay: TimeInterval = 0.1) {
         self.delay = delay
     }
-    
+
     func execute(_ action: @escaping () -> Void) {
         task?.cancel()
         task = Task {
@@ -18,12 +18,12 @@ final class Debounce: ObservableObject {
             action()
         }
     }
-    
+
     func cancel() {
         task?.cancel()
         task = nil
     }
-    
+
     func invalidate() {
         cancel()
     }
@@ -35,15 +35,15 @@ final class Throttle: ObservableObject {
     private var lastExecution: Date = .distantPast
     private var pendingAction: (() -> Void)?
     private var isScheduled = false
-    
+
     init(interval: TimeInterval = 0.1) {
         self.interval = interval
     }
-    
+
     func execute(_ action: @escaping () -> Void) {
         let now = Date()
         let timeSinceLastExecution = now.timeIntervalSince(lastExecution)
-        
+
         if timeSinceLastExecution >= interval {
             lastExecution = now
             action()
@@ -63,12 +63,12 @@ final class Throttle: ObservableObject {
             }
         }
     }
-    
+
     func cancel() {
         pendingAction = nil
         isScheduled = false
     }
-    
+
     func invalidate() {
         cancel()
     }

@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Tetapan";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Muat Turun";
 "tab_search" = "Cari";
 
-// MARK: - Common
 "cancel" = "Batal";
 "confirm" = "Sahkan";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Sila Cuba Lagi";
 "got_it" = "Faham";
 
-// MARK: - Settings
 "settings" = "Tetapan";
 "appearance" = "Penampilan";
 "theme" = "Tema";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Croatia";
 "lang_catalan" = "Catalonia";
 
-// MARK: - Download
 "download_title" = "Muat Turun";
 "downloading" = "Memuat Turun";
 "download_paused" = "Dijeda";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Maks Muat Turun Serentak";
 "download_path" = "Laluan Muat Turun";
 
-// MARK: - Account
 "account" = "Akaun";
 "apple_id" = "Apple ID";
 "add_account" = "Tambah Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-mel";
 "country" = "Negara/Wilayah";
 
-// MARK: - App Icon
 "app_icon_settings" = "Ikon Aplikasi";
 "default_icon" = "Lalai";
 
-// MARK: - Search
 "search_placeholder" = "Cari aplikasi, permainan, pembangun";
 "search_history" = "Sejarah Carian";
 "search_suggestions" = "Cadangan Carian";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Cuba kata kunci berbeza";
 "searching" = "Mencari...";
 
-// MARK: - Version Picker
 "version_picker" = "Pilih Versi";
 "current_version" = "Versi Semasa";
 "available_versions" = "Versi Tersedia";
@@ -193,7 +185,6 @@
 "size" = "Saiz";
 "build_number" = "Nombor Binaan";
 
-// MARK: - App Detail
 "app_detail" = "Butiran Aplikasi";
 "get" = "Dapatkan";
 "icloud_sync" = "Penyegerakan iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Tiada Ulasan";
 "no_reviews_description" = "Aplikasi ini belum mempunyai ulasan pengguna";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Tiada Aplikasi TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Kod Tebusan";
 "enter_redeem_code" = "Masukkan Kod Tebusan";
 
-// MARK: - Filter & Sort
 "filter" = "Penapis";
 "sort" = "Isih";
 "sort_by_name" = "Isih Mengikut Nama";
@@ -235,7 +224,6 @@
 "ascending" = "Menaik";
 "descending" = "Menurun";
 
-// MARK: - Notification
 "notifications" = "Pemberitahuan";
 "push_notifications" = "Pemberitahuan Tolak";
 "download_complete_notification" = "Pemberitahuan Muat Turun Selesai";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Getaran";
 "notification_badge" = "Lencana";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Privasi & Keselamatan";
 "clear_cache" = "Kosongkan Cache";
 "cache_size" = "Saiz Cache";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Adakah anda pasti mahu mengosongkan semua cache? Ini tidak akan memadam aplikasi yang dimuat turun.";
 "cache_cleared" = "Cache Dikosongkan";
 
-// MARK: - Storage
 "storage" = "Storan";
 "total_storage" = "Jumlah";
 "used_storage" = "Digunakan";
@@ -260,14 +246,12 @@
 "app_size" = "Saiz Aplikasi";
 "documents_size" = "Saiz Dokumen";
 
-// MARK: - Download Manager
 "download_manager" = "Pengurus Muat Turun";
 "batch_operations" = "Operasi Kumpulan";
 "select_all" = "Pilih Semua";
 "deselect_all" = "Nyahpilih Semua";
 "selected_count" = "%@ Dipilih";
 
-// MARK: - App Information
 "app_name" = "Nama Aplikasi";
 "app_version" = "Versi Aplikasi";
 "app_rating" = "Penilaian Aplikasi";
@@ -277,7 +261,6 @@
 "language_support" = "Sokongan Bahasa";
 "content_rating" = "Penilaian Kandungan";
 
-// MARK: - Account Management
 "account_management" = "Pengurusan Akaun";
 "login_status" = "Status Log Masuk";
 "two_factor_auth" = "Pengesahan Dua Faktor";
@@ -286,7 +269,6 @@
 "login_expired" = "Log Masuk Tamat Tempoh";
 "please_relogin" = "Sila Log Masuk Lagi";
 
-// MARK: - Settings More
 "advanced_settings" = "Tetapan Lanjutan";
 "developer_options" = "Pilihan Pembangun";
 "check_update" = "Semak Kemas Kini";
@@ -296,7 +278,6 @@
 "rate_app" = "Nilaikan Aplikasi";
 "share_app" = "Kongsi Aplikasi";
 
-// MARK: - Network
 "network" = "Rangkaian";
 "network_status" = "Status Rangkaian";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Kelajuan Rangkaian";
 "network_usage" = "Penggunaan Data";
 
-// MARK: - Installation
 "installation" = "Pemasangan";
 "installing" = "Memasang...";
 "install_success" = "Pemasangan Berjaya";
@@ -321,7 +301,6 @@
 "signed" = "Ditandatangani";
 "unsigned" = "Tidak Ditandatangani";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Jemputan Ujian";
 "testflight_build" = "Binaan";
@@ -333,7 +312,6 @@
 "testflight_join" = "Sertai Ujian";
 "testflight_leave" = "Tinggalkan Ujian";
 
-// MARK: - Search More
 "search_filter" = "Penapis Carian";
 "search_result_count" = "Dijumpai %@ Keputusan";
 "exact_match" = "Padanan Tepat";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Aplikasi Disyorkan";
 "top_charts" = "Carta Teratas";
 
-// MARK: - Status
 "status" = "Status";
 "status_normal" = "Normal";
 "status_abnormal" = "Tidak Normal";
@@ -358,7 +335,6 @@
 "status_idle" = "Terbiar";
 "status_busy" = "Sibuk";
 
-// MARK: - Tips
 "tips" = "Petua";
 "tip_download_speed" = "Kelajuan muat turun bergantung pada sambungan rangkaian anda";
 "tip_wifi_download" = "Disyorkan memuat turun fail besar melalui Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Lihat Butiran";
 "learn_more" = "Ketahui Lebih Lanjut";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ jam yang lalu";
 "days_ago" = "%@ hari yang lalu";
 
-// MARK: - Actions
 "action_open" = "Buka";
 "action_close" = "Tutup";
 "action_view" = "Lihat";
@@ -435,7 +409,6 @@
 "action_declined" = "Ditolak";
 "action_accepted" = "Diterima";
 
-// MARK: - Theme
 "theme_settings" = "Tetapan Tema";
 "light_theme" = "Tema Cerah";
 "dark_theme" = "Tema Gelap";
@@ -449,7 +422,6 @@
 "font_size" = "Saiz Fon";
 "font_style" = "Gaya Fon";
 
-// MARK: - App Detail More
 "feature_tags" = "Tag Ciri";
 "free" = "Dapatkan";
 "get" = "Dapatkan";
@@ -464,7 +436,6 @@
 "last_updated" = "Kemas Kini Terakhir";
 "requires_ios" = "Memerlukan iOS %@ atau lebih baharu";
 
-// MARK: - Search More
 "search_placeholder" = "Cari permainan, aplikasi";
 "login" = "Log Masuk";
 "clear_all" = "Kosongkan Semua";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ Versi";
 "version_x_date" = "Versi %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Log Masuk";
 "current" = "Semasa";
 "switch" = "Tukar";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Semak kod pengesahan pada peranti Apple anda";
 "wrong_verification_code" = "Kod pengesahan salah. Sila cuba lagi.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Fail IPA Tidak Sah";
 "install_failed_with_reason" = "Pemasangan gagal: %@";
 "install_timeout" = "Had Masa Pemasangan";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Tiada Fail IPA Dijumpai";
 "no_ipa_found_desc" = "Tiada fail IPA dalam direktori storan aplikasi";
 
-// MARK: - Account Detail
 "basic_info" = "Maklumat Asas";
 "account_identifier" = "Pengenal Akaun";
 "country_region" = "Negara/Wilayah";
@@ -585,8 +553,40 @@
 "no_value" = "Tiada";
 "region_title" = "Wilayah";
 
-// MARK: - Appearance More
 "overall_color" = "Warna Aksen";
 "quick_select" = "Pilih Pantas";
 "auto" = "Auto";
 "unknown" = "Tidak Diketahui";
+
+"pick_color" = "Pilih Warna";
+"auto_theme_description" = "Bertuk automatik antara rupa cerah dan gelap berdasarkan masa matahari terbit dan terbenam.";
+"tab_bar_style" = "Gaya Bar Tab";
+"tab_style_default" = "Lalai";
+"tab_style_default_desc" = "Bar tab standard sistem";
+"tab_style_frosted" = "Kaca Semerbak";
+"tab_style_floating" = "Kad Terapung";
+"tab_style_floating_desc" = "Kesan kaca semerbak yang elegan";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Carian Berasingan";
+"tab_style_search_independent_desc" = "Butang carian di kanan";
+"floating_tabbar_customize" = "Suaikan Bar Terapung";
+"floating_tabbar_horizontal_padding" = "Jajar Melintang";
+"floating_tabbar_bottom_offset" = "Pesan Bawah";
+"floating_tabbar_height" = "Ketinggian";
+"floating_tabbar_corner_radius" = "Radius Sudut";
+"information" = "Maklumat";
+"expand" = "Kembang";
+"collapse" = "Runtuh";
+"session_tokens_header" = "Token Sesi";
+"session_tokens" = "Token Sesi";
+"show_session_tokens" = "Tunjuk Token Sesi";
+"hide_session_tokens" = "Sembunyi Token Sesi";
+"session_tokens_hint" = "Token sesi digunakan untuk pengesahan semula automatik. Jangan kongsi dengan orang lain.";
+"no_screenshots" = "Tiada Skrinsyor";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Semak peranti Apple dipercayai atau SMS anda, kemudian masukkan kod pengesahan 6 digit di bawah.";

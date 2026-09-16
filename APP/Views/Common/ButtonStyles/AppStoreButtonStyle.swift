@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppStoreButtonStyle: ButtonStyle {
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 15, weight: .semibold))
@@ -36,7 +36,7 @@ struct AppStoreOrangeButtonStyle: ButtonStyle {
 
 struct AppStoreProgressButtonStyle: View {
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         ProgressView()
             .progressViewStyle(CircularProgressViewStyle(tint: themeManager.accentColor))

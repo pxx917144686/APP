@@ -18,6 +18,11 @@ class LicenseManager: ObservableObject {
         guard let account = account else { return }
 
         let trackId = String(app.trackId)
+        if app.isFree {
+            licenseCache[trackId] = true
+            objectWillChange.send()
+            return
+        }
 
         if checkingApps.contains(trackId) {
             return

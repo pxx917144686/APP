@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Instellingen";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Downloads";
 "tab_search" = "Zoeken";
 
-// MARK: - Common
 "cancel" = "Annuleren";
 "confirm" = "Bevestigen";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Probeer het opnieuw";
 "got_it" = "Begrepen";
 
-// MARK: - Settings
 "settings" = "Instellingen";
 "appearance" = "Uiterlijk";
 "theme" = "Thema";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Kroatisch";
 "lang_catalan" = "Catalaans";
 
-// MARK: - Download
 "download_title" = "Downloads";
 "downloading" = "Downloaden";
 "download_paused" = "Gepauzeerd";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Max gelijktijdige downloads";
 "download_path" = "Downloadpad";
 
-// MARK: - Account
 "account" = "Account";
 "apple_id" = "Apple ID";
 "add_account" = "Apple ID toevoegen";
@@ -166,11 +161,9 @@
 "email" = "E-mail";
 "country" = "Land/Regio";
 
-// MARK: - App Icon
 "app_icon_settings" = "App-pictogram";
 "default_icon" = "Standaard";
 
-// MARK: - Search
 "search_placeholder" = "Zoek apps, games, ontwikkelaars";
 "search_history" = "Zoekgeschiedenis";
 "search_suggestions" = "Zoeksuggesties";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Probeer andere zoekwoorden";
 "searching" = "Zoeken...";
 
-// MARK: - Version Picker
 "version_picker" = "Versie kiezen";
 "current_version" = "Huidige versie";
 "available_versions" = "Beschikbare versies";
@@ -193,7 +185,6 @@
 "size" = "Grootte";
 "build_number" = "Buildnummer";
 
-// MARK: - App Detail
 "app_detail" = "App-details";
 "get" = "Krijg";
 "icloud_sync" = "iCloud-synchronisatie";
@@ -211,7 +202,6 @@
 "no_reviews" = "Geen recensies";
 "no_reviews_description" = "Deze app heeft nog geen gebruikersrecensies";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Geen TestFlight-apps";
@@ -225,7 +215,6 @@
 "redeem_code" = "Inwisselcode";
 "enter_redeem_code" = "Voer inwisselcode in";
 
-// MARK: - Filter & Sort
 "filter" = "Filter";
 "sort" = "Sorteren";
 "sort_by_name" = "Sorteren op naam";
@@ -235,7 +224,6 @@
 "ascending" = "Oplopend";
 "descending" = "Aflopend";
 
-// MARK: - Notification
 "notifications" = "Meldingen";
 "push_notifications" = "Pushmeldingen";
 "download_complete_notification" = "Melding download voltooid";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Trillen";
 "notification_badge" = "Badge";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Privacy & Beveiliging";
 "clear_cache" = "Cache wissen";
 "cache_size" = "Cachegrootte";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Weet je zeker dat je alle cache wilt wissen? Dit verwijdert geen gedownloade apps.";
 "cache_cleared" = "Cache gewist";
 
-// MARK: - Storage
 "storage" = "Opslag";
 "total_storage" = "Totaal";
 "used_storage" = "Gebruikt";
@@ -260,14 +246,12 @@
 "app_size" = "App-grootte";
 "documents_size" = "Documentengrootte";
 
-// MARK: - Download Manager
 "download_manager" = "Downloadbeheer";
 "batch_operations" = "Batchbewerkingen";
 "select_all" = "Alles selecteren";
 "deselect_all" = "Alles deselecteren";
 "selected_count" = "%@ geselecteerd";
 
-// MARK: - App Information
 "app_name" = "App-naam";
 "app_version" = "App-versie";
 "app_rating" = "App-beoordeling";
@@ -277,7 +261,6 @@
 "language_support" = "Taalondersteuning";
 "content_rating" = "Inhoudsbeoordeling";
 
-// MARK: - Account Management
 "account_management" = "Accountbeheer";
 "login_status" = "Inlogstatus";
 "two_factor_auth" = "Tweefactorauthenticatie";
@@ -286,7 +269,6 @@
 "login_expired" = "Login verlopen";
 "please_relogin" = "Log opnieuw in";
 
-// MARK: - Settings More
 "advanced_settings" = "Geavanceerde instellingen";
 "developer_options" = "Ontwikkelaarsopties";
 "check_update" = "Controleren op updates";
@@ -296,7 +278,6 @@
 "rate_app" = "App beoordelen";
 "share_app" = "App delen";
 
-// MARK: - Network
 "network" = "Netwerk";
 "network_status" = "Netwerkstatus";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Netwerksnelheid";
 "network_usage" = "Dataverbruik";
 
-// MARK: - Installation
 "installation" = "Installatie";
 "installing" = "Installeren...";
 "install_success" = "Installatie succesvol";
@@ -321,7 +301,6 @@
 "signed" = "Ondertekend";
 "unsigned" = "Niet ondertekend";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Testuitnodiging";
 "testflight_build" = "Build";
@@ -333,7 +312,6 @@
 "testflight_join" = "Deelnemen aan test";
 "testflight_leave" = "Test verlaten";
 
-// MARK: - Search More
 "search_filter" = "Zoekfilter";
 "search_result_count" = "%@ resultaten gevonden";
 "exact_match" = "Exacte overeenkomst";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Aanbevolen apps";
 "top_charts" = "Toplijsten";
 
-// MARK: - Status
 "status" = "Status";
 "status_normal" = "Normaal";
 "status_abnormal" = "Abnormaal";
@@ -358,7 +335,6 @@
 "status_idle" = "Inactief";
 "status_busy" = "Bezig";
 
-// MARK: - Tips
 "tips" = "Tips";
 "tip_download_speed" = "Downloadsnelheid is afhankelijk van je netwerkverbinding";
 "tip_wifi_download" = "Het wordt aanbevolen om grote bestanden via Wi-Fi te downloaden";
@@ -369,7 +345,6 @@
 "view_details" = "Details bekijken";
 "learn_more" = "Meer informatie";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ uur geleden";
 "days_ago" = "%@ dag geleden";
 
-// MARK: - Actions
 "action_open" = "Openen";
 "action_close" = "Sluiten";
 "action_view" = "Bekijken";
@@ -435,7 +409,6 @@
 "action_declined" = "Geweigerd";
 "action_accepted" = "Geaccepteerd";
 
-// MARK: - Theme
 "theme_settings" = "Thema-instellingen";
 "light_theme" = "Licht thema";
 "dark_theme" = "Donker thema";
@@ -449,7 +422,6 @@
 "font_size" = "Lettergrootte";
 "font_style" = "Letterstijl";
 
-// MARK: - App Detail More
 "feature_tags" = "Functietags";
 "free" = "Krijg";
 "get" = "Krijg";
@@ -464,7 +436,6 @@
 "last_updated" = "Laatst bijgewerkt";
 "requires_ios" = "Vereist iOS %@ of nieuwer";
 
-// MARK: - Search More
 "search_placeholder" = "Zoek games, apps";
 "login" = "Inloggen";
 "clear_all" = "Alles wissen";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versies";
 "version_x_date" = "Versie %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Inloggen";
 "current" = "Huidig";
 "switch" = "Wisselen";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Controleer de verificatiecode op je Apple-apparaat";
 "wrong_verification_code" = "Onjuiste verificatiecode. Probeer het opnieuw.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Ongeldig IPA-bestand";
 "install_failed_with_reason" = "Installatie mislukt: %@";
 "install_timeout" = "Installatie time-out";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Geen IPA-bestanden gevonden";
 "no_ipa_found_desc" = "Geen IPA-bestanden gevonden in de app-opslagmap";
 
-// MARK: - Account Detail
 "basic_info" = "Basisgegevens";
 "account_identifier" = "Account-ID";
 "country_region" = "Land/Regio";
@@ -585,8 +553,40 @@
 "no_value" = "Geen";
 "region_title" = "Regio";
 
-// MARK: - Appearance More
 "overall_color" = "Accentkleur";
 "quick_select" = "Snelle selectie";
 "auto" = "Auto";
 "unknown" = "Onbekend";
+
+"pick_color" = "Kies kleur";
+"auto_theme_description" = "Schakelt automatisch tussen lichte en donkere weergave op basis van zonsopgang en zonsondergang.";
+"tab_bar_style" = "Tab-balkstijl";
+"tab_style_default" = "Standaard";
+"tab_style_default_desc" = "Systeemeigen tab-balk";
+"tab_style_frosted" = "Glaswolfseffect";
+"tab_style_floating" = "Zwevende kaart";
+"tab_style_floating_desc" = "Elegant glaswolseffect";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Zoeken apart";
+"tab_style_search_independent_desc" = "Zoekknop rechts";
+"floating_tabbar_customize" = "Zwevende balk aanpassen";
+"floating_tabbar_horizontal_padding" = "Horizontale marge";
+"floating_tabbar_bottom_offset" = "Onderste verschuiving";
+"floating_tabbar_height" = "Hoogte";
+"floating_tabbar_corner_radius" = "Hoekstraal";
+"information" = "Informatie";
+"expand" = "Uitklappen";
+"collapse" = "Inklappen";
+"session_tokens_header" = "Sessietokens";
+"session_tokens" = "Sessietokens";
+"show_session_tokens" = "Sessietokens tonen";
+"hide_session_tokens" = "Sessietokens verbergen";
+"session_tokens_hint" = "Sessietokens worden gebruikt voor automatische herauthenticatie. Deel ze niet.";
+"no_screenshots" = "Geen screenshots";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Controleer je vertrouwde Apple-apparaat of SMS en voer de 6-cijferige verificatiecode hieronder in.";

@@ -125,7 +125,7 @@ struct ECGDownloadProgressView: View {
             heartbeatTimer?.invalidate()
             heartbeatTimer = nil
         }
-        .onChange(of: isActive) { newValue in
+        .onChange(of: isActive) { _, newValue in
             if newValue {
                 startHeartbeatAnimation()
             } else {

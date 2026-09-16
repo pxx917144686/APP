@@ -156,7 +156,6 @@ struct EnhancedAppCard: SwiftUI.View {
         }
 
         let result = Array(Set(tags)).prefix(3).map { $0 }
-        print("App: \(app.name), Genres: \(app.genres ?? []), Primary Genre: \(app.primaryGenreName ?? "nil"), Feature Tags: \(result)")
         return result
     }
 
@@ -294,7 +293,7 @@ struct EnhancedAppCard: SwiftUI.View {
             }
         }
     }
-    
+
     private var buttonTitle: String {
         if let fp = app.formattedPrice {
             let lower = fp.lowercased()
@@ -513,7 +512,6 @@ struct AppReviewsView: SwiftUI.View {
                 }
             } catch {
                 self.errorMessage = String(format: "get_reviews_failed".localized, error.localizedDescription)
-                print("评论获取错误: \(error)")
             }
             self.isLoading = false
         }
@@ -816,7 +814,7 @@ struct EnhancedAppDetailView: SwiftUI.View {
     private func estimatedPercentage(for star: Int) -> Double {
         let rating = app.averageUserRating ?? 0
         let percentages: [Int: Double]
-        
+
         if rating >= 4.5 {
             percentages = [5: 0.75, 4: 0.18, 3: 0.04, 2: 0.02, 1: 0.01]
         } else if rating >= 4.0 {
@@ -828,7 +826,7 @@ struct EnhancedAppDetailView: SwiftUI.View {
         } else {
             percentages = [5: 0.15, 4: 0.20, 3: 0.25, 2: 0.20, 1: 0.20]
         }
-        
+
         return percentages[star] ?? 0
     }
 
@@ -1042,10 +1040,10 @@ struct EnhancedAppDetailView: SwiftUI.View {
 struct DescriptionExpandableText: View {
     let text: String
     var lineLimit: Int = 5
-    
+
     @State private var isExpanded = false
     @State private var isTruncated = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .bottomTrailing) {
@@ -1060,16 +1058,16 @@ struct DescriptionExpandableText: View {
                                 .onAppear {
                                     detectTruncation(in: geometry)
                                 }
-                                .onChange(of: text) { _ in
+                                .onChange(of: text) { _, _ in
                                     detectTruncation(in: geometry)
                                 }
                         }
                     )
-                
+
                 if isTruncated && !isExpanded {
                     HStack(spacing: 0) {
                         Spacer()
-                        
+
                         LinearGradient(
                             colors: [
                                 Color(.systemBackground).opacity(0),
@@ -1079,7 +1077,7 @@ struct DescriptionExpandableText: View {
                             endPoint: .trailing
                         )
                         .frame(width: 60, height: 24)
-                        
+
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 isExpanded = true
@@ -1095,7 +1093,7 @@ struct DescriptionExpandableText: View {
                     }
                 }
             }
-            
+
             if isExpanded && isTruncated {
                 HStack {
                     Spacer()
@@ -1115,7 +1113,7 @@ struct DescriptionExpandableText: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func detectTruncation(in geometry: GeometryProxy) {
         let textView = UITextView()
         textView.text = text
@@ -1127,14 +1125,14 @@ struct DescriptionExpandableText: View {
             height: .greatestFiniteMagnitude
         )
         textView.sizeToFit()
-        
+
         let layoutHeight = textView.sizeThatFits(
             CGSize(width: geometry.size.width, height: .greatestFiniteMagnitude)
         ).height
-        
+
         let lineHeight = textView.font?.lineHeight ?? 20
         let maxHeight = CGFloat(lineLimit) * lineHeight + (CGFloat(lineLimit - 1) * 6)
-        
+
         DispatchQueue.main.async {
             isTruncated = layoutHeight > maxHeight
         }
@@ -1255,6 +1253,7 @@ struct SearchView: SwiftUI.View {
     ]
 
     @State var searchResult: [iTunesSearchResult] = []
+    @State var legacyResults: [iTunesSearchResult] = []
     @State private var currentPage = 1
     @State private var isLoadingMore = false
     private let pageSize = 20
@@ -1354,14 +1353,6 @@ struct SearchView: SwiftUI.View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ForceRefreshUI"))) { _ in
             animateLogo = true
         }
-        .onReceive(appStore.$selectedAccount) { account in
-            if let newAccount = account {
-                print("[SearchView] 检测到账户变化: \(newAccount.email), 地区: \(newAccount.countryCode)")
-            } else {
-                print("[SearchView] 账户已登出，使用默认地区 US")
-            }
-        }
-
 
     }
 
@@ -1749,11 +1740,81 @@ struct SearchView: SwiftUI.View {
             } else if searching {
                 searchingIndicator
             } else if searchResult.isEmpty {
-                emptyStateView
+                if legacyResults.isEmpty {
+                    emptyStateView
+                } else {
+                    legacyResultsSection
+                }
             } else {
                 searchResultsGrid
+                if !legacyResults.isEmpty { legacyResultsSection }
             }
         }
+    }
+
+    var legacyResultsSection: some SwiftUI.View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("历史应用（已下架）")
+                    .font(.title3.bold())
+                    .foregroundColor(.primary)
+                Spacer()
+                Text("\(legacyResults.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 16)
+
+            LazyVStack(spacing: 16) {
+                ForEach(legacyResults.indices, id: \.self) { index in
+                    AnyView(resultCardView(item: legacyResults[index], index: index))
+                }
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+
+    struct ProIDHistoryVersion {
+        let version: String
+        let versionId: String
+    }
+
+    nonisolated func fetchProIDHistory(trackId: Int) async -> [ProIDHistoryVersion] {
+        guard let url = URL(string: "https://appstorepro-id.ericloveyou.dpdns.org/api/history?app_id=\(trackId)") else { return [] }
+        var req = URLRequest(url: url)
+        req.timeoutInterval = 20
+        guard let (data, resp) = try? await URLSession.shared.data(for: req),
+              (resp as? HTTPURLResponse)?.statusCode == 200,
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let arr = obj["versions"] as? [[String: Any]] else { return [] }
+        var out: [ProIDHistoryVersion] = []
+        for item in arr {
+            if let v = item["version"] as? String, let vid = item["versionid"] as? String, !vid.isEmpty {
+                out.append(ProIDHistoryVersion(version: v, versionId: vid))
+            }
+        }
+        return out
+    }
+
+    func fetchLegacyApps(term: String, exclude: Set<String>) async -> [iTunesSearchResult] {
+        guard let termEnc = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "https://api.appdb.to/v1/search/\(termEnc)") else { return [] }
+        var req = URLRequest(url: url)
+        req.timeoutInterval = 12
+        req.setValue("Asspp/1.0", forHTTPHeaderField: "User-Agent")
+        guard let (data, _) = try? await URLSession.shared.data(for: req),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              (obj["status"] as? String) == "ok",
+              let arr = obj["data"] as? [[String: Any]] else { return [] }
+
+        let region = appStore.selectedAccount?.countryCode ?? "US"
+        var out: [iTunesSearchResult] = []
+        for item in arr.prefix(8) {
+            guard let bid = item["bid"] as? String, !bid.isEmpty, !exclude.contains(bid) else { continue }
+            guard case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: bid, countryCode: region) else { continue }
+            out.append(hit)
+        }
+        return out
     }
 
     var searchingIndicator: some SwiftUI.View {
@@ -1938,7 +1999,6 @@ struct SearchView: SwiftUI.View {
             }
             .padding(.horizontal, 24)
             .onAppear {
-                print("[SearchView] 显示列表视图，结果数量: \(searchResult.count)")
             }
 
             if isLoadingMore {
@@ -1968,30 +2028,30 @@ struct SearchView: SwiftUI.View {
 
     @State private var lastScrollOffset: CGFloat = 0
     @State private var lastScrollTime: Date = Date()
-    
+
     private func detectScrollVelocity(offset: CGFloat) {
         let now = Date()
         let timeDiff = now.timeIntervalSince(lastScrollTime)
-        
+
         if timeDiff > 0 {
             let offsetDiff = abs(offset - lastScrollOffset)
             let velocity = offsetDiff / timeDiff
             scrollVelocity = velocity
-            
+
             let fastThreshold: CGFloat = 800
             let isFast = velocity > fastThreshold
-            
+
             if isFast != isScrollingFast {
                 withAnimation(.easeInOut(duration: 0.1)) {
                     isScrollingFast = isFast
                 }
             }
         }
-        
+
         lastScrollOffset = offset
         lastScrollTime = now
     }
-    
+
     func flag(country: String) -> String {
         let base: UInt32 = 127397
         var s = ""
@@ -2003,13 +2063,45 @@ struct SearchView: SwiftUI.View {
         return String(s)
     }
     @MainActor
+    // 精选下架应用：用户搜索这些关键词时，无论 Apple 索引状态如何，固定置顶显示
+    static let curatedApps: [(keywords: [String], bundleId: String)] = [
+        (["forward", "fwrd"], "com.forward.iphone")
+    ]
+
+    func fetchCuratedApps(term: String, country: String) async -> [iTunesSearchResult] {
+        let normalized = term.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return [] }
+        var bids: [String] = []
+        for entry in Self.curatedApps where entry.keywords.contains(where: { normalized.contains($0) || normalized.count >= 3 && $0.hasPrefix(normalized) }) {
+            bids.append(entry.bundleId)
+        }
+        guard !bids.isEmpty else { return [] }
+        var regions = [country.lowercased()]
+        if !regions.contains("us") { regions.append("us") }
+        var out: [iTunesSearchResult] = []
+        var seen = Set<Int>()
+        for bid in bids {
+            for region in regions {
+                if case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: bid, countryCode: region),
+                   !seen.contains(hit.trackId) {
+                    seen.insert(hit.trackId)
+                    out.append(hit)
+                    break
+                }
+            }
+        }
+        return out
+    }
+
     func performSearch() async {
         guard !searchKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
         AnalyticsManager.shared.track("search", properties: ["keyword": searchKey])
 
         let regionToUse = appStore.selectedAccount?.countryCode ?? "US"
-        print("[SearchView] 执行搜索，使用地区: \(regionToUse)")
+
+        // 精选应用保底：与搜索结果合并置顶（搜索接口失败也照样显示）
+        let curatedHits = await fetchCuratedApps(term: searchKey, country: regionToUse)
 
         withAnimation(.easeInOut) {
             searching = true
@@ -2021,9 +2113,11 @@ struct SearchView: SwiftUI.View {
         showSearchHistory = false
         let cacheKey = "\(searchKey)_\(searchType.rawValue)_\(regionToUse)"
         if let cachedResult = searchCache[cacheKey] {
+            let curatedIds = Set(curatedHits.map(\.trackId))
+            let merged = curatedHits + cachedResult.filter { !curatedIds.contains($0.trackId) }
             await MainActor.run {
                 withAnimation(.spring()) {
-                    searchResult = cachedResult
+                    searchResult = merged
                     searching = false
                 }
             }
@@ -2037,13 +2131,20 @@ struct SearchView: SwiftUI.View {
                 countryCode: regionToUse,
                 deviceFamily: searchType
             )
-            let results = response ?? []
+            var finalResults = response ?? []
+            if finalResults.isEmpty, searchKey.contains("."), case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: searchKey, countryCode: regionToUse) {
+                finalResults = [hit]
+            }
+            let legacyHits = await fetchLegacyApps(term: searchKey, exclude: Set(finalResults.map(\.bundleId)))
+            let curatedIds = Set(curatedHits.map(\.trackId))
+            let merged = curatedHits + finalResults.filter { !curatedIds.contains($0.trackId) }
             await MainActor.run {
                 withAnimation(.spring()) {
-                    searchResult = results
+                    searchResult = merged
+                    legacyResults = legacyHits
                     searching = false
-                    searchCache[cacheKey] = results
-                    updateSearchSuggestions(from: results)
+                    searchCache[cacheKey] = merged
+                    updateSearchSuggestions(from: merged)
                 }
             }
         } catch {
@@ -2237,8 +2338,32 @@ struct SearchView: SwiftUI.View {
         }
         let currentId = item.trackId
         await MainActor.run { purchasingTrackId = currentId }
-        defer { Task { await MainActor.run { purchasingTrackId = nil } } }
 
+        let isFree = (item.price ?? 0.0) == 0.0
+        if isFree {
+            let purchaseTask = Task.detached(priority: .userInitiated) { @Sendable in
+                await PurchaseManager.shared.purchaseAppIfNeeded(
+                    appIdentifier: String(item.trackId),
+                    account: account,
+                    countryCode: account.countryCode,
+                    isFree: true
+                )
+            }
+            do {
+                _ = try await withTimeout(seconds: 8, operation: { @Sendable in
+                    await purchaseTask.value
+                })
+            } catch {
+            }
+            await MainActor.run {
+                loadVersionsForApp(item)
+                purchasingTrackId = nil
+            }
+            if !purchaseTask.isCancelled { purchaseTask.cancel() }
+            return
+        }
+
+        defer { Task { await MainActor.run { purchasingTrackId = nil } } }
         let check = await PurchaseManager.shared.checkAppOwnership(
             appIdentifier: String(item.trackId),
             account: account,
@@ -2247,18 +2372,13 @@ struct SearchView: SwiftUI.View {
         switch check {
         case .success(let owned):
             if owned {
-
-                await MainActor.run {
-                    loadVersionsForApp(item)
-                }
+                await MainActor.run { loadVersionsForApp(item) }
                 return
             } else {
-
                 openAppStorePage(for: item)
                 return
             }
         case .failure:
-
             openAppStorePage(for: item)
             return
         }
@@ -2284,42 +2404,46 @@ struct SearchView: SwiftUI.View {
 
         Task {
             do {
-                print("[SearchView] 开始加载app版本: \(app.trackName)")
-
                 guard let account = appStore.selectedAccount else {
                     throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "未登录账户，无法获取版本信息"])
                 }
 
                 let accountCopy = account
+                let accountCountry = appStore.selectedAccount?.countryCode ?? "US"
 
-                let storeVersionsResult = await StoreClient.shared.getAppVersions(
-                    trackId: String(app.trackId),
-                    account: accountCopy,
-                    countryCode: appStore.selectedAccount?.countryCode ?? "US"
-                )
+                let storeVersionsResult = try? await withTimeout(seconds: 15, operation: {
+                    await StoreClient.shared.getAppVersions(
+                        trackId: String(app.trackId),
+                        account: accountCopy,
+                        countryCode: accountCountry
+                    )
+                })
 
-                let histResult = try? await withTimeout(seconds: 10) {
-                    try await iTunesClient.shared.versionHistory(id: app.trackId, country: appStore.selectedAccount?.countryCode ?? "US")
+                var hist: [iTunesClient.AppVersionInfo] = []
+                let primaryCountries = accountCountry.uppercased() == "US" ? ["US"] : [accountCountry, "US"]
+                for cc in primaryCountries {
+                    if let r = try? await withTimeout(seconds: 10, operation: {
+                        try await iTunesClient.shared.versionHistory(id: app.trackId, country: cc)
+                    }), !r.isEmpty {
+                        hist = r
+                        break
+                    }
                 }
-                let hist = histResult ?? []
-                if hist.isEmpty {
-                    print("[SearchView] 警告: 未获取到版本历史记录")
-                }
 
-                switch storeVersionsResult {
-                case .success(let versions):
+                if let result = storeVersionsResult, case .success(let versions) = result, !versions.isEmpty {
+                    let proVersions = await fetchProIDHistory(trackId: app.trackId)
                     await MainActor.run {
                         var mergedVersions = versions
-                        
+
                         var versionInfoMap: [String: (releaseDate: Date?, releaseNotes: String?)] = [:]
                         for h in hist {
                             versionInfoMap[h.version] = (h.releaseDate, h.releaseNotes)
                         }
-                        
+
                         for i in 0..<mergedVersions.count {
-                            var v = mergedVersions[i]
+                            let v = mergedVersions[i]
                             let verStr = v.versionString
-                            
+
                             if v.versionString.hasPrefix("历史版本") || v.versionString.isEmpty {
                                 if i < hist.count {
                                     mergedVersions[i].versionString = hist[i].version
@@ -2337,20 +2461,65 @@ struct SearchView: SwiftUI.View {
                                 }
                             }
                         }
-                        
+
+                        let incomingNames = Set(proVersions.map { $0.version })
+                        let kept = mergedVersions.filter { !incomingNames.contains($0.versionString) }
+                        for pv in proVersions {
+                            mergedVersions.append(StoreAppVersion(
+                                versionString: pv.version,
+                                versionId: pv.versionId,
+                                isCurrent: false,
+                                releaseDate: nil,
+                                releaseNotes: nil
+                            ))
+                        }
+                        _ = kept
+
                         self.availableVersions = mergedVersions
                         self.versionHistory = hist
                         self.isLoadingVersions = false
-                        print("[SearchView] 成功加载 \(mergedVersions.count) 个版本, 历史记录 \(hist.count) 条")
                     }
-                case .failure(let error):
-                    throw error
+                } else if !hist.isEmpty {
+                    let fallbackVersions = hist.enumerated().map { idx, info in
+                        StoreAppVersion(
+                            versionString: info.version,
+                            versionId: "",
+                            isCurrent: idx == 0,
+                            releaseDate: info.releaseDate,
+                            releaseNotes: info.releaseNotes
+                        )
+                    }
+                    await MainActor.run {
+                        self.availableVersions = fallbackVersions
+                        self.versionHistory = hist
+                        self.isLoadingVersions = false
+                    }
+                } else {
+                    let proVersions = await fetchProIDHistory(trackId: app.trackId)
+                    guard !proVersions.isEmpty else {
+                        throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "无法获取版本信息，请检查网络"])
+                    }
+                    var fallbackVersions: [StoreAppVersion] = []
+                    for (idx, pv) in proVersions.enumerated() {
+                        fallbackVersions.append(StoreAppVersion(
+                            versionString: pv.version,
+                            versionId: pv.versionId,
+                            isCurrent: idx == 0,
+                            releaseDate: nil,
+                            releaseNotes: nil
+                        ))
+                    }
+                    await MainActor.run {
+                        self.availableVersions = fallbackVersions
+                        self.isLoadingVersions = false
+                    }
                 }
             } catch {
                 await MainActor.run {
-                    self.versionError = error.localizedDescription
+                    if self.availableVersions.isEmpty {
+                        self.versionError = error.localizedDescription
+                    }
                     self.isLoadingVersions = false
-                    print("[SearchView] 加载版本失败: \(error)")
                 }
             }
         }
@@ -2551,10 +2720,6 @@ struct SearchView: SwiftUI.View {
             Button(action: {
                 Task {
                     if let app = selectedApp {
-
-                        if let account = appStore.selectedAccount {
-                            print("[SearchView] 用户确认下载，使用账户: \(account.email) (\(account.countryCode))")
-                        }
                         await downloadVersion(app: app, version: version)
                     }
                 }
@@ -2659,9 +2824,9 @@ struct SearchView: SwiftUI.View {
             let firstLine = rn.split(separator: "\n").first.map(String.init) ?? rn
             return firstLine
         }
-        
+
         let versionStr = version.versionString
-        
+
         for h in versionHistory {
             if h.version == versionStr {
                 if let rn = h.releaseNotes, !rn.isEmpty {
@@ -2676,13 +2841,10 @@ struct SearchView: SwiftUI.View {
     @MainActor
     func downloadVersion(app: iTunesSearchResult, version: StoreAppVersion) async {
         showVersionPicker = false
-        guard let account = appStore.selectedAccount else {
-            print("[SearchView] 错误：没有登录账户")
+        guard appStore.selectedAccount != nil else {
             return
         }
         let appId = app.trackId
-        print("[SearchView] 开始下载app: \(app.trackName) 版本: \(version.versionString)")
-        print("[SearchView] 使用账户: \(account.email) (\(account.countryCode))")
 
         let downloadId = UnifiedDownloadManager.shared.addDownload(
             bundleIdentifier: app.bundleId,
@@ -2690,14 +2852,14 @@ struct SearchView: SwiftUI.View {
             version: version.versionString,
             identifier: appId,
             iconURL: app.artworkUrl512,
-            versionId: version.versionId
+            versionId: version.versionId,
+            price: app.price,
+            currency: app.currency
         )
-        print("[SearchView] 已将下载请求添加到下载管理器，ID: \(downloadId)")
 
         if let request = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == downloadId }) {
             UnifiedDownloadManager.shared.startDownload(for: request)
         } else {
-            print("[SearchView] 无法找到刚添加的下载请求")
         }
     }
 
@@ -2887,7 +3049,6 @@ struct SearchView: SwiftUI.View {
     }
 
     private func logoutAccount() {
-        print("[SearchView] 用户登出")
         appStore.logoutAccount()
     }
 
@@ -2975,7 +3136,7 @@ struct SearchView: SwiftUI.View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(Color(.systemGray6))
+                .fill(themeManager.surfaceSecondary)
         )
         .padding(.horizontal, 16)
     }
@@ -2983,16 +3144,13 @@ struct SearchView: SwiftUI.View {
     private var cacheStatusIndicator: some SwiftUI.View {
         Button(action: {
 
-            print("Cache status indicator tapped")
             if !sessionManager.isSessionValid {
 
                 Task {
-                    print("Checking session...")
                     await sessionManager.manualSessionCheck()
                 }
             } else {
 
-                print("Resetting session state...")
                 sessionManager.resetSessionState()
             }
         }) {
@@ -3092,6 +3250,32 @@ struct SearchView: SwiftUI.View {
         }
 
         Task {
+            await MainActor.run { purchasingTrackId = app.trackId }
+
+            let isFree = (app.price ?? 0.0) == 0.0
+            if isFree {
+                let purchaseTask = Task.detached(priority: .userInitiated) { @Sendable in
+                    await PurchaseManager.shared.purchaseAppIfNeeded(
+                        appIdentifier: String(app.trackId),
+                        account: account,
+                        countryCode: account.countryCode,
+                        isFree: true
+                    )
+                }
+                do {
+                    _ = try await withTimeout(seconds: 8, operation: { @Sendable in
+                        await purchaseTask.value
+                    })
+                } catch {
+                }
+                await MainActor.run {
+                    loadVersionsForApp(app)
+                    purchasingTrackId = nil
+                }
+                if !purchaseTask.isCancelled { purchaseTask.cancel() }
+                return
+            }
+
             let check = await PurchaseManager.shared.checkAppOwnership(
                 appIdentifier: String(app.trackId),
                 account: account,
@@ -3115,5 +3299,4 @@ struct SearchView: SwiftUI.View {
             }
         }
     }
-
 }

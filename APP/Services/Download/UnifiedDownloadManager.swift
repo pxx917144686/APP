@@ -48,7 +48,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     private var reservedDestinationPaths: Set<String> = []
     private var requestDestinationPaths: [UUID: String] = [:]
 
-
     private var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
@@ -64,7 +63,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     private func uniqueDestinationURL(bundleId: String, version: String) -> URL {
-        let fileManager = FileManager.default
         let baseName = "\(bundleId)_\(version)"
         let baseURL = downloadsDirectory.appendingPathComponent(baseName).appendingPathExtension("ipa")
 
@@ -119,7 +117,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             }
         }
     }
-    
+
     private func restoreSingleDownloadHandler(for request: DownloadRequest) {
         let downloadId = request.id.uuidString
 
@@ -191,18 +189,18 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     guard let request = self.downloadRequests.first(where: { $0.id.uuidString == downloadId || $0.id == uuid }) else {
                         return
                     }
-                    
+
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
                         total: downloadProgress.totalBytes
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
                     request.runtime.status = .downloading
-                    
+
                     if !self.activeDownloads.contains(request.id) {
                         self.activeDownloads.insert(request.id)
                     }
-                    
+
                     request.objectWillChange.send()
                     request.runtime.objectWillChange.send()
                 }
@@ -214,12 +212,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     guard let request = self.downloadRequests.first(where: { $0.id.uuidString == downloadId || $0.id == uuid }) else {
                         return
                     }
-                    
+
                     guard request.runtime.status != .completed,
                           request.runtime.status != .failed else {
                         return
                     }
-                    
+
                     switch result {
                     case .success(let downloadResult):
                         request.runtime.updateProgress(
@@ -229,12 +227,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = .completed
                         request.localFilePath = downloadResult.fileURL.path
                         self.completedRequests.insert(request.id)
-                        
+
                     case .failure(let error):
                         request.runtime.error = error.localizedDescription
                         request.runtime.status = .failed
                     }
-                    
+
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
                     self.saveDownloadTasks()
@@ -249,20 +247,19 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         version: String,
         identifier: Int,
         iconURL: String? = nil,
-        versionId: String? = nil
+        versionId: String? = nil,
+        price: Double? = nil,
+        currency: String? = nil
     ) -> UUID {
-        print("   - Bundle ID: \(bundleIdentifier)")
-        print("   - 名称: \(name)")
-        print("   - 版本: \(version)")
-        print("   - 标识符: \(identifier)")
-        print("   - 版本ID: \(versionId ?? "无")")
 
         let package = DownloadArchive(
             bundleIdentifier: bundleIdentifier,
             name: name,
             version: version,
             identifier: identifier,
-            iconURL: iconURL
+            iconURL: iconURL,
+            price: price,
+            currency: currency
         )
 
         let request = DownloadRequest(
@@ -302,14 +299,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             return
         }
 
-        print("   - Bundle ID: \(request.bundleIdentifier)")
-        print("   - 版本: \(request.version)")
-        print("   - 版本ID: \(request.versionId ?? "无")")
-        print("   - 包标识符: \(request.package.identifier)")
-        print("   - 包名称: \(request.package.name)")
-        print("   - 当前状态: \(request.runtime.status)")
-        print("   - 当前进度: \(request.runtime.progressValue)")
-
         if activeDownloads.count >= maxConcurrentDownloads {
             request.runtime.status = DownloadStatus.waiting
             waitingDownloads.insert(request.id)
@@ -329,7 +318,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             let hasBackgroundTask = await self.downloadManager.hasBackgroundTask(for: downloadId)
             if hasBackgroundTask || self.downloadManager.hasActiveDownload(for: downloadId) {
                 await MainActor.run {
-                    print("ℹ️ [下载] 检测到已有任务在运行，仅恢复回调: \(request.name)")
                     self.restoreSingleDownloadHandler(for: request)
                 }
                 return
@@ -343,7 +331,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 return
             }
 
-
             AuthenticationManager.shared.setCookies(account.cookies)
 
             let storeAccount = Account(
@@ -356,8 +343,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 dsPersonId: account.storeResponse.directoryServicesIdentifier,
                 cookies: account.cookies,
                 countryCode: account.countryCode,
+                pod: account.pod,
                 storeResponse: account.storeResponse,
-                deviceGUID: account.deviceGUID
+                deviceGUID: account.deviceGUID,
+                hsc: account.hsc,
+                adsid: account.adsid,
+                idmsToken: account.idmsToken
             )
 
             let isValid = await AuthenticationManager.shared.validateAccount(storeAccount)
@@ -384,11 +375,40 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             let purchaseResult = await purchaseManager.purchaseAppIfNeeded(
                 appIdentifier: String(request.package.identifier),
                 account: storeAccount,
-                countryCode: account.countryCode
+                countryCode: account.countryCode,
+                isFree: request.package.isFree
             )
 
             switch purchaseResult {
             case .success:
+                let effectiveVersionId: String?
+                if let v = request.versionId, !v.isEmpty {
+                    effectiveVersionId = v
+                } else {
+                    do {
+                        let dlResp = try await StoreRequest.shared.download(
+                            appIdentifier: String(request.package.identifier),
+                            account: storeAccount,
+                            appVersion: nil
+                        )
+                        if let firstSong = dlResp.songList.first {
+                            let latestId = firstSong.metadata.softwareVersionExternalIdentifier
+                            if !latestId.isEmpty {
+                                effectiveVersionId = latestId
+                            } else {
+                                effectiveVersionId = nil
+                            }
+                        } else {
+                            effectiveVersionId = nil
+                        }
+                    } catch {
+                        effectiveVersionId = nil
+                    }
+                }
+
+                if effectiveVersionId != request.versionId {
+                    request.versionId = effectiveVersionId
+                }
 
                 proceedWithDownload(
                     for: request,
@@ -414,10 +434,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
         reservedDestinationPaths.insert(destinationURL.path)
         requestDestinationPaths[request.id] = destinationURL.path
-        print("🔒 [路径预订] \(destinationURL.lastPathComponent)")
-
-        print("🆔 [应用信息] Bundle ID: \(bundleId), 版本: \(request.versionId ?? request.version)")
-        print("📁 [下载目标] \(destinationURL.path)")
 
         downloadManager.downloadApp(
             appIdentifier: String(request.package.identifier),
@@ -463,7 +479,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                           request.runtime.status != .failed else {
                         return
                     }
-                    
+
                     switch result {
                     case .success(let downloadResult):
 
@@ -483,7 +499,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     case .failure(let error):
                         self.reservedDestinationPaths.remove(destinationURL.path)
                         self.requestDestinationPaths.removeValue(forKey: request.id)
-                        print("🔓 [路径释放] \(destinationURL.lastPathComponent) (下载失败)")
                         request.runtime.error = error.localizedDescription
                         request.runtime.status = DownloadStatus.failed
                     }
@@ -502,8 +517,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         let nextRequest = downloadQueue.removeFirst()
         waitingDownloads.remove(nextRequest.id)
 
-        print("▶️ [队列调度] 从队列中取出下一个下载: \(nextRequest.name)")
-
         startDownload(for: nextRequest)
     }
 
@@ -518,14 +531,13 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             downloadQueue.remove(at: index)
         }
         waitingDownloads.remove(request.id)
-        
+
         if activeDownloads.contains(request.id) {
             downloadManager.cancelDownload(downloadId: request.id.uuidString)
             activeDownloads.remove(request.id)
             processNextInQueue()
         } else {
-            // Even if not active, ensure we call cancel on the underlying manager
-            // to clean up any dangling tasks
+
             downloadManager.cancelDownload(downloadId: request.id.uuidString)
         }
 
@@ -576,14 +588,20 @@ struct DownloadArchive {
     let identifier: Int
     let iconURL: String?
     let description: String?
+    let price: Double?
+    let currency: String?
 
-    init(bundleIdentifier: String, name: String, version: String, identifier: Int = 0, iconURL: String? = nil, description: String? = nil) {
+    var isFree: Bool { (price ?? 0.0) == 0.0 }
+
+    init(bundleIdentifier: String, name: String, version: String, identifier: Int = 0, iconURL: String? = nil, description: String? = nil, price: Double? = nil, currency: String? = nil) {
         self.bundleIdentifier = bundleIdentifier
         self.name = name
         self.version = version
         self.identifier = identifier
         self.iconURL = iconURL
         self.description = description
+        self.price = price
+        self.currency = currency
     }
 }
 
@@ -626,7 +644,7 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
     let name: String
     var createdAt: Date
     let package: DownloadArchive
-    let versionId: String?
+    var versionId: String?
     @Published var localFilePath: String?
 
     private var cancellables: Set<AnyCancellable> = []
@@ -696,7 +714,6 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
 extension UnifiedDownloadManager {
 
     func saveDownloadTasks() {
-        NSLog("💾 [UnifiedDownloadManager] 开始保存下载任务")
 
         let saveData = DownloadTasksSaveData(
             downloadRequests: downloadRequests.map { request in
@@ -726,17 +743,13 @@ extension UnifiedDownloadManager {
         do {
             let data = try JSONEncoder().encode(saveData)
             UserDefaults.standard.set(data, forKey: "DownloadTasks")
-            NSLog("✅ [UnifiedDownloadManager] 下载任务保存成功，共\(downloadRequests.count)个任务")
         } catch {
-            NSLog("❌ [UnifiedDownloadManager] 下载任务保存失败: \(error)")
         }
     }
 
     func restoreDownloadTasks() {
-        NSLog("🔄 [UnifiedDownloadManager] 开始恢复下载任务")
 
         guard let data = UserDefaults.standard.data(forKey: "DownloadTasks") else {
-            NSLog("ℹ️ [UnifiedDownloadManager] 没有找到保存的下载任务")
             return
         }
 
@@ -759,12 +772,10 @@ extension UnifiedDownloadManager {
                 request.runtime.speed = saveRequest.runtime.speed
                 request.createdAt = saveRequest.createdAt
 
-
                 if let relativePath = saveRequest.runtime.localFilePath {
                     let fullPath = fullPath(for: relativePath)
                     if FileManager.default.fileExists(atPath: fullPath) {
                         request.localFilePath = fullPath
-                        NSLog("✅ [UnifiedDownloadManager] 文件路径恢复成功: \(request.name) -> \(fullPath)")
                     } else {
                         let fileName = (relativePath as NSString).lastPathComponent
                         let bundleId = request.package.bundleIdentifier
@@ -789,14 +800,11 @@ extension UnifiedDownloadManager {
 
                         let searchFileNames = [fileName, standardFileName]
 
-                        NSLog("🔍 [UnifiedDownloadManager] 搜索文件: \(request.name), 候选文件名: \(searchFileNames)")
-
                         for dir in searchDirectories {
                             for fname in searchFileNames {
                                 let candidatePath = dir.appendingPathComponent(fname).path
                                 if fileManager.fileExists(atPath: candidatePath) {
                                     foundPath = candidatePath
-                                    NSLog("⚠️ [UnifiedDownloadManager] 在\(dir.lastPathComponent)找到文件: \(fname)")
                                     break
                                 }
                             }
@@ -819,7 +827,6 @@ extension UnifiedDownloadManager {
 
                                     if matchByName || matchById {
                                         foundPath = url.path
-                                        NSLog("⚠️ [UnifiedDownloadManager] 深度搜索找到文件: \(url.lastPathComponent)")
                                         break
                                     }
                                 }
@@ -829,10 +836,8 @@ extension UnifiedDownloadManager {
 
                         if let foundPath = foundPath {
                             request.localFilePath = foundPath
-                            NSLog("✅ [UnifiedDownloadManager] 文件路径恢复成功(搜索): \(request.name) -> \(foundPath)")
                         } else {
                             request.localFilePath = nil
-                            NSLog("❌ [UnifiedDownloadManager] 文件不存在，清空路径: \(request.name), 搜索的文件名: \(searchFileNames)")
 
                             if request.runtime.status == .completed {
                                 request.runtime.status = .cancelled
@@ -865,7 +870,6 @@ extension UnifiedDownloadManager {
                 } else if savedActive.contains(request.id) {
                     request.runtime.status = .downloading
                     newActive.insert(request.id)
-                    NSLog("ℹ️ [恢复下载] \(request.name) 恢复为下载中状态，等待同步")
                 } else if savedWaiting.contains(request.id) {
 
                     request.runtime.status = .waiting
@@ -875,7 +879,6 @@ extension UnifiedDownloadManager {
 
             activeDownloads = newActive
             waitingDownloads = newWaiting
-
 
             if let queueOrder = saveData.queueOrder {
                 downloadQueue = queueOrder.compactMap { requestId in
@@ -888,58 +891,48 @@ extension UnifiedDownloadManager {
             let refreshed = downloadRequests
             downloadRequests = refreshed
 
-            NSLog("✅ [UnifiedDownloadManager] 下载任务恢复成功，共\(downloadRequests.count)个任务")
-
         } catch {
-            NSLog("❌ [UnifiedDownloadManager] 下载任务恢复失败: \(error)")
         }
     }
 
     func syncDownloadStatus() {
-        NSLog("🔄 [UnifiedDownloadManager] 同步下载任务状态")
 
         Task { @MainActor in
             let activeIds = await downloadManager.activeDownloadIds
-            
+
             for request in downloadRequests {
                 let hasActiveTask = activeIds.contains(request.id.uuidString)
-                
+
                 if request.runtime.status == .downloading && !hasActiveTask {
                     request.runtime.status = .paused
                     activeDownloads.remove(request.id)
-                    NSLog("⚠️ [状态同步] \(request.name) 下载已中断，标记为已暂停")
                 } else if request.runtime.status == .paused && hasActiveTask {
                     request.runtime.status = .downloading
                     activeDownloads.insert(request.id)
-                    NSLog("⚠️ [状态同步] \(request.name) 检测到后台下载，恢复为下载中")
                 }
             }
-            
+
             let validActive = activeDownloads.filter { id in
                 downloadRequests.contains(where: { $0.id == id })
             }
             activeDownloads = validActive
-            
+
             let refreshed = downloadRequests
             downloadRequests = refreshed
-            
-            NSLog("✅ [UnifiedDownloadManager] 下载状态同步完成")
+
         }
     }
 
     func pauseAllDownloads() {
-        NSLog("⏸️ [UnifiedDownloadManager] 暂停所有下载任务")
 
         for request in downloadRequests {
             if request.runtime.status == DownloadStatus.downloading {
                 request.runtime.status = DownloadStatus.paused
                 activeDownloads.remove(request.id)
-                NSLog("⏸️ [UnifiedDownloadManager] 已暂停: \(request.name)")
             }
             if request.runtime.status == DownloadStatus.waiting {
                 request.runtime.status = DownloadStatus.paused
                 waitingDownloads.remove(request.id)
-                NSLog("⏸️ [UnifiedDownloadManager] 已暂停队列中的: \(request.name)")
             }
         }
 
@@ -949,7 +942,6 @@ extension UnifiedDownloadManager {
     }
 
     func resumeAllDownloads() {
-        NSLog("▶️ [UnifiedDownloadManager] 恢复所有暂停的下载任务")
 
         let pausedRequests = downloadRequests.filter {
             $0.runtime.status == DownloadStatus.paused

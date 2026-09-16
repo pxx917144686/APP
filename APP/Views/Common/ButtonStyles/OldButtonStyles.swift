@@ -25,7 +25,7 @@ struct ScaleButtonStyle: ButtonStyle {
 struct CardButtonStyle: ButtonStyle {
     var cornerRadius: CGFloat = 12
     var backgroundColor: Color = Color(.systemBackground)
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
@@ -46,7 +46,7 @@ struct CardButtonStyle: ButtonStyle {
 struct PressableScaleModifier: ViewModifier {
     var isPressed: Bool
     var scale: CGFloat = 0.96
-    
+
     func body(content: Content) -> some View {
         content
             .scaleEffect(isPressed ? scale : 1.0)

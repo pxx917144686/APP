@@ -21,6 +21,7 @@ struct AccountSheetView: View {
                     accountIdentifierSection(account: account)
 
                     regionSection(account: account)
+
                 } else {
                     emptyAccountSection
                         .listRowBackground(Color.clear)
@@ -105,12 +106,12 @@ struct AccountSheetView: View {
             }
 
             VStack(spacing: 4) {
-                Text(account.name.isEmpty ? account.email : account.name)
+                Text(account.fullName.isEmpty ? account.email : account.fullName)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
-                if !account.name.isEmpty {
+                if !account.fullName.isEmpty {
                     Text(account.email)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -130,7 +131,7 @@ struct AccountSheetView: View {
                         .font(.system(size: 15))
                         .foregroundColor(.primary)
                     Spacer()
-                    Text(account.name.isEmpty ? "-" : account.name)
+                    Text(account.fullName.isEmpty ? "-" : account.fullName)
                         .font(.system(size: 15))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -159,22 +160,25 @@ struct AccountSheetView: View {
 
     private func accountIdentifierSection(account: Account) -> some View {
         Section {
-            HStack {
-                Text("dsid".localized)
-                    .font(.system(size: 15))
-                    .foregroundColor(.primary)
-                Spacer()
-                Text(account.directoryServicesIdentifier)
-                    .font(.system(size: 14, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+            VStack(spacing: 0) {
+                HStack {
+                    Text("DSID")
+                        .font(.system(size: 15))
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Text(account.dsPersonId.isEmpty ? "-" : account.dsPersonId)
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                .padding(.vertical, 10)
             }
-            .padding(.vertical, 10)
         } header: {
             Text("account_identifier_header".localized)
         }
     }
+
 
     private func regionSection(account: Account) -> some View {
         Section {

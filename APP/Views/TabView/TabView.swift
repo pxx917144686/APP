@@ -74,10 +74,14 @@ struct TabbarView: View {
 
     var body: some View {
         Group {
-            if tabBarStyleManager.currentStyle == .floatingCard {
-                floatingCardTabView
+            if #available(iOS 18.0, *) {
+                if tabBarStyleManager.currentStyle == .floatingCard {
+                    floatingCardTabView
+                } else {
+                    systemTabView
+                }
             } else {
-                systemTabView
+                standardTabView
             }
         }
         .tint(themeManager.accentColor)
@@ -86,25 +90,19 @@ struct TabbarView: View {
             AnalyticsManager.shared.trackScreen(selectedTab.rawValue)
             updateTabBarAppearance()
         }
-        .onChange(of: selectedTab) { newValue in
+        .onChange(of: selectedTab) { _, newValue in
             AnalyticsManager.shared.trackScreen(newValue.rawValue)
         }
-        .onChange(of: themeManager.accentColor) { _ in
+        .onChange(of: themeManager.accentColor) { _, _ in
             updateTabBarAppearance()
         }
-        .onChange(of: tabBarStyleManager.currentStyle) { _ in
+        .onChange(of: tabBarStyleManager.currentStyle) { _, _ in
             updateTabBarAppearance()
         }
     }
 
     private var systemTabView: some View {
-        Group {
-            if #available(iOS 18.0, *), tabBarStyleManager.currentStyle == .searchIndependent {
-                ios18SearchIndependentTabView
-            } else {
-                standardTabView
-            }
-        }
+        standardTabView
     }
 
     @ViewBuilder
@@ -153,49 +151,6 @@ struct TabbarView: View {
     }
 
     @available(iOS 18.0, *)
-    private var ios18SearchIndependentTabView: some View {
-        TabView(selection: $selectedTab) {
-            Tab(value: TabEnum.settings) {
-                TabEnum.view(for: .settings, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-            } label: {
-                Label {
-                    Text(TabEnum.settings.title)
-                } icon: {
-                    Image(systemName: TabEnum.settings.icon)
-                }
-            }
-
-            Tab(value: TabEnum.tfapps) {
-                TabEnum.view(for: .tfapps, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-            } label: {
-                Label {
-                    Text(TabEnum.tfapps.title)
-                } icon: {
-                    Image(systemName: TabEnum.tfapps.icon)
-                }
-            }
-
-            Tab(value: TabEnum.downloads) {
-                TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-            } label: {
-                Label {
-                    Text(TabEnum.downloads.title)
-                } icon: {
-                    Image(systemName: TabEnum.downloads.icon)
-                }
-            }
-
-            Tab(value: TabEnum.search, role: .search) {
-                TabEnum.view(for: .search, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-            } label: {
-                Label {
-                    Text(TabEnum.search.title)
-                } icon: {
-                    Image(systemName: TabEnum.search.icon)
-                }
-            }
-        }
-    }
 
     private var floatingCardTabView: some View {
         GeometryReader { geo in
@@ -319,9 +274,6 @@ struct TabbarView: View {
             appearance.shadowImage = UIImage()
             appearance.backgroundImage = UIImage()
             UITabBar.appearance().isHidden = true
-        case .searchIndependent:
-            appearance.configureWithDefaultBackground()
-            UITabBar.appearance().isHidden = false
         }
 
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(themeManager.accentColor)

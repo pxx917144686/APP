@@ -93,8 +93,6 @@ class RegionValidator: ObservableObject {
             }
         }
 
-        print("🔍 [RegionValidator] \(result.description)")
-
         return result
     }
 

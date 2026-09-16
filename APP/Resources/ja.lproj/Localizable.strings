@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "設定";
 "tab_tfapps" = "TF版";
 "tab_downloads" = "ダウンロード";
 "tab_search" = "検索";
 
-// MARK: - Common
 "cancel" = "キャンセル";
 "confirm" = "確定";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "もう一度お試しください";
 "got_it" = "了解";
 
-// MARK: - Settings
 "settings" = "設定";
 "appearance" = "外観";
 "theme" = "テーマ";
@@ -133,7 +130,6 @@
 "lang_croatian" = "クロアチア語";
 "lang_catalan" = "カタルーニャ語";
 
-// MARK: - Download
 "download_title" = "ダウンロード";
 "downloading" = "ダウンロード中";
 "download_paused" = "一時停止中";
@@ -161,7 +157,6 @@
 "max_concurrent_downloads" = "最大同時ダウンロード数";
 "download_path" = "ダウンロードパス";
 
-// MARK: - Account
 "account" = "アカウント";
 "apple_id" = "Apple ID";
 "add_account" = "Apple IDを追加";
@@ -185,11 +180,9 @@
 "email" = "メールアドレス";
 "country" = "国/地域";
 
-// MARK: - App Icon
 "app_icon_settings" = "アプリアイコン";
 "default_icon" = "デフォルト";
 
-// MARK: - Search
 "search_placeholder" = "アプリ、ゲーム、開発者を検索";
 "search_history" = "検索履歴";
 "search_suggestions" = "検索候補";
@@ -200,7 +193,6 @@
 "try_different_keywords" = "別のキーワードでお試しください";
 "searching" = "検索中...";
 
-// MARK: - Version Picker
 "version_picker" = "バージョンを選択";
 "current_version" = "現在のバージョン";
 "available_versions" = "利用可能なバージョン";
@@ -212,7 +204,6 @@
 "size" = "サイズ";
 "build_number" = "ビルド番号";
 
-// MARK: - App Detail
 "app_detail" = "アプリ詳細";
 "get" = "入手";
 "icloud_sync" = "iCloud同期";
@@ -231,7 +222,6 @@
 "no_reviews" = "レビューはありません";
 "no_reviews_description" = "このアプリにはまだユーザーレビューがありません";
 
-// MARK: - TF Apps
 "tf_apps" = "TF版";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "TestFlightアプリはありません";
@@ -246,7 +236,6 @@
 "redeem_code" = "引き換えコード";
 "enter_redeem_code" = "引き換えコードを入力";
 
-// MARK: - Filter & Sort
 "filter" = "フィルター";
 "sort" = "並べ替え";
 "sort_by_name" = "名前順";
@@ -256,7 +245,6 @@
 "ascending" = "昇順";
 "descending" = "降順";
 
-// MARK: - Notification
 "notifications" = "通知";
 "push_notifications" = "プッシュ通知";
 "download_complete_notification" = "ダウンロード完了通知";
@@ -264,7 +252,6 @@
 "notification_vibrate" = "バイブレーション";
 "notification_badge" = "バッジ";
 
-// MARK: - Privacy & Security
 "privacy_security" = "プライバシーとセキュリティ";
 "privacy_policy" = "プライバシーポリシー";
 "user_agreement" = "利用規約";
@@ -275,7 +262,6 @@
 "clear_cache_message" = "本当にすべてのキャッシュをクリアしますか？ダウンロードしたアプリは削除されません。";
 "cache_cleared" = "キャッシュをクリアしました";
 
-// MARK: - Storage
 "storage" = "ストレージ";
 "total_storage" = "合計容量";
 "used_storage" = "使用済み";
@@ -283,7 +269,6 @@
 "app_size" = "アプリサイズ";
 "documents_size" = "書類サイズ";
 
-// MARK: - Download Manager
 "download_manager" = "ダウンロード管理";
 "download_queue" = "ダウンロードキュー";
 "batch_operations" = "一括操作";
@@ -291,7 +276,6 @@
 "deselect_all" = "選択を解除";
 "selected_count" = "%@項目を選択中";
 
-// MARK: - App Information
 "app_name" = "アプリ名";
 "app_version" = "アプリバージョン";
 "app_size" = "アプリサイズ";
@@ -304,7 +288,6 @@
 "language_support" = "対応言語";
 "content_rating" = "コンテンツ評価";
 
-// MARK: - Account Management
 "account_management" = "アカウント管理";
 "login_status" = "ログイン状態";
 "two_factor_auth" = "二段階認証";
@@ -313,7 +296,6 @@
 "login_expired" = "ログインの有効期限が切れました";
 "please_relogin" = "再度ログインしてください";
 
-// MARK: - Settings More
 "advanced_settings" = "詳細設定";
 "developer_options" = "開発者向けオプション";
 "check_update" = "アップデートを確認";
@@ -323,7 +305,6 @@
 "rate_app" = "アプリを評価";
 "share_app" = "アプリを共有";
 
-// MARK: - Network
 "network" = "ネットワーク";
 "network_status" = "ネットワーク状態";
 "wifi" = "WiFi";
@@ -334,7 +315,6 @@
 "network_speed" = "ネットワーク速度";
 "network_usage" = "データ使用量";
 
-// MARK: - Installation
 "installation" = "インストール";
 "installing" = "インストール中...";
 "install_success" = "インストール成功";
@@ -348,7 +328,6 @@
 "signed" = "署名済み";
 "unsigned" = "未署名";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "テスト招待";
 "testflight_build" = "ビルド";
@@ -360,7 +339,6 @@
 "testflight_join" = "テストに参加";
 "testflight_leave" = "テストを退会";
 
-// MARK: - Search More
 "search_filter" = "検索フィルター";
 "search_result_count" = "%@件の結果";
 "exact_match" = "完全一致";
@@ -370,7 +348,6 @@
 "recommended_apps" = "おすすめアプリ";
 "top_charts" = "ランキング";
 
-// MARK: - Status
 "status" = "ステータス";
 "status_normal" = "正常";
 "status_abnormal" = "異常";
@@ -385,7 +362,6 @@
 "status_idle" = "アイドル";
 "status_busy" = "ビジー";
 
-// MARK: - Tips
 "tips" = "お知らせ";
 "tip_download_speed" = "ダウンロード速度はネットワーク環境に依存します";
 "tip_wifi_download" = "大きなファイルはWiFi環境でのダウンロードをおすすめします";
@@ -396,7 +372,6 @@
 "view_details" = "詳細を見る";
 "learn_more" = "詳しくはこちら";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -417,7 +392,6 @@
 "hours_ago" = "%@時間前";
 "days_ago" = "%@日前";
 
-// MARK: - Actions
 "action_open" = "開く";
 "action_close" = "閉じる";
 "action_view" = "表示";
@@ -462,7 +436,6 @@
 "action_declined" = "拒否済み";
 "action_accepted" = "承諾済み";
 
-// MARK: - Theme
 "theme_settings" = "テーマ設定";
 "light_theme" = "ライトテーマ";
 "dark_theme" = "ダークテーマ";
@@ -477,7 +450,6 @@
 "font_size" = "フォントサイズ";
 "font_style" = "フォントスタイル";
 
-// MARK: - App Detail More
 "feature_tags" = "機能タグ";
 "free" = "無料";
 "get" = "入手";
@@ -492,7 +464,6 @@
 "last_updated" = "最終更新";
 "requires_ios" = "iOS %@ 以降が必要";
 
-// MARK: - Search More
 "search_placeholder" = "ゲーム、Appを検索";
 "login" = "ログイン";
 "clear_all" = "すべてクリア";
@@ -510,7 +481,6 @@
 "x_versions" = "%@ 個のバージョン";
 "version_x_date" = "バージョン %@ · %@";
 
-// MARK: - Account More
 "login_account" = "アカウントにログイン";
 "current" = "現在";
 "switch" = "切り替え";
@@ -560,7 +530,6 @@
 "check_apple_device_code" = "Appleデバイスで認証コードを確認してください";
 "wrong_verification_code" = "認証コードが間違っています。再入力してください。";
 
-// MARK: - Download More
 "invalid_ipa_file" = "無効なIPAファイル";
 "install_failed_with_reason" = "インストール失敗: %@";
 "install_timeout" = "インストールタイムアウト";
@@ -600,7 +569,6 @@
 "no_ipa_found" = "IPAファイルが見つかりません";
 "no_ipa_found_desc" = "アプリの保存ディレクトリにIPAファイルが見つかりません";
 
-// MARK: - Account Detail
 "basic_info" = "基本情報";
 "account_identifier" = "アカウント識別子";
 "country_region" = "国/地域";
@@ -613,9 +581,20 @@
 "no_value" = "なし";
 "region_title" = "地域";
 
-// MARK: - Appearance More
 "overall_color" = "アクセントカラー";
 "quick_select" = "クイック選択";
 "auto" = "自動";
 "unknown" = "不明";
 "no_screenshots" = "スクリーンショットなし";
+
+"auto_theme_description" = "日の出・日の入りに合わせて light / dark の外観を自動的に切り替えます。";
+"session_tokens_header" = "セッショントークン";
+"session_tokens" = "セッショントークン";
+"show_session_tokens" = "セッショントークンを表示";
+"hide_session_tokens" = "セッショントークンを非表示";
+"session_tokens_hint" = "セッショントークンは自動再認証に使用されます。他人と共有しないでください。";
+"hide_password" = "パスワードを非表示";
+"show_password" = "パスワードを表示";
+"less" = "折りたたむ";
+"see_all_reviews" = "すべてのレビューを見る";
+"two_factor_code_intro" = "信頼済みのAppleデバイスまたはSMSを確認し、下記に6桁の確認コードを入力してください。";

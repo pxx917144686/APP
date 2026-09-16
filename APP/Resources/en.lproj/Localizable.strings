@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Settings";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Downloads";
 "tab_search" = "Search";
 
-// MARK: - Common
 "cancel" = "Cancel";
 "confirm" = "Confirm";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Please Try Again";
 "got_it" = "Got It";
 
-// MARK: - Settings
 "settings" = "Settings";
 "appearance" = "Appearance";
 "theme" = "Theme";
@@ -132,7 +129,6 @@
 "lang_croatian" = "Croatian";
 "lang_catalan" = "Catalan";
 
-// MARK: - Download
 "download_title" = "Downloads";
 "downloading" = "Downloading";
 "download_paused" = "Paused";
@@ -160,7 +156,6 @@
 "max_concurrent_downloads" = "Max Concurrent Downloads";
 "download_path" = "Download Path";
 
-// MARK: - Account
 "account" = "Account";
 "apple_id" = "Apple ID";
 "add_account" = "Add Apple ID";
@@ -184,11 +179,9 @@
 "email" = "Email";
 "country" = "Country/Region";
 
-// MARK: - App Icon
 "app_icon_settings" = "App Icon";
 "default_icon" = "Default";
 
-// MARK: - Search
 "search_placeholder" = "Search apps, games, developers";
 "search_history" = "Search History";
 "search_suggestions" = "Search Suggestions";
@@ -199,7 +192,6 @@
 "try_different_keywords" = "Try different keywords";
 "searching" = "Searching...";
 
-// MARK: - Version Picker
 "version_picker" = "Select Version";
 "current_version" = "Current Version";
 "available_versions" = "Available Versions";
@@ -211,7 +203,6 @@
 "size" = "Size";
 "build_number" = "Build Number";
 
-// MARK: - App Detail
 "app_detail" = "App Details";
 "get" = "GET";
 "icloud_sync" = "iCloud Sync";
@@ -229,7 +220,6 @@
 "no_reviews" = "No Reviews";
 "no_reviews_description" = "This app has no user reviews yet";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "No TestFlight Apps";
@@ -243,7 +233,6 @@
 "redeem_code" = "Redeem Code";
 "enter_redeem_code" = "Enter Redeem Code";
 
-// MARK: - Filter & Sort
 "filter" = "Filter";
 "sort" = "Sort";
 "sort_by_name" = "Sort by Name";
@@ -253,7 +242,6 @@
 "ascending" = "Ascending";
 "descending" = "Descending";
 
-// MARK: - Notification
 "notifications" = "Notifications";
 "push_notifications" = "Push Notifications";
 "download_complete_notification" = "Download Complete Notification";
@@ -261,7 +249,6 @@
 "notification_vibrate" = "Vibrate";
 "notification_badge" = "Badge";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Privacy & Security";
 "clear_cache" = "Clear Cache";
 "cache_size" = "Cache Size";
@@ -270,7 +257,6 @@
 "clear_cache_message" = "Are you sure you want to clear all cache? This will not delete downloaded apps.";
 "cache_cleared" = "Cache Cleared";
 
-// MARK: - Storage
 "storage" = "Storage";
 "total_storage" = "Total";
 "used_storage" = "Used";
@@ -278,14 +264,12 @@
 "app_size" = "App Size";
 "documents_size" = "Documents Size";
 
-// MARK: - Download Manager
 "download_manager" = "Download Manager";
 "batch_operations" = "Batch Operations";
 "select_all" = "Select All";
 "deselect_all" = "Deselect All";
 "selected_count" = "%@ Selected";
 
-// MARK: - App Information
 "app_name" = "App Name";
 "app_version" = "App Version";
 "app_rating" = "App Rating";
@@ -295,7 +279,6 @@
 "language_support" = "Language Support";
 "content_rating" = "Content Rating";
 
-// MARK: - Account Management
 "account_management" = "Account Management";
 "login_status" = "Login Status";
 "two_factor_auth" = "Two-Factor Authentication";
@@ -304,7 +287,6 @@
 "login_expired" = "Login Expired";
 "please_relogin" = "Please Sign In Again";
 
-// MARK: - Settings More
 "advanced_settings" = "Advanced Settings";
 "developer_options" = "Developer Options";
 "check_update" = "Check for Updates";
@@ -314,7 +296,6 @@
 "rate_app" = "Rate Us";
 "share_app" = "Share App";
 
-// MARK: - Network
 "network" = "Network";
 "network_status" = "Network Status";
 "wifi" = "Wi-Fi";
@@ -325,7 +306,6 @@
 "network_speed" = "Network Speed";
 "network_usage" = "Data Usage";
 
-// MARK: - Installation
 "installation" = "Installation";
 "installing" = "Installing...";
 "install_success" = "Installation Successful";
@@ -339,7 +319,6 @@
 "signed" = "Signed";
 "unsigned" = "Unsigned";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Test Invite";
 "testflight_build" = "Build";
@@ -351,7 +330,6 @@
 "testflight_join" = "Join Test";
 "testflight_leave" = "Leave Test";
 
-// MARK: - Search More
 "search_filter" = "Search Filter";
 "search_result_count" = "%@ Results Found";
 "exact_match" = "Exact Match";
@@ -361,7 +339,6 @@
 "recommended_apps" = "Recommended Apps";
 "top_charts" = "Top Charts";
 
-// MARK: - Status
 "status" = "Status";
 "status_normal" = "Normal";
 "status_abnormal" = "Abnormal";
@@ -376,7 +353,6 @@
 "status_idle" = "Idle";
 "status_busy" = "Busy";
 
-// MARK: - Tips
 "tips" = "Tips";
 "tip_download_speed" = "Download speed depends on your network connection";
 "tip_wifi_download" = "It's recommended to download large files over Wi-Fi";
@@ -387,7 +363,6 @@
 "view_details" = "View Details";
 "learn_more" = "Learn More";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -408,7 +383,6 @@
 "hours_ago" = "%@ hr ago";
 "days_ago" = "%@ day ago";
 
-// MARK: - Actions
 "action_open" = "Open";
 "action_close" = "Close";
 "action_view" = "View";
@@ -453,7 +427,6 @@
 "action_declined" = "Declined";
 "action_accepted" = "Accepted";
 
-// MARK: - Theme
 "theme_settings" = "Theme Settings";
 "light_theme" = "Light Theme";
 "dark_theme" = "Dark Theme";
@@ -467,7 +440,6 @@
 "font_size" = "Font Size";
 "font_style" = "Font Style";
 
-// MARK: - App Detail More
 "feature_tags" = "Feature Tags";
 "free" = "GET";
 "view" = "View";
@@ -482,7 +454,6 @@
 "expand" = "Expand";
 "collapse" = "Collapse";
 
-// MARK: - Search More
 "login" = "Sign In";
 "clear_all" = "Clear All";
 "x_results_found" = "%@ Results Found";
@@ -499,7 +470,6 @@
 "x_versions" = "%@ Versions";
 "version_x_date" = "Version %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Sign In";
 "current" = "Current";
 "switch" = "Switch";
@@ -546,7 +516,6 @@
 "check_apple_device_code" = "Check your Apple device for the verification code";
 "wrong_verification_code" = "Incorrect verification code. Please try again.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Invalid IPA File";
 "install_failed_with_reason" = "Installation failed: %@";
 "install_timeout" = "Installation Timeout";
@@ -586,7 +555,6 @@
 "no_ipa_found" = "No IPA Files Found";
 "no_ipa_found_desc" = "No IPA files found in app storage directory";
 
-// MARK: - Account Detail
 "basic_info" = "Basic Information";
 "account_identifier" = "Account Identifier";
 "password_token" = "Password Token";
@@ -597,10 +565,20 @@
 "dsid" = "DSID";
 "no_value" = "None";
 "region_title" = "Region";
+"session_tokens_header" = "Session Tokens";
+"session_tokens" = "Session Tokens";
+"show_session_tokens" = "Show Session Tokens";
+"hide_session_tokens" = "Hide Session Tokens";
+"session_tokens_hint" = "Session tokens are used for automatic re-authentication. Do not share them with others.";
 
-// MARK: - Appearance More
 "overall_color" = "Accent Color";
 "quick_select" = "Quick Select";
 "auto" = "Auto";
 "unknown" = "Unknown";
 "no_screenshots" = "No Screenshots";
+
+"hide_password" = "Hide Password";
+"show_password" = "Show Password";
+"less" = "Less";
+"see_all_reviews" = "See All Reviews";
+"two_factor_code_intro" = "Please check your trusted Apple device or SMS, then enter the 6-digit verification code below to continue.";

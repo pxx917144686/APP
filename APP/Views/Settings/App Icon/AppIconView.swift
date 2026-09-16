@@ -119,16 +119,13 @@ extension AppIconView {
 				DispatchQueue.main.async {
 					if success {
 						currentIcon = iconNameToSet
-						showingSuccess = true
-						let impactFeedback = UINotificationFeedbackGenerator()
-						impactFeedback.notificationOccurred(.success)
-					} else {
-						if let error = error {
-							print("❌ [AppIcon] 设置图标失败: \(error.localizedDescription)")
-						}
-						let impactFeedback = UINotificationFeedbackGenerator()
-						impactFeedback.notificationOccurred(.error)
-					}
+					showingSuccess = true
+					let impactFeedback = UINotificationFeedbackGenerator()
+					impactFeedback.notificationOccurred(.success)
+				} else {
+					let impactFeedback = UINotificationFeedbackGenerator()
+					impactFeedback.notificationOccurred(.error)
+				}
 				}
 			}
 		} label: {

@@ -24,6 +24,14 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         let configuration = URLSessionConfiguration.background(
             withIdentifier: "com.app.backgrounddownload"
         )
+        configuration.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0,
+            "HTTPProxy": "",
+            "HTTPSProxy": "",
+            "SOCKSProxy": ""
+        ]
         configuration.sessionSendsLaunchEvents = true
         configuration.isDiscretionary = false
         configuration.shouldUseExtendedBackgroundIdleMode = true
@@ -31,6 +39,8 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         configuration.timeoutIntervalForRequest = 60
         configuration.timeoutIntervalForResource = 7200
         configuration.waitsForConnectivity = true
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        configuration.tlsMaximumSupportedProtocolVersion = .TLSv13
         configuration.networkServiceType = .default
 
         let session = Alamofire.Session(
@@ -50,9 +60,6 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         progressHandler: @escaping @Sendable (Double) -> Void,
         completion: @escaping @Sendable (Result<URL, Error>) -> Void
     ) {
-        print("🌐 [后台下载] 开始下载: \(url.lastPathComponent)")
-        print("🌐 [后台下载] 下载ID: \(downloadId)")
-        print("🌐 [后台下载] 目标路径: \(destinationURL.path)")
 
         let destination: Alamofire.DownloadRequest.Destination = { _, _ in
             (destinationURL, [.removePreviousFile, .createIntermediateDirectories])
@@ -74,18 +81,18 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
             switch response.result {
             case .success(let fileURL):
                 if let fileURL = fileURL {
-                    print("✅ [后台下载] 完成: \(fileURL.lastPathComponent)")
+
                     DispatchQueue.main.async {
                         self.activeDownloads.removeValue(forKey: downloadId)
                         self.downloadProgress.removeValue(forKey: downloadId)
                     }
                     completion(.success(fileURL))
                 } else {
-                    print("❌ [后台下载] 失败: 文件URL为空")
+
                     completion(.failure(NSError(domain: "BackgroundDownload", code: -1, userInfo: [NSLocalizedDescriptionKey: "下载文件URL为空"])))
                 }
             case .failure(let error):
-                print("❌ [后台下载] 失败: \(error.localizedDescription)")
+
                 DispatchQueue.main.async {
                     self.activeDownloads.removeValue(forKey: downloadId)
                     self.downloadProgress.removeValue(forKey: downloadId)
@@ -102,17 +109,17 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         activeDownloads[downloadId]?.cancel()
         activeDownloads.removeValue(forKey: downloadId)
         downloadProgress.removeValue(forKey: downloadId)
-        print("🛑 [后台下载] 已取消: \(downloadId)")
+
     }
 
     func pauseDownload(downloadId: String) {
         activeDownloads[downloadId]?.suspend()
-        print("⏸️ [后台下载] 已暂停: \(downloadId)")
+
     }
 
     func resumeDownload(downloadId: String) {
         activeDownloads[downloadId]?.resume()
-        print("▶️ [后台下载] 已恢复: \(downloadId)")
+
     }
 
     #else
@@ -125,9 +132,16 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         progressHandler: @escaping @Sendable (Double) -> Void,
         completion: @escaping @Sendable (Result<URL, Error>) -> Void
     ) {
-        print("⚠️ [后台下载] Alamofire 未导入，使用系统URLSession进行下载")
 
         let config = URLSessionConfiguration.background(withIdentifier: "com.app.backgrounddownload")
+        config.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0,
+            "HTTPProxy": "",
+            "HTTPSProxy": "",
+            "SOCKSProxy": ""
+        ]
         config.sessionSendsLaunchEvents = true
         config.isDiscretionary = false
         config.shouldUseExtendedBackgroundIdleMode = true
@@ -135,6 +149,8 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 7200
         config.waitsForConnectivity = true
+        config.tlsMinimumSupportedProtocolVersion = .TLSv12
+        config.tlsMaximumSupportedProtocolVersion = .TLSv13
         config.networkServiceType = .default
 
         let session = URLSession(
@@ -242,10 +258,9 @@ final class LegacyBackgroundDownloadDelegate: NSObject, URLSessionDownloadDelega
             }
             try FileManager.default.moveItem(at: location, to: destination)
 
-            print("✅ [后台下载] 完成: \(destination.lastPathComponent)")
             completion(.success(destination))
         } catch {
-            print("❌ [后台下载] 文件移动失败: \(error.localizedDescription)")
+
             completion(.failure(error))
         }
 
@@ -278,7 +293,7 @@ final class LegacyBackgroundDownloadDelegate: NSObject, URLSessionDownloadDelega
             lock.unlock()
 
             if let downloadId = downloadId, let completion = completion {
-                print("❌ [后台下载] 失败: \(error.localizedDescription)")
+
                 completion(.failure(error))
                 cleanup(downloadId: downloadId, taskId: task.taskIdentifier)
             }
@@ -286,12 +301,11 @@ final class LegacyBackgroundDownloadDelegate: NSObject, URLSessionDownloadDelega
     }
 
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        print("📱 [后台会话] 所有任务已完成")
 
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             if let completionHandler = appDelegate.backgroundSessionCompletionHandler {
                 DispatchQueue.main.async {
-                    print("✅ [后台会话] 调用完成处理器")
+
                     completionHandler()
                     appDelegate.backgroundSessionCompletionHandler = nil
                 }

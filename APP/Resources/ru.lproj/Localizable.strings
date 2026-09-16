@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Настройки";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Загрузки";
 "tab_search" = "Поиск";
 
-// MARK: - Common
 "cancel" = "Отмена";
 "confirm" = "Подтвердить";
 "ok" = "ОК";
@@ -47,7 +45,6 @@
 "try_again" = "Пожалуйста, попробуйте снова";
 "got_it" = "Понятно";
 
-// MARK: - Settings
 "settings" = "Настройки";
 "appearance" = "Внешний вид";
 "theme" = "Тема";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Хорватский";
 "lang_catalan" = "Каталанский";
 
-// MARK: - Download
 "download_title" = "Загрузки";
 "downloading" = "Загрузка";
 "download_paused" = "Приостановлено";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Макс. одновременных загрузок";
 "download_path" = "Путь загрузки";
 
-// MARK: - Account
 "account" = "Учётная запись";
 "apple_id" = "Apple ID";
 "add_account" = "Добавить Apple ID";
@@ -166,11 +161,9 @@
 "email" = "Эл. почта";
 "country" = "Страна/регион";
 
-// MARK: - App Icon
 "app_icon_settings" = "Значок приложения";
 "default_icon" = "По умолчанию";
 
-// MARK: - Search
 "search_placeholder" = "Поиск приложений, игр, разработчиков";
 "search_history" = "История поиска";
 "search_suggestions" = "Предложения поиска";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Попробуйте другие ключевые слова";
 "searching" = "Поиск...";
 
-// MARK: - Version Picker
 "version_picker" = "Выбрать версию";
 "current_version" = "Текущая версия";
 "available_versions" = "Доступные версии";
@@ -193,7 +185,6 @@
 "size" = "Размер";
 "build_number" = "Номер сборки";
 
-// MARK: - App Detail
 "app_detail" = "Информация о приложении";
 "get" = "Получить";
 "icloud_sync" = "Синхронизация iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Нет отзывов";
 "no_reviews_description" = "У этого приложения ещё нет отзывов пользователей";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Нет приложений TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Активировать код";
 "enter_redeem_code" = "Ввести код активации";
 
-// MARK: - Filter & Sort
 "filter" = "Фильтр";
 "sort" = "Сортировка";
 "sort_by_name" = "Сортировать по имени";
@@ -235,7 +224,6 @@
 "ascending" = "По возрастанию";
 "descending" = "По убыванию";
 
-// MARK: - Notification
 "notifications" = "Уведомления";
 "push_notifications" = "Push-уведомления";
 "download_complete_notification" = "Уведомление о завершении загрузки";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Вибрация";
 "notification_badge" = "Значок";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Конфиденциальность и безопасность";
 "clear_cache" = "Очистить кэш";
 "cache_size" = "Размер кэша";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Вы уверены, что хотите очистить весь кэш? Это не удалит загруженные приложения.";
 "cache_cleared" = "Кэш очищен";
 
-// MARK: - Storage
 "storage" = "Хранилище";
 "total_storage" = "Всего";
 "used_storage" = "Использовано";
@@ -260,14 +246,12 @@
 "app_size" = "Размер приложения";
 "documents_size" = "Размер документов";
 
-// MARK: - Download Manager
 "download_manager" = "Менеджер загрузок";
 "batch_operations" = "Групповые операции";
 "select_all" = "Выбрать все";
 "deselect_all" = "Снять выбор со всех";
 "selected_count" = "Выбрано: %@";
 
-// MARK: - App Information
 "app_name" = "Название приложения";
 "app_version" = "Версия приложения";
 "app_rating" = "Рейтинг приложения";
@@ -277,7 +261,6 @@
 "language_support" = "Поддержка языков";
 "content_rating" = "Возрастной рейтинг";
 
-// MARK: - Account Management
 "account_management" = "Управление учётными записями";
 "login_status" = "Статус входа";
 "two_factor_auth" = "Двухфакторная аутентификация";
@@ -286,7 +269,6 @@
 "login_expired" = "Срок действия входа истёк";
 "please_relogin" = "Пожалуйста, войдите снова";
 
-// MARK: - Settings More
 "advanced_settings" = "Расширенные настройки";
 "developer_options" = "Параметры разработчика";
 "check_update" = "Проверить обновления";
@@ -296,7 +278,6 @@
 "rate_app" = "Оценить приложение";
 "share_app" = "Поделиться приложением";
 
-// MARK: - Network
 "network" = "Сеть";
 "network_status" = "Статус сети";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Скорость сети";
 "network_usage" = "Использование данных";
 
-// MARK: - Installation
 "installation" = "Установка";
 "installing" = "Установка...";
 "install_success" = "Установка завершена";
@@ -321,7 +301,6 @@
 "signed" = "Подписан";
 "unsigned" = "Не подписан";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Приглашение на тест";
 "testflight_build" = "Сборка";
@@ -333,7 +312,6 @@
 "testflight_join" = "Присоединиться к тесту";
 "testflight_leave" = "Покинуть тест";
 
-// MARK: - Search More
 "search_filter" = "Фильтр поиска";
 "search_result_count" = "Найдено результатов: %@";
 "exact_match" = "Точное совпадение";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Рекомендуемые приложения";
 "top_charts" = "Топ-чарты";
 
-// MARK: - Status
 "status" = "Статус";
 "status_normal" = "Нормальный";
 "status_abnormal" = "Ненормальный";
@@ -358,7 +335,6 @@
 "status_idle" = "Бездействие";
 "status_busy" = "Занято";
 
-// MARK: - Tips
 "tips" = "Советы";
 "tip_download_speed" = "Скорость загрузки зависит от вашего сетевого подключения";
 "tip_wifi_download" = "Рекомендуется загружать большие файлы через Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Подробнее";
 "learn_more" = "Узнать больше";
 
-// MARK: - Units
 "unit_bytes" = "Б";
 "unit_kilobytes" = "КБ";
 "unit_megabytes" = "МБ";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ ч назад";
 "days_ago" = "%@ дн назад";
 
-// MARK: - Actions
 "action_open" = "Открыть";
 "action_close" = "Закрыть";
 "action_view" = "Просмотр";
@@ -435,7 +409,6 @@
 "action_declined" = "Отклонено";
 "action_accepted" = "Принято";
 
-// MARK: - Theme
 "theme_settings" = "Настройки темы";
 "light_theme" = "Светлая тема";
 "dark_theme" = "Тёмная тема";
@@ -449,7 +422,6 @@
 "font_size" = "Размер шрифта";
 "font_style" = "Стиль шрифта";
 
-// MARK: - App Detail More
 "feature_tags" = "Теги функций";
 "free" = "Получить";
 "get" = "Получить";
@@ -464,7 +436,6 @@
 "last_updated" = "Последнее обновление";
 "requires_ios" = "Требуется iOS %@ или новее";
 
-// MARK: - Search More
 "search_placeholder" = "Поиск игр, приложений";
 "login" = "Войти";
 "clear_all" = "Очистить всё";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ версий";
 "version_x_date" = "Версия %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Войти";
 "current" = "Текущий";
 "switch" = "Сменить";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Проверьте ваше устройство Apple для получения кода проверки";
 "wrong_verification_code" = "Неверный код проверки. Попробуйте снова.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Неверный файл IPA";
 "install_failed_with_reason" = "Ошибка установки: %@";
 "install_timeout" = "Превышено время ожидания установки";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Файлы IPA не найдены";
 "no_ipa_found_desc" = "Файлы IPA не найдены в каталоге хранилища приложения";
 
-// MARK: - Account Detail
 "basic_info" = "Основная информация";
 "account_identifier" = "Идентификатор учётной записи";
 "country_region" = "Страна/регион";
@@ -585,8 +553,40 @@
 "no_value" = "Нет";
 "region_title" = "Регион";
 
-// MARK: - Appearance More
 "overall_color" = "Цвет акцента";
 "quick_select" = "Быстрый выбор";
 "auto" = "Авто";
 "unknown" = "Неизвестно";
+
+"pick_color" = "Выбрать цвет";
+"auto_theme_description" = "Автоматическое переключение светлого и тёмного оформления по восходе и закате.";
+"tab_bar_style" = "Стиль панели вкладок";
+"tab_style_default" = "По умолчанию";
+"tab_style_default_desc" = "Стандартная системная панель вкладок";
+"tab_style_frosted" = "Матовое стекло";
+"tab_style_floating" = "Плавающая карточка";
+"tab_style_floating_desc" = "Элегантный эффект матового стекла";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Отдельный поиск";
+"tab_style_search_independent_desc" = "Кнопка поиска справа";
+"floating_tabbar_customize" = "Настроить плавающую панель";
+"floating_tabbar_horizontal_padding" = "Горизонтальный отступ";
+"floating_tabbar_bottom_offset" = "Нижнее смещение";
+"floating_tabbar_height" = "Высота";
+"floating_tabbar_corner_radius" = "Радиус скругления";
+"information" = "Информация";
+"expand" = "Развернуть";
+"collapse" = "Свернуть";
+"session_tokens_header" = "Токены сессии";
+"session_tokens" = "Токены сессии";
+"show_session_tokens" = "Показать токены сессии";
+"hide_session_tokens" = "Скрыть токены сессии";
+"session_tokens_hint" = "Токены сессии используются для автоматической повторной аутентификации. Не делитесь ими.";
+"no_screenshots" = "Нет скриншотов";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Проверьте доверенное устройство Apple или SMS и введите 6-значный код ниже.";

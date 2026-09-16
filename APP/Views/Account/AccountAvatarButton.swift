@@ -25,7 +25,7 @@ struct AccountAvatarButton: View {
             }
         }
         .onAppear { loadCustomAvatar() }
-        .onChange(of: appStore.selectedAccount?.email) { _ in
+        .onChange(of: appStore.selectedAccount?.email) { _, _ in
             loadCustomAvatar()
         }
         .sheet(isPresented: $showImagePicker) {

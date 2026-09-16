@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Nastavení";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Stahování";
 "tab_search" = "Hledat";
 
-// MARK: - Common
 "cancel" = "Zrušit";
 "confirm" = "Potvrdit";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Zkuste to znovu";
 "got_it" = "Rozumím";
 
-// MARK: - Settings
 "settings" = "Nastavení";
 "appearance" = "Vzhled";
 "theme" = "Téma";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Chorvatština";
 "lang_catalan" = "Katalánština";
 
-// MARK: - Download
 "download_title" = "Stahování";
 "downloading" = "Stahování";
 "download_paused" = "Pozastaveno";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Max. současných stahování";
 "download_path" = "Cesta stahování";
 
-// MARK: - Account
 "account" = "Účet";
 "apple_id" = "Apple ID";
 "add_account" = "Přidat Apple ID";
@@ -166,11 +161,9 @@
 "email" = "E-mail";
 "country" = "Země/Region";
 
-// MARK: - App Icon
 "app_icon_settings" = "Ikona aplikace";
 "default_icon" = "Výchozí";
 
-// MARK: - Search
 "search_placeholder" = "Hledat aplikace, hry, vývojáře";
 "search_history" = "Historie vyhledávání";
 "search_suggestions" = "Návrhy vyhledávání";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Zkuste jiná klíčová slova";
 "searching" = "Vyhledávání...";
 
-// MARK: - Version Picker
 "version_picker" = "Vybrat verzi";
 "current_version" = "Aktuální verze";
 "available_versions" = "Dostupné verze";
@@ -193,7 +185,6 @@
 "size" = "Velikost";
 "build_number" = "Číslo sestavení";
 
-// MARK: - App Detail
 "app_detail" = "Podrobnosti o aplikaci";
 "get" = "Získat";
 "icloud_sync" = "iCloud synchronizace";
@@ -211,7 +202,6 @@
 "no_reviews" = "Žádné recenze";
 "no_reviews_description" = "Tato aplikace zatím nemá žádné uživatelské recenze";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Žádné aplikace TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Redempční kód";
 "enter_redeem_code" = "Zadejte redempční kód";
 
-// MARK: - Filter & Sort
 "filter" = "Filtr";
 "sort" = "Seřadit";
 "sort_by_name" = "Seřadit podle názvu";
@@ -235,7 +224,6 @@
 "ascending" = "Vzestupně";
 "descending" = "Sestupně";
 
-// MARK: - Notification
 "notifications" = "Oznámení";
 "push_notifications" = "Push oznámení";
 "download_complete_notification" = "Oznámení o dokončeném stahování";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Vibrace";
 "notification_badge" = "Odznak";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Soukromí a bezpečnost";
 "clear_cache" = "Vymazat mezipaměť";
 "cache_size" = "Velikost mezipaměti";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Opravdu chcete vymazat celou mezipaměť? Tímto nesmažete stažené aplikace.";
 "cache_cleared" = "Mezipaměť byla vymazána";
 
-// MARK: - Storage
 "storage" = "Úložiště";
 "total_storage" = "Celkem";
 "used_storage" = "Použito";
@@ -260,14 +246,12 @@
 "app_size" = "Velikost aplikace";
 "documents_size" = "Velikost dokumentů";
 
-// MARK: - Download Manager
 "download_manager" = "Správce stahování";
 "batch_operations" = "Dávkové operace";
 "select_all" = "Vybrat vše";
 "deselect_all" = "Zrušit výběr všeho";
 "selected_count" = "%@ vybráno";
 
-// MARK: - App Information
 "app_name" = "Název aplikace";
 "app_version" = "Verze aplikace";
 "app_rating" = "Hodnocení aplikace";
@@ -277,7 +261,6 @@
 "language_support" = "Podpora jazyků";
 "content_rating" = "Hodnocení obsahu";
 
-// MARK: - Account Management
 "account_management" = "Správa účtu";
 "login_status" = "Stav přihlášení";
 "two_factor_auth" = "Dvoufaktorové ověření";
@@ -286,7 +269,6 @@
 "login_expired" = "Přihlášení vypršelo";
 "please_relogin" = "Přihlaste se znovu";
 
-// MARK: - Settings More
 "advanced_settings" = "Rozšířená nastavení";
 "developer_options" = "Možnosti vývojáře";
 "check_update" = "Zkontrolovat aktualizace";
@@ -296,7 +278,6 @@
 "rate_app" = "Ohodnotit aplikaci";
 "share_app" = "Sdílet aplikaci";
 
-// MARK: - Network
 "network" = "Síť";
 "network_status" = "Stav sítě";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Rychlost sítě";
 "network_usage" = "Využití dat";
 
-// MARK: - Installation
 "installation" = "Instalace";
 "installing" = "Instalace...";
 "install_success" = "Instalace byla úspěšná";
@@ -321,7 +301,6 @@
 "signed" = "Podepsáno";
 "unsigned" = "Nepodepsáno";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Pozvánka na test";
 "testflight_build" = "Sestavení";
@@ -333,7 +312,6 @@
 "testflight_join" = "Připojit se k testu";
 "testflight_leave" = "Opustit test";
 
-// MARK: - Search More
 "search_filter" = "Filtr vyhledávání";
 "search_result_count" = "Nalezeno %@ výsledků";
 "exact_match" = "Přesná shoda";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Doporučené aplikace";
 "top_charts" = "Žebříčky";
 
-// MARK: - Status
 "status" = "Stav";
 "status_normal" = "Normální";
 "status_abnormal" = "Abnormální";
@@ -358,7 +335,6 @@
 "status_idle" = "Nečinný";
 "status_busy" = "Zaneprázdněný";
 
-// MARK: - Tips
 "tips" = "Tipy";
 "tip_download_speed" = "Rychlost stahování závisí na vašem síťovém připojení";
 "tip_wifi_download" = "Doporučuje se stahovat velké soubory přes Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Zobrazit podrobnosti";
 "learn_more" = "Další informace";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "před %@ hod";
 "days_ago" = "před %@ dnem";
 
-// MARK: - Actions
 "action_open" = "Otevřít";
 "action_close" = "Zavřít";
 "action_view" = "Zobrazit";
@@ -435,7 +409,6 @@
 "action_declined" = "Odmítnuto";
 "action_accepted" = "Přijato";
 
-// MARK: - Theme
 "theme_settings" = "Nastavení tématu";
 "light_theme" = "Světlé téma";
 "dark_theme" = "Tmavé téma";
@@ -449,7 +422,6 @@
 "font_size" = "Velikost písma";
 "font_style" = "Styl písma";
 
-// MARK: - App Detail More
 "feature_tags" = "Štítky funkcí";
 "free" = "Získat";
 "get" = "Získat";
@@ -464,7 +436,6 @@
 "last_updated" = "Naposledy aktualizováno";
 "requires_ios" = "Vyžaduje iOS %@ nebo novější";
 
-// MARK: - Search More
 "search_placeholder" = "Hledat hry, aplikace";
 "login" = "Přihlásit se";
 "clear_all" = "Vymazat vše";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ verzí";
 "version_x_date" = "Verze %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Přihlásit se";
 "current" = "Aktuální";
 "switch" = "Přepnout";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Zkontrolujte ověřovací kód na svém zařízení Apple";
 "wrong_verification_code" = "Nesprávný ověřovací kód. Zkuste to znovu.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Neplatný soubor IPA";
 "install_failed_with_reason" = "Instalace selhala: %@";
 "install_timeout" = "Časový limit instalace vypršel";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Nenalezeny žádné soubory IPA";
 "no_ipa_found_desc" = "V adresáři úložiště aplikace nebyly nalezeny žádné soubory IPA";
 
-// MARK: - Account Detail
 "basic_info" = "Základní informace";
 "account_identifier" = "Identifikátor účtu";
 "country_region" = "Země/Region";
@@ -585,8 +553,40 @@
 "no_value" = "Žádná";
 "region_title" = "Region";
 
-// MARK: - Appearance More
 "overall_color" = "Akcentová barva";
 "quick_select" = "Rychlý výběr";
 "auto" = "Auto";
 "unknown" = "Neznámý";
+
+"pick_color" = "Vybrat barvu";
+"auto_theme_description" = "Automaticky přepíná světlý a tmavý vzhled podle východu a západu slunce.";
+"tab_bar_style" = "Styl panelu karet";
+"tab_style_default" = "Výchozí";
+"tab_style_default_desc" = "Systémový standardní panel karet";
+"tab_style_frosted" = "Matné sklo";
+"tab_style_floating" = "Plovoucí karta";
+"tab_style_floating_desc" = "Elegantní efekt matného skla";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Samostatné vyhledávání";
+"tab_style_search_independent_desc" = "Tlačítko vyhledávání vpravo";
+"floating_tabbar_customize" = "Přizpůsobit plovoucí panel";
+"floating_tabbar_horizontal_padding" = "Vodorovný odsazení";
+"floating_tabbar_bottom_offset" = "Spodní posun";
+"floating_tabbar_height" = "Výška";
+"floating_tabbar_corner_radius" = "Poloměr zaoblení";
+"information" = "Informace";
+"expand" = "Rozbalit";
+"collapse" = "Sbalit";
+"session_tokens_header" = "Tokeny relace";
+"session_tokens" = "Tokeny relace";
+"show_session_tokens" = "Zobrazit tokeny relace";
+"hide_session_tokens" = "Skrýt tokeny relace";
+"session_tokens_hint" = "Tokeny relace slouží k automatickému opětovnému ověření. Nesdílejte je.";
+"no_screenshots" = "Žádné snímky obrazovky";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Zkontrolujte důvěryhodné zařízení Apple nebo SMS a níže zadejte 6místný ověřovací kód.";

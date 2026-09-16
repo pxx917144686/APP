@@ -80,6 +80,13 @@ clean:
 ## 终端: cd APP这文件夹
 ## 终端: make
 
+# 改了 ipatool-majd/sap_lib（Go 认证库）后
+## 先重建 framework 再打包（Apple 按 TLS 指纹风控：Go 指纹免 2FA，认证必须在 Go runtime 内发出）
+## make sap && make
+
+> `build_sap_signer.sh`：sap_lib → c-archive → dylib → 刷新 `APP/Frameworks/SAPSigner.xcframework` 各 slice。
+> xcframework 已提交在仓库内，GitHub Actions（`make`）不依赖本机 go；仅本地改 Go 代码时需要 `make sap`。
+
 ---
 
 <!-- 左右排列 -->

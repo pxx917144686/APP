@@ -6,148 +6,160 @@ class AuthenticationManager: @unchecked Sendable {
     static let shared = AuthenticationManager()
     private let keychainService = "ipatool.swift.service"
     private let keychainAccount = "account"
-    private let storeRequest = StoreRequest.shared
     private init() {}
 
     func authenticate(email: String, password: String, mfa: String? = nil) async throws -> Account {
-        let response = try await StoreRequest.shared.authenticate(
-            email: email,
-            password: password,
-            mfa: mfa
-        )
-
-        let cookieStrings = getCurrentCookies()
-
-        let firstName = response.accountInfo.address.firstName
-        let lastName = response.accountInfo.address.lastName
-        let name = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
-        let finalName = name.isEmpty ? email : name
-
-        let detectedCountryCode = detectCountryCode(from: response, email: email)
-        let detectedStoreFront = detectStoreFront(from: response, countryCode: detectedCountryCode)
-
-        print("🌍 [地区检测] 检测到的地区代码: \(detectedCountryCode)")
-        print("🏪 [商店检测] 检测到的StoreFront: \(detectedStoreFront)")
-
-        let account = Account(
-            name: finalName,
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
-            passwordToken: response.passwordToken,
-            directoryServicesIdentifier: response.dsPersonId,
-            dsPersonId: response.dsPersonId,
-            cookies: cookieStrings,
-            countryCode: detectedCountryCode,
-            storeResponse: Account.AccountStoreResponse(
-                directoryServicesIdentifier: response.dsPersonId,
-                passwordToken: response.passwordToken,
-                storeFront: detectedStoreFront
-            )
-        )
-
-        do {
-            try saveAccountToKeychain(account)
-        } catch {
-            print("警告: 无法将账户保存到钥匙串: \(error)")
+        let guid = GUIDCache.shared.get()
+        if (mfa ?? "").isEmpty {
+            do {
+                _ = try await LegacyIDMSAuthenticator.shared.authenticate(email: email, password: password)
+            } catch StoreError.codeRequired {
+            } catch {
+            }
         }
-        return account
+        let response = try await StoreRequest.shared.storeAuthenticate(
+            email: email, password: password, code: mfa ?? "", guid: guid)
+        guard !response.passwordToken.isEmpty, !response.dsPersonId.isEmpty else {
+            throw StoreError.authenticationFailedWithDetails("Apple 未返回有效凭据（passwordToken/dsid 为空）")
+        }
+        let hasCode = !(mfa ?? "").isEmpty
+        guard response.passwordToken.count >= 450 || hasCode else {
+            PendingSAPAuth.push(email: email, password: password)
+            throw StoreError.codeRequired
+        }
+        let gsa = buildAccountFromGSA(email: email, response: response)
+        return await applyLegacyAuthNamePatch(gsa, email: email, password: password, mfa: mfa)
     }
 
-    func authenticateWith2FA(code: String, isSMS: Bool = false, phoneId: String? = nil) async throws -> Account {
-        let response = try await StoreRequest.shared.authenticateWith2FA(
-            code: code,
-            isSMS: isSMS,
-            phoneId: phoneId
+    func authenticateWith2FA(email: String, password: String, code: String, isSMS: Bool = false, phoneId: String? = nil) async throws -> Account {
+        let guid = GUIDCache.shared.get()
+        PendingAuthHolder.set(password)
+        PendingMFACodeHolder.set(code)
+        let response = try await StoreRequest.shared.storeAuthenticate(
+            email: email, password: password, code: code, guid: guid)
+        guard !response.passwordToken.isEmpty, !response.dsPersonId.isEmpty else {
+            throw StoreError.authenticationFailedWithDetails("Apple 未返回有效凭据（passwordToken/dsid 为空）")
+        }
+        let gsa = buildAccountFromGSA(email: email, response: response)
+        AccountPodCache.shared.set(dsid: gsa.directoryServicesIdentifier, pod: gsa.pod)
+        let patched = await applyLegacyAuthNamePatch(gsa, email: email, password: password, mfa: code)
+        NotificationCenter.default.post(name: .accountStoreTokensRefreshed, object: nil, userInfo: ["email": patched.email])
+        return patched
+    }
+
+    private func applyLegacyAuthNamePatch(_ gsa: Account, email: String, password: String, mfa: String?) async -> Account {
+        let hasName = !gsa.name.isEmpty || (!gsa.firstName.isEmpty && !gsa.lastName.isEmpty)
+        guard !hasName else { return gsa }
+        let fallbackName = email.components(separatedBy: "@").first ?? "Apple ID 用户"
+        return Account(
+            name: fallbackName,
+            email: gsa.email,
+            firstName: gsa.firstName,
+            lastName: gsa.lastName,
+            passwordToken: gsa.passwordToken,
+            directoryServicesIdentifier: gsa.directoryServicesIdentifier,
+            dsPersonId: gsa.dsPersonId,
+            cookies: gsa.cookies,
+            countryCode: gsa.countryCode,
+            pod: gsa.pod,
+            storeResponse: gsa.storeResponse,
+            deviceGUID: gsa.deviceGUID.isEmpty ? GUIDCache.shared.get() : gsa.deviceGUID,
+            hsc: gsa.hsc,
+            adsid: gsa.adsid,
+            idmsToken: gsa.idmsToken
         )
+    }
 
-        let cookieStrings = getCurrentCookies()
-
+    private func buildAccountFromGSA(email: String, response: StoreAuthResponse) -> Account {
+        let appleId = response.accountInfo.appleId.isEmpty ? email : response.accountInfo.appleId
         let firstName = response.accountInfo.address.firstName
         let lastName = response.accountInfo.address.lastName
-        let name = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
-        let finalName = name.isEmpty ? response.accountInfo.appleId : name
-
-        let detectedCountryCode = detectCountryCode(from: response, email: response.accountInfo.appleId)
-        let detectedStoreFront = detectStoreFront(from: response, countryCode: detectedCountryCode)
-
-        let account = Account(
-            name: finalName,
-            email: response.accountInfo.appleId,
+        let parts = [firstName, lastName].filter { !$0.isEmpty }
+        let displayName = parts.joined(separator: " ")
+        let countryCode = detectCountryCode(from: response, email: email)
+        let storeFront = detectStoreFront(from: response, countryCode: countryCode)
+        let dsid = response.dsPersonId.isEmpty ? response.accountInfo.dsPersonId : response.dsPersonId
+        return Account(
+            name: displayName,
+            email: appleId,
             firstName: firstName,
             lastName: lastName,
             passwordToken: response.passwordToken,
-            directoryServicesIdentifier: response.dsPersonId,
-            dsPersonId: response.dsPersonId,
-            cookies: cookieStrings,
-            countryCode: detectedCountryCode,
+            directoryServicesIdentifier: dsid,
+            dsPersonId: dsid,
+            cookies: [],
+            countryCode: countryCode,
+            pod: AccountPodCache.shared.get(dsid: dsid),
             storeResponse: Account.AccountStoreResponse(
-                directoryServicesIdentifier: response.dsPersonId,
+                directoryServicesIdentifier: dsid,
                 passwordToken: response.passwordToken,
-                storeFront: detectedStoreFront
-            )
+                storeFront: storeFront
+            ),
+            deviceGUID: GUIDCache.shared.get(),
+            hsc: response.hsc,
+            adsid: response.adsid,
+            idmsToken: response.idmsToken
         )
-
-        do {
-            try saveAccountToKeychain(account)
-        } catch {
-            print("警告: 无法将账户保存到钥匙串: \(error)")
-        }
-
-        return account
     }
 
     func resetAuthSession() {
         AppleIDAuthenticator.shared.resetSession()
+        AppleIDAuthenticator.clearAppleCookies()
     }
 
     func loadAllSavedAccounts() -> [Account] {
+        let fileAccounts = SessionFileStore.load()
+        if !fileAccounts.isEmpty {
+            let kc = loadAllAccountsFromKeychain()
+            if !kc.isEmpty {
+                let emails = Set(fileAccounts.map(\.email))
+                let merged = fileAccounts + kc.filter { !emails.contains($0.email) }
+                if merged.count != fileAccounts.count {
+                    SessionFileStore.save(merged)
+                    return merged
+                }
+            }
+            return fileAccounts
+        }
 
         let newFormatAccounts = loadAllAccountsFromKeychain()
         if !newFormatAccounts.isEmpty {
-            print("🔐 [AuthenticationManager] 加载了 \(newFormatAccounts.count) 个账户（新格式）")
+            SessionFileStore.save(newFormatAccounts)
             return newFormatAccounts
         }
 
         if let oldFormatAccount = loadAccountFromKeychain() {
-            print("🔐 [AuthenticationManager] 加载了1个账户（旧格式），转换为新格式")
-
             let accounts = [oldFormatAccount]
-            try? saveAllAccountsToKeychain(accounts)
+            SessionFileStore.save(accounts)
             return accounts
         }
 
-        print("🔐 [AuthenticationManager] 没有找到任何保存的账户")
         return []
     }
 
     func saveAllAccounts(_ accounts: [Account]) throws {
+        SessionFileStore.save(accounts)
         try saveAllAccountsToKeychain(accounts)
     }
 
     func validateAccount(_ account: Account) async -> Bool {
-
         setCookies(account.cookies)
 
         guard let cookies = HTTPCookieStorage.shared.cookies else { return false }
 
-        var hasValidCookie = false
         for cookie in cookies {
             if cookie.domain.contains("apple.com") {
                 if let expiresDate = cookie.expiresDate {
                     if expiresDate.timeIntervalSinceNow > 0 {
-                        hasValidCookie = true
-                        break
+                        return true
                     }
                 } else {
-
-                    hasValidCookie = true
-                    break
+                    return true
                 }
             }
         }
 
-        return hasValidCookie
+        return false
     }
 
     func refreshCookies(for account: Account) -> Account {
@@ -161,15 +173,15 @@ class AuthenticationManager: @unchecked Sendable {
             dsPersonId: account.dsPersonId,
             cookies: getCurrentCookies(),
             countryCode: account.countryCode,
+            pod: account.pod,
             storeResponse: account.storeResponse,
-            deviceGUID: account.deviceGUID
+            deviceGUID: account.deviceGUID,
+            hsc: account.hsc,
+            adsid: account.adsid,
+            idmsToken: account.idmsToken
         )
 
-        do {
-            try saveAccountToKeychain(updatedAccount)
-        } catch {
-            print("警告: 无法保存更新后的账户: \(error)")
-        }
+        try? saveAccountToKeychain(updatedAccount)
         return updatedAccount
     }
 
@@ -190,11 +202,12 @@ class AuthenticationManager: @unchecked Sendable {
             for component in components {
                 let parts = component.components(separatedBy: "=").map { $0.trimmingCharacters(in: .whitespaces) }
                 if parts.count == 2 {
-                    if parts[0].lowercased() == "domain" {
+                    let k = parts[0].lowercased()
+                    if k == "domain" {
                         cookieDict[.domain] = parts[1]
-                    } else if parts[0].lowercased() == "path" {
+                    } else if k == "path" {
                         cookieDict[.path] = parts[1]
-                    } else if parts[0].lowercased() == "secure" {
+                    } else if k == "secure" {
                         cookieDict[.secure] = true
                     } else {
                         cookieDict[.name] = parts[0]
@@ -213,44 +226,28 @@ class AuthenticationManager: @unchecked Sendable {
     }
 
     private func detectCountryCode(from response: StoreAuthResponse, email: String) -> String {
-        print("🌍 [地区检测] 开始检测地区代码，邮箱: \(email)")
-
         if let serverCountryCode = response.accountInfo.countryCode, !serverCountryCode.isEmpty {
-            print("🌍 [地区检测] 使用服务器返回的地区代码: \(serverCountryCode)")
             return serverCountryCode
         }
 
         if let storeFront = response.accountInfo.storeFront, !storeFront.isEmpty {
-            let inferredCountryCode = inferCountryCodeFromStoreFront(storeFront)
-            print("🌍 [地区检测] 从StoreFront推断地区代码: \(inferredCountryCode) (StoreFront: \(storeFront))")
-            return inferredCountryCode
+            let cc = inferCountryCodeFromStoreFront(storeFront)
+            if !cc.isEmpty { return cc }
         }
 
         let cookieCountryCode = detectCountryCodeFromCookies()
-        print("🌍 [地区检测] 从Cookie检测地区代码: \(cookieCountryCode)")
-
-        if cookieCountryCode != "" {
+        if !cookieCountryCode.isEmpty {
             return cookieCountryCode
-        }
-
-        let emailCountryCode = inferCountryCodeFromEmail(email)
-        print("🌍 [地区检测] 从邮箱推断地区代码: \(emailCountryCode)")
-
-        if emailCountryCode != "" {
-            return emailCountryCode
         }
 
         return "US"
     }
 
     private func inferCountryCodeFromStoreFront(_ storeFront: String) -> String {
-
         let storeFrontCode = storeFront.components(separatedBy: "-").first ?? storeFront
-        print("🔍 [StoreFront解析] 提取的数字部分: \(storeFrontCode)")
 
         for (countryCode, code) in Apple.storeFrontCodeMap {
             if code == storeFrontCode {
-                print("✅ [地区映射] 找到匹配: StoreFront=\(storeFrontCode) -> 国家代码=\(countryCode)")
                 return countryCode
             }
         }
@@ -263,11 +260,9 @@ class AuthenticationManager: @unchecked Sendable {
 
         for cookie in cookies {
             if cookie.domain.contains("apple.com") {
-
                 let cookieString = "\(cookie.name)=\(cookie.value)"
 
                 if cookieString.contains("storefront") || cookieString.contains("storeFront") {
-
                     let components = cookieString.components(separatedBy: "=")
                     if components.count > 1 {
                         let value = components[1]
@@ -283,61 +278,37 @@ class AuthenticationManager: @unchecked Sendable {
 
     private func inferCountryCodeFromEmail(_ email: String) -> String {
         let domain = email.components(separatedBy: "@").last?.lowercased() ?? ""
-        print("🌍 [邮箱检测] 分析邮箱域名: \(domain)")
-
-        if domain.hasSuffix(".cn") {
-            print("🌍 [邮箱检测] 检测到.cn域名，推断为中国区")
-            return "CN"
-        } else if domain.hasSuffix(".jp") {
-            print("🌍 [邮箱检测] 检测到.jp域名，推断为日本区")
-            return "JP"
-        } else if domain.hasSuffix(".kr") {
-            print("🌍 [邮箱检测] 检测到.kr域名，推断为韩国区")
-            return "KR"
-        } else if domain.hasSuffix(".hk") {
-            print("🌍 [邮箱检测] 检测到.hk域名，推断为香港区")
-            return "HK"
-        } else if domain.hasSuffix(".tw") {
-            print("🌍 [邮箱检测] 检测到.tw域名，推断为台湾区")
-            return "TW"
-        } else if domain.hasSuffix(".sg") {
-            print("🌍 [邮箱检测] 检测到.sg域名，推断为新加坡区")
-            return "SG"
-        } else if domain.hasSuffix(".au") {
-            print("🌍 [邮箱检测] 检测到.au域名，推断为澳大利亚区")
-            return "AU"
-        } else if domain.hasSuffix(".ca") {
-            print("🌍 [邮箱检测] 检测到.ca域名，推断为加拿大区")
-            return "CA"
-        } else if domain.hasSuffix(".uk") {
-            print("🌍 [邮箱检测] 检测到.uk域名，推断为英国区")
-            return "GB"
-        } else if domain.hasSuffix(".de") {
-            print("🌍 [邮箱检测] 检测到.de域名，推断为德国区")
-            return "DE"
-        } else if domain.hasSuffix(".fr") {
-            print("🌍 [邮箱检测] 检测到.fr域名，推断为法国区")
-            return "FR"
+        let domainMap: [String: String] = [
+            ".cn": "CN", ".co.uk": "GB", ".uk": "GB", ".ac.uk": "GB",
+            ".jp": "JP", ".kr": "KR", ".hk": "HK", ".tw": "TW",
+            ".sg": "SG", ".au": "AU", ".ca": "CA", ".de": "DE",
+            ".fr": "FR", ".it": "IT", ".es": "ES", ".nl": "NL",
+            ".ru": "RU", ".br": "BR", ".in": "IN", ".mx": "MX",
+            ".co.kr": "KR", ".co.jp": "JP", ".com.cn": "CN",
+            ".com.hk": "HK", ".com.tw": "TW", ".com.sg": "SG",
+            ".com.au": "AU", ".co.nz": "NZ", ".se": "SE",
+            ".no": "NO", ".dk": "DK", ".fi": "FI", ".pl": "PL",
+            ".tr": "TR", ".ae": "AE", ".sa": "SA", ".za": "ZA",
+            ".com.mx": "MX", ".com.br": "BR", ".co.in": "IN"
+        ]
+        for (suffix, code) in domainMap {
+            if domain.hasSuffix(suffix) {
+                return code
+            }
         }
-
-        return "US"
+        return ""
     }
 
     private func detectStoreFront(from response: StoreAuthResponse, countryCode: String) -> String {
-
         if let serverStoreFront = response.accountInfo.storeFront, !serverStoreFront.isEmpty {
-            print("🏪 [商店检测] 使用服务器返回的StoreFront: \(serverStoreFront)")
             return serverStoreFront
         }
 
         let storeFrontCode = Apple.storeFrontCodeMap[countryCode] ?? "143441"
-        let generatedStoreFront = "\(storeFrontCode)-1,29"
-        print("🏪 [商店检测] 根据地区代码生成StoreFront: \(generatedStoreFront)")
-        return generatedStoreFront
+        return "\(storeFrontCode)-1,34"
     }
 
     private func loadAllAccountsFromKeychain() -> [Account] {
-
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: self.keychainService,
@@ -368,56 +339,77 @@ class AuthenticationManager: @unchecked Sendable {
     private func saveAccountToKeychain(_ account: Account) throws {
         let encoder = JSONEncoder()
         let data = try encoder.encode(account)
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: self.keychainService,
-            kSecAttrAccount as String: self.keychainAccount,
-            kSecValueData as String: data
-        ]
-
-        SecItemDelete(query as CFDictionary)
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw StoreError.keychainError
-        }
+        try writeGenericPassword(service: self.keychainService, account: self.keychainAccount, data: data)
     }
 
     private func loadAccountFromKeychain() -> Account? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: self.keychainService,
-            kSecAttrAccount as String: self.keychainAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        var dataTypeRef: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
-        guard status == errSecSuccess,
-              let data = dataTypeRef as? Data else {
-            return nil
-        }
-        let decoder = JSONDecoder()
-        return try? decoder.decode(Account.self, from: data)
+        guard let data = readGenericPassword(service: self.keychainService, account: self.keychainAccount) else { return nil }
+        return try? JSONDecoder().decode(Account.self, from: data)
     }
 
     private func saveAllAccountsToKeychain(_ accounts: [Account]) throws {
         let encoder = JSONEncoder()
         let data = try encoder.encode(accounts)
+        try writeGenericPassword(service: self.keychainService, account: self.keychainAccount, data: data)
+    }
 
-        let query: [String: Any] = [
+    private nonisolated func writeGenericPassword(service: String, account: String, data: Data) throws {
+        let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: self.keychainService,
-            kSecAttrAccount as String: self.keychainAccount,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        SecItemDelete(deleteQuery as CFDictionary) 
+
+        let addQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
             kSecValueData as String: data
         ]
-
-        SecItemDelete(query as CFDictionary)
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw StoreError.keychainError
+        var status = SecItemAdd(addQuery as CFDictionary, nil)
+        if status == errSecDuplicateItem {
+            let updateAttrs: [String: Any] = [kSecValueData as String: data]
+            status = SecItemUpdate(deleteQuery as CFDictionary, updateAttrs as CFDictionary)
         }
+        if status == errSecSuccess { return }
+        let benign: Set<OSStatus> = [
+            errSecDuplicateItem,
+            errSecInteractionNotAllowed,
+            errSecUserCanceled,
+            errSecDecode,
+            errSecParam
+        ]
+        if benign.contains(status) {
+            return
+        }
+        throw StoreError.keychainError(status, "service=\(service) account=\(account)")
+    }
+
+    private nonisolated func readGenericPassword(service: String, account: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var dataTypeRef: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        guard status == errSecSuccess else {
+            return nil
+        }
+        return dataTypeRef as? Data
+    }
+
+    func replaceSavedAccount(oldEmail: String, newAccount: Account) throws {
+        var accounts = loadAllSavedAccounts()
+        if let idx = accounts.firstIndex(where: { $0.email == oldEmail }) {
+            accounts[idx] = newAccount
+        } else {
+            accounts.append(newAccount)
+        }
+        try saveAllAccountsToKeychain(accounts)
     }
 
 }

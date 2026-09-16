@@ -52,16 +52,13 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
     ) async {
         updateState(for: request.id, status: .preparing, progress: 0.2)
 
-
         try? await Task.sleep(nanoseconds: 2_000_000_000)
 
         updateState(for: request.id, status: .prompting, progress: 0.6)
 
-
         try? await Task.sleep(nanoseconds: 3_000_000_000)
 
         updateState(for: request.id, status: .installing, progress: 0.8)
-
 
         beginInstallationMonitoring(
             requestId: request.id,
@@ -76,7 +73,7 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
             Task { @MainActor in
                 guard let self = self else { return }
                 if self.installingRequests[requestId]?.status == .installing {
-                    self.updateState(for: requestId, status: .timeout, error: "安装超时，请检查桌面是否已安装")
+                    self.updateState(for: requestId, status: .timeout, error: "安装超时，请检查主屏幕是否已安装")
                     self.cleanupMonitoring(for: requestId)
                 }
             }

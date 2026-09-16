@@ -9,7 +9,7 @@ struct ShelfView<Item: Identifiable, Content: View>: View {
     let horizontalPadding: CGFloat = 16
     @ViewBuilder let itemContent: (Item) -> Content
     var onShowAll: (() -> Void)?
-    
+
     init(
         items: [Item],
         title: String? = nil,
@@ -25,13 +25,13 @@ struct ShelfView<Item: Identifiable, Content: View>: View {
         self.itemContent = itemContent
         self.onShowAll = onShowAll
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if title != nil || showAllTitle != nil {
                 headerView
             }
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: spacing) {
                     ForEach(items) { item in
@@ -43,7 +43,7 @@ struct ShelfView<Item: Identifiable, Content: View>: View {
             }
         }
     }
-    
+
     private var headerView: some View {
         HStack {
             if let title = title {
@@ -51,9 +51,9 @@ struct ShelfView<Item: Identifiable, Content: View>: View {
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.primary)
             }
-            
+
             Spacer()
-            
+
             if let showAllTitle = showAllTitle, let onShowAll = onShowAll {
                 Button(action: onShowAll) {
                     HStack(spacing: 4) {

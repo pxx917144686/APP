@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "设置";
 "tab_tfapps" = "TF版";
 "tab_downloads" = "下载";
 "tab_search" = "搜索";
 
-// MARK: - Common
 "cancel" = "取消";
 "confirm" = "确定";
 "ok" = "👌";
@@ -47,7 +45,6 @@
 "try_again" = "请重试";
 "got_it" = "知道了";
 
-// MARK: - Settings
 "settings" = "设置";
 "appearance" = "外观";
 "theme" = "主题";
@@ -132,7 +129,6 @@
 "lang_croatian" = "克罗地亚语";
 "lang_catalan" = "加泰罗尼亚语";
 
-// MARK: - Download
 "download_title" = "下载";
 "downloading" = "下载中";
 "download_paused" = "已暂停";
@@ -159,8 +155,10 @@
 "wifi_only_download" = "仅WiFi下载";
 "max_concurrent_downloads" = "最大同时下载数";
 "download_path" = "下载路径";
+"download_task" = "下载任务";
+"progress" = "进度";
+"download_succeeded" = "下载成功";
 
-// MARK: - Account
 "account" = "账户";
 "apple_id" = "Apple ID";
 "add_account" = "添加 Apple ID";
@@ -184,11 +182,9 @@
 "email" = "邮箱";
 "country" = "国家/地区";
 
-// MARK: - App Icon
 "app_icon_settings" = "应用图标";
 "default_icon" = "默认";
 
-// MARK: - Search
 "search_placeholder" = "搜索应用、游戏、开发者";
 "search_history" = "搜索历史";
 "search_suggestions" = "搜索建议";
@@ -199,7 +195,6 @@
 "try_different_keywords" = "请尝试使用其他关键词";
 "searching" = "搜索中...";
 
-// MARK: - Version Picker
 "version_picker" = "选择版本";
 "current_version" = "当前版本";
 "available_versions" = "可用版本";
@@ -211,7 +206,6 @@
 "size" = "大小";
 "build_number" = "构建号";
 
-// MARK: - App Detail
 "app_detail" = "应用详情";
 "get" = "获取";
 "icloud_sync" = "iCloud 同步";
@@ -229,7 +223,6 @@
 "no_reviews" = "暂无评论";
 "no_reviews_description" = "该应用暂无用户评论";
 
-// MARK: - TF Apps
 "tf_apps" = "TF版";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "暂无TestFlight应用";
@@ -243,7 +236,6 @@
 "redeem_code" = "兑换码";
 "enter_redeem_code" = "输入兑换码";
 
-// MARK: - Filter & Sort
 "filter" = "筛选";
 "sort" = "排序";
 "sort_by_name" = "按名称排序";
@@ -253,7 +245,6 @@
 "ascending" = "升序";
 "descending" = "降序";
 
-// MARK: - Notification
 "notifications" = "通知";
 "push_notifications" = "推送通知";
 "download_complete_notification" = "下载完成通知";
@@ -261,7 +252,6 @@
 "notification_vibrate" = "震动";
 "notification_badge" = "角标";
 
-// MARK: - Privacy & Security
 "privacy_security" = "隐私与安全";
 "clear_cache" = "清除缓存";
 "cache_size" = "缓存大小";
@@ -270,7 +260,6 @@
 "clear_cache_message" = "确定要清除所有缓存吗？这不会删除已下载的应用。";
 "cache_cleared" = "缓存已清除";
 
-// MARK: - Storage
 "storage" = "存储空间";
 "total_storage" = "总容量";
 "used_storage" = "已使用";
@@ -278,14 +267,12 @@
 "app_size" = "应用大小";
 "documents_size" = "文稿大小";
 
-// MARK: - Download Manager
 "download_manager" = "下载管理";
 "batch_operations" = "批量操作";
 "select_all" = "全选";
 "deselect_all" = "取消全选";
 "selected_count" = "已选择 %@ 项";
 
-// MARK: - App Information
 "app_name" = "应用名称";
 "app_version" = "应用版本";
 "app_rating" = "应用评分";
@@ -295,7 +282,6 @@
 "language_support" = "支持语言";
 "content_rating" = "内容评级";
 
-// MARK: - Account Management
 "account_management" = "账户管理";
 "login_status" = "登录状态";
 "two_factor_auth" = "双重认证";
@@ -304,7 +290,6 @@
 "login_expired" = "登录已过期";
 "please_relogin" = "请重新登录";
 
-// MARK: - Settings More
 "advanced_settings" = "高级设置";
 "developer_options" = "开发者选项";
 "check_update" = "检查更新";
@@ -314,7 +299,6 @@
 "rate_app" = "给我们评分";
 "share_app" = "分享应用";
 
-// MARK: - Network
 "network" = "网络";
 "network_status" = "网络状态";
 "wifi" = "WiFi";
@@ -325,7 +309,6 @@
 "network_speed" = "网络速度";
 "network_usage" = "流量使用";
 
-// MARK: - Installation
 "installation" = "安装";
 "installing" = "安装中...";
 "install_success" = "安装成功";
@@ -339,7 +322,6 @@
 "signed" = "已签名";
 "unsigned" = "未签名";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "测试邀请";
 "testflight_build" = "构建版本";
@@ -351,7 +333,6 @@
 "testflight_join" = "加入测试";
 "testflight_leave" = "退出测试";
 
-// MARK: - Search More
 "search_filter" = "搜索筛选";
 "search_result_count" = "找到 %@ 个结果";
 "exact_match" = "精确匹配";
@@ -361,7 +342,6 @@
 "recommended_apps" = "推荐应用";
 "top_charts" = "排行榜";
 
-// MARK: - Status
 "status" = "状态";
 "status_normal" = "正常";
 "status_abnormal" = "异常";
@@ -376,7 +356,6 @@
 "status_idle" = "空闲";
 "status_busy" = "忙碌";
 
-// MARK: - Tips
 "tips" = "温馨提示";
 "tip_download_speed" = "下载速度取决于网络环境";
 "tip_wifi_download" = "建议在 WiFi 环境下下载大文件";
@@ -387,7 +366,6 @@
 "view_details" = "查看详情";
 "learn_more" = "了解更多";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -408,7 +386,6 @@
 "hours_ago" = "%@小时前";
 "days_ago" = "%@天前";
 
-// MARK: - Actions
 "action_open" = "打开";
 "action_close" = "关闭";
 "action_view" = "查看";
@@ -453,7 +430,6 @@
 "action_declined" = "已拒绝";
 "action_accepted" = "已接受";
 
-// MARK: - Theme
 "theme_settings" = "主题设置";
 "light_theme" = "浅色主题";
 "dark_theme" = "深色主题";
@@ -467,7 +443,6 @@
 "font_size" = "字体大小";
 "font_style" = "字体样式";
 
-// MARK: - App Detail More
 "feature_tags" = "功能标签";
 "free" = "获取";
 "view" = "查看";
@@ -482,7 +457,6 @@
 "expand" = "展开";
 "collapse" = "收起";
 
-// MARK: - Search More
 "login" = "登录";
 "clear_all" = "清除全部";
 "x_results_found" = "找到 %@ 个结果";
@@ -499,7 +473,6 @@
 "x_versions" = "%@ 个版本";
 "version_x_date" = "版本 %@ · %@";
 
-// MARK: - Account More
 "login_account" = "登录账户";
 "current" = "当前";
 "switch" = "切换";
@@ -544,9 +517,9 @@
 "unknown_error" = "未知错误，请稍后重试";
 "auth_error" = "认证过程中发生错误: %@";
 "check_apple_device_code" = "请查看您的Apple设备上的验证码";
+"two_factor_code_intro" = "请查看您受信任的Apple设备或短信，在下方输入框中填写6位双重验证代码以继续登录。";
 "wrong_verification_code" = "验证码错误，请重新输入";
 
-// MARK: - Download More
 "invalid_ipa_file" = "无效的IPA文件";
 "install_failed_with_reason" = "安装失败: %@";
 "install_timeout" = "安装超时";
@@ -586,7 +559,6 @@
 "no_ipa_found" = "未找到IPA文件";
 "no_ipa_found_desc" = "未在应用存储目录中发现IPA文件";
 
-// MARK: - Account Detail
 "basic_info" = "基本信息";
 "account_identifier" = "账户标识";
 "password_token" = "密码 Token";
@@ -597,10 +569,19 @@
 "dsid" = "DSID";
 "no_value" = "无";
 "region_title" = "地区";
+"session_tokens_header" = "Key";
+"session_tokens" = "Key";
+"show_session_tokens" = "显示Key";
+"hide_session_tokens" = "隐藏Key";
+"session_tokens_hint" = "Key用于自动重新认证，请勿泄露给他人。";
 
-// MARK: - Appearance More
 "overall_color" = "整体颜色";
 "quick_select" = "快速选择";
 "auto" = "自动";
 "unknown" = "未知";
 "no_screenshots" = "暂无截图";
+
+"hide_password" = "隐藏密码";
+"show_password" = "显示密码";
+"less" = "收起";
+"see_all_reviews" = "查看全部评论";

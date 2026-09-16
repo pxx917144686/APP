@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Налаштування";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Завантаження";
 "tab_search" = "Пошук";
 
-// MARK: - Common
 "cancel" = "Скасувати";
 "confirm" = "Підтвердити";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Будь ласка, спробуйте ще раз";
 "got_it" = "Зрозуміло";
 
-// MARK: - Settings
 "settings" = "Налаштування";
 "appearance" = "Зовнішній вигляд";
 "theme" = "Тема";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Хорватська";
 "lang_catalan" = "Каталонська";
 
-// MARK: - Download
 "download_title" = "Завантаження";
 "downloading" = "Завантажується";
 "download_paused" = "Призупинено";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Макс. одночасних завантажень";
 "download_path" = "Шлях завантаження";
 
-// MARK: - Account
 "account" = "Обліковий запис";
 "apple_id" = "Apple ID";
 "add_account" = "Додати Apple ID";
@@ -166,11 +161,9 @@
 "email" = "Електронна пошта";
 "country" = "Країна/Регіон";
 
-// MARK: - App Icon
 "app_icon_settings" = "Значок програми";
 "default_icon" = "За замовчуванням";
 
-// MARK: - Search
 "search_placeholder" = "Пошук програм, ігор, розробників";
 "search_history" = "Історія пошуку";
 "search_suggestions" = "Пропозиції пошуку";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Спробуйте інші ключові слова";
 "searching" = "Пошук...";
 
-// MARK: - Version Picker
 "version_picker" = "Вибрати версію";
 "current_version" = "Поточна версія";
 "available_versions" = "Доступні версії";
@@ -193,7 +185,6 @@
 "size" = "Розмір";
 "build_number" = "Номер збірки";
 
-// MARK: - App Detail
 "app_detail" = "Деталі програми";
 "get" = "Отримати";
 "icloud_sync" = "Синхронізація iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "Немає відгуків";
 "no_reviews_description" = "У цієї програми ще немає відгуків користувачів";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Немає програм TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "Код активації";
 "enter_redeem_code" = "Введіть код активації";
 
-// MARK: - Filter & Sort
 "filter" = "Фільтр";
 "sort" = "Сортування";
 "sort_by_name" = "Сортувати за іменем";
@@ -235,7 +224,6 @@
 "ascending" = "За зростанням";
 "descending" = "За спаданням";
 
-// MARK: - Notification
 "notifications" = "Сповіщення";
 "push_notifications" = "Push-сповіщення";
 "download_complete_notification" = "Сповіщення про завершення завантаження";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Вібрація";
 "notification_badge" = "Значок";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Конфіденційність та безпека";
 "clear_cache" = "Очистити кеш";
 "cache_size" = "Розмір кешу";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Ви впевнені, що хочете очистити весь кеш? Це не видалить завантажені програми.";
 "cache_cleared" = "Кеш очищено";
 
-// MARK: - Storage
 "storage" = "Сховище";
 "total_storage" = "Загалом";
 "used_storage" = "Використано";
@@ -260,14 +246,12 @@
 "app_size" = "Розмір програми";
 "documents_size" = "Розмір документів";
 
-// MARK: - Download Manager
 "download_manager" = "Менеджер завантажень";
 "batch_operations" = "Пакетні операції";
 "select_all" = "Вибрати всі";
 "deselect_all" = "Скасувати вибір усіх";
 "selected_count" = "%@ вибрано";
 
-// MARK: - App Information
 "app_name" = "Назва програми";
 "app_version" = "Версія програми";
 "app_rating" = "Рейтинг програми";
@@ -277,7 +261,6 @@
 "language_support" = "Підтримка мов";
 "content_rating" = "Віковий рейтинг";
 
-// MARK: - Account Management
 "account_management" = "Керування обліковими записами";
 "login_status" = "Статус входу";
 "two_factor_auth" = "Двофакторна автентифікація";
@@ -286,7 +269,6 @@
 "login_expired" = "Термін дії сесії закінчився";
 "please_relogin" = "Будь ласка, увійдіть знову";
 
-// MARK: - Settings More
 "advanced_settings" = "Додаткові налаштування";
 "developer_options" = "Параметри розробника";
 "check_update" = "Перевірити оновлення";
@@ -296,7 +278,6 @@
 "rate_app" = "Оцінити програму";
 "share_app" = "Поділитися програмою";
 
-// MARK: - Network
 "network" = "Мережа";
 "network_status" = "Стан мережі";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Швидкість мережі";
 "network_usage" = "Використання даних";
 
-// MARK: - Installation
 "installation" = "Встановлення";
 "installing" = "Встановлення...";
 "install_success" = "Встановлення успішне";
@@ -321,7 +301,6 @@
 "signed" = "Підписано";
 "unsigned" = "Непідписано";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Запрошення на тест";
 "testflight_build" = "Збірка";
@@ -333,7 +312,6 @@
 "testflight_join" = "Приєднатися до тесту";
 "testflight_leave" = "Покинути тест";
 
-// MARK: - Search More
 "search_filter" = "Фільтр пошуку";
 "search_result_count" = "Знайдено %@ результатів";
 "exact_match" = "Точне співпадіння";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Рекомендовані програми";
 "top_charts" = "Топ-чарти";
 
-// MARK: - Status
 "status" = "Статус";
 "status_normal" = "Нормальний";
 "status_abnormal" = "Аномальний";
@@ -358,7 +335,6 @@
 "status_idle" = "Вільний";
 "status_busy" = "Зайнятий";
 
-// MARK: - Tips
 "tips" = "Поради";
 "tip_download_speed" = "Швидкість завантаження залежить від вашого з'єднання з мережею";
 "tip_wifi_download" = "Рекомендується завантажувати великі файли через Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "Переглянути деталі";
 "learn_more" = "Дізнатися більше";
 
-// MARK: - Units
 "unit_bytes" = "Б";
 "unit_kilobytes" = "КБ";
 "unit_megabytes" = "МБ";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ год тому";
 "days_ago" = "%@ дн тому";
 
-// MARK: - Actions
 "action_open" = "Відкрити";
 "action_close" = "Закрити";
 "action_view" = "Переглянути";
@@ -435,7 +409,6 @@
 "action_declined" = "Відхилено";
 "action_accepted" = "Прийнято";
 
-// MARK: - Theme
 "theme_settings" = "Налаштування теми";
 "light_theme" = "Світла тема";
 "dark_theme" = "Темна тема";
@@ -449,7 +422,6 @@
 "font_size" = "Розмір шрифту";
 "font_style" = "Стиль шрифту";
 
-// MARK: - App Detail More
 "feature_tags" = "Теги функцій";
 "free" = "Отримати";
 "get" = "Отримати";
@@ -464,7 +436,6 @@
 "last_updated" = "Останнє оновлення";
 "requires_ios" = "Потрібно iOS %@ або новішої версії";
 
-// MARK: - Search More
 "search_placeholder" = "Пошук ігор, програм";
 "login" = "Увійти";
 "clear_all" = "Очистити все";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ версій";
 "version_x_date" = "Версія %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Увійти";
 "current" = "Поточний";
 "switch" = "Змінити";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Перевірте пристрій Apple для отримання коду перевірки";
 "wrong_verification_code" = "Неправильний код перевірки. Спробуйте ще раз.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Недійсний файл IPA";
 "install_failed_with_reason" = "Не вдалося встановити: %@";
 "install_timeout" = "Час очікування встановлення вичерпано";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Файлів IPA не знайдено";
 "no_ipa_found_desc" = "Файлів IPA не знайдено в каталозі зберігання програми";
 
-// MARK: - Account Detail
 "basic_info" = "Основна інформація";
 "account_identifier" = "Ідентифікатор облікового запису";
 "country_region" = "Країна/Регіон";
@@ -585,8 +553,40 @@
 "no_value" = "Немає";
 "region_title" = "Регіон";
 
-// MARK: - Appearance More
 "overall_color" = "Колір акценту";
 "quick_select" = "Швидкий вибір";
 "auto" = "Автоматично";
 "unknown" = "Невідомо";
+
+"pick_color" = "Вибрати колір";
+"auto_theme_description" = "Автоматичне перемикання світлого й темного оформлення за сходом і заходом сонця.";
+"tab_bar_style" = "Стиль панелі вкладок";
+"tab_style_default" = "За замовчуванням";
+"tab_style_default_desc" = "Стандартна системна панель вкладок";
+"tab_style_frosted" = "Матоване скло";
+"tab_style_floating" = "Плаваюча картка";
+"tab_style_floating_desc" = "Елегантний ефект матованого скла";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Окремий пошук";
+"tab_style_search_independent_desc" = "Кнопка пошуку праворуч";
+"floating_tabbar_customize" = "Налаштувати плаваючу панель";
+"floating_tabbar_horizontal_padding" = "Горизонтальний відступ";
+"floating_tabbar_bottom_offset" = "Нижнє зміщення";
+"floating_tabbar_height" = "Висота";
+"floating_tabbar_corner_radius" = "Радіус заокруглення";
+"information" = "Інформація";
+"expand" = "Розгорнути";
+"collapse" = "Згорнути";
+"session_tokens_header" = "Токени сесії";
+"session_tokens" = "Токени сесії";
+"show_session_tokens" = "Показати токени сесії";
+"hide_session_tokens" = "Сховати токени сесії";
+"session_tokens_hint" = "Токени сесії використовуються для автоматичної повторної автентифікації. Не діліться ними.";
+"no_screenshots" = "Немає скриншотів";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Перевірте довірене пристрій Apple або SMS і введіть 6-значний код підтвердження нижче.";

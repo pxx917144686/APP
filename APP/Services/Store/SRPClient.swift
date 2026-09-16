@@ -1,1611 +1,507 @@
 import Foundation
 import CommonCrypto
-import JavaScriptCore
 
-struct BigUInt: Equatable, Comparable {
-    private var limbs: [UInt64]
-
-    init(_ value: Int = 0) {
-        self.limbs = [UInt64(abs(value))]
-        self.normalize()
-    }
-
-    init(_ value: UInt64) {
-        self.limbs = [value]
-        self.normalize()
-    }
-
-    init(_ data: Data) {
-
-        var result: [UInt64] = []
-        var current: UInt64 = 0
-        var shift = 0
-
-        for byte in data.reversed() {
-            current |= UInt64(byte) << shift
-            shift += 8
-            if shift == 64 {
-                result.append(current)
-                current = 0
-                shift = 0
-            }
-        }
-        if shift > 0 {
-            result.append(current)
-        }
-        self.limbs = result.isEmpty ? [0] : result
-        self.normalize()
-    }
-
-    static func fromHex(_ hex: String) -> BigUInt {
-        var cleanHex = hex.hasPrefix("0x") ? String(hex.dropFirst(2)) : hex
-        cleanHex = cleanHex.replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: "\\", with: "")
-
-        if cleanHex.count % 2 != 0 {
-            cleanHex = "0" + cleanHex
-        }
-        guard let data = Data(hexString: cleanHex) else {
-            return BigUInt(0)
-        }
-        return BigUInt(data)
-    }
-
-    var isZero: Bool {
-        return limbs.allSatisfy { $0 == 0 }
-    }
-
-    var bitCount: Int {
-        guard !isZero else { return 0 }
-        var count = (limbs.count - 1) * 64
-        var top = limbs.last!
-        while top != 0 {
-            count += 1
-            top >>= 1
-        }
-        return count
-    }
-
-    func serialize() -> Data {
-        if isZero { return Data([0]) }
-        var result = Data()
-        for i in stride(from: limbs.count - 1, through: 0, by: -1) {
-            var word = limbs[i]
-            var bytes = [UInt8](repeating: 0, count: 8)
-            for j in stride(from: 7, through: 0, by: -1) {
-                bytes[j] = UInt8(word & 0xFF)
-                word >>= 8
-            }
-            if result.isEmpty {
-                var startIdx = 0
-                while startIdx < 7 && bytes[startIdx] == 0 {
-                    startIdx += 1
-                }
-                result.append(Data(bytes[startIdx...]))
-            } else {
-                result.append(Data(bytes))
-            }
-        }
-        return result
-    }
-
-    func serialize(paddedTo byteCount: Int) -> Data {
-        let raw = serialize()
-        if raw.count < byteCount {
-            return Data(repeating: 0, count: byteCount - raw.count) + raw
-        }
-        return raw
-    }
-
-    mutating func normalize() {
-        while limbs.count > 1 && limbs.last == 0 {
-            limbs.removeLast()
-        }
-    }
-
-    static func + (lhs: BigUInt, rhs: BigUInt) -> BigUInt {
-        var result = lhs
-        result.add(rhs)
-        return result
-    }
-
-    mutating func add(_ other: BigUInt) {
-        while limbs.count < other.limbs.count {
-            limbs.append(0)
-        }
-        var carry = false
-        for i in 0..<other.limbs.count {
-            let (sum, overflow) = limbs[i].addingReportingOverflow(other.limbs[i])
-            let (sum2, overflow2) = sum.addingReportingOverflow(carry ? 1 : 0)
-            limbs[i] = sum2
-            carry = overflow || overflow2
-        }
-        var idx = other.limbs.count
-        while carry && idx < limbs.count {
-            let (sum, overflow) = limbs[idx].addingReportingOverflow(1)
-            limbs[idx] = sum
-            carry = overflow
-            idx += 1
-        }
-        if carry {
-            limbs.append(1)
-        }
-        normalize()
-    }
-
-    static func * (lhs: BigUInt, rhs: BigUInt) -> BigUInt {
-        if lhs.isZero || rhs.isZero { return BigUInt(0) }
-
-        let n = lhs.limbs.count
-        let m = rhs.limbs.count
-        var resultLimbs = [UInt64](repeating: 0, count: n + m)
-
-        for i in 0..<n {
-            var carry: UInt64 = 0
-            for j in 0..<m {
-                let product = UInt128(lhs.limbs[i]) * UInt128(rhs.limbs[j])
-                let existing = UInt128(resultLimbs[i + j]) + UInt128(carry)
-                let sum = product + existing
-                resultLimbs[i + j] = sum.low
-                carry = sum.high
-            }
-            resultLimbs[i + m] += carry
-        }
-
-        var result = BigUInt(0)
-        result.limbs = resultLimbs
-        result.normalize()
-        return result
-    }
-
-    static func - (lhs: BigUInt, rhs: BigUInt) -> BigUInt {
-        if lhs < rhs {
-
-            return BigUInt(0)
-        }
-        var result = lhs
-        var borrow = false
-        for i in 0..<rhs.limbs.count {
-            let (diff, overflow1) = result.limbs[i].subtractingReportingOverflow(rhs.limbs[i])
-            let (diff2, overflow2) = diff.subtractingReportingOverflow(borrow ? 1 : 0)
-            result.limbs[i] = diff2
-            borrow = overflow1 || overflow2
-        }
-        var idx = rhs.limbs.count
-        while borrow && idx < result.limbs.count {
-            let (diff, overflow) = result.limbs[idx].subtractingReportingOverflow(1)
-            result.limbs[idx] = diff
-            borrow = overflow
-            idx += 1
-        }
-        result.normalize()
-        return result
-    }
-
-    static func % (lhs: BigUInt, rhs: BigUInt) -> BigUInt {
-        if rhs.isZero { return BigUInt(0) }
-        if lhs < rhs { return lhs }
-        let (_, remainder) = lhs.divmod(rhs)
-        return remainder
-    }
-
-    func divmod(_ divisor: BigUInt) -> (quotient: BigUInt, remainder: BigUInt) {
-        if divisor.isZero { return (BigUInt(0), BigUInt(0)) }
-        if self < divisor { return (BigUInt(0), self) }
-        if self == divisor { return (BigUInt(1), BigUInt(0)) }
-
-        var quotient = BigUInt(0)
-        var remainder = BigUInt(0)
-
-        let totalBits = bitCount
-        for i in stride(from: totalBits - 1, through: 0, by: -1) {
-            remainder = remainder << 1
-            if self.bit(at: i) {
-                remainder.limbs[0] |= 1
-            }
-            if remainder >= divisor {
-                remainder = remainder - divisor
-                quotient = quotient.setBit(at: i)
-            }
-        }
-        quotient.normalize()
-        remainder.normalize()
-        return (quotient, remainder)
-    }
-
-    func modPow(_ exp: BigUInt, _ n: BigUInt) -> BigUInt {
-        if n.isZero { return BigUInt(0) }
-        if exp.isZero { return BigUInt(1) % n }
-        if n == BigUInt(1) { return BigUInt(0) }
-
-        var result = BigUInt(1)
-        var base = self % n
-        var exponent = exp
-
-        while !exponent.isZero {
-            if exponent.limbs[0] & 1 == 1 {
-                result = (result * base) % n
-            }
-            exponent = exponent >> 1
-            if !exponent.isZero {
-                base = (base * base) % n
-            }
-        }
-        return result
-    }
-
-    static func >> (lhs: BigUInt, _ rhs: Int) -> BigUInt {
-        let wordShift = rhs / 64
-        let bitShift = rhs % 64
-        var result = lhs
-
-        if wordShift >= result.limbs.count { return BigUInt(0) }
-        if wordShift > 0 {
-            result.limbs.removeSubrange(0..<wordShift)
-        }
-        if bitShift > 0 && !result.limbs.isEmpty {
-            for i in 0..<result.limbs.count - 1 {
-                result.limbs[i] = (result.limbs[i] >> bitShift) | (result.limbs[i + 1] << (64 - bitShift))
-            }
-            result.limbs[result.limbs.count - 1] >>= bitShift
-        }
-        result.normalize()
-        return result
-    }
-
-    static func << (lhs: BigUInt, _ rhs: Int) -> BigUInt {
-        let wordShift = rhs / 64
-        let bitShift = rhs % 64
-        var result = lhs
-
-        if wordShift > 0 {
-            result.limbs.insert(contentsOf: [UInt64](repeating: 0, count: wordShift), at: 0)
-        }
-        if bitShift > 0 && !result.limbs.isEmpty {
-            result.limbs.append(0)
-            for i in stride(from: result.limbs.count - 1, through: 1, by: -1) {
-                result.limbs[i] = (result.limbs[i] << bitShift) | (result.limbs[i - 1] >> (64 - bitShift))
-            }
-            result.limbs[0] <<= bitShift
-        }
-        result.normalize()
-        return result
-    }
-
-    func bit(at index: Int) -> Bool {
-        let wordIndex = index / 64
-        let bitIndex = index % 64
-        guard wordIndex < limbs.count else { return false }
-        return (limbs[wordIndex] >> bitIndex) & 1 == 1
-    }
-
-    func setBit(at index: Int) -> BigUInt {
-        var result = self
-        let wordIndex = index / 64
-        let bitIndex = index % 64
-        while result.limbs.count <= wordIndex {
-            result.limbs.append(0)
-        }
-        result.limbs[wordIndex] |= (1 << bitIndex)
-        return result
-    }
-
-    static func < (lhs: BigUInt, rhs: BigUInt) -> Bool {
-        let lNorm = lhs.limbs
-        let rNorm = rhs.limbs
-        if lNorm.count != rNorm.count {
-            return lNorm.count < rNorm.count
-        }
-        for i in stride(from: lNorm.count - 1, through: 0, by: -1) {
-            if lNorm[i] != rNorm[i] {
-                return lNorm[i] < rNorm[i]
-            }
-        }
-        return false
-    }
+private func iso8601Now() -> String {
+    let f = DateFormatter()
+    f.locale = Locale(identifier: "en_US_POSIX")
+    f.timeZone = TimeZone(secondsFromGMT: 0)
+    f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    return f.string(from: Date())
 }
 
-private struct UInt128 {
-    let high: UInt64
-    let low: UInt64
+private let CHINA_COUNTRY_CODES: Set<String> = ["CHN", "CHINA", "CN", "143465", "143477"]
 
-    init(_ value: UInt64) {
-        self.high = 0
-        self.low = value
-    }
-
-    init(high: UInt64, low: UInt64) {
-        self.high = high
-        self.low = low
-    }
-
-    static func * (lhs: UInt128, rhs: UInt128) -> UInt128 {
-
-        let aLo = lhs.low & 0xFFFFFFFF
-        let aHi = lhs.low >> 32
-        let bLo = rhs.low & 0xFFFFFFFF
-        let bHi = rhs.low >> 32
-
-        let p0: UInt64 = aLo &* bLo
-        let p1: UInt64 = aLo &* bHi
-        let p2: UInt64 = aHi &* bLo
-        let p3: UInt64 = aHi &* bHi
-
-        let mid1: UInt64 = p1 &<< 32
-        let mid2: UInt64 = p2 &<< 32
-
-        let (low1, c1) = p0.addingReportingOverflow(mid1)
-        let (low2, c2) = low1.addingReportingOverflow(mid2)
-        let low = low2
-
-        var high: UInt64 = p3
-        high &+= p1 &>> 32
-        high &+= p2 &>> 32
-        high &+= c1 ? 1 : 0
-        high &+= c2 ? 1 : 0
-        high &+= lhs.high &* rhs.low
-        high &+= lhs.low &* rhs.high
-
-        return UInt128(high: high, low: low)
-    }
-
-    static func + (lhs: UInt128, rhs: UInt128) -> UInt128 {
-        let (low, overflow) = lhs.low.addingReportingOverflow(rhs.low)
-        let high = lhs.high &+ rhs.high &+ (overflow ? 1 : 0)
-        return UInt128(high: high, low: low)
-    }
+private func isChinaRegionCode(_ code: String?) -> Bool {
+    guard let c = code else { return false }
+    let up = c.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    return CHINA_COUNTRY_CODES.contains(up)
 }
 
-extension Data {
-    init?(hexString: String) {
-        let clean = hexString.replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "\n", with: "")
-            .lowercased()
-        guard clean.count % 2 == 0 else { return nil }
-        var bytes = [UInt8]()
-        var index = clean.startIndex
-        while index < clean.endIndex {
-            let nextIndex = clean.index(index, offsetBy: 2)
-            guard let byte = UInt8(clean[index..<nextIndex], radix: 16) else { return nil }
-            bytes.append(byte)
-            index = nextIndex
-        }
-        self.init(bytes)
-    }
+private let STOREFRONT_FROM_NUMERIC: [String: String] = [
+    "143441": "US", "143465": "CN", "143477": "CN",
+    "143462": "JP", "143444": "GB", "143443": "DE",
+    "143442": "FR", "143460": "AU", "143455": "CA",
+    "143450": "IT", "143454": "ES", "143466": "KR",
+    "143503": "BR", "143468": "MX", "143467": "IN",
+    "143469": "RU", "143452": "NL", "143456": "SE",
+    "143457": "NO", "143458": "DK", "143447": "FI",
+    "143463": "HK", "143470": "TW", "143475": "TH",
+    "143476": "ID", "143473": "MY", "143474": "PH",
+    "143464": "SG", "143481": "AE", "143479": "SA"
+]
 
-    func base64Encoded() -> String {
-        return self.base64EncodedString(options: [])
+private func normalizeCountryCode(_ v: String?) -> String? {
+    guard let s = v?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty else { return nil }
+    if s.count == 2 { return s.uppercased() }
+    if s.count == 3 {
+        switch s.uppercased() {
+        case "CHN": return "CN"
+        case "USA": return "US"
+        case "GBR": return "GB"
+        case "JPN": return "JP"
+        case "DEU": return "DE"
+        case "FRA": return "FR"
+        default: break
+        }
     }
+    let up = s.uppercased()
+    if CHINA_COUNTRY_CODES.contains(up) { return "CN" }
+    if let code = Int(s) {
+        if let m = STOREFRONT_FROM_NUMERIC[String(code)] { return m }
+        if code == 143465 || code == 143477 { return "CN" }
+        if code == 143441 { return "US" }
+    }
+    return s.uppercased()
 }
 
-
-class SRPClient {
-
-    private var aDataBase: Data
-    private var ADataBase: Data
-
-    private static var sharedContext: JSContext?
-
-    init() {
-
-        let js = SRPClient.getJSContext()
-
-        let aBytes = SRPClient.generateRandomBytes(256)
-        let aB64 = aBytes.base64EncodedString()
-
-        let result = js.evaluateScript("srpInit('\(aB64)')")
-
-        guard let AB64 = result?.toString(), let AData = Data(base64Encoded: AB64) else {
-            print("❌ [SRP] JS init 返回格式错误: \(String(describing: result?.toString()))")
-
-            self.aDataBase = aBytes
-            let aBig = BigUInt(aBytes).setBit(at: 2047)
-            let ABig = BigUInt(2).modPow(aBig, SRPClient.N)
-            self.ADataBase = ABig.serialize(paddedTo: 256)
-            return
-        }
-
-        var aBig = BigUInt(aBytes)
-        aBig = aBig.setBit(at: 2047)
-        self.aDataBase = aBig.serialize(paddedTo: 256)
-        self.ADataBase = AData
-        print("🐍 [SRP] JS init 完成: A=\(AB64.prefix(16))...")
+private func countryCodeFromStoreFront(_ sf: String?) -> String? {
+    guard let s = sf, !s.isEmpty else { return nil }
+    let code = s.components(separatedBy: "-").first ?? s
+    for (cc, num) in Apple.storeFrontCodeMap where num == code {
+        return cc
     }
-
-    func getPublicKeyA() -> Data {
-        return ADataBase
-    }
-
-    func processChallenge(
-        username: String,
-        passwordData: Data,
-        salt: Data,
-        serverB: Data,
-        iterations: Int = 20000,
-        protocol: String = "s2k"
-    ) throws -> (m1: Data, m2: Data) {
-        let password = String(data: passwordData, encoding: .utf8) ?? ""
-
-        let uData = SRPClient.sha256(SRPClient.pad(ADataBase, to: 256) + SRPClient.pad(serverB, to: 256))
-        let u = BigUInt(uData)
-
-        let passwordHash = SRPClient.sha256(Data(password.utf8))
-        let passwordDigest: Data
-        if `protocol` == "s2k_fo" {
-            let hexString = passwordHash.map { String(format: "%02x", $0) }.joined()
-            passwordDigest = Data(hexString.utf8)
-        } else {
-            passwordDigest = passwordHash
-        }
-        let passwordBytes = SRPClient.pbkdf2(password: passwordDigest, salt: salt, iterations: iterations, keyLength: 32)
-
-        let colonPassword = Data([0x3a]) + passwordBytes
-        let innerHash = SRPClient.sha256(colonPassword)
-        let xData = SRPClient.sha256(salt + innerHash)
-        let x = BigUInt(xData)
-
-        let NData = SRPClient.N.serialize(paddedTo: 256)
-        let gData = BigUInt(2).serialize(paddedTo: 256)
-        let kData = SRPClient.sha256(NData + gData)
-        let k = BigUInt(kData)
-
-        let js = SRPClient.getJSContext()
-
-        let xB64 = xData.base64EncodedString()
-        let vResult = js.evaluateScript("modPowB64('\(xB64)')")
-        guard let vB64 = vResult?.toString(), let vData = Data(base64Encoded: vB64) else {
-            print("❌ [SRP] JS modPow v 失败: \(String(describing: vResult?.toString()))")
-            throw SRPError.invalidChallenge
-        }
-        let v = BigUInt(vData)
-
-        let baseVal = (BigUInt(serverB) + SRPClient.N - (k * v % SRPClient.N)) % SRPClient.N
-        let exponent = BigUInt(aDataBase) + u * x
-
-        let baseB64 = baseVal.serialize(paddedTo: 256).base64EncodedString()
-        let expB64 = exponent.serialize().base64EncodedString()
-        let sResult = js.evaluateScript("modPowB64('\(baseB64)', '\(expB64)')")
-        guard let sB64 = sResult?.toString(), let sData = Data(base64Encoded: sB64) else {
-            print("❌ [SRP] JS modPow S 失败: \(String(describing: sResult?.toString()))")
-            throw SRPError.invalidChallenge
-        }
-
-        let K = SRPClient.sha256(sData)
-
-        let hN = SRPClient.sha256(NData)
-        let hg = SRPClient.sha256(gData)
-        let hNxorg = Data(zip(hN, hg).map { $0 ^ $1 })
-        let hI = SRPClient.sha256(Data(username.utf8))
-
-        let m1Data = SRPClient.sha256(hNxorg + hI + salt + ADataBase + serverB + K)
-
-        let m2Data = SRPClient.sha256(ADataBase + m1Data + K)
-
-        return (m1: m1Data, m2: m2Data)
-    }
-
-    static func sha256(_ data: Data) -> Data {
-        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
-        data.withUnsafeBytes { ptr in
-            _ = CC_SHA256(ptr.baseAddress, CC_LONG(data.count), &hash)
-        }
-        return Data(hash)
-    }
-
-    static func pbkdf2(password: Data, salt: Data, iterations: Int, keyLength: Int) -> Data {
-        var derivedKey = [UInt8](repeating: 0, count: keyLength)
-        let _ = password.withUnsafeBytes { pwdPtr in
-            salt.withUnsafeBytes { saltPtr in
-                CCKeyDerivationPBKDF(
-                    CCPBKDFAlgorithm(kCCPBKDF2),
-                    pwdPtr.baseAddress?.assumingMemoryBound(to: Int8.self), password.count,
-                    saltPtr.baseAddress?.assumingMemoryBound(to: UInt8.self), salt.count,
-                    CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
-                    UInt32(iterations),
-                    &derivedKey, keyLength
-                )
-            }
-        }
-        return Data(derivedKey)
-    }
-
-    static func pad(_ data: Data, to length: Int) -> Data {
-        if data.count >= length { return data }
-        return Data(repeating: 0, count: length - data.count) + data
-    }
-
-    private static func getJSContext() -> JSContext {
-        if let ctx = sharedContext {
-            return ctx
-        }
-
-        let ctx = JSContext()!
-
-        ctx.evaluateScript(srpJavaScript)
-
-        ctx.exceptionHandler = { context, exception in
-            print("❌ [SRP JS] \(exception?.toString() ?? "unknown error")")
-        }
-
-        sharedContext = ctx
-        return ctx
-    }
-
-    private static let srpJavaScript = """
-    const N = 0xAC6BDB41324A9A9BF166DE5E1389582FAF72B6651987EE07FC3192943DB56050A37329CBB4A099ED8193E0757767A13DD52312AB4B03310DCD7F48A9DA04FD50E8083969EDB767B0CF6095179A163AB3661A05FBD5FAAAE82918A9962F0B93B855F97993EC975EEAA80D740ADBF4FF747359D041D5C33EA71D281E446B14773BCA97B43A23FB801676BD207A436C6481F1D2B9078717461A5B9D32E688F87748544523B524B0D57D5EA77A2775D2ECFA032CFBDBF52FB3786160279004E57AE6AF874E7303CE53299CCC041C7BC308D82A5698F3A8D0C38271AE35F8E9DBFBB694B5C803D89F7AE435DE236D525F54759B65E372FCD68EF20FA7111F9E4AFF73n;
-    const g = 2n;
-
-    function b64ToBytes(b64) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-        b64 = b64.replace(/=+$/, '');
-        const bytes = new Uint8Array(Math.floor(b64.length * 3 / 4));
-        let byteIdx = 0;
-        for (let i = 0; i < b64.length; i += 4) {
-            const a = chars.indexOf(b64[i]);
-            const b = i + 1 < b64.length ? chars.indexOf(b64[i + 1]) : 0;
-            const c = i + 2 < b64.length ? chars.indexOf(b64[i + 2]) : 0;
-            const d = i + 3 < b64.length ? chars.indexOf(b64[i + 3]) : 0;
-            const triple = (a << 18) | (b << 12) | (c << 6) | d;
-            if (byteIdx < bytes.length) bytes[byteIdx++] = (triple >> 16) & 0xff;
-            if (byteIdx < bytes.length) bytes[byteIdx++] = (triple >> 8) & 0xff;
-            if (byteIdx < bytes.length) bytes[byteIdx++] = triple & 0xff;
-        }
-        return bytes;
-    }
-
-    function bytesToB64(bytes) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-        let result = '';
-        for (let i = 0; i < bytes.length; i += 3) {
-            const a = bytes[i];
-            const b = i + 1 < bytes.length ? bytes[i + 1] : 0;
-            const c = i + 2 < bytes.length ? bytes[i + 2] : 0;
-            const triple = (a << 16) | (b << 8) | c;
-            result += chars[(triple >> 18) & 0x3f];
-            result += chars[(triple >> 12) & 0x3f];
-            result += i + 1 < bytes.length ? chars[(triple >> 6) & 0x3f] : '=';
-            result += i + 2 < bytes.length ? chars[triple & 0x3f] : '=';
-        }
-        return result;
-    }
-
-    function bytesToLong(bytes) {
-        let result = 0n;
-        for (let i = 0; i < bytes.length; i++) {
-            result = (result << 8n) | BigInt(bytes[i]);
-        }
-        return result;
-    }
-
-    function longToBytes(n) {
-        if (n === 0n) return new Uint8Array([0]);
-        let hex = n.toString(16);
-        if (hex.length % 2) hex = '0' + hex;
-        const bytes = new Uint8Array(hex.length / 2);
-        for (let i = 0; i < hex.length; i += 2) {
-            bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
-        }
-        return bytes;
-    }
-
-    function modPow(base, exp, mod) {
-        if (mod === 1n) return 0n;
-        let result = 1n;
-        base = base % mod;
-        while (exp > 0n) {
-            if (exp & 1n) {
-                result = (result * base) % mod;
-            }
-            exp = exp >> 1n;
-            base = (base * base) % mod;
-        }
-        return result;
-    }
-
-    // srpInit: 接收 a 的 base64，返回 A 的 base64
-    function srpInit(aB64) {
-        const aBytes = b64ToBytes(aB64);
-        let a = bytesToLong(aBytes);
-        a = a | (1n << 2047n);
-        const A = modPow(g, a, N);
-        const ABytes = longToBytes(A);
-        // 填充到 256 字节
-        if (ABytes.length < 256) {
-            const padded = new Uint8Array(256);
-            padded.set(ABytes, 256 - ABytes.length);
-            return bytesToB64(padded);
-        }
-        return bytesToB64(ABytes);
-    }
-
-    // modPowB64: 接收 base 和 exp 的 base64，返回 result 的 base64
-    // 单参数: modPowB64(xB64) = g^x mod N
-    // 双参数: modPowB64(baseB64, expB64) = base^exp mod N
-    function modPowB64(baseB64, expB64) {
-        if (expB64) {
-            const base = bytesToLong(b64ToBytes(baseB64));
-            const exp = bytesToLong(b64ToBytes(expB64));
-            const result = modPow(base, exp, N);
-            const resultBytes = longToBytes(result);
-            if (resultBytes.length < 256) {
-                const padded = new Uint8Array(256);
-                padded.set(resultBytes, 256 - resultBytes.length);
-                return bytesToB64(padded);
-            }
-            return bytesToB64(resultBytes);
-        } else {
-            // g^x mod N
-            const x = bytesToLong(b64ToBytes(baseB64));
-            const result = modPow(g, x, N);
-            const resultBytes = longToBytes(result);
-            if (resultBytes.length < 256) {
-                const padded = new Uint8Array(256);
-                padded.set(resultBytes, 256 - resultBytes.length);
-                return bytesToB64(padded);
-            }
-            return bytesToB64(resultBytes);
-        }
-    }
-    """
-
-    static func generateRandomBytes(_ count: Int) -> Data {
-        var bytes = [UInt8](repeating: 0, count: count)
-        _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
-        return Data(bytes)
-    }
-
-    static func b64Encode(_ data: Data) -> String {
-        return data.base64EncodedString(options: [])
-    }
-
-    static func b64Decode(_ string: String) -> Data? {
-        return Data(base64Encoded: string)
-    }
-
-    static let N = BigUInt.fromHex(
-        "AC6BDB41324A9A9BF166DE5E1389582FAF72B6651987EE07FC3192943DB56050" +
-        "A37329CBB4A099ED8193E0757767A13DD52312AB4B03310DCD7F48A9DA04FD50" +
-        "E8083969EDB767B0CF6095179A163AB3661A05FBD5FAAAE82918A9962F0B93B8" +
-        "55F97993EC975EEAA80D740ADBF4FF747359D041D5C33EA71D281E446B14773B" +
-        "CA97B43A23FB801676BD207A436C6481F1D2B9078717461A5B9D32E688F87748" +
-        "544523B524B0D57D5EA77A2775D2ECFA032CFBDBF52FB3786160279004E57AE6" +
-        "AF874E7303CE53299CCC041C7BC308D82A5698F3A8D0C38271AE35F8E9DBFBB6" +
-        "94B5C803D89F7AE435DE236D525F54759B65E372FCD68EF20FA7111F9E4AFF73"
-    )
+    if let m = STOREFRONT_FROM_NUMERIC[code] { return m }
+    return nil
 }
 
-struct AppleAuthEndpoint {
-    static func idmsaEndpoint(isChinaMainland: Bool = false) -> String {
-        return isChinaMainland ? "https://idmsa.apple.com.cn" : "https://idmsa.apple.com"
-    }
-
-    static func authEndpoint(isChinaMainland: Bool = false) -> String {
-        return "\(idmsaEndpoint(isChinaMainland: isChinaMainland))/appleauth/auth"
-    }
-
-
-    static func setupEndpoint(isChinaMainland: Bool = false) -> String {
-        return isChinaMainland ? "https://setup.icloud.com.cn/setup/ws/1" : "https://setup.icloud.com/setup/ws/1"
-    }
-
-    static let oAuthClientId = "d39ba9916b7251055b22c7f910e2ea796ee65e98b2ddecea8f5dde8d9d1a815d"
-
-}
-
-
-class SRPURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate, @unchecked Sendable {
+final class SRPURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     static let shared = SRPURLSessionDelegate()
-
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust else {
-            completionHandler(.performDefaultHandling, nil)
-            return
-        }
-        let host = challenge.protectionSpace.host
-        if host.hasSuffix(".apple.com") || host.hasSuffix(".itunes.apple.com") {
-            if let trust = challenge.protectionSpace.serverTrust {
-                completionHandler(.useCredential, URLCredential(trust: trust))
-            } else {
-                completionHandler(.performDefaultHandling, nil)
-            }
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
-    }
-
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-
-        completionHandler(nil)
+        completionHandler(request)
     }
+}
+
+func syncCookiesToShared(dsPersonId: String, passwordToken: String, appleId: String, countryCode: String? = nil, storeFront: String? = nil, forceCN: Bool = false) {
+    let storage = HTTPCookieStorage.shared
+    for c in storage.cookies ?? [] {
+        let d = c.domain.lowercased()
+        if d == "apple.com" || d.hasSuffix(".apple.com") ||
+           d == "itunes.apple.com" || d.hasSuffix(".itunes.apple.com") ||
+           d == "icloud.com" || d.hasSuffix(".icloud.com") {
+            storage.deleteCookie(c)
+        }
+    }
+    func add(name: String, value: String, domain: String) {
+        if let c = HTTPCookie(properties: [.name: name, .value: value, .domain: domain, .path: "/", .secure: true, .version: 0]) {
+            storage.setCookie(c)
+        }
+    }
+    let isCN = forceCN || isChinaRegionCode(countryCode) || isChinaRegionCode(storeFront)
+    var domains: Set<String> = [".apple.com", ".itunes.apple.com"]
+    if isCN {
+        domains.insert(".apple.com.cn")
+        domains.insert(".icloud.com.cn")
+    }
+    if let sf = storeFront, !sf.isEmpty {
+        for d in domains {
+            add(name: "s_isf", value: sf, domain: d)
+            add(name: "storefront", value: sf, domain: d)
+            add(name: "X-Apple-Store-Front", value: sf, domain: d)
+        }
+    }
+    for d in domains {
+        add(name: "DSPersonID", value: dsPersonId, domain: d)
+        if isTrueCommerceKitPasswordToken(passwordToken) {
+            add(name: "download_token", value: passwordToken, domain: d)
+        }
+        add(name: "mzf_in", value: "1", domain: d)
+        if !appleId.isEmpty { add(name: "aocid2", value: appleId, domain: d) }
+    }
+}
+
+private func buildStoreAuthResponse(dsPersonId: String, passwordToken: String, appleId: String, firstName: String, lastName: String, countryCode: String?, storeFront: String?, hsc: Int = 0, adsid: String = "", idmsToken: String = "") -> StoreAuthResponse {
+    let addr = StoreAuthResponse.AccountInfo.Address(firstName: firstName, lastName: lastName)
+    let cc = countryCode?.isEmpty == true ? nil : countryCode
+    let sf = storeFront?.isEmpty == true ? nil : storeFront
+    let info = StoreAuthResponse.AccountInfo(appleId: appleId, address: addr, dsPersonId: dsPersonId, countryCode: cc, storeFront: sf)
+    return StoreAuthResponse(accountInfo: info, passwordToken: passwordToken, dsPersonId: dsPersonId, pings: nil, hsc: hsc, adsid: adsid, idmsToken: idmsToken)
+}
+
+struct PendingAuthHolder {
+    static var password: String = ""
+    static let lock = NSLock()
+    static func get() -> String { lock.lock(); defer { lock.unlock() }; return password }
+    static func set(_ v: String) { lock.lock(); defer { lock.unlock() }; password = v }
+}
+
+func composeCookieLines(dsid: String, storeFront: String, pod: String, passwordToken: String) -> [String] {
+    var out: [String] = []
+    if !dsid.isEmpty && !passwordToken.isEmpty {
+        out.append("mz_at0_fr-\(dsid)=\(passwordToken); Domain=apple.com; Path=/; Secure; HttpOnly")
+    }
+    if !pod.isEmpty {
+        out.append("itspod=\(pod); Domain=itunes.apple.com; Path=/")
+        out.append("pod=\(pod); Domain=apple.com; Path=/")
+    }
+    if !storeFront.isEmpty {
+        out.append("X-Apple-Store-Front=\(storeFront); Domain=apple.com; Path=/")
+    }
+    return out
+}
+
+func storeRealSessionCookies(_ lines: [String]) {
+    for line in lines {
+        let parts = line.split(separator: ";").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard let first = parts.first else { continue }
+        let nv = first.split(separator: "=", maxSplits: 1).map(String.init)
+        guard nv.count == 2, !nv[0].isEmpty else { continue }
+        var props: [HTTPCookiePropertyKey: Any] = [
+            .name: nv[0],
+            .value: nv[1],
+            .domain: ".apple.com",
+            .path: "/"
+        ]
+        for p in parts.dropFirst() {
+            let kv = p.split(separator: "=", maxSplits: 1).map(String.init)
+            guard kv.count == 2 else { continue }
+            switch kv[0].uppercased() {
+            case "DOMAIN":
+                props[.domain] = kv[1].hasPrefix(".") ? kv[1] : "." + kv[1]
+            case "PATH":
+                props[.path] = kv[1]
+            default:
+                break
+            }
+        }
+        if let c = HTTPCookie(properties: props) {
+            HTTPCookieStorage.shared.setCookie(c)
+        }
+    }
+}
+
+final class AccountPodCache {
+    static let shared = AccountPodCache()
+    private var map: [String: String] = [:]
+    private let lock = NSLock()
+    func set(dsid: String, pod: String) {
+        guard !pod.isEmpty else { return }
+        lock.lock()
+        map[dsid] = pod
+        lock.unlock()
+    }
+    func get(dsid: String) -> String {
+        lock.lock()
+        let v = map[dsid] ?? ""
+        lock.unlock()
+        return v
+    }
+    func clear(dsid: String) {
+        lock.lock()
+        map.removeValue(forKey: dsid)
+        lock.unlock()
+    }
+}
+
+struct PendingMFACodeHolder {
+    static var code: String? = nil
+    static let lock = NSLock()
+    static func get() -> String? { lock.lock(); defer { lock.unlock() }; return code }
+    static func set(_ v: String?) { lock.lock(); defer { lock.unlock() }; code = v }
 }
 
 class AppleIDAuthenticator: @unchecked Sendable {
     static let shared = AppleIDAuthenticator()
 
-    private var srpClient: SRPClient?
+    private var pendingEmail = ""
+    private var pendingPassword = ""
+    private var pendingTokens: GSAAuthTokens?
+    private var pendingAniHeaders: [String: String] = [:]
+    private var pendingAniData: AnisetteData?
+    private var pendingCountryCode: String?
+    private var pendingStoreFront: String?
+    private var pendingClientInfo = ""
+    private var lastAuthEmail = ""
+    private var lastAuthTime: Date?
+    private var authInFlight = false
+    private var consecutiveFailures = 0
+    private var nextAllowedAuthAt: Date?
+    private let maxConsecutiveFailures = 5
+    private var pendingGSASession: GSALoginSession?
 
-    private var sessionData: [String: String] = [:]
-
-    private var cookies: [String: String] = [:]
-
-    private var savedEmail: String = ""
-    private var savedPassword: String = ""
-    private var savedMFACode: String = ""
-    
-    private var attemptCount: Int = 0
-    
-    private static var lastFailureDate: Date? {
-        get { UserDefaults.standard.object(forKey: "AppleID_LastFailureDate") as? Date }
-        set { UserDefaults.standard.set(newValue, forKey: "AppleID_LastFailureDate") }
-    }
-    
-    private static var consecutiveFailures: Int {
-        get { UserDefaults.standard.integer(forKey: "AppleID_ConsecutiveFailures") }
-        set { UserDefaults.standard.set(newValue, forKey: "AppleID_ConsecutiveFailures") }
-    }
-    
-    private static var cooldownInterval: TimeInterval {
-        let failures = consecutiveFailures
-        if failures >= 10 { return 86400 }     // 24小时（账户锁定级别）
-        if failures >= 7 { return 21600 }      // 6小时
-        if failures >= 5 { return 3600 }       // 1小时
-        if failures >= 3 { return 900 }        // 15分钟
-        if failures >= 2 { return 300 }        // 5分钟
-        return 0
-    }
-
-    private let clientId: String
-    private let urlSession: URLSession
-    
-    private static var deviceGUID: String {
-        get {
-            if let guid = UserDefaults.standard.string(forKey: "AppleID_DeviceGUID") {
-                return guid
-            }
-            let guid = UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(12).uppercased()
-            let guidStr = String(guid)
-            UserDefaults.standard.set(guidStr, forKey: "AppleID_DeviceGUID")
-            return guidStr
+    private func checkRateLimitForEmail(_ email: String) -> Bool {
+        let now = Date()
+        if let t = nextAllowedAuthAt, now < t { return true }
+        if lastAuthEmail == email, let last = lastAuthTime, now.timeIntervalSince(last) < 60 {
+            return true
         }
+        return false
     }
 
-    private init() {
-        self.clientId = "auth-\(UUID().uuidString.lowercased())"
-
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 60
-
-        config.httpCookieStorage = nil
-        config.httpCookieAcceptPolicy = .never
-        config.httpShouldSetCookies = false
-        config.tlsMinimumSupportedProtocolVersion = .TLSv12
-        config.tlsMaximumSupportedProtocolVersion = .TLSv13
-
-        let delegateQueue = OperationQueue()
-        delegateQueue.maxConcurrentOperationCount = 1
-        self.urlSession = URLSession(configuration: config, delegate: SRPURLSessionDelegate.shared, delegateQueue: delegateQueue)
+    private func markAuthStarted(_ email: String) {
+        authInFlight = true
+        lastAuthEmail = email
+        lastAuthTime = Date()
     }
 
-    private func randomDelay(minSeconds: TimeInterval, _ maxSeconds: TimeInterval) async {
-        let delay = TimeInterval.random(in: minSeconds...maxSeconds)
-        print("⏱️ [模拟延迟] 等待 \(String(format: "%.2f", delay)) 秒")
-        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-    }
-
-    private func parseSetCookieHeader(_ header: String) {
-
-        var cookies_raw: [String] = []
-        var current = ""
-        for part in header.components(separatedBy: ", ") {
-            if current.isEmpty {
-                current = part
-            } else if part.contains("=") && !part.hasPrefix(" ") {
-
-                cookies_raw.append(current)
-                current = part
-            } else {
-                current += ", " + part
-            }
-        }
-        if !current.isEmpty {
-            cookies_raw.append(current)
-        }
-
-        for cookieStr in cookies_raw {
-            let parts = cookieStr.split(separator: ";", maxSplits: 1)
-            if let first = parts.first {
-                let keyValue = first.split(separator: "=", maxSplits: 1)
-                if keyValue.count == 2 {
-                    let name = String(keyValue[0]).trimmingCharacters(in: .whitespaces)
-                    let value = String(keyValue[1]).trimmingCharacters(in: .whitespaces)
-                    cookies[name] = value
-                    print("🍪 [HTTP] 设置 cookie: \(name)=\(value.prefix(16))...")
-                }
+    private func markAuthEnded(success: Bool) {
+        authInFlight = false
+        if success {
+            consecutiveFailures = 0
+            nextAllowedAuthAt = nil
+        } else {
+            consecutiveFailures += 1
+            if consecutiveFailures >= maxConsecutiveFailures {
+                nextAllowedAuthAt = Date().addingTimeInterval(5 * 60)
+            } else if consecutiveFailures >= 2 {
+                let base = pow(2.0, Double(consecutiveFailures))
+                nextAllowedAuthAt = Date().addingTimeInterval(min(base, 60))
             }
         }
     }
 
-    private func getAuthHeaders(overrides: [String: String] = [:]) -> [String: String] {
-        let clientId = AppleAuthEndpoint.oAuthClientId
-        let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Safari/605.1.15"
-
-        let timeZone = TimeZone.current.identifier
-        let language = Locale.preferredLanguages.first ?? "en-US"
-
-        let fdClientInfo = [
-            "U": userAgent,
-            "L": language,
-            "Z": timeZone,
-            "V": "1.1",
-            "F": ""
-        ] as [String: Any]
-        let fdClientInfoJSON = (try? JSONSerialization.data(withJSONObject: fdClientInfo)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-
-        let guid = Self.deviceGUID
-
-        var headers: [String: String] = [
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Accept-Language": language,
-            "Accept-Encoding": "gzip, deflate, br",
-            "Content-Type": "application/json",
-            "User-Agent": userAgent,
-            "X-Apple-GUID": guid,
-            "X-Apple-OAuth-Client-Id": clientId,
-            "X-Apple-OAuth-Client-Type": "firstPartyAuth",
-            "X-Apple-OAuth-Redirect-URI": "https://www.icloud.com",
-            "X-Apple-OAuth-Require-Grant-Code": "true",
-            "X-Apple-OAuth-Response-Mode": "web_message",
-            "X-Apple-OAuth-Response-Type": "code",
-            "X-Apple-OAuth-State": self.clientId,
-            "X-Apple-Widget-Key": clientId,
-            "X-Apple-FD-Client-Info": fdClientInfoJSON,
-            "X-Apple-Frame-Id": self.clientId,
-            "X-Apple-Subject": "software",
-            "X-Apple-P12-FullClientVersion": "0",
-            "Origin": "https://idmsa.apple.com",
-            "Referer": "https://idmsa.apple.com/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-        ]
-
-        if let scnt = sessionData["scnt"] {
-            headers["scnt"] = scnt
-        }
-        if let sessionId = sessionData["session_id"] {
-            headers["X-Apple-ID-Session-Id"] = sessionId
-        }
-        if let authAttributes = sessionData["auth_attributes"] {
-            headers["X-Apple-Auth-Attributes"] = authAttributes
+    func authenticate(email: String, password: String, mfaCode: String? = nil) async throws -> StoreAuthResponse {
+        if let mfa = mfaCode, !mfa.trimmingCharacters(in: .whitespaces).isEmpty {
+            return try await validate2FACode(mfa)
         }
 
-        for (key, value) in overrides {
-            headers[key] = value
+        if authInFlight { throw StoreError.tooManyRequests }
+        if checkRateLimitForEmail(email) {
+            throw StoreError.tooManyRequests
         }
-        return headers
-    }
+        markAuthStarted(email)
+        var success = false
+        defer { markAuthEnded(success: success) }
 
-    private func parseServiceErrors(from data: Data) -> StoreError? {
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let serviceErrors = json["serviceErrors"] as? [[String: Any]],
-              let firstError = serviceErrors.first,
-              let codeString = firstError["code"] as? String,
-              let code = Int(codeString) else {
-            return nil
-        }
-
-        let message = (firstError["message"] as? String) ?? ""
-        print("⚠️ [SRP认证] 服务器错误码: \(code), 消息: \(message)")
-
-        switch code {
-        case -20209, -20210:
-            return .lockedAccount
-        case -20207, -20206, -20204, -20203, -20101, -20100:
-            return .invalidCredentials
-        case -20201, -20200:
-            return .accountNotFound
-        default:
-            return nil
-        }
-    }
-
-    private func request(url: URL, method: String = "POST", headers: [String: String], body: Any? = nil) async throws -> (Data, HTTPURLResponse) {
-        var request = URLRequest(url: url)
-        request.httpMethod = method
-        request.timeoutInterval = 30
-        for (key, value) in headers {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-
-        if !cookies.isEmpty {
-            let cookieString = cookies.map { "\($0.key)=\($0.value)" }.joined(separator: "; ")
-            request.setValue(cookieString, forHTTPHeaderField: "Cookie")
-        }
-
-        if let body = body {
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            } catch {
-                print("❌ [HTTP] JSON序列化失败: \(error.localizedDescription)")
-                throw error
-            }
-        }
-
-        print("🌐 [HTTP] \(method) \(url.absoluteString)")
-        print("🍪 [HTTP] Cookies: \(cookies.keys.sorted())")
-
-        let (data, response): (Data, URLResponse)
-        do {
-            (data, response) = try await urlSession.data(for: request)
-        } catch {
-            print("❌ [HTTP] 请求失败: \(method) \(url.lastPathComponent) - \(error.localizedDescription)")
-            throw error
-        }
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ [HTTP] 响应类型异常: \(method) \(url.lastPathComponent)")
-            throw StoreError.invalidResponse
-        }
-
-        if let allHeaders = httpResponse.allHeaderFields as? [String: String] {
-
-            for (key, value) in allHeaders {
-                if key.lowercased() == "set-cookie" {
-                    parseSetCookieHeader(value)
-                }
-            }
-        }
-
-        let headerMapping: [String: String] = [
-            "X-Apple-ID-Account-Country": "account_country",
-            "X-Apple-ID-Session-Id": "session_id",
-            "X-Apple-Auth-Attributes": "auth_attributes",
-            "X-Apple-Session-Token": "session_token",
-            "X-Apple-Repair-Session-Token": "repair_session_token",
-            "X-Apple-TwoSV-Trust-Token": "trust_token",
-            "X-Apple-TwoSV-Trust-Eligible": "trust_eligible",
-            "X-Apple-OAuth-Grant-Code": "grant_code",
-            "scnt": "scnt",
-        ]
-        for (header, key) in headerMapping {
-            if let value = httpResponse.value(forHTTPHeaderField: header) {
-                sessionData[key] = value
-                print("🔐 [会话] 更新 \(key): \(value.prefix(8))...")
-            }
-        }
-
-        let bodyPreview = String(data: data, encoding: .utf8)?.prefix(200) ?? ""
-        print("🌐 [HTTP] \(method) \(url.lastPathComponent) → \(httpResponse.statusCode) | \(bodyPreview)")
-        return (data, httpResponse)
-    }
-
-    func authenticate(
-        email: String,
-        password: String,
-        mfaCode: String? = nil,
-        isChinaMainland: Bool = false
-    ) async throws -> StoreAuthResponse {
-        print("🔐 [SRP认证] 开始 SRP 认证流程")
-        print("📧 [SRP认证] Apple ID: \(email)")
-        
-        let cooldown = Self.cooldownInterval
-        if cooldown > 0, let lastFail = Self.lastFailureDate {
-            let elapsed = Date().timeIntervalSince(lastFail)
-            if elapsed < cooldown {
-                let remaining = Int(cooldown - elapsed)
-                let minutes = remaining / 60
-                let seconds = remaining % 60
-                print("⚠️ [风控保护] 登录失败次数过多，请等待 \(minutes)分\(seconds)秒 后重试")
-                throw StoreError.lockedAccount
-            }
-        }
-        
-        attemptCount = 0
-
-        savedEmail = email
-        savedPassword = password
-        if let mfaCode = mfaCode { savedMFACode = mfaCode }
-
-        let authEndpoint = AppleAuthEndpoint.authEndpoint(isChinaMainland: isChinaMainland)
-        let idmsaEndpoint = AppleAuthEndpoint.idmsaEndpoint(isChinaMainland: isChinaMainland)
-        print("🌐 [SRP认证] 认证端点: \(authEndpoint)")
-
-        print("🔐 [SRP认证] 步骤0: GET /authorize/signin")
-        let authorizeParams = [
-            "frame_id": self.clientId,
-            "skVersion": "7",
-            "iframeid": self.clientId,
-            "client_id": AppleAuthEndpoint.oAuthClientId,
-            "response_type": "code",
-            "redirect_uri": "https://www.icloud.com",
-            "response_mode": "web_message",
-            "state": self.clientId,
-            "authVersion": "latest",
-        ]
-        let authorizeQuery = authorizeParams.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }.joined(separator: "&")
-        let authorizeUrl = URL(string: "\(idmsaEndpoint)/appleauth/auth/authorize/signin?\(authorizeQuery)")!
+        pendingEmail = email
+        pendingPassword = password
+        PendingAuthHolder.set(password)
+        PendingMFACodeHolder.set(nil)
+        pendingCountryCode = nil
+        pendingStoreFront = nil
 
         do {
-            let (_, authResponse) = try await request(url: authorizeUrl, method: "GET", headers: getAuthHeaders())
-            print("🔐 [SRP认证] authorize/signin → \(authResponse.statusCode)")
-        } catch {
-            print("⚠️ [SRP认证] authorize/signin 失败，继续执行: \(error.localizedDescription)")
-        }
-
-        await randomDelay(minSeconds: 0.5, 1.5)
-
-        print("🔐 [SRP认证] 步骤1: POST /signin/init")
-
-        srpClient = SRPClient()
-        guard let client = srpClient else {
-            print("❌ [SRP认证] SRPClient 为 nil")
-            throw StoreError.authenticationFailed
-        }
-
-        let aData = client.getPublicKeyA()
-        let aBase64 = SRPClient.b64Encode(aData)
-        print("🔐 [SRP认证] 公钥A: \(aBase64.prefix(16))... (\(aData.count) bytes)")
-
-        let initData: [String: Any] = [
-            "a": aBase64,
-            "accountName": email,
-            "protocols": ["s2k", "s2k_fo"]
-        ]
-
-        let initUrl = URL(string: "\(authEndpoint)/signin/init")!
-        let headers = getAuthHeaders()
-        print("🌐 [SRP认证] 请求头: \(headers.keys.sorted())")
-
-        let (initResponseData, initHttpResponse): (Data, HTTPURLResponse)
-        do {
-            (initResponseData, initHttpResponse) = try await request(url: initUrl, headers: headers, body: initData)
-        } catch {
-            print("❌ [SRP认证] signin/init 请求失败: \(error.localizedDescription)")
-            throw StoreError.authenticationFailed
-        }
-
-        guard initHttpResponse.statusCode == 200 else {
-            let body = String(data: initResponseData, encoding: .utf8) ?? ""
-            print("❌ [SRP认证] init 失败: \(initHttpResponse.statusCode) \(body.prefix(300))")
-            if let parsedError = parseServiceErrors(from: initResponseData) {
-                throw parsedError
-            }
-            throw StoreError.authenticationFailed
-        }
-
-        guard let initJson = try JSONSerialization.jsonObject(with: initResponseData) as? [String: Any] else {
-            print("❌ [SRP认证] init 响应 JSON 解析失败")
-            throw StoreError.invalidResponse
-        }
-
-        guard let saltBase64 = initJson["salt"] as? String,
-              let bBase64 = initJson["b"] as? String,
-              let c = initJson["c"],
-              let iteration = initJson["iteration"] as? Int,
-              let protocolStr = initJson["protocol"] as? String else {
-            print("❌ [SRP认证] init 响应缺少必要字段: \(Array(initJson.keys))")
-            throw StoreError.invalidResponse
-        }
-
-        print("🔐 [SRP认证] init 响应 c 类型: \(type(of: c)), 值: \(c)")
-
-        guard let saltData = SRPClient.b64Decode(saltBase64),
-              let bData = SRPClient.b64Decode(bBase64) else {
-            print("❌ [SRP认证] Base64 解码失败")
-            throw StoreError.authenticationFailed
-        }
-
-        print("🔐 [SRP认证] init 成功: salt=\(saltData.count)B, B=\(bData.count)B, iter=\(iteration), proto=\(protocolStr)")
-
-        let (m1, m2): (Data, Data)
-        do {
-
-            (m1, m2) = try client.processChallenge(
-                username: email,
-                passwordData: Data(password.utf8),
-                salt: saltData,
-                serverB: bData,
-                iterations: iteration,
-                protocol: protocolStr
-            )
-        } catch {
-            print("❌ [SRP认证] M1/M2 计算失败: \(error.localizedDescription)")
-            throw StoreError.authenticationFailed
-        }
-        print("🔐 [SRP认证] M1=\(m1.count)B, M2=\(m2.count)B")
-
-        await randomDelay(minSeconds: 0.8, 2.0)
-
-        var completeData: [String: Any] = [
-            "accountName": email,
-            "c": c,
-            "m1": SRPClient.b64Encode(m1),
-            "m2": SRPClient.b64Encode(m2),
-            "rememberMe": true,
-            "trustTokens": []
-        ]
-
-        if let trustToken = sessionData["trust_token"] {
-            completeData["trustTokens"] = [trustToken]
-        }
-
-        if let completeJsonData = try? JSONSerialization.data(withJSONObject: completeData),
-           let completeJsonStr = String(data: completeJsonData, encoding: .utf8) {
-            print("🔐 [SRP认证] complete 请求体: \(completeJsonStr.prefix(500))")
-        }
-
-        print("🔐 [SRP认证] 步骤2: POST /signin/complete")
-        let completeUrl = URL(string: "\(authEndpoint)/signin/complete?isRememberMeEnabled=true")!
-        let completeHeaders = getAuthHeaders()
-
-        let (completeResponseData, completeHttpResponse): (Data, HTTPURLResponse)
-        do {
-            (completeResponseData, completeHttpResponse) = try await request(url: completeUrl, headers: completeHeaders, body: completeData)
-        } catch {
-            print("❌ [SRP认证] signin/complete 请求失败: \(error.localizedDescription)")
-            throw StoreError.authenticationFailed
-        }
-
-        print("🔐 [SRP认证] signin/complete → \(completeHttpResponse.statusCode)")
-        let completeBody = String(data: completeResponseData, encoding: .utf8) ?? ""
-        print("🔐 [SRP认证] complete 响应: \(completeBody.prefix(300))")
-
-        let isSuccessStatus = (completeHttpResponse.statusCode == 200 || completeHttpResponse.statusCode == 204)
-
-        let authTypeSa: Bool = {
-            if completeHttpResponse.statusCode == 412,
-               let json = try? JSONSerialization.jsonObject(with: completeResponseData) as? [String: Any],
-               let authType = json["authType"] as? String,
-               authType.lowercased() == "sa" {
-                return true
-            }
-            return false
-        }()
-
-        if authTypeSa {
-            print("🔐 [SRP认证] 检测到 authType=sa（简单认证，无需2FA），获取 session token")
-            print("🔐 [SRP认证] complete 响应头: \(completeHttpResponse.allHeaderFields)")
-            
-            if sessionData["session_token"] == nil {
-                print("🔐 [SRP认证] authType=sa 时无 session_token，尝试调用 trust 接口获取")
+            let aniData = try await AnisetteProvisioner.shared.getAnisette()
+            let session = GSALoginSession(email: email, password: password, aniData: aniData)
+            let outcome = try await session.beginRound()
+            switch outcome {
+            case .authenticated(let result):
+                success = true
+                return try await finalizeGSAAuth(session: session, result: result)
+            case .twoFactorRequired(let tokens):
+                pendingGSASession = session
+                pendingTokens = tokens
+                pendingCountryCode = normalizeCountryCode(tokens.countryCode) ?? countryCodeFromStoreFront(tokens.storeFront)
+                pendingStoreFront = tokens.storeFront
                 do {
-                    let trustUrl = URL(string: "\(authEndpoint)/2sv/trust")!
-                    let (_, trustResponse) = try await request(url: trustUrl, method: "GET", headers: getAuthHeaders())
-                    print("🔐 [SRP认证] trust 接口状态码: \(trustResponse.statusCode)")
-                    if sessionData["session_token"] != nil {
-                        print("✅ [SRP认证] 成功获取 session_token")
-                    } else {
-                        print("⚠️ [SRP认证] trust 接口未返回 session_token，尝试使用 repair_session_token")
-                        if let repairToken = sessionData["repair_session_token"] {
-                            sessionData["session_token"] = repairToken
-                            print("✅ [SRP认证] 使用 repair_session_token 作为 session_token")
-                        }
-                    }
+                    try await session.requestTrustedDeviceNotification()
                 } catch {
-                    print("⚠️ [SRP认证] trust 接口调用失败: \(error.localizedDescription)")
-                    if let repairToken = sessionData["repair_session_token"] {
-                        sessionData["session_token"] = repairToken
-                        print("✅ [SRP认证] 使用 repair_session_token 作为 session_token")
-                    }
                 }
-            }
-        }
-
-        if completeHttpResponse.statusCode == 409 {
-            print("🔐 [SRP认证] 需要 2FA (HTTP 409)")
-
-            let pushResult = await trigger2FAPush(isChinaMainland: isChinaMainland)
-            print("🔐 [SRP认证] 2FA 推送结果: \(pushResult)")
-            throw StoreError.codeRequired
-        }
-
-        if completeHttpResponse.statusCode == 421 || completeHttpResponse.statusCode == 450 {
-            print("🔄 [SRP认证] 收到 HTTP \(completeHttpResponse.statusCode)，重试 signin/complete")
-            let (retryData, retryResponse) = try await request(url: completeUrl, headers: getAuthHeaders(), body: completeData)
-            if retryResponse.statusCode == 409 {
-                print("🔐 [SRP认证] 重试后需要 2FA (HTTP 409)")
+                success = true
                 throw StoreError.codeRequired
             }
-            if retryResponse.statusCode != 200 && retryResponse.statusCode != 204 {
-                let body = String(data: retryData, encoding: .utf8) ?? ""
-                print("❌ [SRP认证] 重试 complete 失败: \(retryResponse.statusCode) \(body.prefix(300))")
-                if let parsedError = parseServiceErrors(from: retryData) {
-                    throw parsedError
-                }
-                throw StoreError.authenticationFailed
+        } catch GSAClientError.lockedAccount(let details) {
+            nextAllowedAuthAt = Date().addingTimeInterval(30 * 60)
+            consecutiveFailures = maxConsecutiveFailures
+            throw StoreError.lockedAccountWithDetails(details)
+        } catch GSAClientError.invalidCredentials(let details) {
+            throw StoreError.invalidCredentialsWithDetails(details)
+        } catch GSAClientError.invalidSecurityCode {
+            throw StoreError.invalidVerificationCode
+        } catch GSAClientError.tooManyRequests {
+            nextAllowedAuthAt = Date().addingTimeInterval(10 * 60)
+            throw StoreError.tooManyRequests
+        } catch GSAClientError.serverError(let code, let msg) {
+            if code >= 500 {
+                throw StoreError.authenticationFailedWithDetails("Apple 服务暂时不可用（HTTP \(code)），请稍后重试")
             }
-        }
-
-        if !isSuccessStatus && !authTypeSa {
-            let body = String(data: completeResponseData, encoding: .utf8) ?? ""
-            print("❌ [SRP认证] complete 失败: \(completeHttpResponse.statusCode) \(body.prefix(300))")
-            if let parsedError = parseServiceErrors(from: completeResponseData) {
-                throw parsedError
+            throw StoreError.serverErrorWithDetails(code, msg)
+        } catch GSAClientError.requestFailed(let code, let details) {
+            if code == 429 || code == -20210 {
+                nextAllowedAuthAt = Date().addingTimeInterval(10 * 60)
+                throw StoreError.tooManyRequests
             }
-            throw StoreError.authenticationFailed
-        }
-
-        print("🔐 [SRP认证] 步骤3: 使用 session token 获取账户信息")
-        await randomDelay(minSeconds: 0.5, 1.2)
-        do {
-            let storeAuthResponse = try await authenticateWithToken(isChinaMainland: isChinaMainland)
-            Self.consecutiveFailures = 0
-            Self.lastFailureDate = nil
-            print("✅ [SRP认证] 认证流程完成")
-            return storeAuthResponse
-        } catch let error as StoreError {
-            switch error {
-            case .lockedAccount:
-                Self.consecutiveFailures = 10
-                Self.lastFailureDate = Date()
-                print("🚫 [风控保护] 账户已被锁定，设置长冷却时间")
-            case .invalidCredentials, .invalidVerificationCode, .accountNotFound:
-                Self.consecutiveFailures += 1
-                Self.lastFailureDate = Date()
-                print("⚠️ [风控保护] 认证失败，连续失败次数: \(Self.consecutiveFailures)")
-            default:
-                break
+            if code >= 500 {
+                throw StoreError.authenticationFailedWithDetails("Apple 服务暂时不可用（HTTP \(code)），请稍后重试")
             }
-            throw error
+            throw StoreError.authenticationFailedWithDetails("请求失败(\(code)): \(String(details.prefix(300)))")
+        } catch GSAClientError.trustedDeviceNotifyFailed {
+            throw StoreError.authenticationFailedWithDetails("无法向受信任设备发送验证码推送")
+        } catch GSAClientError.srpKeyUnavailable {
+            throw StoreError.authenticationFailedWithDetails("SRP 会话密钥生成失败，请重试")
+        } catch GSAClientError.spdDecodeFailed {
+            throw StoreError.authenticationFailedWithDetails("会话解密失败，请重试")
+        } catch let e as StoreError {
+            throw e
         } catch {
-            Self.consecutiveFailures += 1
-            Self.lastFailureDate = Date()
-            print("❌ [SRP认证] 认证失败，连续失败次数: \(Self.consecutiveFailures)")
-            throw error
+            throw StoreError.authenticationFailedWithDetails(error.localizedDescription)
         }
     }
 
-    func trigger2FAPush(isChinaMainland: Bool = false) async -> Bool {
-        let authEndpoint = AppleAuthEndpoint.authEndpoint(isChinaMainland: isChinaMainland)
-        let headers = getAuthHeaders()
-
-        let url = URL(string: "\(authEndpoint)/verify/trusteddevice")!
-        do {
-            let (_, httpResponse) = try await request(url: url, method: "GET", headers: headers)
-            let success = (200...299).contains(httpResponse.statusCode)
-            if success {
-                print("📱 [2FA] 推送通知已触发")
-            } else {
-                print("⚠️ [2FA] 推送通知返回状态码: \(httpResponse.statusCode)")
+    private func finalizeGSAAuth(session: GSALoginSession, result: GSAClient.GSAuthResult) async throws -> StoreAuthResponse {
+        if let pt = result.passwordToken, isTrueCommerceKitPasswordToken(pt),
+           let dsid = result.dsPersonId, !dsid.isEmpty {
+            pendingGSASession = nil
+            seedGSASessionCookies(session: session, dsid: dsid)
+            return buildGSAResponse(result, email: pendingEmail.isEmpty ? session.email : pendingEmail)
+        }
+        let outcome = try await session.beginRound()
+        switch outcome {
+        case .authenticated(let r2):
+            if let pt2 = r2.passwordToken, isTrueCommerceKitPasswordToken(pt2),
+               let dsid2 = r2.dsPersonId, !dsid2.isEmpty {
+                pendingGSASession = nil
+                seedGSASessionCookies(session: session, dsid: dsid2)
+                return buildGSAResponse(r2, email: pendingEmail.isEmpty ? session.email : pendingEmail)
             }
-            return success
-        } catch {
-            print("⚠️ [2FA] 推送通知触发失败: \(error.localizedDescription)")
-            return false
-        }
-    }
-
-    func validate2FACode(_ code: String, isChinaMainland: Bool = false) async throws -> StoreAuthResponse {
-
-        savedMFACode = code
-
-        let authEndpoint = AppleAuthEndpoint.authEndpoint(isChinaMainland: isChinaMainland)
-        let headers = getAuthHeaders(overrides: ["Accept": "application/json"])
-
-        let data: [String: Any] = ["securityCode": ["code": code]]
-        let url = URL(string: "\(authEndpoint)/verify/trusteddevice/securitycode")!
-
-        do {
-            let (responseData, httpResponse) = try await request(url: url, headers: headers, body: data)
-            let bodyStr = String(data: responseData, encoding: .utf8) ?? ""
-            print("🔐 [2FA] securitycode 响应: \(httpResponse.statusCode) | \(bodyStr)")
-            
-            let successStatus = (httpResponse.statusCode == 204 || httpResponse.statusCode == 200)
-            
-            let isValidCode: Bool = {
-                if let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
-                   let securityCode = json["securityCode"] as? [String: Any],
-                   let valid = securityCode["valid"] as? Bool {
-                    return valid
-                }
-                return false
-            }()
-            
-            if successStatus || (httpResponse.statusCode == 409 && isValidCode) {
-                print("✅ [2FA] 验证码验证成功 (状态码: \(httpResponse.statusCode))")
-            } else {
-                print("❌ [2FA] 验证码验证失败: \(httpResponse.statusCode)")
-                Self.consecutiveFailures += 1
-                Self.lastFailureDate = Date()
-                print("⚠️ [风控保护] 2FA验证失败，连续失败次数: \(Self.consecutiveFailures)")
-                if let parsedError = parseServiceErrors(from: responseData) {
-                    throw parsedError
-                }
-                if httpResponse.statusCode == 409 {
-                    throw StoreError.invalidVerificationCode
-                }
-                throw StoreError.invalidCredentials
+            throw StoreError.authenticationFailedWithDetails(
+                "Apple 未下发可下载的强 token（\(r2.passwordToken?.count ?? 0)B < 450B）。请退出后重新登录重试。"
+            )
+        case .twoFactorRequired(let t2):
+            pendingGSASession = session
+            pendingTokens = t2
+            pendingCountryCode = normalizeCountryCode(t2.countryCode) ?? countryCodeFromStoreFront(t2.storeFront)
+            pendingStoreFront = t2.storeFront
+            do {
+                try await session.requestTrustedDeviceNotification()
+            } catch {
             }
-        } catch let error as StoreError {
-            switch error {
-            case .codeRequired:
-                break
-            default:
-                Self.consecutiveFailures += 1
-                Self.lastFailureDate = Date()
-                print("⚠️ [风控保护] 2FA验证异常，连续失败次数: \(Self.consecutiveFailures)")
-            }
-            throw error
-        } catch {
-            print("❌ [2FA] 验证码验证异常: \(error.localizedDescription)")
-            Self.consecutiveFailures += 1
-            Self.lastFailureDate = Date()
-            throw StoreError.invalidCredentials
-        }
-
-        return try await trustSession(isChinaMainland: isChinaMainland)
-    }
-
-    private func trustSession(isChinaMainland: Bool = false) async throws -> StoreAuthResponse {
-        let authEndpoint = AppleAuthEndpoint.authEndpoint(isChinaMainland: isChinaMainland)
-        let headers = getAuthHeaders()
-
-        let url = URL(string: "\(authEndpoint)/2sv/trust")!
-        _ = try await request(url: url, method: "GET", headers: headers)
-
-        return try await authenticateWithToken(isChinaMainland: isChinaMainland)
-    }
-
-    private func authenticateWithToken(isChinaMainland: Bool = false) async throws -> StoreAuthResponse {
-        guard let sessionToken = sessionData["session_token"] else {
-            print("❌ [Token认证] 缺少 session_token，无法完成认证")
-            print("🔐 [Token认证] 当前 session_data 键: \(Array(sessionData.keys).sorted())")
-            throw StoreError.authenticationFailed
-        }
-
-        let setupEndpoint = AppleAuthEndpoint.setupEndpoint(isChinaMainland: isChinaMainland)
-        let loginUrl = URL(string: "\(setupEndpoint)/accountLogin")!
-
-        let loginData: [String: Any] = [
-            "accountCountryCode": sessionData["account_country"] ?? "",
-            "dsWebAuthToken": sessionToken,
-            "extended_login": true,
-            "trustToken": sessionData["trust_token"] ?? "",
-        ]
-
-        let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Safari/605.1.15"
-        let headers: [String: String] = [
-            "User-Agent": userAgent,
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Origin": "https://www.icloud.com",
-        ]
-        var (data, httpResponse) = try await request(url: loginUrl, headers: headers, body: loginData)
-
-        let shouldRetryWithChinaMainland: Bool = {
-            if httpResponse.statusCode == 302 || httpResponse.statusCode == 301 {
-                if let redirectJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let domainToUse = redirectJson["domainToUse"] as? String {
-                    let needsChinaMainland = domainToUse.lowercased().contains("icloud.com.cn")
-                    return needsChinaMainland != isChinaMainland && needsChinaMainland
-                }
-            }
-            return false
-        }()
-
-        if shouldRetryWithChinaMainland {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            print("🔄 [Token认证] accountLogin 收到重定向 (\(httpResponse.statusCode)): \(body.prefix(200))")
-            print("🌐 [Token认证] 服务器建议使用中国大陆域名，切换端点重试")
-
-            let newEndpoint = AppleAuthEndpoint.setupEndpoint(isChinaMainland: true)
-            let newUrl = URL(string: "\(newEndpoint)/accountLogin")!
-            var newHeaders = headers
-            newHeaders["Origin"] = "https://www.icloud.com.cn"
-            (data, httpResponse) = try await request(url: newUrl, headers: newHeaders, body: loginData)
-        }
-
-        guard httpResponse.statusCode == 200 else {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            print("❌ [Token认证] accountLogin 失败: \(httpResponse.statusCode) \(body.prefix(300))")
-            throw StoreError.authenticationFailed
-        }
-
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw StoreError.invalidResponse
-        }
-
-        print("🔐 [Token认证] accountLogin 成功，响应键: \(Array(json.keys).sorted())")
-
-        let dsInfo = json["dsInfo"] as? [String: Any] ?? [:]
-        print("🔐 [Token认证] dsInfo: \(dsInfo)")
-        let hsaVersion = dsInfo["hsaVersion"] as? Int ?? 0
-        let hsaChallengeRequired = json["hsaChallengeRequired"] as? Bool ?? false
-        let hsaTrustedBrowser = json["hsaTrustedBrowser"] as? Bool ?? false
-
-        if hsaVersion == 2 && (hsaChallengeRequired || !hsaTrustedBrowser) {
-            print("🔐 [Token认证] 检测到需要2FA: hsaVersion=\(hsaVersion), hsaChallengeRequired=\(hsaChallengeRequired), hsaTrustedBrowser=\(hsaTrustedBrowser)")
             throw StoreError.codeRequired
         }
-
-        let dsPersonId: String
-        if let dsidInt = dsInfo["dsid"] as? Int {
-            dsPersonId = String(dsidInt)
-        } else if let dsidStr = dsInfo["dsid"] as? String {
-            dsPersonId = dsidStr
-        } else {
-            dsPersonId = ""
-        }
-        print("🔐 [Token认证] DSID: \(dsPersonId) (类型: \(type(of: dsInfo["dsid"])) )")
-
-        let actualIsChinaMainland = (httpResponse.url?.host?.contains("icloud.com.cn") ?? false) || isChinaMainland
-
-        let storeResponse = try await getStoreCredentials(
-            dsPersonId: dsPersonId,
-            isChinaMainland: actualIsChinaMainland
-        )
-
-        return storeResponse
     }
 
-    private func getStoreCredentials(dsPersonId: String, isChinaMainland: Bool = false) async throws -> StoreAuthResponse {
-
-        let guid = Self.deviceGUID
-        StoreRequest.setGUID(guid)
-
-        let passwordWithMFA = savedPassword + savedMFACode.replacingOccurrences(of: " ", with: "")
-
-        let urlString = "https://auth.itunes.apple.com/auth/v1/native/fast/"
-        let storeUrl = URL(string: urlString)!
-
-        let language = Locale.preferredLanguages.first ?? "en-US"
-
-        var request = URLRequest(url: storeUrl)
-        request.httpMethod = "POST"
-
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        request.setValue("Configurator/2.17 (Macintosh; OS X 15.2; 24C5089c) AppleWebKit/0620.1.16.11.6", forHTTPHeaderField: "User-Agent")
-        request.setValue("*/*", forHTTPHeaderField: "Accept")
-        request.setValue(language, forHTTPHeaderField: "Accept-Language")
-        request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
-        
-        request.setValue(guid, forHTTPHeaderField: "X-Apple-GUID")
-        request.setValue("0", forHTTPHeaderField: "X-Apple-P12-FullClientVersion")
-        request.setValue("software", forHTTPHeaderField: "X-Apple-Subject")
-        request.setValue("4.0.0", forHTTPHeaderField: "iCloud-Control")
-
-        var formComponents: [String] = []
-        attemptCount += 1
-        let formParams: [(String, String)] = [
-            ("appleId", savedEmail),
-            ("attempt", "\(attemptCount)"),
-            ("guid", guid),
-            ("password", passwordWithMFA),
-            ("rmp", "0"),
-            ("why", "signIn")
-        ]
-        for (key, value) in formParams {
-            let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? key
-            let encodedValue = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? value
-            formComponents.append("\(encodedKey)=\(encodedValue)")
-        }
-        let formBody = formComponents.joined(separator: "&")
-        request.httpBody = formBody.data(using: .utf8)
-
-        print("🌐 [Store] POST auth.itunes.apple.com/auth/v1/native/fast/ (format=form-urlencoded)")
-
-        let config = URLSessionConfiguration.default
-        config.httpCookieStorage = HTTPCookieStorage.shared
-        config.httpCookieAcceptPolicy = .always
-        config.httpShouldSetCookies = true
-        config.timeoutIntervalForRequest = 30
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData
-        config.urlCache = nil
-
-        let storeSession = URLSession(configuration: config, delegate: SRPURLSessionDelegate.shared, delegateQueue: nil)
-
-        let (data, response) = try await storeSession.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw StoreError.invalidResponse
-        }
-
-        print("🌐 [Store] native/fast → \(httpResponse.statusCode)")
-        print("🌐 [Store] 响应数据长度: \(data.count)")
-
-        let podHeader = httpResponse.value(forHTTPHeaderField: "pod") ?? ""
-        let storefrontHeader = httpResponse.value(forHTTPHeaderField: "X-Set-Apple-Store-Front") ?? ""
-        print("🌐 [Store] pod: \(podHeader), storefront: \(storefrontHeader)")
-
-        return try parseStoreResponse(data: data, httpResponse: httpResponse, dsPersonId: dsPersonId, headerStoreFront: storefrontHeader)
+    private func seedGSASessionCookies(session: GSALoginSession, dsid: String) {
+        let real = session.sessionCookieLines()
+        guard !real.isEmpty else { return }
+        AuthCookieCache.shared.set(dsid: dsid, cookies: real)
+        storeRealSessionCookies(real)
     }
 
-    private func parseStoreResponse(data: Data, httpResponse: HTTPURLResponse, dsPersonId: String, headerStoreFront: String = "") throws -> StoreAuthResponse {
-
-        let rawBody = String(data: data, encoding: .utf8) ?? "(非UTF8)"
-        print("🌐 [Store] 响应前200字符: \(rawBody.prefix(200))")
-
-        var plist: [String: Any] = [:]
-        if let parsed = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] {
-            plist = parsed
-        } else if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            plist = json
-            print("🌐 [Store] 响应为 JSON 格式")
+    private func buildGSAResponse(_ result: GSAClient.GSAuthResult, email: String) -> StoreAuthResponse {
+        let info: [String: Any]? = result.accountInfo
+        var appleId = email
+        var firstName = ""
+        var lastName = ""
+        var countryCode: String? = nil
+        var storeFront: String? = nil
+        if let info {
+            if let aid = info["appleId"] as? String, !aid.isEmpty { appleId = aid }
+            let resolved = Apple.resolveName(roots: [result.raw, info], tag: "GSA-auth")
+            firstName = resolved.firstName.isEmpty ? resolved.fallbackFull : resolved.firstName
+            lastName = resolved.lastName
+            countryCode = (info["countryCode"] as? String) ?? result.tokens?.countryCode
+            storeFront = (info["storeFront"] as? String) ?? (info["Storefront"] as? String) ?? result.tokens?.storeFront
         } else {
-            print("❌ [Store] 无法解析响应（非 plist 也非 JSON）")
-            print("❌ [Store] Content-Type: \(httpResponse.value(forHTTPHeaderField: "Content-Type") ?? "未知")")
-            throw StoreError.invalidResponse
+            let resolved = Apple.resolveName(roots: [result.raw], tag: "GSA-auth-no-info")
+            firstName = resolved.firstName.isEmpty ? resolved.fallbackFull : resolved.firstName
+            lastName = resolved.lastName
+            countryCode = result.tokens?.countryCode
+            storeFront = result.tokens?.storeFront
         }
-
-        print("🔐 [Store] 响应键: \(Array(plist.keys).sorted())")
-
-        if let customerMessage = plist["customerMessage"] as? String {
-            print("💬 [Store] customerMessage: \(customerMessage)")
-
-            let codeRequiredMessages = [
-                "verification code is required",
-                "An Apple ID verification code is required",
-                "Type your password followed by the verification code",
-                "两步验证", "双重认证", "验证码", "verification code"
-            ]
-            for msg in codeRequiredMessages {
-                if customerMessage.contains(msg) {
-                    print("🔐 [Store] 检测到需要2FA验证码")
-                    throw StoreError.codeRequired
-                }
-            }
-        }
-        if let failureType = plist["failureType"] as? String {
-            print("❌ [Store] failureType: \(failureType)")
-            if failureType == "-1" {
-                throw StoreError.codeRequired
-            }
-        }
-
-        let passwordToken = plist["passwordToken"] as? String ?? ""
-        let accountInfo = plist["accountInfo"] as? [String: Any] ?? [:]
-        let address = accountInfo["address"] as? [String: Any] ?? [:]
-        let firstName = address["firstName"] as? String ?? ""
-        let lastName = address["lastName"] as? String ?? ""
-        let appleId = accountInfo["appleId"] as? String ?? savedEmail
-        let storeDsPersonId = (plist["dsPersonId"] as? String) ?? (plist["dsPersonID"] as? String) ?? dsPersonId
-        let countryCode = accountInfo["countryCode"] as? String ?? ""
-
-        let storeFront = !headerStoreFront.isEmpty ? headerStoreFront : (accountInfo["storeFront"] as? String ?? "143441-1,29")
-
-        print("🔐 [Store] passwordToken: \(passwordToken.isEmpty ? "空" : "已获取(\(passwordToken.count)字符)")")
-        print("🔐 [Store] dsPersonId: \(storeDsPersonId)")
-        print("🔐 [Store] countryCode: \(countryCode)")
-        print("🔐 [Store] storeFront: \(storeFront)")
-
-        return StoreAuthResponse(
-            accountInfo: StoreAuthResponse.AccountInfo(
-                appleId: appleId,
-                address: StoreAuthResponse.AccountInfo.Address(firstName: firstName, lastName: lastName),
-                dsPersonId: storeDsPersonId,
-                countryCode: countryCode,
-                storeFront: storeFront
-            ),
-            passwordToken: passwordToken,
-            dsPersonId: storeDsPersonId,
-            pings: (plist["pings"] as? [Any])?.compactMap { $0 as? String } ?? nil
+        let normCC = normalizeCountryCode(countryCode) ?? countryCodeFromStoreFront(storeFront)
+        let finalSF = storeFront ?? (normCC.flatMap { Apple.storeFrontCodeMap[$0].flatMap { "\($0)-1,29" } })
+        let dsid = result.dsPersonId ?? ""
+        pendingCountryCode = normCC
+        pendingStoreFront = finalSF
+        let pt = result.passwordToken ?? ""
+        syncCookiesToShared(
+            dsPersonId: dsid,
+            passwordToken: pt,
+            appleId: appleId,
+            countryCode: normCC,
+            storeFront: finalSF
         )
+        return buildStoreAuthResponse(
+            dsPersonId: dsid,
+            passwordToken: pt,
+            appleId: appleId,
+            firstName: firstName,
+            lastName: lastName,
+            countryCode: normCC,
+            storeFront: finalSF,
+            hsc: 0,
+            adsid: result.tokens?.adsid ?? "",
+            idmsToken: result.tokens?.idmsToken ?? ""
+        )
+    }
+
+    static func clearAppleCookies() {
+        let storage = HTTPCookieStorage.shared
+        for c in storage.cookies ?? [] {
+            let d = c.domain.lowercased()
+            if d == "apple.com" || d.hasSuffix(".apple.com") ||
+               d == "itunes.apple.com" || d.hasSuffix(".itunes.apple.com") ||
+               d == "icloud.com" || d.hasSuffix(".icloud.com") {
+                storage.deleteCookie(c)
+            }
+        }
     }
 
     func resetSession() {
-        sessionData = [:]
-        cookies = [:]
-        srpClient = nil
-        savedEmail = ""
-        savedPassword = ""
-        savedMFACode = ""
-        attemptCount = 0
+        pendingEmail = ""
+        pendingPassword = ""
+        PendingAuthHolder.set("")
+        pendingGSASession = nil
+        PendingMFACodeHolder.set(nil)
+        pendingTokens = nil
+        pendingAniHeaders = [:]
+        pendingAniData = nil
+        pendingCountryCode = nil
+        pendingStoreFront = nil
+        pendingClientInfo = ""
+        lastAuthEmail = ""
+        lastAuthTime = nil
+        AppleIDAuthenticator.clearAppleCookies()
+        AnisetteProvisioner.shared.reset()
     }
-}
 
-enum SRPError: Error, LocalizedError {
-    case invalidChallenge
-    case authenticationFailed
+    func clearFailureCooldown() { resetSession() }
+    var canRetryFullSRPForMFA: Bool { !pendingEmail.isEmpty && !pendingPassword.isEmpty }
 
-    var errorDescription: String? {
-        switch self {
-        case .invalidChallenge:
-            return "Invalid SRP challenge"
-        case .authenticationFailed:
-            return "SRP authentication failed"
+    func validate2FACode(_ code: String, isSMS: Bool = false, phoneId: String? = nil) async throws -> StoreAuthResponse {
+        guard !pendingEmail.isEmpty else { throw StoreError.codeRequired }
+        let clean = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard clean.count == 6, Int(clean) != nil else { throw StoreError.invalidVerificationCode }
+        PendingMFACodeHolder.set(clean)
+
+        var session = pendingGSASession
+        if session == nil {
+            let aniData = try await AnisetteProvisioner.shared.getAnisette()
+            let fresh = GSALoginSession(email: pendingEmail, password: pendingPassword, aniData: aniData)
+            let outcome = try await fresh.beginRound()
+            switch outcome {
+            case .authenticated(let r):
+                pendingGSASession = fresh
+                return try await finalizeGSAAuth(session: fresh, result: r)
+            case .twoFactorRequired:
+                session = fresh
+                pendingGSASession = fresh
+            }
+        }
+        guard let session else { throw StoreError.codeRequired }
+
+        do {
+            let outcome = try await session.completeAfterCode(clean, isSMS: isSMS, phoneId: phoneId)
+            switch outcome {
+            case .authenticated(let result):
+                return try await finalizeGSAAuth(session: session, result: result)
+            case .twoFactorRequired(let t2):
+                pendingTokens = t2
+                try? await session.requestTrustedDeviceNotification()
+                throw StoreError.codeRequired
+            }
+        } catch GSAClientError.invalidSecurityCode(_) {
+            throw StoreError.codeRequired
+        } catch GSAClientError.lockedAccount(let d) {
+            throw StoreError.lockedAccountWithDetails(d)
+        } catch GSAClientError.tooManyRequests {
+            throw StoreError.tooManyRequests
+        } catch GSAClientError.serverError(let c, let m) {
+            if c >= 500 {
+                throw StoreError.authenticationFailedWithDetails("Apple 服务暂时不可用（HTTP \(c)），请稍后重试")
+            }
+            throw StoreError.serverErrorWithDetails(c, m)
+        } catch GSAClientError.requestFailed(let c, let d) {
+            if c == 429 || c == -20210 { throw StoreError.tooManyRequests }
+            if c >= 500 {
+                throw StoreError.authenticationFailedWithDetails("Apple 服务暂时不可用（HTTP \(c)），请稍后重试")
+            }
+            throw StoreError.authenticationFailedWithDetails("请求失败(\(c)): \(String(d.prefix(300)))")
+        } catch GSAClientError.spdDecodeFailed {
+            throw StoreError.authenticationFailedWithDetails("会话解密失败，请重试")
+        } catch let e as StoreError {
+            throw e
+        } catch {
+            throw StoreError.authenticationFailedWithDetails(error.localizedDescription)
         }
     }
 }

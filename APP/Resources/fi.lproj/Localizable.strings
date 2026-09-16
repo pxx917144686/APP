@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "Asetukset";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "Lataukset";
 "tab_search" = "Haku";
 
-// MARK: - Common
 "cancel" = "Peruuta";
 "confirm" = "Vahvista";
 "ok" = "OK";
@@ -47,7 +45,6 @@
 "try_again" = "Yritä uudelleen";
 "got_it" = "Ymmärretty";
 
-// MARK: - Settings
 "settings" = "Asetukset";
 "appearance" = "Ulkoasu";
 "theme" = "Teema";
@@ -114,7 +111,6 @@
 "lang_croatian" = "Kroatia";
 "lang_catalan" = "Katalonia";
 
-// MARK: - Download
 "download_title" = "Lataukset";
 "downloading" = "Ladataan";
 "download_paused" = "Pysäytetty";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "Enintään samanaikaisia latauksia";
 "download_path" = "Latauspolku";
 
-// MARK: - Account
 "account" = "Tili";
 "apple_id" = "Apple ID";
 "add_account" = "Lisää Apple ID";
@@ -166,11 +161,9 @@
 "email" = "Sähköposti";
 "country" = "Maa/Alue";
 
-// MARK: - App Icon
 "app_icon_settings" = "Sovelluksen kuvake";
 "default_icon" = "Oletus";
 
-// MARK: - Search
 "search_placeholder" = "Hae sovelluksia, pelejä, kehittäjiä";
 "search_history" = "Hakuhistoria";
 "search_suggestions" = "Hakuehdotukset";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "Kokeile eri avainsanoja";
 "searching" = "Haetaan...";
 
-// MARK: - Version Picker
 "version_picker" = "Valitse versio";
 "current_version" = "Nykyinen versio";
 "available_versions" = "Saatavilla olevat versiot";
@@ -193,7 +185,6 @@
 "size" = "Koko";
 "build_number" = "Rakennusnumero";
 
-// MARK: - App Detail
 "app_detail" = "Sovelluksen tiedot";
 "get" = "Hae";
 "icloud_sync" = "iCloud-synkronointi";
@@ -211,7 +202,6 @@
 "no_reviews" = "Ei arvosteluja";
 "no_reviews_description" = "Tällä sovelluksella ei ole vielä käyttäjäarvosteluja";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "Ei TestFlight-sovelluksia";
@@ -225,7 +215,6 @@
 "redeem_code" = "Lunastuskoodi";
 "enter_redeem_code" = "Syötä lunastuskoodi";
 
-// MARK: - Filter & Sort
 "filter" = "Suodata";
 "sort" = "Lajittele";
 "sort_by_name" = "Lajittele nimen mukaan";
@@ -235,7 +224,6 @@
 "ascending" = "Nouseva";
 "descending" = "Laskeva";
 
-// MARK: - Notification
 "notifications" = "Ilmoitukset";
 "push_notifications" = "Push-ilmoitukset";
 "download_complete_notification" = "Ilmoitus valmiista latauksesta";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "Värinä";
 "notification_badge" = "Merkki";
 
-// MARK: - Privacy & Security
 "privacy_security" = "Yksityisyys ja tietoturva";
 "clear_cache" = "Tyhjennä välimuisti";
 "cache_size" = "Välimuistin koko";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "Haluatko varmasti tyhjentää kaiken välimuistin? Tämä ei poista ladattuja sovelluksia.";
 "cache_cleared" = "Välimuisti tyhjennetty";
 
-// MARK: - Storage
 "storage" = "Tallennustila";
 "total_storage" = "Yhteensä";
 "used_storage" = "Käytetty";
@@ -260,14 +246,12 @@
 "app_size" = "Sovelluksen koko";
 "documents_size" = "Asiakirjojen koko";
 
-// MARK: - Download Manager
 "download_manager" = "Lataushallinta";
 "batch_operations" = "Erätoiminnot";
 "select_all" = "Valitse kaikki";
 "deselect_all" = "Poista kaikki valinnat";
 "selected_count" = "%@ valittu";
 
-// MARK: - App Information
 "app_name" = "Sovelluksen nimi";
 "app_version" = "Sovelluksen versio";
 "app_rating" = "Sovelluksen arvostelu";
@@ -277,7 +261,6 @@
 "language_support" = "Kieletuki";
 "content_rating" = "Sisällön luokitus";
 
-// MARK: - Account Management
 "account_management" = "Tilien hallinta";
 "login_status" = "Kirjautumistila";
 "two_factor_auth" = "Kaksivaiheinen tunnistautuminen";
@@ -286,7 +269,6 @@
 "login_expired" = "Kirjautuminen vanhentui";
 "please_relogin" = "Kirjaudu uudelleen";
 
-// MARK: - Settings More
 "advanced_settings" = "Lisäasetukset";
 "developer_options" = "Kehittäjän asetukset";
 "check_update" = "Tarkista päivitykset";
@@ -296,7 +278,6 @@
 "rate_app" = "Arvostele sovellus";
 "share_app" = "Jaa sovellus";
 
-// MARK: - Network
 "network" = "Verkko";
 "network_status" = "Verkkotila";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "Verkkonopeus";
 "network_usage" = "Datan käyttö";
 
-// MARK: - Installation
 "installation" = "Asennus";
 "installing" = "Asennetaan...";
 "install_success" = "Asennus onnistui";
@@ -321,7 +301,6 @@
 "signed" = "Allekirjoitettu";
 "unsigned" = "Allekirjoittamaton";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "Testikutsu";
 "testflight_build" = "Rakennus";
@@ -333,7 +312,6 @@
 "testflight_join" = "Liity testiin";
 "testflight_leave" = "Poistu testistä";
 
-// MARK: - Search More
 "search_filter" = "Hakusuodatin";
 "search_result_count" = "%@ tulosta löytyi";
 "exact_match" = "Täsmällinen vastaavuus";
@@ -343,7 +321,6 @@
 "recommended_apps" = "Suositellut sovellukset";
 "top_charts" = "Top-listat";
 
-// MARK: - Status
 "status" = "Tila";
 "status_normal" = "Normaali";
 "status_abnormal" = "Epänormaali";
@@ -358,7 +335,6 @@
 "status_idle" = "Tyhjä";
 "status_busy" = "Kiireinen";
 
-// MARK: - Tips
 "tips" = "Vinkit";
 "tip_download_speed" = "Latausnopeus riippuu verkkoyhteydestä";
 "tip_wifi_download" = "Suositellaan lataamaan suuria tiedostoja Wi-Fi:n kautta";
@@ -369,7 +345,6 @@
 "view_details" = "Näytä tiedot";
 "learn_more" = "Lisätietoja";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ t sitten";
 "days_ago" = "%@ pv sitten";
 
-// MARK: - Actions
 "action_open" = "Avaa";
 "action_close" = "Sulje";
 "action_view" = "Näytä";
@@ -435,7 +409,6 @@
 "action_declined" = "Hylätty";
 "action_accepted" = "Hyväksytty";
 
-// MARK: - Theme
 "theme_settings" = "Teema-asetukset";
 "light_theme" = "Vaalea teema";
 "dark_theme" = "Tumma teema";
@@ -449,7 +422,6 @@
 "font_size" = "Fonttikoko";
 "font_style" = "Fonttityyli";
 
-// MARK: - App Detail More
 "feature_tags" = "Ominaisuustagit";
 "free" = "Hae";
 "get" = "Hae";
@@ -464,7 +436,6 @@
 "last_updated" = "Viimeksi päivitetty";
 "requires_ios" = "Vaatii iOS %@ tai uudemman";
 
-// MARK: - Search More
 "search_placeholder" = "Hae pelejä, sovelluksia";
 "login" = "Kirjaudu sisään";
 "clear_all" = "Tyhjennä kaikki";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ versiota";
 "version_x_date" = "Versio %@ · %@";
 
-// MARK: - Account More
 "login_account" = "Kirjaudu sisään";
 "current" = "Nykyinen";
 "switch" = "Vaihda";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "Tarkista vahvistuskoodi Apple-laitteessasi";
 "wrong_verification_code" = "Väärä vahvistuskoodi. Yritä uudelleen.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "Virheellinen IPA-tiedosto";
 "install_failed_with_reason" = "Asennus epäonnistui: %@";
 "install_timeout" = "Asennus aikakatkaistiin";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "Ei IPA-tiedostoja";
 "no_ipa_found_desc" = "Ei IPA-tiedostoja sovelluksen tallennushakemistossa";
 
-// MARK: - Account Detail
 "basic_info" = "Perustiedot";
 "account_identifier" = "Tilin tunniste";
 "country_region" = "Maa/Alue";
@@ -585,8 +553,40 @@
 "no_value" = "Ei mitään";
 "region_title" = "Alue";
 
-// MARK: - Appearance More
 "overall_color" = "Korostusväri";
 "quick_select" = "Nopea valinta";
 "auto" = "Auto";
 "unknown" = "Tuntematon";
+
+"pick_color" = "Valitse väri";
+"auto_theme_description" = "Vaihtaa automaattisesti vaalean ja tumman ulkonäön auringonnousun ja -laskun mukaan.";
+"tab_bar_style" = "Välilehtipalkin tyyli";
+"tab_style_default" = "Oletus";
+"tab_style_default_desc" = "Järjestelmän vakiovälilehtipalkki";
+"tab_style_frosted" = "Himmennetty lasi";
+"tab_style_floating" = "Leijuva kortti";
+"tab_style_floating_desc" = "Elegantti himmennetyn lasin efekti";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "Haku erillään";
+"tab_style_search_independent_desc" = "Hakupainike oikealla";
+"floating_tabbar_customize" = "Mukauta leijuvaa palkkia";
+"floating_tabbar_horizontal_padding" = "Vaakaväli";
+"floating_tabbar_bottom_offset" = "Alareunan siirros";
+"floating_tabbar_height" = "Korkeus";
+"floating_tabbar_corner_radius" = "Kulman säde";
+"information" = "Tiedot";
+"expand" = "Laajenna";
+"collapse" = "Tiivistä";
+"session_tokens_header" = "Istuntotunnukset";
+"session_tokens" = "Istuntotunnukset";
+"show_session_tokens" = "Näytä istuntotunnukset";
+"hide_session_tokens" = "Piilota istuntotunnukset";
+"session_tokens_hint" = "Istuntotunnuksia käytetään automaattiseen uudelleentodennukseen. Älä jaa niitä.";
+"no_screenshots" = "Ei kuvakaappauksia";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "Tarkista luotettu Apple-laitteesi tai tekstiviesti ja syötä 6-numeroinen vahvistuskoodi alle.";

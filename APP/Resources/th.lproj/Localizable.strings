@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "การตั้งค่า";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "ดาวน์โหลด";
 "tab_search" = "ค้นหา";
 
-// MARK: - Common
 "cancel" = "ยกเลิก";
 "confirm" = "ยืนยัน";
 "ok" = "ตกลง";
@@ -47,7 +45,6 @@
 "try_again" = "กรุณาลองอีกครั้ง";
 "got_it" = "เข้าใจแล้ว";
 
-// MARK: - Settings
 "settings" = "การตั้งค่า";
 "appearance" = "รูปแบบการแสดงผล";
 "theme" = "ธีม";
@@ -114,7 +111,6 @@
 "lang_croatian" = "โครเอเชีย";
 "lang_catalan" = "คาตาลัน";
 
-// MARK: - Download
 "download_title" = "ดาวน์โหลด";
 "downloading" = "กำลังดาวน์โหลด";
 "download_paused" = "หยุดชั่วคราว";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "จำนวนดาวน์โหลดพร้อมกันสูงสุด";
 "download_path" = "ที่เก็บไฟล์ดาวน์โหลด";
 
-// MARK: - Account
 "account" = "บัญชี";
 "apple_id" = "Apple ID";
 "add_account" = "เพิ่ม Apple ID";
@@ -166,11 +161,9 @@
 "email" = "อีเมล";
 "country" = "ประเทศ/ภูมิภาค";
 
-// MARK: - App Icon
 "app_icon_settings" = "ไอคอนแอป";
 "default_icon" = "ค่าเริ่มต้น";
 
-// MARK: - Search
 "search_placeholder" = "ค้นหาแอป เกม ผู้พัฒนา";
 "search_history" = "ประวัติการค้นหา";
 "search_suggestions" = "คำแนะนำการค้นหา";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "ลองใช้คำค้นหาอื่น";
 "searching" = "กำลังค้นหา...";
 
-// MARK: - Version Picker
 "version_picker" = "เลือกเวอร์ชัน";
 "current_version" = "เวอร์ชันปัจจุบัน";
 "available_versions" = "เวอร์ชันที่ใช้ได้";
@@ -193,7 +185,6 @@
 "size" = "ขนาด";
 "build_number" = "หมายเลขบิลด์";
 
-// MARK: - App Detail
 "app_detail" = "รายละเอียดแอป";
 "get" = "รับ";
 "icloud_sync" = "iCloud ซิงค์";
@@ -211,7 +202,6 @@
 "no_reviews" = "ไม่มีรีวิว";
 "no_reviews_description" = "แอปนี้ยังไม่มีรีวิวจากผู้ใช้";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "ไม่มีแอป TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "รหัสแลกของ";
 "enter_redeem_code" = "กรอกรหัสแลกของ";
 
-// MARK: - Filter & Sort
 "filter" = "กรอง";
 "sort" = "จัดเรียง";
 "sort_by_name" = "เรียงตามชื่อ";
@@ -235,7 +224,6 @@
 "ascending" = "น้อยไปมาก";
 "descending" = "มากไปน้อย";
 
-// MARK: - Notification
 "notifications" = "การแจ้งเตือน";
 "push_notifications" = "การแจ้งเตือนพุช";
 "download_complete_notification" = "แจ้งเตือนเมื่อดาวน์โหลดเสร็จ";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "สั่น";
 "notification_badge" = "เขตข้อมูล";
 
-// MARK: - Privacy & Security
 "privacy_security" = "ความเป็นส่วนตัวและความปลอดภัย";
 "clear_cache" = "ล้างแคช";
 "cache_size" = "ขนาดแคช";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "คุณแน่ใจหรือไม่ที่จะล้างแคชทั้งหมด? การดำเนินการนี้จะไม่ลบแอปที่ดาวน์โหลดมา";
 "cache_cleared" = "ล้างแคชแล้ว";
 
-// MARK: - Storage
 "storage" = "พื้นที่จัดเก็บ";
 "total_storage" = "รวมทั้งหมด";
 "used_storage" = "ใช้ไปแล้ว";
@@ -260,14 +246,12 @@
 "app_size" = "ขนาดแอป";
 "documents_size" = "ขนาดเอกสาร";
 
-// MARK: - Download Manager
 "download_manager" = "ตัวจัดการดาวน์โหลด";
 "batch_operations" = "การดำเนินการเป็นกลุ่ม";
 "select_all" = "เลือกทั้งหมด";
 "deselect_all" = "ยกเลิกการเลือกทั้งหมด";
 "selected_count" = "เลือกไว้ %@ รายการ";
 
-// MARK: - App Information
 "app_name" = "ชื่อแอป";
 "app_version" = "เวอร์ชันแอป";
 "app_rating" = "เรตติ้งแอป";
@@ -277,7 +261,6 @@
 "language_support" = "รองรับภาษา";
 "content_rating" = "เรตติ้งเนื้อหา";
 
-// MARK: - Account Management
 "account_management" = "การจัดการบัญชี";
 "login_status" = "สถานะการเข้าสู่ระบบ";
 "two_factor_auth" = "การยืนยันตัวตนสองชั้น";
@@ -286,7 +269,6 @@
 "login_expired" = "การเข้าสู่ระบบหมดอายุ";
 "please_relogin" = "กรุณาเข้าสู่ระบบอีกครั้ง";
 
-// MARK: - Settings More
 "advanced_settings" = "การตั้งค่าขั้นสูง";
 "developer_options" = "ตัวเลือกนักพัฒนา";
 "check_update" = "ตรวจสอบการอัปเดต";
@@ -296,7 +278,6 @@
 "rate_app" = "ให้คะแนนแอป";
 "share_app" = "แชร์แอป";
 
-// MARK: - Network
 "network" = "เครือข่าย";
 "network_status" = "สถานะเครือข่าย";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "ความเร็วเครือข่าย";
 "network_usage" = "การใช้ข้อมูล";
 
-// MARK: - Installation
 "installation" = "การติดตั้ง";
 "installing" = "กำลังติดตั้ง...";
 "install_success" = "ติดตั้งสำเร็จ";
@@ -321,7 +301,6 @@
 "signed" = "มีลายเซ็น";
 "unsigned" = "ไม่มีลายเซ็น";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "คำเชิญทดสอบ";
 "testflight_build" = "บิลด์";
@@ -333,7 +312,6 @@
 "testflight_join" = "เข้าร่วมทดสอบ";
 "testflight_leave" = "ออกจากการทดสอบ";
 
-// MARK: - Search More
 "search_filter" = "ตัวกรองการค้นหา";
 "search_result_count" = "พบ %@ ผลลัพธ์";
 "exact_match" = "ตรงกันเป๊ะ";
@@ -343,7 +321,6 @@
 "recommended_apps" = "แอปแนะนำ";
 "top_charts" = "ชาร์ตสูงสุด";
 
-// MARK: - Status
 "status" = "สถานะ";
 "status_normal" = "ปกติ";
 "status_abnormal" = "ผิดปกติ";
@@ -358,7 +335,6 @@
 "status_idle" = "ว่าง";
 "status_busy" = "ไม่ว่าง";
 
-// MARK: - Tips
 "tips" = "เคล็ดลับ";
 "tip_download_speed" = "ความเร็วดาวน์โหลดขึ้นอยู่กับการเชื่อมต่อเครือข่ายของคุณ";
 "tip_wifi_download" = "แนะนำให้ดาวน์โหลดไฟล์ขนาดใหญ่ผ่าน Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "ดูรายละเอียด";
 "learn_more" = "เรียนรู้เพิ่มเติม";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "%@ ชั่วโมงที่แล้ว";
 "days_ago" = "%@ วันที่แล้ว";
 
-// MARK: - Actions
 "action_open" = "เปิด";
 "action_close" = "ปิด";
 "action_view" = "ดู";
@@ -435,7 +409,6 @@
 "action_declined" = "ถูกปฏิเสธ";
 "action_accepted" = "ยอมรับแล้ว";
 
-// MARK: - Theme
 "theme_settings" = "การตั้งค่าธีม";
 "light_theme" = "ธีมสว่าง";
 "dark_theme" = "ธีมมืด";
@@ -449,7 +422,6 @@
 "font_size" = "ขนาดฟอนต์";
 "font_style" = "สไตล์ฟอนต์";
 
-// MARK: - App Detail More
 "feature_tags" = "แท็กคุณสมบัติ";
 "free" = "รับ";
 "get" = "รับ";
@@ -464,7 +436,6 @@
 "last_updated" = "อัปเดตล่าสุด";
 "requires_ios" = "ต้องการ iOS %@ หรือใหม่กว่า";
 
-// MARK: - Search More
 "search_placeholder" = "ค้นหาเกม แอป";
 "login" = "เข้าสู่ระบบ";
 "clear_all" = "ล้างทั้งหมด";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ เวอร์ชัน";
 "version_x_date" = "เวอร์ชัน %@ · %@";
 
-// MARK: - Account More
 "login_account" = "เข้าสู่ระบบ";
 "current" = "ปัจจุบัน";
 "switch" = "เปลี่ยน";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "ตรวจสอบรหัสยืนยันบนอุปกรณ์ Apple ของคุณ";
 "wrong_verification_code" = "รหัสยืนยันไม่ถูกต้อง กรุณาลองอีกครั้ง";
 
-// MARK: - Download More
 "invalid_ipa_file" = "ไฟล์ IPA ไม่ถูกต้อง";
 "install_failed_with_reason" = "การติดตั้งล้มเหลว: %@";
 "install_timeout" = "การติดตั้งหมดเวลา";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "ไม่พบไฟล์ IPA";
 "no_ipa_found_desc" = "ไม่พบไฟล์ IPA ในไดเรกทอรีจัดเก็บแอป";
 
-// MARK: - Account Detail
 "basic_info" = "ข้อมูลพื้นฐาน";
 "account_identifier" = "ตัวระบุบัญชี";
 "country_region" = "ประเทศ/ภูมิภาค";
@@ -585,8 +553,40 @@
 "no_value" = "ไม่มี";
 "region_title" = "ภูมิภาค";
 
-// MARK: - Appearance More
 "overall_color" = "สีเน้น";
 "quick_select" = "เลือกด่วน";
 "auto" = "อัตโนมัติ";
 "unknown" = "ไม่ทราบ";
+
+"pick_color" = "เลือกสี";
+"auto_theme_description" = "สลับระหว่างโหมดสว่างและมืดโดยอัตโนมัติตามเวลาพระอาทิตย์ขึ้นและตก";
+"tab_bar_style" = "สไตล์แถบแท็บ";
+"tab_style_default" = "ค่าเริ่มต้น";
+"tab_style_default_desc" = "แถบแท็บมาตรฐานของระบบ";
+"tab_style_frosted" = "กระจกฝ้า";
+"tab_style_floating" = "การ์ดลอย";
+"tab_style_floating_desc" = "เอฟเฟกต์กระจกฝ้าที่สวยงาม";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "ค้นหาแยก";
+"tab_style_search_independent_desc" = "ปุ่มค้นหาอยู่ด้านขวา";
+"floating_tabbar_customize" = "ปรับแต่งแถบลอย";
+"floating_tabbar_horizontal_padding" = "ระยะขอบแนวนอน";
+"floating_tabbar_bottom_offset" = "ตำแหน่งเยื้องด้านล่าง";
+"floating_tabbar_height" = "ความสูง";
+"floating_tabbar_corner_radius" = "รัศมีมุม";
+"information" = "ข้อมูล";
+"expand" = "ขยาย";
+"collapse" = "ย่อ";
+"session_tokens_header" = "โทเคนเซสชัน";
+"session_tokens" = "โทเคนเซสชัน";
+"show_session_tokens" = "แสดงโทเคนเซสชัน";
+"hide_session_tokens" = "ซ่อนโทเคนเซสชัน";
+"session_tokens_hint" = "โทเคนเซสชันใช้สำหรับการยืนยันตัวตนใหม่อัตโนมัติ อย่าแชร์ให้ผู้อื่น";
+"no_screenshots" = "ไม่มีภาพหน้าจอ";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "ตรวจสอบอุปกรณ์ Apple ที่เชื่อถือได้หรือ SMS แล้วกรอกรหัสยืนยัน 6 หลักด้านล่าง";

@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "הגדרות";
 "tab_tfapps" = "TestFlight";
 "tab_downloads" = "הורדות";
 "tab_search" = "חיפוש";
 
-// MARK: - Common
 "cancel" = "ביטול";
 "confirm" = "אישור";
 "ok" = "אישור";
@@ -47,7 +45,6 @@
 "try_again" = "נסה שוב";
 "got_it" = "הבנתי";
 
-// MARK: - Settings
 "settings" = "הגדרות";
 "appearance" = "מראה";
 "theme" = "ערכת נושא";
@@ -114,7 +111,6 @@
 "lang_croatian" = "קרואטית";
 "lang_catalan" = "קטלאנית";
 
-// MARK: - Download
 "download_title" = "הורדות";
 "downloading" = "מוריד";
 "download_paused" = "מושהה";
@@ -142,7 +138,6 @@
 "max_concurrent_downloads" = "מקסימום הורדות בו-זמנית";
 "download_path" = "נתיב הורדה";
 
-// MARK: - Account
 "account" = "חשבון";
 "apple_id" = "Apple ID";
 "add_account" = "הוסף Apple ID";
@@ -166,11 +161,9 @@
 "email" = "אימייל";
 "country" = "ארצהאזור";
 
-// MARK: - App Icon
 "app_icon_settings" = "סמל אפליקציה";
 "default_icon" = "ברירת מחדל";
 
-// MARK: - Search
 "search_placeholder" = "חפש אפליקציות, משחקים, מפתחים";
 "search_history" = "היסטוריית חיפוש";
 "search_suggestions" = "הצעות חיפוש";
@@ -181,7 +174,6 @@
 "try_different_keywords" = "נסה מילות מפתח שונות";
 "searching" = "מחפש...";
 
-// MARK: - Version Picker
 "version_picker" = "בחר גרסה";
 "current_version" = "גרסה נוכחית";
 "available_versions" = "גרסאות זמינות";
@@ -193,7 +185,6 @@
 "size" = "גודל";
 "build_number" = "מספר בנייה";
 
-// MARK: - App Detail
 "app_detail" = "פרטי אפליקציה";
 "get" = "קבל";
 "icloud_sync" = "סנכרון iCloud";
@@ -211,7 +202,6 @@
 "no_reviews" = "אין ביקורות";
 "no_reviews_description" = "לאפליקציה הזו עדיין אין ביקורות משתמשים";
 
-// MARK: - TF Apps
 "tf_apps" = "TestFlight";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "אין אפליקציות TestFlight";
@@ -225,7 +215,6 @@
 "redeem_code" = "קוד חיסכון";
 "enter_redeem_code" = "הזן קוד חיסכון";
 
-// MARK: - Filter & Sort
 "filter" = "סינון";
 "sort" = "מיון";
 "sort_by_name" = "מיין לפי שם";
@@ -235,7 +224,6 @@
 "ascending" = "עולה";
 "descending" = "יורד";
 
-// MARK: - Notification
 "notifications" = "התראות";
 "push_notifications" = "התראות דחוף";
 "download_complete_notification" = "התראה על השלמת הורדה";
@@ -243,7 +231,6 @@
 "notification_vibrate" = "רטט";
 "notification_badge" = "תג";
 
-// MARK: - Privacy & Security
 "privacy_security" = "פרטיות ואבטחה";
 "clear_cache" = "נקה מטמון";
 "cache_size" = "גודל מטמון";
@@ -252,7 +239,6 @@
 "clear_cache_message" = "האם אתה בטוח שברצונך לנקות את כל המטמון? זה לא ימחק את האפליקציות שהורדו.";
 "cache_cleared" = "המטמון נוקה";
 
-// MARK: - Storage
 "storage" = "אחסון";
 "total_storage" = "סך הכל";
 "used_storage" = "בשימוש";
@@ -260,14 +246,12 @@
 "app_size" = "גודל האפליקציה";
 "documents_size" = "גודל מסמכים";
 
-// MARK: - Download Manager
 "download_manager" = "מנהל הורדות";
 "batch_operations" = "פעולות אצווה";
 "select_all" = "בחר הכל";
 "deselect_all" = "בטל בחירת הכל";
 "selected_count" = "%@ נבחרו";
 
-// MARK: - App Information
 "app_name" = "שם אפליקציה";
 "app_version" = "גרסת אפליקציה";
 "app_rating" = "דירוג אפליקציה";
@@ -277,7 +261,6 @@
 "language_support" = "תמיכה בשפות";
 "content_rating" = "דירוג תוכן";
 
-// MARK: - Account Management
 "account_management" = "ניהול חשבונות";
 "login_status" = "סטטוס התחברות";
 "two_factor_auth" = "אימות דו-שלבי";
@@ -286,7 +269,6 @@
 "login_expired" = "פג תוקף ההתחברות";
 "please_relogin" = "אנא התחבר שוב";
 
-// MARK: - Settings More
 "advanced_settings" = "הגדרות מתקדמות";
 "developer_options" = "אפשרויות מפתח";
 "check_update" = "בדוק עדכונים";
@@ -296,7 +278,6 @@
 "rate_app" = "דרג אותנו";
 "share_app" = "שתף אפליקציה";
 
-// MARK: - Network
 "network" = "רשת";
 "network_status" = "סטטוס רשת";
 "wifi" = "Wi-Fi";
@@ -307,7 +288,6 @@
 "network_speed" = "מהירות רשת";
 "network_usage" = "שימוש בנתונים";
 
-// MARK: - Installation
 "installation" = "התקנה";
 "installing" = "מתקין...";
 "install_success" = "ההתקנה הצליחה";
@@ -321,7 +301,6 @@
 "signed" = "חתום";
 "unsigned" = "לא חתום";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "הזמנת בדיקה";
 "testflight_build" = "בנייה";
@@ -333,7 +312,6 @@
 "testflight_join" = "הצטרף לבדיקה";
 "testflight_leave" = "עזוב את הבדיקה";
 
-// MARK: - Search More
 "search_filter" = "מסנן חיפוש";
 "search_result_count" = "נמצאו %@ תוצאות";
 "exact_match" = "התאמה מדויקת";
@@ -343,7 +321,6 @@
 "recommended_apps" = "אפליקציות מומלצות";
 "top_charts" = "טבלאות מובילות";
 
-// MARK: - Status
 "status" = "סטטוס";
 "status_normal" = "רגיל";
 "status_abnormal" = "חריג";
@@ -358,7 +335,6 @@
 "status_idle" = "פנוי";
 "status_busy" = "עסוק";
 
-// MARK: - Tips
 "tips" = "טיפים";
 "tip_download_speed" = "מהירות ההורדה תלויה בחיבור הרשת שלך";
 "tip_wifi_download" = "מומלץ להוריד קבצים גדולים באמצעות Wi-Fi";
@@ -369,7 +345,6 @@
 "view_details" = "צפה בפרטים";
 "learn_more" = "למד עוד";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -390,7 +365,6 @@
 "hours_ago" = "לפני %@ שעות";
 "days_ago" = "לפני %@ ימים";
 
-// MARK: - Actions
 "action_open" = "פתח";
 "action_close" = "סגור";
 "action_view" = "צפה";
@@ -435,7 +409,6 @@
 "action_declined" = "נדחה";
 "action_accepted" = "תקבל";
 
-// MARK: - Theme
 "theme_settings" = "הגדרות ערכת נושא";
 "light_theme" = "ערכת נושא בהירה";
 "dark_theme" = "ערכת נושא כהה";
@@ -449,7 +422,6 @@
 "font_size" = "גודל גופן";
 "font_style" = "סגנון גופן";
 
-// MARK: - App Detail More
 "feature_tags" = "תגיות תכונות";
 "free" = "קבל";
 "get" = "קבל";
@@ -464,7 +436,6 @@
 "last_updated" = "עודכן לאחרונה";
 "requires_ios" = "נדרש iOS %@ או גרסה מאוחרת יותר";
 
-// MARK: - Search More
 "search_placeholder" = "חפש משחקים, אפליקציות";
 "login" = "התחבר";
 "clear_all" = "נקה הכל";
@@ -482,7 +453,6 @@
 "x_versions" = "%@ גרסאות";
 "version_x_date" = "גרסה %@ · %@";
 
-// MARK: - Account More
 "login_account" = "התחבר";
 "current" = "נוכחי";
 "switch" = "החלף";
@@ -532,7 +502,6 @@
 "check_apple_device_code" = "בדוק במכשיר Apple שלך את קוד האימות";
 "wrong_verification_code" = "קוד אימות שגוי. אנא נסה שוב.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "קובץ IPA לא חוקי";
 "install_failed_with_reason" = "ההתקנה נכשלה: %@";
 "install_timeout" = "פג תוקף ההתקנה";
@@ -572,7 +541,6 @@
 "no_ipa_found" = "לא נמצאו קבצי IPA";
 "no_ipa_found_desc" = "לא נמצאו קבצי IPA בספריית האחסון של האפליקציה";
 
-// MARK: - Account Detail
 "basic_info" = "מידע בסיסי";
 "account_identifier" = "מזהה חשבון";
 "country_region" = "ארצהאזור";
@@ -585,8 +553,40 @@
 "no_value" = "ללא";
 "region_title" = "אזור";
 
-// MARK: - Appearance More
 "overall_color" = "צבע דגש";
 "quick_select" = "בחירה מהירה";
 "auto" = "אוטומטי";
 "unknown" = "לא ידוע";
+
+"pick_color" = "בחירת צבע";
+"auto_theme_description" = "מעבר אוטומטי בין מראה בהיר לכהה לפי זריחת ושקיעת השמש.";
+"tab_bar_style" = "סגנון מחוון כרטיסיות";
+"tab_style_default" = "ברירת מחדל";
+"tab_style_default_desc" = "מחוון כרטיסיות סטנדרטי של המערכת";
+"tab_style_frosted" = "זכוכית מעושנת";
+"tab_style_floating" = "כרטיס צף";
+"tab_style_floating_desc" = "אפקט זכוכית מעושנת אלגנטי";
+"tab_style_gradient" = "Gradient";
+"tab_style_minimal" = "Minimal";
+"tab_style_search_independent" = "חיפוש נפרד";
+"tab_style_search_independent_desc" = "כפתור החיפוש מימין";
+"floating_tabbar_customize" = "התאמה אישית של הסרגל הצף";
+"floating_tabbar_horizontal_padding" = "ריפוד אופקי";
+"floating_tabbar_bottom_offset" = "היסט תחתון";
+"floating_tabbar_height" = "גובה";
+"floating_tabbar_corner_radius" = "רדיוס פינות";
+"information" = "מידע";
+"expand" = "הרחב";
+"collapse" = "כווץ";
+"session_tokens_header" = "אסימוני הפעלה";
+"session_tokens" = "אסימוני הפעלה";
+"show_session_tokens" = "הצג אסימוני הפעלה";
+"hide_session_tokens" = "הסתר אסימוני הפעלה";
+"session_tokens_hint" = "אסימוני הפעלה משמשים לאימות מחדש אוטומטי. אין לשתף עם אחרים.";
+"no_screenshots" = "אין צילומי מסך";
+
+"hide_password" = "{'zh-Hans': '隐藏密码', 'ja': 'パスワードを非表示', 'ko': '비밀번호 가리기', 'de': 'Passwort verbergen', 'fr': 'Masquer le mot de passe', 'es': 'Ocultar contraseña', 'it': 'Nascondi password', 'pt': 'Ocultar senha', 'ru': 'Скрыть пароль', 'ar': 'إخفاء كلمة المرور', 'tr': 'Şifreyi Gizle', 'nl': 'Wachtwoord verbergen', 'pl': 'Ukryj hasło', 'sv': 'Dölj lösenord', 'da': 'Skjul adgangskode', 'fi': 'Piilota salasana', 'nb': 'Skjul passord', 'cs': 'Skrýt heslo', 'el': 'Απόκρυψη κωδικού', 'he': 'הסתר סיסמה', 'uk': 'Сховати пароль', 'hu': 'Jelszó elrejtése', 'ro': 'Ascunde parola', 'sk': 'Skryť heslo', 'th': 'ซ่อนรหัสผ่าน', 'vi': 'Ẩn mật khẩu', 'id': 'Sembunyikan Kata Sandi', 'ms': 'Sembunyi Kata Laluan', 'hi': 'पासवर्ड छिपाएं', 'hr': 'Sakrij lozinku', 'ca': 'Amaga la contrasenya'}";
+"show_password" = "{'zh-Hans': '显示密码', 'ja': 'パスワードを表示', 'ko': '비밀번호 표시', 'de': 'Passwort anzeigen', 'fr': 'Afficher le mot de passe', 'es': 'Mostrar contraseña', 'it': 'Mostra password', 'pt': 'Mostrar senha', 'ru': 'Показать пароль', 'ar': 'إظهار كلمة المرور', 'tr': 'Şifreyi Göster', 'nl': 'Wachtwoord tonen', 'pl': 'Pokaż hasło', 'sv': 'Visa lösenord', 'da': 'Vis adgangskode', 'fi': 'Näytä salasana', 'nb': 'Vis passord', 'cs': 'Zobrazit heslo', 'el': 'Εμφάνιση κωδικού', 'he': 'הצג סיסמה', 'uk': 'Показати пароль', 'hu': 'Jelszó megjelenítése', 'ro': 'Arată parola', 'sk': 'Zobraziť heslo', 'th': 'แสดงรหัสผ่าน', 'vi': 'Hiện mật khẩu', 'id': 'Tampilkan Kata Sandi', 'ms': 'Tunjuk Kata Laluan', 'hi': 'पासवर्ड दिखाएं', 'hr': 'Prikaži lozinku', 'ca': 'Mostra la contrasenya'}";
+"less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
+"see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
+"two_factor_code_intro" = "בדוק את מכשיר Apple המהימן שלך או SMS והזן את קוד האימות בן 6 הספרות למטה.";

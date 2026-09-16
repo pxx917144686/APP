@@ -1,10 +1,8 @@
-// MARK: - Tab Bar
 "tab_settings" = "설정";
 "tab_tfapps" = "TF버전";
 "tab_downloads" = "다운로드";
 "tab_search" = "검색";
 
-// MARK: - Common
 "cancel" = "취소";
 "confirm" = "확인";
 "ok" = "좋아요";
@@ -47,7 +45,6 @@
 "try_again" = "다시 시도해 주세요";
 "got_it" = "알겠습니다";
 
-// MARK: - Settings
 "settings" = "설정";
 "appearance" = "디스플레이";
 "theme" = "테마";
@@ -133,7 +130,6 @@
 "lang_croatian" = "크로아티아어";
 "lang_catalan" = "카탈로니아어";
 
-// MARK: - Download
 "download_title" = "다운로드";
 "downloading" = "다운로드 중";
 "download_paused" = "일시 정지됨";
@@ -161,7 +157,6 @@
 "max_concurrent_downloads" = "최대 동시 다운로드 수";
 "download_path" = "다운로드 경로";
 
-// MARK: - Account
 "account" = "계정";
 "apple_id" = "Apple ID";
 "add_account" = "Apple ID 추가";
@@ -185,11 +180,9 @@
 "email" = "이메일";
 "country" = "국가/지역";
 
-// MARK: - App Icon
 "app_icon_settings" = "앱 아이콘";
 "default_icon" = "기본";
 
-// MARK: - Search
 "search_placeholder" = "앱, 게임, 개발자 검색";
 "search_history" = "검색 기록";
 "search_suggestions" = "검색 제안";
@@ -200,7 +193,6 @@
 "try_different_keywords" = "다른 키워드로 시도해 보세요";
 "searching" = "검색 중...";
 
-// MARK: - Version Picker
 "version_picker" = "버전 선택";
 "current_version" = "현재 버전";
 "available_versions" = "사용 가능한 버전";
@@ -212,7 +204,6 @@
 "size" = "크기";
 "build_number" = "빌드 번호";
 
-// MARK: - App Detail
 "app_detail" = "앱 세부 정보";
 "get" = "받기";
 "icloud_sync" = "iCloud 동기화";
@@ -231,7 +222,6 @@
 "no_reviews" = "리뷰 없음";
 "no_reviews_description" = "이 앱에 대한 사용자 리뷰가 없습니다";
 
-// MARK: - TF Apps
 "tf_apps" = "TF버전";
 "tf_title" = "TestFlight";
 "no_tf_apps" = "TestFlight 앱 없음";
@@ -246,7 +236,6 @@
 "redeem_code" = "리딤 코드";
 "enter_redeem_code" = "리딤 코드 입력";
 
-// MARK: - Filter & Sort
 "filter" = "필터";
 "sort" = "정렬";
 "sort_by_name" = "이름순";
@@ -256,7 +245,6 @@
 "ascending" = "오름차순";
 "descending" = "내림차순";
 
-// MARK: - Notification
 "notifications" = "알림";
 "push_notifications" = "푸시 알림";
 "download_complete_notification" = "다운로드 완료 알림";
@@ -264,7 +252,6 @@
 "notification_vibrate" = "진동";
 "notification_badge" = "뱃지";
 
-// MARK: - Privacy & Security
 "privacy_security" = "개인정보 및 보안";
 "privacy_policy" = "개인정보 처리방침";
 "user_agreement" = "이용 약관";
@@ -275,7 +262,6 @@
 "clear_cache_message" = "모든 캐시를 지우시겠습니까? 다운로드한 앱은 삭제되지 않습니다.";
 "cache_cleared" = "캐시가 지워졌습니다";
 
-// MARK: - Storage
 "storage" = "저장 공간";
 "total_storage" = "전체 용량";
 "used_storage" = "사용 중";
@@ -283,7 +269,6 @@
 "app_size" = "앱 크기";
 "documents_size" = "문서 크기";
 
-// MARK: - Download Manager
 "download_manager" = "다운로드 관리";
 "download_queue" = "다운로드 대기열";
 "batch_operations" = "일괄 작업";
@@ -291,7 +276,6 @@
 "deselect_all" = "전체 선택 해제";
 "selected_count" = "%@개 선택됨";
 
-// MARK: - App Information
 "app_name" = "앱 이름";
 "app_version" = "앱 버전";
 "app_size" = "앱 크기";
@@ -304,7 +288,6 @@
 "language_support" = "지원 언어";
 "content_rating" = "콘텐츠 등급";
 
-// MARK: - Account Management
 "account_management" = "계정 관리";
 "login_status" = "로그인 상태";
 "two_factor_auth" = "2단계 인증";
@@ -313,7 +296,6 @@
 "login_expired" = "로그인이 만료되었습니다";
 "please_relogin" = "다시 로그인해 주세요";
 
-// MARK: - Settings More
 "advanced_settings" = "고급 설정";
 "developer_options" = "개발자 옵션";
 "check_update" = "업데이트 확인";
@@ -323,7 +305,6 @@
 "rate_app" = "평가하기";
 "share_app" = "앱 공유";
 
-// MARK: - Network
 "network" = "네트워크";
 "network_status" = "네트워크 상태";
 "wifi" = "WiFi";
@@ -334,7 +315,6 @@
 "network_speed" = "네트워크 속도";
 "network_usage" = "데이터 사용량";
 
-// MARK: - Installation
 "installation" = "설치";
 "installing" = "설치 중...";
 "install_success" = "설치 성공";
@@ -348,7 +328,6 @@
 "signed" = "서명됨";
 "unsigned" = "서명되지 않음";
 
-// MARK: - TestFlight
 "testflight" = "TestFlight";
 "testflight_invite" = "테스트 초대";
 "testflight_build" = "빌드 버전";
@@ -360,7 +339,6 @@
 "testflight_join" = "테스트 참여";
 "testflight_leave" = "테스트 나가기";
 
-// MARK: - Search More
 "search_filter" = "검색 필터";
 "search_result_count" = "결과 %@개";
 "exact_match" = "정확히 일치";
@@ -370,7 +348,6 @@
 "recommended_apps" = "추천 앱";
 "top_charts" = "순위 차트";
 
-// MARK: - Status
 "status" = "상태";
 "status_normal" = "정상";
 "status_abnormal" = "비정상";
@@ -385,7 +362,6 @@
 "status_idle" = "유휴";
 "status_busy" = "바쁨";
 
-// MARK: - Tips
 "tips" = "안내";
 "tip_download_speed" = "다운로드 속도는 네트워크 환경에 따라 다릅니다";
 "tip_wifi_download" = "대용량 파일은 WiFi 환경에서 다운로드하는 것을 권장합니다";
@@ -396,7 +372,6 @@
 "view_details" = "자세히 보기";
 "learn_more" = "자세히 알아보기";
 
-// MARK: - Units
 "unit_bytes" = "B";
 "unit_kilobytes" = "KB";
 "unit_megabytes" = "MB";
@@ -417,7 +392,6 @@
 "hours_ago" = "%@시간 전";
 "days_ago" = "%@일 전";
 
-// MARK: - Actions
 "action_open" = "열기";
 "action_close" = "닫기";
 "action_view" = "보기";
@@ -462,7 +436,6 @@
 "action_declined" = "거절됨";
 "action_accepted" = "수락됨";
 
-// MARK: - Theme
 "theme_settings" = "테마 설정";
 "light_theme" = "라이트 테마";
 "dark_theme" = "다크 테마";
@@ -477,7 +450,6 @@
 "font_size" = "글자 크기";
 "font_style" = "글꼴 스타일";
 
-// MARK: - App Detail More
 "feature_tags" = "기능 태그";
 "free" = "무료";
 "get" = "받기";
@@ -492,7 +464,6 @@
 "last_updated" = "마지막 업데이트";
 "requires_ios" = "iOS %@ 이상 필요";
 
-// MARK: - Search More
 "search_placeholder" = "게임, 앱 검색";
 "login" = "로그인";
 "clear_all" = "모두 지우기";
@@ -510,7 +481,6 @@
 "x_versions" = "버전 %@개";
 "version_x_date" = "버전 %@ · %@";
 
-// MARK: - Account More
 "login_account" = "계정 로그인";
 "current" = "현재";
 "switch" = "전환";
@@ -560,7 +530,6 @@
 "check_apple_device_code" = "Apple 기기에서 인증 코드를 확인하세요";
 "wrong_verification_code" = "인증 코드가 잘못되었습니다. 다시 입력하세요.";
 
-// MARK: - Download More
 "invalid_ipa_file" = "유효하지 않은 IPA 파일";
 "install_failed_with_reason" = "설치 실패: %@";
 "install_timeout" = "설치 시간 초과";
@@ -600,7 +569,6 @@
 "no_ipa_found" = "IPA 파일을 찾을 수 없습니다";
 "no_ipa_found_desc" = "앱 저장 디렉토리에서 IPA 파일을 찾을 수 없습니다";
 
-// MARK: - Account Detail
 "basic_info" = "기본 정보";
 "account_identifier" = "계정 식별자";
 "country_region" = "국가/지역";
@@ -613,9 +581,20 @@
 "no_value" = "없음";
 "region_title" = "지역";
 
-// MARK: - Appearance More
 "overall_color" = "강조 색상";
 "quick_select" = "빠른 선택";
 "auto" = "자동";
 "unknown" = "알 수 없음";
 "no_screenshots" = "스크린샷 없음";
+
+"auto_theme_description" = "일출과 일몰에 따라 라이트/다크 모드를 자동으로 전환합니다.";
+"session_tokens_header" = "세션 토큰";
+"session_tokens" = "세션 토큰";
+"show_session_tokens" = "세션 토큰 표시";
+"hide_session_tokens" = "세션 토큰 숨기기";
+"session_tokens_hint" = "세션 토큰은 자동 재인증에 사용됩니다. 타인과 공유하지 마세요.";
+"hide_password" = "비밀번호 가리기";
+"show_password" = "비밀번호 표시";
+"less" = "접기";
+"see_all_reviews" = "모든 리뷰 보기";
+"two_factor_code_intro" = "신뢰하는 Apple 기기 또는 SMS에서 6자리 인증 코드를 확인하여 아래에 입력하세요.";

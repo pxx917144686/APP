@@ -7,6 +7,8 @@ class AppStore: ObservableObject {
 
     static let this = AppStore()
 
+    private static let selectedIndexDefaultsKey = "ipatool.swift.selectedAccountIndex"
+
     @Published var savedAccounts: [Account] = []
 
     @Published var selectedAccount: Account? = nil
@@ -15,6 +17,7 @@ class AppStore: ObservableObject {
 
     private init() {
         loadAccounts()
+        Task { await restoreSessionIfNeeded() }
     }
 
     private func loadAccounts() {
@@ -23,51 +26,78 @@ class AppStore: ObservableObject {
         savedAccounts = allAccounts
 
         if !allAccounts.isEmpty {
-
-            selectedAccount = allAccounts.first
-            selectedAccountIndex = 0
-            print("[AppStore] 加载了 \(allAccounts.count) 个账户")
-            for (index, account) in allAccounts.enumerated() {
-                print("[AppStore] 账户 \(index + 1): \(account.email), 地区: \(account.countryCode)")
-            }
+            let storedIndex = UserDefaults.standard.integer(forKey: Self.selectedIndexDefaultsKey)
+            let safeIndex = (storedIndex >= 0 && storedIndex < allAccounts.count) ? storedIndex : 0
+            selectedAccount = allAccounts[safeIndex]
+            selectedAccountIndex = safeIndex
         } else {
-            print("[AppStore] 没有找到保存的账户")
             selectedAccount = nil
             selectedAccountIndex = 0
+            UserDefaults.standard.removeObject(forKey: Self.selectedIndexDefaultsKey)
+        }
+    }
+
+    private func persistSelectedIndex() {
+        if savedAccounts.isEmpty {
+            UserDefaults.standard.removeObject(forKey: Self.selectedIndexDefaultsKey)
+        } else {
+            UserDefaults.standard.set(selectedAccountIndex, forKey: Self.selectedIndexDefaultsKey)
+        }
+    }
+
+    private func restoreSessionIfNeeded() async {
+        guard let account = selectedAccount else { return }
+        AuthenticationManager.shared.setCookies(account.cookies)
+        let isValid = await AuthenticationManager.shared.validateAccount(account)
+        if isValid {
+            let refreshed = AuthenticationManager.shared.refreshCookies(for: account)
+            selectedAccount = refreshed
+            if let idx = savedAccounts.firstIndex(where: { $0.email == refreshed.email }) {
+                savedAccounts[idx] = refreshed
+            }
+            try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
+            _ = SessionManager.shared
+        } else if savedAccounts.count > 1 {
+            logoutAccount()
         }
     }
 
     func loginAccount(email: String, password: String, code: String?) async throws {
+        let account: Account
+        if let c = code, !c.isEmpty {
 
-        let account = try await AuthenticationManager.shared.authenticate(
-            email: email,
-            password: password,
-            mfa: code
-        )
-
-        if let existingIndex = savedAccounts.firstIndex(where: { $0.email == account.email }) {
-
-            savedAccounts[existingIndex] = account
-            selectedAccountIndex = existingIndex
-            print("[AppStore] 更新现有账户: \(account.email), 地区: \(account.countryCode)")
+            account = try await AuthenticationManager.shared.authenticateWith2FA(
+                email: email,
+                password: password,
+                code: c
+            )
         } else {
-
-            savedAccounts.append(account)
-            selectedAccountIndex = savedAccounts.count - 1
-            print("[AppStore] 添加新账户: \(account.email), 地区: \(account.countryCode)")
+            account = try await AuthenticationManager.shared.authenticate(
+                email: email,
+                password: password,
+                mfa: nil
+            )
         }
 
+        if let existingIndex = savedAccounts.firstIndex(where: { $0.email == account.email }) {
+            savedAccounts[existingIndex] = account
+            selectedAccountIndex = existingIndex
+        } else {
+            savedAccounts.append(account)
+            selectedAccountIndex = savedAccounts.count - 1
+        }
         selectedAccount = account
-
-        try AuthenticationManager.shared.saveAllAccounts(savedAccounts)
-
-        print("[AppStore] 账户登录成功: \(account.email), 地区: \(account.countryCode), 总账户数: \(savedAccounts.count)")
+        persistSelectedIndex()
+        StoreRequest.shared.savePassword(password, for: account.email)
+        try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
+        Task.detached(priority: .utility) {
+            await StoreRequest.shared.ensureITunesSession(account: account)
+        }
     }
 
     func logoutAccount() {
         guard let currentAccount = selectedAccount else { return }
         deleteAccount(currentAccount)
-        print("[AppStore] 账户已登出: \(currentAccount.email), 剩余账户数: \(savedAccounts.count)")
     }
 
     func deleteAccount(_ account: Account) {
@@ -78,30 +108,28 @@ class AppStore: ObservableObject {
                 selectedAccount = nil
                 selectedAccountIndex = 0
             } else {
-
                 selectedAccountIndex = min(index, savedAccounts.count - 1)
                 selectedAccount = savedAccounts[selectedAccountIndex]
             }
         }
-
+        for c in HTTPCookieStorage.shared.cookies ?? [] where c.domain.lowercased().contains("apple.com") {
+            HTTPCookieStorage.shared.deleteCookie(c)
+        }
         try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
-
-        print("[AppStore] 删除账户: \(account.email), 剩余账户数: \(savedAccounts.count)")
+        persistSelectedIndex()
     }
 
     func refreshAccount() {
-
         loadAccounts()
         objectWillChange.send()
     }
 
     func switchToAccount(at index: Int) {
         guard index >= 0 && index < savedAccounts.count else { return }
-
         selectedAccountIndex = index
         selectedAccount = savedAccounts[index]
-
-        print("[AppStore] 切换到账户: \(selectedAccount?.email ?? "未知"), 索引: \(index)")
+        persistSelectedIndex()
+        Task { await restoreSessionIfNeeded() }
     }
 
     func switchToAccount(_ account: Account) {
@@ -111,45 +139,39 @@ class AppStore: ObservableObject {
     }
 
     func updateAccount(_ account: Account) {
-
         selectedAccount = account
-
         if let index = savedAccounts.firstIndex(where: { $0.email == account.email }) {
             savedAccounts[index] = account
         }
-
         try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
-        print("[AppStore] 账户信息已更新: \(account.email)")
+        persistSelectedIndex()
     }
 
     func refreshCurrentAccount() async throws {
         guard let account = selectedAccount else {
-            print("[AppStore] 没有当前账户需要刷新")
             return
         }
 
         AuthenticationManager.shared.setCookies(account.cookies)
 
         if await AuthenticationManager.shared.validateAccount(account) {
-
             let updatedAccount = AuthenticationManager.shared.refreshCookies(for: account)
-
             selectedAccount = updatedAccount
-            print("[AppStore] 账户令牌已刷新: \(updatedAccount.email)")
+            if let idx = savedAccounts.firstIndex(where: { $0.email == updatedAccount.email }) {
+                savedAccounts[idx] = updatedAccount
+            }
+            try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
+            persistSelectedIndex()
         } else {
-            print("[AppStore] 账户验证失败，需要重新登录")
             logoutAccount()
         }
     }
 
     func setCurrentAccountCookies() {
         guard let account = selectedAccount else {
-            print("[AppStore] 没有当前账户可设置Cookie")
             return
         }
-
         AuthenticationManager.shared.setCookies(account.cookies)
-        print("[AppStore] 已设置账户Cookie: \(account.email)")
     }
 
     var currentAccountRegion: String {
@@ -164,4 +186,3 @@ class AppStore: ObservableObject {
         return savedAccounts.count > 1
     }
 }
-

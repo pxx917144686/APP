@@ -127,8 +127,22 @@ class iTunesClient: @unchecked Sendable {
 
     private init() {
         let config = URLSessionConfiguration.default
+        config.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0,
+            "HTTPProxy": "",
+            "HTTPSProxy": "",
+            "SOCKSProxy": ""
+        ]
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
+        config.tlsMinimumSupportedProtocolVersion = .TLSv12
+        config.tlsMaximumSupportedProtocolVersion = .TLSv13
+        config.allowsCellularAccess = true
+        config.allowsExpensiveNetworkAccess = true
+        config.allowsConstrainedNetworkAccess = true
+        config.networkServiceType = .responsiveData
         self.session = URLSession(configuration: config)
     }
 
@@ -248,7 +262,7 @@ class iTunesClient: @unchecked Sendable {
         page: Int = 1,
         sort: ReviewSort = .mostRecent
     ) async throws -> [AppReview] {
-        let url = URL(string: "https://itunes.apple.com/\(country)/rss/customerreviews/page=\(page)/id=\(id)/sortby=\(sort.rawValue)/json")!
+        let url = URL(string: "https://itunes.apple.com/\(country.isEmpty ? "us" : country)/rss/customerreviews/page=\(page)/id=\(id)/sortby=\(sort.rawValue)/json")!
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         let (data, response) = try await session.data(for: request)
