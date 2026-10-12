@@ -1205,6 +1205,7 @@ final class LegacyIDMSAuthenticator: @unchecked Sendable {
 
         do {
             let (responseData, httpResponse) = try await request(url: url, headers: headers, body: data)
+            downloadDebugLog("idmsa securitycode HTTP \(httpResponse.statusCode) body=\(String(decoding: responseData.prefix(200), as: UTF8.self))")
 
             let successStatus = (httpResponse.statusCode == 204 || httpResponse.statusCode == 200)
             
@@ -1250,7 +1251,8 @@ final class LegacyIDMSAuthenticator: @unchecked Sendable {
         let headers = getAuthHeaders()
 
         let url = URL(string: "\(authEndpoint)/2sv/trust")!
-        _ = try await request(url: url, method: "GET", headers: headers)
+        let (_, trustResp) = try await request(url: url, method: "GET", headers: headers)
+        downloadDebugLog("idmsa trust HTTP \(trustResp.statusCode)")
 
         return try await authenticateWithToken(isChinaMainland: isChinaMainland)
     }

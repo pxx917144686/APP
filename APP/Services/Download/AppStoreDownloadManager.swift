@@ -547,7 +547,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 let passwordToken = account.passwordToken
                 let storeFront = account.storeResponse.storeFront
 
-                let plistResponse = try await downloadFromStoreAPI(
+                let plistResponse = try await StoreRequest.shared.downloadRawPlist(
                     appIdentifier: appIdentifier,
                     directoryServicesIdentifier: dsPersonId,
                     appVersion: appVersion,

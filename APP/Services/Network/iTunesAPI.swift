@@ -119,6 +119,38 @@ struct iTunesSearchResult: Codable, Identifiable, Hashable {
     }
 }
 
+private final class AMPRedirectStopper: NSObject, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(nil)
+    }
+}
+
+extension iTunesClient {
+    fileprivate func fetchPageManuallyFollowingRedirects(_ start: URL) async throws -> (Data, HTTPURLResponse) {
+        let delegate = AMPRedirectStopper()
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
+        defer { session.finishTasksAndInvalidate() }
+        var current = start
+        for _ in 0..<5 {
+            var request = URLRequest(url: current)
+            request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", forHTTPHeaderField: "User-Agent")
+            request.timeoutInterval = 20
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                throw SearchError.invalidResponse
+            }
+            if (300..<400).contains(http.statusCode),
+               let loc = http.value(forHTTPHeaderField: "Location"),
+               let next = URL(string: loc, relativeTo: current) {
+                current = next
+                continue
+            }
+            return (data, http)
+        }
+        throw SearchError.invalidResponse
+    }
+}
+
 @MainActor
 class iTunesClient: @unchecked Sendable {
     static let shared = iTunesClient()
@@ -155,10 +187,8 @@ class iTunesClient: @unchecked Sendable {
     }
     private func fetchAMPTargetToken(country: String, appId: Int) async throws -> String {
         let url = appsPageURL(country: country, appId: appId)
-        var request = URLRequest(url: url)
-        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", forHTTPHeaderField: "User-Agent")
-        let (data, response) = try await session.data(for: request)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+        let (data, response) = try await fetchPageManuallyFollowingRedirects(url)
+        guard response.statusCode == 200,
               let html = String(data: data, encoding: .utf8) else {
             throw SearchError.invalidResponse
         }

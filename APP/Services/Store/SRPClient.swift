@@ -117,6 +117,19 @@ private func buildStoreAuthResponse(dsPersonId: String, passwordToken: String, a
     return StoreAuthResponse(accountInfo: info, passwordToken: passwordToken, dsPersonId: dsPersonId, pings: nil, hsc: hsc, adsid: adsid, idmsToken: idmsToken)
 }
 
+func downloadDebugLog(_ line: String) {
+    let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("download_debug.log")
+    let stamp = Int(Date().timeIntervalSince1970)
+    if let handle = try? FileHandle(forWritingTo: url) {
+        handle.seekToEndOfFile()
+        handle.write(Data("[\(stamp)] \(line)\n".utf8))
+        try? handle.close()
+    } else {
+        try? Data("[\(stamp)] \(line)\n".utf8).write(to: url)
+    }
+}
+
 struct PendingAuthHolder {
     static var password: String = ""
     static let lock = NSLock()

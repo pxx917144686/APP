@@ -2063,7 +2063,6 @@ struct SearchView: SwiftUI.View {
         return String(s)
     }
     @MainActor
-    // 精选下架应用：用户搜索这些关键词时，无论 Apple 索引状态如何，固定置顶显示
     static let curatedApps: [(keywords: [String], bundleId: String)] = [
         (["forward", "fwrd"], "com.forward.iphone")
     ]
@@ -2100,7 +2099,6 @@ struct SearchView: SwiftUI.View {
 
         let regionToUse = appStore.selectedAccount?.countryCode ?? "US"
 
-        // 精选应用保底：与搜索结果合并置顶（搜索接口失败也照样显示）
         let curatedHits = await fetchCuratedApps(term: searchKey, country: regionToUse)
 
         withAnimation(.easeInOut) {
@@ -2379,7 +2377,7 @@ struct SearchView: SwiftUI.View {
                 return
             }
         case .failure:
-            openAppStorePage(for: item)
+            await MainActor.run { loadVersionsForApp(item) }
             return
         }
     }
@@ -3241,6 +3239,21 @@ struct SearchView: SwiftUI.View {
         }
     }
 
+    func downloadByAppId(_ appId: String, name: String, version: StoreAppVersion?) {
+        let payload: [String: Any] = [
+            "trackId": Int(appId) ?? 0,
+            "trackName": name,
+            "bundleId": "",
+            "version": version?.versionString ?? "",
+            "trackViewUrl": "https://apps.apple.com/app/id\(appId)"
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload),
+              let app = try? JSONDecoder().decode(iTunesSearchResult.self, from: data) else {
+            return
+        }
+        handleDownloadApp(app)
+    }
+
     private func handleDownloadApp(_ app: iTunesSearchResult) {
 
         guard let account = appStore.selectedAccount else {
@@ -3294,8 +3307,9 @@ struct SearchView: SwiftUI.View {
                     openAppStorePage(for: app)
                 }
             case .failure:
-
-                openAppStorePage(for: app)
+                await MainActor.run {
+                    loadVersionsForApp(app)
+                }
             }
         }
     }

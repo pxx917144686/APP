@@ -14,10 +14,9 @@ class AuthenticationManager: @unchecked Sendable {
             do {
                 _ = try await LegacyIDMSAuthenticator.shared.authenticate(email: email, password: password)
             } catch StoreError.codeRequired {
-                // idmsa 409 时验证码已推送到受信设备；此处立即返回让 UI 弹出输入框，
-                // 若继续走下面的 storeAuthenticate 还要等签名服务和 MZFinance 全跑完。
-                // 用户输入验证码后由 authenticateWith2FA（密码+验证码）换强 token。
                 throw StoreError.codeRequired
+            } catch StoreError.invalidCredentials, StoreError.invalidCredentialsWithDetails {
+                throw StoreError.invalidCredentials
             } catch {
             }
         }
@@ -39,6 +38,22 @@ class AuthenticationManager: @unchecked Sendable {
         let guid = GUIDCache.shared.get()
         PendingAuthHolder.set(password)
         PendingMFACodeHolder.set(code)
+
+        do {
+            let legacyResponse = try await LegacyIDMSAuthenticator.shared.validate2FACode(code)
+            guard !legacyResponse.passwordToken.isEmpty, !legacyResponse.dsPersonId.isEmpty else {
+                downloadDebugLog("idmsa verify 成功但返回空 token")
+                throw StoreError.authenticationFailed
+            }
+            let gsa = buildAccountFromGSA(email: email, response: legacyResponse)
+            AccountPodCache.shared.set(dsid: gsa.directoryServicesIdentifier, pod: gsa.pod)
+            let patched = await applyLegacyAuthNamePatch(gsa, email: email, password: password, mfa: code)
+            NotificationCenter.default.post(name: .accountStoreTokensRefreshed, object: nil, userInfo: ["email": patched.email])
+            return patched
+        } catch {
+            downloadDebugLog("idmsa verify 失败: \(error.localizedDescription)，回退 MZFinance 拼接路径")
+        }
+
         let response = try await StoreRequest.shared.storeAuthenticate(
             email: email, password: password, code: code, guid: guid)
         guard !response.passwordToken.isEmpty, !response.dsPersonId.isEmpty else {

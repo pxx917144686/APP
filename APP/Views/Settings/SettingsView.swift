@@ -666,6 +666,7 @@ extension SettingsView {
         .buttonStyle(PlainButtonStyle())
     }
 
+
     @ViewBuilder
     private func iconItem(icon: AltIcon) -> some View {
         Button {

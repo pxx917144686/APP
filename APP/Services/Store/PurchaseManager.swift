@@ -101,6 +101,12 @@ class PurchaseManager: @unchecked Sendable {
     ) async -> Result<PurchaseResult, PurchaseError> {
         if isFree {
             let purchaseRes = await performPurchase(appIdentifier: appIdentifier, account: account)
+            let purchaseSummary: String
+            switch purchaseRes {
+            case .success(let r): purchaseSummary = "成功 \(r.message)"
+            case .failure(let e): purchaseSummary = "失败 \(e.localizedDescription)"
+            }
+            downloadDebugLog("purchaseAppIfNeeded id=\(appIdentifier) 结果=\(purchaseSummary)")
             if case .success = purchaseRes {
                 return purchaseRes
             }

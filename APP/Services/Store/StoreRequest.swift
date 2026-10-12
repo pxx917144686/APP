@@ -24,23 +24,31 @@ final class GUIDCache {
     private var cachedGUID: String?
     private var accountGUIDMap: [String: String] = [:]
     private static let PERSIST_KEY = "store_legacy_device_guid_v2"
+    private static let LEGACY_SHARED_GUID = "7ECD3C78436E"
 
     func get() -> String {
         lock.lock()
         defer { lock.unlock() }
         if let g = cachedGUID, !g.isEmpty { return g }
 
-        if let saved = UserDefaults.standard.string(forKey: Self.PERSIST_KEY), !saved.isEmpty {
+        let saved = UserDefaults.standard.string(forKey: Self.PERSIST_KEY) ?? ""
+        if !saved.isEmpty && saved != Self.LEGACY_SHARED_GUID {
             cachedGUID = saved
             return saved
         }
-        let guid = Self.TRUSTED_DEVICE_GUID
+        // 旧版本所有安装共用同一个写死 GUID，Apple 风控判定"一台设备登录大量
+        // 账号"导致批量锁号；迁移为每安装独立的随机设备 ID
+        let guid = Self.generateRandomGUID()
         UserDefaults.standard.set(guid, forKey: Self.PERSIST_KEY)
         cachedGUID = guid
         return guid
     }
 
-    static let TRUSTED_DEVICE_GUID = "7ECD3C78436E"
+    private static func generateRandomGUID() -> String {
+        var bytes = [UInt8](repeating: 0, count: 6)
+        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        return bytes.map { String(format: "%02X", $0) }.joined()
+    }
 
     func get(for account: Account) -> String {
         lock.lock()
@@ -268,12 +276,14 @@ class StoreRequest {
     func refreshPasswordToken(account: Account) async throws -> Account? {
         let pw = UserDefaults.standard.string(forKey: Self.savedPasswordKeyPrefix + account.email) ?? ""
         guard !pw.isEmpty else {
+            downloadDebugLog("refreshPasswordToken: 无保存的密码")
             return nil
         }
         let aniData: AnisetteData
         do {
             aniData = try await AnisetteProvisioner.shared.getAnisette()
         } catch {
+            downloadDebugLog("refreshPasswordToken: anisette 失败 \(error.localizedDescription)")
             return nil
         }
         let session = GSALoginSession(email: account.email, password: pw, aniData: aniData)
@@ -324,6 +334,26 @@ class StoreRequest {
         return refreshed
     }
 
+    func downloadRawPlist(
+        appIdentifier: String,
+        directoryServicesIdentifier: String,
+        appVersion: String? = nil,
+        passwordToken: String? = nil,
+        storeFront: String? = nil
+    ) async throws -> [String: Any] {
+        let guid = GUIDCache.shared.get()
+        let (plist, _) = try await downloadRawPlistInternal(
+            appIdentifier: appIdentifier,
+            directoryServicesIdentifier: directoryServicesIdentifier,
+            appVersion: appVersion,
+            passwordToken: passwordToken,
+            storeFront: storeFront,
+            guid: guid,
+            pod: ""
+        )
+        return plist
+    }
+
     private func downloadInternal(
         appIdentifier: String,
         directoryServicesIdentifier: String,
@@ -333,11 +363,36 @@ class StoreRequest {
         guid: String,
         pod initialPod: String = ""
     ) async throws -> StoreDownloadResponse {
+        let (plist, http) = try await downloadRawPlistInternal(
+            appIdentifier: appIdentifier,
+            directoryServicesIdentifier: directoryServicesIdentifier,
+            appVersion: appVersion,
+            passwordToken: passwordToken,
+            storeFront: storeFront,
+            guid: guid,
+            pod: initialPod
+        )
+        return try parseDownloadResponse(plist: plist, httpResponse: http)
+    }
+
+    private func downloadRawPlistInternal(
+        appIdentifier: String,
+        directoryServicesIdentifier: String,
+        appVersion: String? = nil,
+        passwordToken: String? = nil,
+        storeFront: String? = nil,
+        guid: String,
+        pod initialPod: String = ""
+    ) async throws -> ([String: Any], HTTPURLResponse) {
+        func hasSongs(_ plist: [String: Any]) -> Bool {
+            (plist["songList"] as? [[String: Any]])?.isEmpty == false
+        }
         var pod = initialPod.isEmpty ? AccountPodCache.shared.get(dsid: directoryServicesIdentifier) : initialPod
         var body: [String: Any] = [
             "creditDisplay": "",
             "guid": guid,
-            "salableAdamId": appIdentifier
+            "salableAdamId": appIdentifier,
+            "serialNumber": "0"
         ]
         var requestedVersionId: String? = nil
         if let vid = appVersion, !vid.isEmpty {
@@ -355,6 +410,7 @@ class StoreRequest {
             pod: &pod
         )
         let ft = plist["failureType"] as? String ?? ""
+        downloadDebugLog("volumeStore status=\(h.statusCode) ft=\(ft) msg=\(plist["customerMessage"] as? String ?? "") songs=\((plist["songList"] as? [[String: Any]])?.count ?? -1)")
         if !ft.isEmpty, requestedVersionId != nil {
             var bodyLatest = body
             bodyLatest.removeValue(forKey: "externalVersionId")
@@ -371,7 +427,134 @@ class StoreRequest {
             h = h2
         }
         AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
-        return try parseDownloadResponse(plist: plist, httpResponse: h)
+        if hasSongs(plist) {
+            return (plist, h)
+        }
+        downloadDebugLog("volumeStore 空结果，走 redownload 兜底")
+        do {
+            let lookedUp = try? await lookupLatestExternalVersionId(appIdentifier: appIdentifier, storeFront: storeFront ?? "")
+            downloadDebugLog("catalog lookup: \(lookedUp ?? "nil")")
+            let versionId = requestedVersionId ?? lookedUp
+            guard let vid = versionId, !vid.isEmpty else {
+                return (plist, h)
+            }
+            let redownloadBody: [String: Any] = [
+                "creditDisplay": "",
+                "guid": guid,
+                "salableAdamId": appIdentifier,
+                "appExtVrsId": vid
+            ]
+            let (rp, rh) = try await dispatchPlist(
+                path: "/r/redownload",
+                body: redownloadBody,
+                dsid: directoryServicesIdentifier,
+                passwordToken: passwordToken ?? "",
+                storeFront: storeFront ?? "",
+                guid: guid
+            )
+            downloadDebugLog("redownload status=\(rh.statusCode) ft=\(rp["failureType"] as? String ?? "") msg=\(rp["customerMessage"] as? String ?? "") songs=\((rp["songList"] as? [[String: Any]])?.count ?? -1)")
+            if hasSongs(rp) {
+                return (rp, rh)
+            }
+            let unavailable = rh.statusCode == 200 && (rp["failureType"] as? String ?? "").isEmpty && (rp["songList"] as? [[String: Any]]) == nil
+                && (rp["customerMessage"] as? String ?? "").lowercased().hasSuffix("no longer available")
+            if rh.statusCode == 500 || unavailable {
+                var updateBody = redownloadBody
+                updateBody["serialNumber"] = "0"
+                let (up, uh) = try await dispatchPlist(
+                    path: "/up/updateProduct",
+                    body: updateBody,
+                    dsid: directoryServicesIdentifier,
+                    passwordToken: passwordToken ?? "",
+                    storeFront: storeFront ?? "",
+                    guid: guid
+                )
+                downloadDebugLog("updateProduct status=\(uh.statusCode) ft=\(up["failureType"] as? String ?? "") msg=\(up["customerMessage"] as? String ?? "") songs=\((up["songList"] as? [[String: Any]])?.count ?? -1)")
+                return (up, uh)
+            }
+            return (rp, rh)
+        }
+    }
+
+    private func lookupLatestExternalVersionId(appIdentifier: String, storeFront: String) async throws -> String {
+        let sfCode = storeFront.components(separatedBy: "-").first ?? ""
+        var countryCode = "us"
+        for (cc, sc) in Apple.storeFrontCodeMap where sc == sfCode {
+            countryCode = cc.lowercased()
+            break
+        }
+        let urlString = "https://apps.apple.com/api/apps/v1/catalog/\(countryCode)/apps/\(appIdentifier)?platform=iphone"
+        guard let url = URL(string: urlString) else {
+            throw StoreError.invalidResponse
+        }
+        var req = URLRequest(url: url)
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
+        req.timeoutInterval = 20
+        let (data, response) = try await session.data(for: req)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let dataArray = json["data"] as? [[String: Any]],
+              let first = dataArray.first,
+              let attributes = first["attributes"] as? [String: Any],
+              let platformAttrs = attributes["platformAttributes"] as? [String: Any],
+              let ios = iosPlatformEntry(platformAttrs) as? [String: Any] else {
+            throw StoreError.invalidResponse
+        }
+        let rawVersion = ios["externalVersionId"]
+        let version: String
+        if let s = rawVersion as? String {
+            version = s
+        } else if let n = rawVersion as? NSNumber {
+            version = n.stringValue
+        } else {
+            throw StoreError.invalidResponse
+        }
+        guard !version.isEmpty else {
+            throw StoreError.invalidResponse
+        }
+        return version
+    }
+
+    private func iosPlatformEntry(_ platformAttrs: [String: Any]) -> Any? {
+        platformAttrs["ios"] ?? platformAttrs["osx"] ?? platformAttrs["appletvos"]
+    }
+
+    private func dispatchPlist(
+        path: String,
+        body: [String: Any],
+        dsid: String,
+        passwordToken: String,
+        storeFront: String,
+        guid: String
+    ) async throws -> ([String: Any], HTTPURLResponse) {
+        let sf = storeFront
+        guard let url = URL(string: "https://downloaddispatch.itunes.apple.com\(path)?guid=\(guid)") else {
+            throw StoreError.invalidResponse
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/x-apple-plist", forHTTPHeaderField: "Content-Type")
+        req.setValue("*/*", forHTTPHeaderField: "Accept")
+        req.setValue("en-us", forHTTPHeaderField: "Accept-Language")
+        req.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
+        req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
+        req.setValue(dsid, forHTTPHeaderField: "X-Dsid")
+        req.setValue(dsid, forHTTPHeaderField: "iCloud-DSID")
+        if !passwordToken.isEmpty {
+            req.setValue(passwordToken, forHTTPHeaderField: "X-Token")
+        }
+        if !sf.isEmpty {
+            req.setValue(sf, forHTTPHeaderField: "X-Apple-Store-Front")
+        }
+        req.httpBody = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
+        req.httpShouldHandleCookies = true
+        let (data, response) = try await session.data(for: req)
+        guard let http = response as? HTTPURLResponse else {
+            throw StoreError.invalidResponse
+        }
+        let plist = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]) ?? [:]
+        return (plist, http)
     }
 
     func purchase(
@@ -444,20 +627,31 @@ class StoreRequest {
         }
         var lastPlist: [String: Any] = [:]
         var lastH: HTTPURLResponse?
+        downloadDebugLog("buyProduct: 建立签名会话…")
+        let session = try await WasmSAPSigner.openSession(guid: guid)
+        defer { Task { await session.close() } }
+        downloadDebugLog("buyProduct: 会话就绪")
         for pricing in ["STDQ", "GAME"] {
+            let pricingBody = buildBody(pricing)
+            let bodyData = try PropertyListSerialization.data(fromPropertyList: pricingBody, format: .xml, options: 0)
+            downloadDebugLog("buyProduct: 签名中 pricing=\(pricing)")
+            let signature = try await session.sign(bodyData)
+            downloadDebugLog("buyProduct: 签名完成 \(signature.count)B")
             let (plist, h) = try await postCommercePlist(
                 path: "/WebObjects/MZFinance.woa/wa/buyProduct",
                 query: "",
-                body: buildBody(pricing),
+                body: pricingBody,
                 dsid: directoryServicesIdentifier,
                 passwordToken: passwordToken,
                 storeFront: storeFront,
-                pod: &pod
+                pod: &pod,
+                sapSignature: signature
             )
             lastPlist = plist
             lastH = h
             let jingleType = plist["jingleDocType"] as? String ?? ""
             let ft = plist["failureType"] as? String ?? ""
+            downloadDebugLog("buyProduct pricing=\(pricing) status=\(h.statusCode) ft=\(ft) jingle=\(jingleType) msg=\(plist["customerMessage"] as? String ?? "")")
             if h.statusCode == 200 && (jingleType == "purchaseSuccess" || ft == "5002" || ft == "2040" || plist["status"] as? String == "0") {
                 AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
                 let dsPersonId = (plist["dsPersonId"] as? String) ?? (plist["dsPersonID"] as? String) ?? ""
@@ -508,13 +702,32 @@ class StoreRequest {
             "why": "signIn"
         ]
         let bodyData = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        let signer = RemoteSAPSigner(guid: guid)
-        defer { signer.close() }
-        let signature = try signer.sign(bodyData)
+        let signer = try await WasmSAPSigner.openSession(guid: guid)
+        defer { Task { await signer.close() } }
+
+        var authURLString = bagManager.authenticateAccountURL
+        do {
+            var bagReq = URLRequest(url: URL(string: "https://init.itunes.apple.com/bag.xml?guid=\(guid)&ignoring-cache=true")!)
+            bagReq.timeoutInterval = 8
+            bagReq.setValue("application/xml", forHTTPHeaderField: "Accept")
+            bagReq.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
+            bagReq.httpShouldHandleCookies = true
+            let (bagData, bagResp) = try await session.data(for: bagReq)
+            if let bodyText = String(data: bagData, encoding: .utf8),
+               let range = bodyText.range(of: "authenticateAccount</key><string>"),
+               let end = bodyText[range.upperBound...].firstIndex(of: "<") {
+                let fromBag = String(bodyText[range.upperBound..<end])
+                if !fromBag.isEmpty { authURLString = fromBag }
+            }
+            _ = bagResp
+        } catch {
+        }
+        if let comps = URLComponents(string: authURLString), !comps.path.hasSuffix("/") {
+            authURLString = authURLString + "/"
+        }
 
         let endpoints: [(name: String, url: String)] = [
-            ("native/fast", "https://auth.itunes.apple.com/auth/v1/native/fast/?guid=\(guid)"),
-            ("MZFinance", "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/authenticate?guid=\(guid)"),
+            ("MZFinance", authURLString),
         ]
         var attempts: [String] = []
 
@@ -525,16 +738,40 @@ class StoreRequest {
                 }
                 var req = URLRequest(url: URL(string: endpoint.url)!)
                 req.httpMethod = "POST"
+                req.timeoutInterval = 60
                 req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
                 req.setValue("*/*", forHTTPHeaderField: "Accept")
                 req.setValue("en-us", forHTTPHeaderField: "Accept-Language")
                 req.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
                 req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
+                let signature = try await signer.sign(bodyData)
                 req.setValue(signature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
                 req.httpBody = bodyData
                 req.httpShouldHandleCookies = true
 
-                var (data, response) = try await session.data(for: req)
+                var data = Data()
+                var response: URLResponse?
+                var sendError: Error?
+                for sendAttempt in 1...3 {
+                    sendError = nil
+                    do {
+                        (data, response) = try await session.data(for: req)
+                    } catch {
+                        sendError = error
+                        if sendAttempt < 3 {
+                            try? await Task.sleep(nanoseconds: UInt64(sendAttempt * 1_500_000_000))
+                            continue
+                        }
+                        let host = req.url?.host ?? endpoint.url
+                        throw StoreError.authenticationFailedWithDetails(
+                            "无法连接服务器（\(host)）：\(error.localizedDescription)。请检查网络或代理设置后重试")
+                    }
+                }
+                if let sendError {
+                    let host = req.url?.host ?? endpoint.url
+                    throw StoreError.authenticationFailedWithDetails(
+                        "无法连接服务器（\(host)）：\(sendError.localizedDescription)")
+                }
                 var hops = 0
                 while let httpResp = response as? HTTPURLResponse,
                       (300..<400).contains(httpResp.statusCode),
@@ -548,6 +785,13 @@ class StoreRequest {
                     hops += 1
                     var req2 = req
                     req2.url = next.url
+                    do {
+                        let replaySignature = try await signer.sign(bodyData)
+                        req2.setValue(replaySignature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
+                    } catch {
+                        attempts.append("\(endpoint.name): 重放签名失败")
+                        break
+                    }
                     (data, response) = try await session.data(for: req2)
                 }
                 guard let http = response as? HTTPURLResponse else {
@@ -560,7 +804,11 @@ class StoreRequest {
 
                 if cm == "MZFinance.BadLogin.Configurator_message" {
                     if candidateIndex == endpoints.count - 1 {
-                        throw code.isEmpty ? StoreError.codeRequired : StoreError.invalidCredentialsWithDetails(cm)
+                        if code.isEmpty {
+                            throw StoreError.codeRequired
+                        }
+                        throw StoreError.invalidCredentialsWithDetails(
+                            "Apple 拒绝了凭据。常见原因：①验证码过期（必须使用最新一次推送的验证码，30 秒内输入）②密码错误 ③多次失败后账号被临时锁定（等待 30-60 分钟再试）")
                     }
                     attempts.append("\(endpoint.name): Configurator")
                     break
@@ -645,7 +893,8 @@ class StoreRequest {
         dsid: String,
         passwordToken: String,
         storeFront: String,
-        pod: inout String
+        pod: inout String,
+        sapSignature: Data? = nil
     ) async throws -> ([String: Any], HTTPURLResponse) {
         seedAccountCookies(dsid: dsid)
         let ua = commerceUserAgent()
@@ -669,9 +918,14 @@ class StoreRequest {
         req.httpMethod = "POST"
         makeHeaders(&req, passwordToken)
         let bodyData = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        req.httpBody = bodyData
-        if path.contains("volumeStore") {
+        if let sapSignature {
+            req.setValue(sapSignature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
         }
+        let cookieDesc = (HTTPCookieStorage.shared.cookies(for: firstURL) ?? [])
+            .sorted { $0.name < $1.name }
+            .map { $0.name + "(" + $0.domain + ")" }
+            .joined(separator: ",")
+        downloadDebugLog("cookies[\(path)] token=\(passwordToken.isEmpty ? "none" : "\(passwordToken.count)B") pod=\(pod) cookies=\(cookieDesc)")
         let (data, response) = try await session.data(for: req)
         guard let h = response as? HTTPURLResponse else { throw StoreError.invalidResponse }
         if h.statusCode == 301 || h.statusCode == 302 {
