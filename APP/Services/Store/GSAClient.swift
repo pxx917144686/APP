@@ -93,6 +93,7 @@ struct GSAInitResponse {
 
 enum GSAClientError: Error {
     case invalidURL
+    case invalidConfiguration
     case requestFailed(Int, String)
     case invalidPlist
     case protoMissing(String)
@@ -129,10 +130,10 @@ struct PySRPUser {
     var B: BigNum? = nil
     var aBytesSeed: [UInt8] = []
 
-    init(username: String, aBytesSeed: [UInt8]? = nil) {
+    init(username: String, aBytesSeed: [UInt8]? = nil) throws {
         self.username = username
         guard let n = BigNum(hex: NG2048.N_HEX) else {
-            fatalError("N hex invalid")
+            throw GSAClientError.invalidConfiguration
         }
         self.N = n
         self.g = BigNum(NG2048.G_UINT)
@@ -262,7 +263,7 @@ final class GSAClient {
         securityCode: String? = nil,
         preM1Handler: ((GSAInitResponse, PySRPUser) -> Void)? = nil
     ) async throws -> GSAuthResult {
-        var user = PySRPUser(username: email)
+        var user = try PySRPUser(username: email)
         let publicA = user.startAuthentication()
 
         let initResp = try await grandSlamInit(email: email, publicA: publicA, aniData: aniData)

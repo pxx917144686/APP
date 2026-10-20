@@ -109,7 +109,7 @@ enum SAPGoLogin {
         guard let lib = dlopen(path, RTLD_NOW) else { return nil }
         defer { dlclose(lib) }
         guard let p = dlsym(lib, "sap_login") else { return nil }
-        let fn = unsafeBitCast(p, to: (@convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>).self)
+        let fn = unsafeBitCast(p, to: (@convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>?).self)
 
         _ = SAPAssetInstaller.installIfNeeded(frameworkExecutablePath: path)
         if let setEnvP = dlsym(lib, "sap_set_env") {
@@ -128,6 +128,7 @@ enum SAPGoLogin {
                     authCode.withCString { c in
                         pod.withCString { pd in
                             let cstr = fn(e, p, g, c, pd)
+                            guard let cstr else { return nil }
                             defer {
                                 if let freeP = dlsym(lib, "sap_free_string") {
                                     let freeFn = unsafeBitCast(freeP, to: (@convention(c) (UnsafeMutablePointer<CChar>) -> Void).self)

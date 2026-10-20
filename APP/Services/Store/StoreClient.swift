@@ -41,7 +41,7 @@ private struct BilinResponse: Codable {
 
 private struct BilinAppVersion: Codable {
     let bundle_version: String
-    let external_identifier: String
+    let external_identifier: Int
     let created_at: String?
     let size: String?
 }
@@ -144,7 +144,7 @@ public class StoreClient: @unchecked Sendable {
         return sorted.enumerated().map { idx, info in
             StoreAppVersion(
                 versionString: info.bundle_version,
-                versionId: info.external_identifier,
+                versionId: String(info.external_identifier),
                 isCurrent: info.bundle_version == currentVer,
                 releaseDate: parseDate(info.created_at ?? "")
             )

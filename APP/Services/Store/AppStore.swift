@@ -59,6 +59,11 @@ class AppStore: ObservableObject {
             _ = SessionManager.shared
         } else if savedAccounts.count > 1 {
             logoutAccount()
+        } else {
+            for c in HTTPCookieStorage.shared.cookies ?? [] where c.domain.lowercased().contains("apple.com") {
+                HTTPCookieStorage.shared.deleteCookie(c)
+            }
+            NotificationCenter.default.post(name: .sessionInvalid, object: nil)
         }
     }
 

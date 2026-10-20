@@ -1399,7 +1399,8 @@ final class LegacyIDMSAuthenticator: @unchecked Sendable {
               (300..<400).contains(httpResp.statusCode),
               let loc = httpResp.value(forHTTPHeaderField: "Location"),
               let base = request.url,
-              var next = URLComponents(url: URL(string: loc, relativeTo: base)!, resolvingAgainstBaseURL: false), redirectHops < 3 {
+              let locURL = URL(string: loc, relativeTo: base),
+              var next = URLComponents(url: locURL, resolvingAgainstBaseURL: true), redirectHops < 3 {
             if (next.queryItems ?? []).isEmpty {
                 next.queryItems = [URLQueryItem(name: "guid", value: guid)]
             }

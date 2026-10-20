@@ -29,7 +29,7 @@ enum AppTheme: Int, CaseIterable {
 class ThemeManager: ObservableObject, @unchecked Sendable {
     static let shared = ThemeManager()
 
-    @Published var selectedTheme: AppTheme = .system {
+    @Published var selectedTheme: AppTheme = .dark {
         didSet {
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "Feather.userInterfaceStyle")
 
@@ -50,13 +50,12 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
 
     private init() {
 
-        let savedTheme = UserDefaults.standard.integer(forKey: "Feather.userInterfaceStyle")
-
         let initialTheme: AppTheme
-        if let theme = AppTheme(rawValue: savedTheme) {
+        if let theme = Self.storedTheme() {
             initialTheme = theme
         } else {
-            initialTheme = .system
+
+            initialTheme = .dark
         }
 
         _selectedTheme = Published(initialValue: initialTheme)
@@ -68,6 +67,10 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
             DispatchQueue.main.async {
                 self?.updateAccentColor()
             }
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.updateUserInterfaceStyle()
         }
     }
 
@@ -81,7 +84,10 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     private func updateAccentColor() {
 
         let savedColorHex = UserDefaults.standard.string(forKey: "APP.userTintColor") ?? "#007AFF"
-        accentColor = Color(hex: savedColorHex)
+        let newColor = Color(hex: savedColorHex)
+
+        guard newColor.toHex() != accentColor.toHex() else { return }
+        accentColor = newColor
     }
 
     private func saveAccentColor() {
@@ -97,6 +103,12 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
         }
     }
 
+    static func storedTheme() -> AppTheme? {
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: "Feather.userInterfaceStyle") != nil else { return nil }
+        return AppTheme(rawValue: defaults.integer(forKey: "Feather.userInterfaceStyle"))
+    }
+
     var isDarkMode: Bool {
         switch selectedTheme {
         case .light:
@@ -104,8 +116,19 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
         case .dark:
             return true
         case .system:
-            return UITraitCollection.current.userInterfaceStyle == .dark
+            return Self.currentInterfaceStyle() == .dark
         }
+    }
+
+    static func currentInterfaceStyle() -> UIUserInterfaceStyle {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        if let style = scenes
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .traitCollection.userInterfaceStyle {
+            return style
+        }
+        return UITraitCollection.current.userInterfaceStyle
     }
 
     var backgroundColor: Color {
@@ -116,7 +139,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
             return ModernDarkColors.backgroundPrimary
         case .system:
 
-            if UITraitCollection.current.userInterfaceStyle == .dark {
+            if Self.currentInterfaceStyle() == .dark {
                 return ModernDarkColors.backgroundPrimary
             } else {
                 return .white
@@ -201,9 +224,9 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     }
 
     func syncFromSettings() {
-        let settingsTheme = UserDefaults.standard.integer(forKey: "Feather.userInterfaceStyle")
+        guard let appTheme = Self.storedTheme() else { return }
 
-        if let appTheme = AppTheme(rawValue: settingsTheme), appTheme != selectedTheme {
+        if appTheme != selectedTheme {
             selectedTheme = appTheme
         }
     }

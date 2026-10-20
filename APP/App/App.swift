@@ -50,7 +50,7 @@ struct App: SwiftUI.App {
 
         if ProcessInfo.processInfo.arguments.contains("-OwnedAppsTest") {
             DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
-                Task {
+                Task { @MainActor in
                     guard let account = AppStore.this.selectedAccount else {
                         downloadDebugLog("OwnedAppsTest: 无已登录账号")
                         exit(0)
@@ -71,7 +71,7 @@ struct App: SwiftUI.App {
 
         if ProcessInfo.processInfo.arguments.contains("-DownloadSelfTest") {
             DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
-                Task {
+                Task { @MainActor in
                     guard let account = AppStore.this.selectedAccount else {
                         downloadDebugLog("DownloadSelfTest: 无已登录账号")
                         exit(0)

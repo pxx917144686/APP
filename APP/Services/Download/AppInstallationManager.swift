@@ -10,6 +10,7 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
 
     private var installationTimers: [UUID: Timer] = [:]
     private var installationTimeouts: [UUID: DispatchWorkItem] = [:]
+    private var installationTasks: [UUID: Task<Void, Never>] = [:]
 
     private init() {
         setupObservers()
@@ -41,9 +42,10 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
         )
         installingRequests[request.id] = state
 
-        Task {
-            await performInstallation(request: request, state: state)
+        let task = Task { [weak self] in
+            _ = await self?.performInstallation(request: request, state: state)
         }
+        installationTasks[request.id] = task
     }
 
     private func performInstallation(
@@ -53,10 +55,12 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
         updateState(for: request.id, status: .preparing, progress: 0.2)
 
         try? await Task.sleep(nanoseconds: 2_000_000_000)
+        if Task.isCancelled { return }
 
         updateState(for: request.id, status: .prompting, progress: 0.6)
 
         try? await Task.sleep(nanoseconds: 3_000_000_000)
+        if Task.isCancelled { return }
 
         updateState(for: request.id, status: .installing, progress: 0.8)
 
@@ -64,6 +68,8 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
             requestId: request.id,
             bundleIdentifier: state.bundleIdentifier
         )
+
+        installationTasks[request.id] = nil
     }
 
     private func beginInstallationMonitoring(requestId: UUID, bundleIdentifier: String) {
@@ -148,6 +154,8 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
     }
 
     func cancelInstallation(requestId: UUID) {
+        installationTasks[requestId]?.cancel()
+        installationTasks.removeValue(forKey: requestId)
         cleanupMonitoring(for: requestId)
         installingRequests.removeValue(forKey: requestId)
         HTTPServerManager.shared.stopServer(for: requestId)

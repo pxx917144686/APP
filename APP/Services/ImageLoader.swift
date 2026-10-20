@@ -9,6 +9,7 @@ final class ImageLoader {
     private let session = URLSession.shared
 
     private var pendingTasks: [URL: Task<UIImage?, Never>] = [:]
+    private var pendingLowQualityTasks: [URL: Task<UIImage?, Never>] = [:]
     private let decodingQueue = DispatchQueue(label: "com.app.imageloader.decoding", qos: .userInitiated, attributes: .concurrent)
 
     private init() {}
@@ -68,7 +69,15 @@ final class ImageLoader {
             return lowQuality
         }
 
+        if let existingTask = pendingLowQualityTasks[url] {
+            return await existingTask.value
+        }
+
         let task = Task<UIImage?, Never> {
+            defer {
+                pendingLowQualityTasks.removeValue(forKey: url)
+            }
+
             do {
                 let (data, response) = try await session.data(from: url)
                 guard let httpResponse = response as? HTTPURLResponse,
@@ -88,6 +97,8 @@ final class ImageLoader {
             }
         }
 
+        pendingLowQualityTasks[url] = task
+
         return await task.value
     }
 
@@ -96,6 +107,11 @@ final class ImageLoader {
             decodingQueue.async {
                 guard let image = UIImage(data: data) else {
                     continuation.resume(returning: (nil, nil))
+                    return
+                }
+
+                guard image.size.width > 0, image.size.height > 0 else {
+                    continuation.resume(returning: (image, nil))
                     return
                 }
 
@@ -123,6 +139,11 @@ final class ImageLoader {
             decodingQueue.async {
                 guard let image = UIImage(data: data) else {
                     continuation.resume(returning: nil)
+                    return
+                }
+
+                guard image.size.width > 0, image.size.height > 0 else {
+                    continuation.resume(returning: image)
                     return
                 }
 

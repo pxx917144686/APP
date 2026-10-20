@@ -250,8 +250,43 @@ class StoreRequest {
 
     static let savedPasswordKeyPrefix = "sap_saved_password_"
 
+    private static func storePassword(_ password: String, for email: String) {
+        let key = Self.savedPasswordKeyPrefix + email
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.app.storepassword",
+            kSecAttrAccount as String: key,
+            kSecValueData as String: Data(password.utf8)
+        ]
+        SecItemDelete(query as CFDictionary)
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    private static func storedPassword(for email: String) -> String? {
+        let key = Self.savedPasswordKeyPrefix + email
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.app.storepassword",
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var ref: CFTypeRef?
+        if SecItemCopyMatching(query as CFDictionary, &ref) == errSecSuccess,
+           let data = ref as? Data,
+           let pw = String(data: data, encoding: .utf8) {
+            return pw
+        }
+        if let legacy = UserDefaults.standard.string(forKey: key) {
+            storePassword(legacy, for: email)
+            UserDefaults.standard.removeObject(forKey: key)
+            return legacy
+        }
+        return nil
+    }
+
     func savePassword(_ password: String, for email: String) {
-        UserDefaults.standard.set(password, forKey: Self.savedPasswordKeyPrefix + email)
+        Self.storePassword(password, for: email)
     }
 
     func ensureITunesSession(account: Account) async {
@@ -262,7 +297,7 @@ class StoreRequest {
            !AuthCookieCache.shared.get(dsid: dsid).isEmpty {
             return
         }
-        let pw = UserDefaults.standard.string(forKey: Self.savedPasswordKeyPrefix + account.email) ?? ""
+        let pw = Self.storedPassword(for: account.email) ?? ""
         guard !pw.isEmpty else { return }
         let guid = account.deviceGUID.isEmpty ? GUIDCache.shared.get() : account.deviceGUID
         do {
@@ -274,7 +309,7 @@ class StoreRequest {
     }
 
     func refreshPasswordToken(account: Account) async throws -> Account? {
-        let pw = UserDefaults.standard.string(forKey: Self.savedPasswordKeyPrefix + account.email) ?? ""
+        let pw = Self.storedPassword(for: account.email) ?? ""
         guard !pw.isEmpty else {
             downloadDebugLog("refreshPasswordToken: 无保存的密码")
             return nil
@@ -672,7 +707,9 @@ class StoreRequest {
         }
         AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
         let plist = lastPlist
-        let h = lastH!
+        guard let h = lastH else {
+            throw StoreError.unknownError
+        }
         return try parsePurchaseResponse(plist: plist, httpResponse: h)
     }
 
@@ -736,7 +773,11 @@ class StoreRequest {
                 if authAttempt > 1 {
                     try? await Task.sleep(nanoseconds: UInt64((authAttempt == 2 ? 3 : 8) * 1_000_000_000))
                 }
-                var req = URLRequest(url: URL(string: endpoint.url)!)
+                guard let requestURL = URL(string: endpoint.url) else {
+                    attempts.append("\(endpoint.name): URL 无效")
+                    continue
+                }
+                var req = URLRequest(url: requestURL)
                 req.httpMethod = "POST"
                 req.timeoutInterval = 60
                 req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -773,12 +814,13 @@ class StoreRequest {
                         "无法连接服务器（\(host)）：\(sendError.localizedDescription)")
                 }
                 var hops = 0
-                while let httpResp = response as? HTTPURLResponse,
-                      (300..<400).contains(httpResp.statusCode),
-                      let loc = httpResp.value(forHTTPHeaderField: "Location"),
-                      let base = req.url,
-                      var next = URLComponents(url: URL(string: loc, relativeTo: base)!, resolvingAgainstBaseURL: false),
-                      hops < 3 {
+            while let httpResp = response as? HTTPURLResponse,
+                  (300..<400).contains(httpResp.statusCode),
+                  let loc = httpResp.value(forHTTPHeaderField: "Location"),
+                  let base = req.url,
+                  let locURL = URL(string: loc, relativeTo: base),
+                  var next = URLComponents(url: locURL, resolvingAgainstBaseURL: true),
+                  hops < 3 {
                     if (next.queryItems ?? []).isEmpty {
                         next.queryItems = [URLQueryItem(name: "guid", value: guid)]
                     }

@@ -87,6 +87,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
             await attemptReconnection()
         } else {
             sessionError = "Apple ID会话已过期，请重新登录"
+            NotificationCenter.default.post(name: .sessionInvalid, object: nil)
         }
     }
 

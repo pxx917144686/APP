@@ -1,4 +1,5 @@
 import Foundation
+@preconcurrency import Dispatch
 import Network
 import WebKit
 
@@ -166,6 +167,7 @@ final class WasmSAPSigner: NSObject {
         }
     }
 
+    @MainActor
     private static func buildPage() async throws -> WKWebView {
         let handler = SAPPageNavDelegate()
         let config = WKWebViewConfiguration()
@@ -182,72 +184,80 @@ final class WasmSAPSigner: NSObject {
         config.userContentController.addUserScript(consoleScript)
         config.userContentController.add(handler, name: "sapConsole")
 
-        let webView = await MainActor.run {
-            let wv = WKWebView(frame: .zero, configuration: config)
-            wv.isHidden = true
-            wv.navigationDelegate = handler
-            return wv
-        }
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.isHidden = true
+        webView.navigationDelegate = handler
         container = (webView, handler)
 
         guard let pageURL = URL(string: "\(serverBase)/index.html") else {
             throw SAPSignerError.signFailed("签名页面地址无效")
         }
 
-        let loaded: Void = try await withTimeout(seconds: 60, label: "签名页面加载") {
-            try await loadPageAndWait(webView: webView, pageURL: pageURL, handler: handler)
-        }
-        _ = loaded
+        try await loadPageAndWait(webView: webView, pageURL: pageURL, handler: handler)
         return webView
     }
 
+    @MainActor
     private static func loadPageAndWait(webView: WKWebView, pageURL: URL,
                                         handler: SAPPageNavDelegate) async throws {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            let lock = NSLock()
+            var done = false
+            func resumeOnce(_ result: Result<Void, Error>) {
+                lock.lock()
+                if done { lock.unlock(); return }
+                done = true
+                lock.unlock()
+                switch result {
+                case .success: cont.resume()
+                case .failure(let e): cont.resume(throwing: e)
+                }
+            }
             handler.onPageLoaded = { error in
-                if let error { cont.resume(throwing: error) } else { cont.resume() }
+                if let error { resumeOnce(.failure(error)) } else { resumeOnce(.success(())) }
             }
-            Task { @MainActor in
-                webView.load(URLRequest(url: pageURL))
+            let timeoutWork = DispatchWorkItem {
+                resumeOnce(.failure(SAPSignerError.signFailed("签名页面加载超时（60s）")))
             }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: timeoutWork)
+            webView.load(URLRequest(url: pageURL))
         }
     }
 
     fileprivate static func callJS(_ body: String, arguments: [String: Any], on webView: WKWebView,
                                    timeout: TimeInterval, label: String) async throws -> Any? {
-        try await withTimeout(seconds: timeout, label: label) {
-            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Any?, Error>) in
-                DispatchQueue.main.async {
-                    webView.callAsyncJavaScript(body, arguments: arguments, in: nil,
-                                                in: .page, completionHandler: { result in
-                        switch result {
-                        case .success(let value):
-                            cont.resume(returning: value)
-                        case .failure(let error):
-                            let info = (error as NSError).userInfo
-                                .map { "\($0.key)=\($0.value)" }.sorted().joined(separator: " | ")
-                            let message = info.isEmpty ? error.localizedDescription : info
-                            cont.resume(throwing: SAPSignerError.signFailed("\(label)失败: \(message)"))
-                        }
-                    })
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Any?, Error>) in
+            let lock = NSLock()
+            var done = false
+            func resumeOnce(_ result: Result<Any?, Error>) {
+                lock.lock()
+                if done { lock.unlock(); return }
+                done = true
+                lock.unlock()
+                switch result {
+                case .success(let value): cont.resume(returning: value)
+                case .failure(let error): cont.resume(throwing: error)
                 }
             }
-        }
-    }
-
-    private static func withTimeout<T>(seconds: TimeInterval, label: String,
-                                       _ body: @escaping @Sendable () async throws -> T) async throws -> T {
-        try await withThrowingTaskGroup(of: T.self) { group in
-            group.addTask { try await body() }
-            group.addTask {
-                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-                throw SAPSignerError.signFailed("\(label)超时（\(Int(seconds))s）")
+            let timeoutWork = DispatchWorkItem {
+                resumeOnce(.failure(SAPSignerError.signFailed("\(label)超时（\(Int(timeout))s）")))
             }
-            guard let first = try await group.next() else {
-                throw SAPSignerError.signFailed("\(label)无结果")
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: timeoutWork)
+            DispatchQueue.main.async {
+                webView.callAsyncJavaScript(body, arguments: arguments, in: nil,
+                                            in: .page, completionHandler: { result in
+                    timeoutWork.cancel()
+                    switch result {
+                    case .success(let value):
+                        resumeOnce(.success(value))
+                    case .failure(let error):
+                        let info = (error as NSError).userInfo
+                            .map { "\($0.key)=\($0.value)" }.sorted().joined(separator: " | ")
+                        let message = info.isEmpty ? error.localizedDescription : info
+                        resumeOnce(.failure(SAPSignerError.signFailed("\(label)失败: \(message)")))
+                    }
+                })
             }
-            group.cancelAll()
-            return first
         }
     }
 
@@ -258,27 +268,41 @@ final class WasmSAPSigner: NSObject {
     }
 }
 
+@MainActor
 final class SAPPageNavDelegate: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-    var onPageLoaded: ((Error?) -> Void)?
+    private let lock = NSLock()
+    private var resumed = false
+    var onPageLoaded: ((Error?) -> Void)? {
+        didSet { resumed = false }
+    }
+
+    private func fire(_ error: Error?) {
+        lock.lock()
+        if resumed { lock.unlock(); return }
+        resumed = true
+        lock.unlock()
+        onPageLoaded?(error)
+        onPageLoaded = nil
+    }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         print("SAP Web [nav]: 页面加载完成")
-        onPageLoaded?(nil)
+        fire(nil)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print("SAP Web [nav]: 失败 \(error.localizedDescription)")
-        onPageLoaded?(error)
+        fire(error)
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         print("SAP Web [nav]: provisional 失败 \(error.localizedDescription)")
-        onPageLoaded?(error)
+        fire(error)
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         print("SAP Web [nav]: WebContent 进程被终止（通常为内存不足）")
-        onPageLoaded?(SAPSignerError.signFailed("WebContent 进程被终止"))
+        fire(SAPSignerError.signFailed("WebContent 进程被终止"))
     }
 
     func userContentController(_ userContentController: WKUserContentController,

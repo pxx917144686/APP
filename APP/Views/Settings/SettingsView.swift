@@ -12,6 +12,8 @@ struct SettingsView: View {
     @State private var selectedColor = Color(hex: "#007AFF")
     @State private var showingIconSuccess = false
     @State private var isIconLoading = false
+    @State private var showingIconError = false
+    @State private var iconErrorMessage = ""
     @State private var showAccountSheet = false
     @State private var showingColorPicker = false
 
@@ -51,10 +53,6 @@ struct SettingsView: View {
         "#e18aab", "#00CED1", "#228B22", "#FF6347", "#191970",
         "#FFB6C1", "#98FB98", "#E6E6FA", "#FF7F50", "#50C878"
     ]
-
-    private var presetColors: [Color] {
-        presetColorHexes.map { Color(hex: $0) }
-    }
 
     var body: some View {
         NavigationView {
@@ -133,6 +131,11 @@ struct SettingsView: View {
             }
             .alert("icon_set_success".localized, isPresented: $showingIconSuccess) {
                 Button("ok".localized, role: .cancel) { }
+            }
+            .alert("icon_set_failed".localized, isPresented: $showingIconError) {
+                Button("ok".localized, role: .cancel) { }
+            } message: {
+                Text(iconErrorMessage)
             }
         }
     }
@@ -364,19 +367,21 @@ extension SettingsView {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(presetColors, id: \.self) { color in
+                    ForEach(Array(presetColorHexes.enumerated()), id: \.offset) { index, hex in
+                        let color = Color(hex: hex)
+                        let isSelected = selectedColorHex.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == hex.lowercased()
                         Circle()
                             .fill(color)
                             .frame(width: 32, height: 32)
                             .overlay(
                                 Circle()
                                     .strokeBorder(
-                                        selectedColor == color ? Color.primary : Color.clear,
+                                        isSelected ? Color.primary : Color.clear,
                                         lineWidth: 2.5
                                     )
                             )
                             .overlay(
-                                selectedColor == color ?
+                                isSelected ?
                                 Text("✓")
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(.white)
@@ -389,7 +394,7 @@ extension SettingsView {
                             .onTapGesture {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     selectedColor = color
-                                    selectedColorHex = color.toHex()
+                                    selectedColorHex = hex
                                     themeManager.accentColor = color
                                 }
                                 let impactFeedback = UIImpactFeedbackGenerator(style: .light)
@@ -680,6 +685,9 @@ extension SettingsView {
                     currentIcon = AppIconManager.shared.currentAlternateIconName
                     if success {
                         showingIconSuccess = true
+                    } else {
+                        iconErrorMessage = error?.localizedDescription ?? "icon_set_failed_desc".localized
+                        showingIconError = true
                     }
                 }
             }
@@ -694,6 +702,8 @@ extension SettingsView {
             .contentShape(Rectangle())
         }
         .buttonStyle(ScaleButtonStyle())
+        .disabled(isIconLoading)
+        .opacity(isIconLoading ? 0.5 : 1)
     }
 }
 

@@ -34,10 +34,8 @@ class PurchaseManager: @unchecked Sendable {
                     } catch {
                         return handleOwnershipError(error, isFree: isFree)
                     }
-                case .notOwned, .invalidLicense:
-                    if isFree {
-                    }
-                    return handleOwnershipError(storeError, isFree: isFree)
+            case .notOwned, .invalidLicense:
+                return handleOwnershipError(storeError, isFree: isFree)
                 default:
                     return handleOwnershipError(storeError, isFree: isFree)
                 }
@@ -222,10 +220,9 @@ class PurchaseManager: @unchecked Sendable {
     }
 
     private func attemptRefreshToken(account: Account) async -> Account? {
-        if !account.passwordToken.isEmpty {
-            return account
-        }
-        return nil
+        let refreshed = AuthenticationManager.shared.refreshCookies(for: account)
+        let isValid = await AuthenticationManager.shared.validateAccount(refreshed)
+        return isValid ? refreshed : nil
     }
 
     private func handlePurchaseError(

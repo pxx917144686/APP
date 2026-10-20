@@ -68,7 +68,7 @@ class IPAProcessor: @unchecked Sendable {
 
     nonisolated private func processIPAFast(at ipaPath: URL, withSinfs sinfs: [Any]) throws -> URL {
 
-        let ipaData = try Data(contentsOf: ipaPath)
+        let ipaData = try Data(contentsOf: ipaPath, options: .alwaysMapped)
 
         guard let eocd = FastZipArchive.findEndOfCentralDirectory(in: ipaData) else {
             throw NSError(domain: "IPAProcessing", code: 10, userInfo: [NSLocalizedDescriptionKey: "无效的IPA文件，未找到中央目录"])
@@ -1226,6 +1226,8 @@ extension AppStoreDownloadManager {
                     expectedMD5: storeItem.md5
                 )
                 if !isValid {
+                    safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("文件完整性校验失败（MD5 不匹配），下载可能已损坏")))
+                    return
                 }
             }
 

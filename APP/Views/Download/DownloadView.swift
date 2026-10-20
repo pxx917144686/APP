@@ -330,17 +330,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 return Response(status: .notFound)
             }
 
-            guard let ipaData = try? Data(contentsOf: URL(fileURLWithPath: self.ipaPath)) else {
-                return Response(status: .notFound)
-            }
-
-            let response = Response(status: .ok)
-            response.headers.add(name: "Content-Type", value: "application/octet-stream")
-            response.headers.add(name: "Access-Control-Allow-Origin", value: "*")
-            response.headers.add(name: "Cache-Control", value: "no-cache")
-            response.body = .init(data: ipaData)
-
-            return response
+            return req.fileio.streamFile(at: self.ipaPath)
         }
 
         app.get(":filename") { [weak self] req -> Response in
@@ -350,39 +340,16 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 return Response(status: .notFound)
             }
 
-            let shouldSign = req.parameters.get("sign") == "1"
+            let shouldSign = req.query["sign"] == "1"
 
-            var ipaData: Data
+            let path: String
             if shouldSign {
-
-                do {
-                    let signedIPAPath = try self.signIPAIfNeeded()
-                    guard let data = try? Data(contentsOf: URL(fileURLWithPath: signedIPAPath)) else {
-                        return Response(status: .internalServerError)
-                    }
-                    ipaData = data
-                } catch {
-
-                    guard let data = try? Data(contentsOf: URL(fileURLWithPath: self.ipaPath)) else {
-                        return Response(status: .notFound)
-                    }
-                    ipaData = data
-                }
+                path = (try? self.signIPAIfNeeded()) ?? self.ipaPath
             } else {
-
-                guard let data = try? Data(contentsOf: URL(fileURLWithPath: self.ipaPath)) else {
-                    return Response(status: .notFound)
-                }
-                ipaData = data
+                path = self.ipaPath
             }
 
-            let response = Response(status: .ok)
-            response.headers.add(name: "Content-Type", value: "application/octet-stream")
-            response.headers.add(name: "Access-Control-Allow-Origin", value: "*")
-            response.headers.add(name: "Cache-Control", value: "no-cache")
-            response.body = .init(data: ipaData)
-
-            return response
+            return req.fileio.streamFile(at: path)
         }
 
         app.get("plist", ":filename") { [weak self] req -> Response in
@@ -699,12 +666,6 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return response
         }
 
-        app.get("health") { req -> Response in
-            let response = Response(status: .ok)
-            response.headers.add(name: "Content-Type", value: "application/json")
-            response.body = .init(string: "{\"status\":\"healthy\",\"timestamp\":\"\(Date().timeIntervalSince1970)\"}")
-            return response
-        }
     }
 
     func stop() {
@@ -1815,6 +1776,7 @@ struct DownloadCardView: SwiftUI.View {
                         DispatchQueue.main.async {
                             if success {
                                 isInstalling = false
+                                cleanupInstallation(request.id, keepServer: true)
                             } else {
                                 installationMessage = "install_start_failed".localized
                                 cleanupInstallation(request.id)

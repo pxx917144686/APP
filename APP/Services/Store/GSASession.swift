@@ -53,7 +53,7 @@ final class GSALoginSession: @unchecked Sendable {
     func beginRound(securityCode: String? = nil) async throws -> GSARoundOutcome {
         didValidate = false
         try await refreshAnisetteIfNeeded()
-        var user = PySRPUser(username: email)
+        var user = try PySRPUser(username: email)
         let initResp = try await withRetry("SRP init") {
             try await GSAClient.shared.grandSlamInit(
                 email: email,

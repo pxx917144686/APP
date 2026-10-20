@@ -126,14 +126,14 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                     centralDirectory.append(central)
                 } else {
                     let fileData = try Data(contentsOf: fileURL)
-                    let (compressedData, crc32) = compressData(data: fileData)
+                    let (compressedData, crc32, compressionMethod) = compressData(data: fileData)
 
                     let (header, central) = try createLocalFileHeader(
                         filename: relativePath,
                         compressedSize: UInt64(compressedData.count),
                         uncompressedSize: UInt64(fileData.count),
                         crc32: crc32,
-                        compressionMethod: 8,
+                        compressionMethod: compressionMethod,
                         offset: offset
                     )
 
@@ -202,14 +202,14 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             }
 
             for (filePath, fileData) in files {
-                let (compressedData, crc32) = compressData(data: fileData)
+                let (compressedData, crc32, compressionMethod) = compressData(data: fileData)
 
                 let (localHeader, centralHeader) = try createLocalFileHeader(
                     filename: filePath,
                     compressedSize: UInt64(compressedData.count),
                     uncompressedSize: UInt64(fileData.count),
                     crc32: crc32,
-                    compressionMethod: 8,
+                    compressionMethod: compressionMethod,
                     offset: currentOffset
                 )
 
@@ -248,11 +248,11 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         }
     }
 
-    private func compressData(data: Data) -> (Data, UInt32) {
+    private func compressData(data: Data) -> (data: Data, crc32: UInt32, method: UInt16) {
         let crc = crc32(data: data)
 
         guard data.count > 1024 else {
-            return (data, crc)
+            return (data, crc, 0)
         }
 
         let sourceBuffer = [UInt8](data)
@@ -271,11 +271,11 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         )
 
         guard compressedSize > 0 && compressedSize < data.count else {
-            return (data, crc)
+            return (data, crc, 0)
         }
 
         let compressedData = Data(bytes: destinationBuffer, count: compressedSize)
-        return (compressedData, crc)
+        return (compressedData, crc, 8)
     }
 
     private func decompressData(data: Data, expectedSize: Int) -> Data? {
@@ -536,6 +536,12 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
     ) throws {
         let fileManager = FileManager.default
         let destPath = destURL.appendingPathComponent(entry.filename)
+
+        let baseStd = destURL.standardizedFileURL
+        let destStd = destPath.standardizedFileURL
+        guard destStd.path == baseStd.path || destStd.path.hasPrefix(baseStd.path + "/") else {
+            throw NSError(domain: "FastZip", code: -20, userInfo: [NSLocalizedDescriptionKey: "路径穿越被拒绝: \(entry.filename)"])
+        }
 
         if entry.filename.hasSuffix("/") {
             try fileManager.createDirectory(at: destPath, withIntermediateDirectories: true)

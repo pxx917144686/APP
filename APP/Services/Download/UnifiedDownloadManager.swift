@@ -252,6 +252,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         currency: String? = nil
     ) -> UUID {
 
+        if let existing = downloadRequests.first(where: {
+            $0.bundleIdentifier == bundleIdentifier && $0.version == version
+        }) {
+            return existing.id
+        }
+
         let package = DownloadArchive(
             bundleIdentifier: bundleIdentifier,
             name: name,
@@ -294,6 +300,10 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func startDownload(for request: DownloadRequest) {
+        guard request.runtime.status != .completed else {
+            return
+        }
+
         guard !activeDownloads.contains(request.id),
               !waitingDownloads.contains(request.id) else {
             return
@@ -328,6 +338,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
+                self.processNextInQueue()
                 return
             }
 
@@ -358,6 +369,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
+                self.processNextInQueue()
                 return
             }
 
@@ -369,6 +381,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
+                self.processNextInQueue()
                 return
             }
 
@@ -420,6 +433,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
+                self.processNextInQueue()
             }
         }
     }
@@ -740,10 +754,9 @@ extension UnifiedDownloadManager {
             queueOrder: downloadQueue.map { $0.id }
         )
 
-        do {
-            let data = try JSONEncoder().encode(saveData)
+        DispatchQueue.global(qos: .utility).async {
+            guard let data = try? JSONEncoder().encode(saveData) else { return }
             UserDefaults.standard.set(data, forKey: "DownloadTasks")
-        } catch {
         }
     }
 
@@ -753,146 +766,180 @@ extension UnifiedDownloadManager {
             return
         }
 
+        let saveData: DownloadTasksSaveData
         do {
-            let saveData = try JSONDecoder().decode(DownloadTasksSaveData.self, from: data)
-
-            downloadRequests = saveData.downloadRequests.map { saveRequest in
-                let request = DownloadRequest(
-                    id: saveRequest.id,
-                    bundleIdentifier: saveRequest.bundleIdentifier,
-                    version: saveRequest.version,
-                    name: saveRequest.name,
-                    package: saveRequest.package,
-                    versionId: saveRequest.versionId
-                )
-
-                request.runtime.status = saveRequest.runtime.status
-                request.runtime.progressValue = saveRequest.runtime.progressValue
-                request.runtime.error = saveRequest.runtime.error
-                request.runtime.speed = saveRequest.runtime.speed
-                request.createdAt = saveRequest.createdAt
-
-                if let relativePath = saveRequest.runtime.localFilePath {
-                    let fullPath = fullPath(for: relativePath)
-                    if FileManager.default.fileExists(atPath: fullPath) {
-                        request.localFilePath = fullPath
-                    } else {
-                        let fileName = (relativePath as NSString).lastPathComponent
-                        let bundleId = request.package.bundleIdentifier
-                        let version = request.version
-                        let standardFileName = "\(bundleId)_\(version).ipa"
-
-                        var foundPath: String? = nil
-                        let fileManager = FileManager.default
-
-                        let libraryDir = NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first
-                        let cachesDir = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first
-                        let appSupportDir = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true).first
-
-                        let searchDirectories = [
-                            downloadsDirectory,
-                            documentsDirectory,
-                            libraryDir != nil ? URL(fileURLWithPath: libraryDir!) : nil,
-                            cachesDir != nil ? URL(fileURLWithPath: cachesDir!) : nil,
-                            appSupportDir != nil ? URL(fileURLWithPath: appSupportDir!).appendingPathComponent("Downloads") : nil,
-                            appSupportDir != nil ? URL(fileURLWithPath: appSupportDir!) : nil
-                        ].compactMap { $0 }
-
-                        let searchFileNames = [fileName, standardFileName]
-
-                        for dir in searchDirectories {
-                            for fname in searchFileNames {
-                                let candidatePath = dir.appendingPathComponent(fname).path
-                                if fileManager.fileExists(atPath: candidatePath) {
-                                    foundPath = candidatePath
-                                    break
-                                }
-                            }
-                            if foundPath != nil { break }
-                        }
-
-                        if foundPath == nil {
-                            for dir in searchDirectories {
-                                guard let enumerator = fileManager.enumerator(
-                                    at: dir,
-                                    includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey],
-                                    options: [.skipsHiddenFiles, .skipsPackageDescendants]
-                                ) else { continue }
-
-                                for case let url as URL in enumerator {
-                                    guard url.pathExtension.lowercased() == "ipa" else { continue }
-
-                                    let matchByName = searchFileNames.contains(url.lastPathComponent)
-                                    let matchById = url.lastPathComponent.contains(bundleId) && url.lastPathComponent.contains(version)
-
-                                    if matchByName || matchById {
-                                        foundPath = url.path
-                                        break
-                                    }
-                                }
-                                if foundPath != nil { break }
-                            }
-                        }
-
-                        if let foundPath = foundPath {
-                            request.localFilePath = foundPath
-                        } else {
-                            request.localFilePath = nil
-
-                            if request.runtime.status == .completed {
-                                request.runtime.status = .cancelled
-                                request.runtime.error = "本地文件已丢失，请重新下载"
-                            }
-                        }
-                    }
-                }
-
-                return request
-            }
-
-            completedRequests = Set(saveData.completedRequests)
-            let savedActive = Set(saveData.activeDownloads)
-            let savedWaiting = Set(saveData.waitingDownloads ?? [])
-
-            var newActive: Set<UUID> = []
-            var newWaiting: Set<UUID> = []
-
-            for request in downloadRequests {
-                if completedRequests.contains(request.id) {
-
-                    if request.localFilePath != nil {
-                        request.runtime.status = .completed
-                    } else {
-                        completedRequests.remove(request.id)
-                        request.runtime.status = .cancelled
-                        request.runtime.error = "本地文件已丢失，请重新下载"
-                    }
-                } else if savedActive.contains(request.id) {
-                    request.runtime.status = .downloading
-                    newActive.insert(request.id)
-                } else if savedWaiting.contains(request.id) {
-
-                    request.runtime.status = .waiting
-                    newWaiting.insert(request.id)
-                }
-            }
-
-            activeDownloads = newActive
-            waitingDownloads = newWaiting
-
-            if let queueOrder = saveData.queueOrder {
-                downloadQueue = queueOrder.compactMap { requestId in
-                    downloadRequests.first(where: { $0.id == requestId && newWaiting.contains(requestId) })
-                }
-            } else {
-                downloadQueue = downloadRequests.filter { newWaiting.contains($0.id) }
-            }
-
-            let refreshed = downloadRequests
-            downloadRequests = refreshed
-
+            saveData = try JSONDecoder().decode(DownloadTasksSaveData.self, from: data)
         } catch {
+            return
         }
+
+        let documentsPath = documentsDirectory.path
+        let downloadsPath = downloadsDirectory.path
+        let descriptors: [(id: UUID, bundleId: String, version: String, relativePath: String?)] = saveData.downloadRequests.map {
+            ($0.id, $0.bundleIdentifier, $0.version, $0.runtime.localFilePath)
+        }
+
+        DispatchQueue.global(qos: .utility).async {
+            let resolved = Self.resolveLocalFiles(for: descriptors, documentsPath: documentsPath, downloadsPath: downloadsPath)
+            Task { @MainActor in
+                self.finishRestore(saveData: saveData, resolvedPaths: resolved)
+            }
+        }
+    }
+
+    private static func resolveLocalFiles(
+        for descriptors: [(id: UUID, bundleId: String, version: String, relativePath: String?)],
+        documentsPath: String,
+        downloadsPath: String
+    ) -> [UUID: String?] {
+        var result: [UUID: String?] = [:]
+        let fileManager = FileManager.default
+        let libraryDir = NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first
+        let cachesDir = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first
+        let appSupportDir = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true).first
+
+        let searchDirectories: [URL] = [
+            URL(fileURLWithPath: downloadsPath),
+            URL(fileURLWithPath: documentsPath),
+            libraryDir.map { URL(fileURLWithPath: $0) },
+            cachesDir.map { URL(fileURLWithPath: $0) },
+            appSupportDir.map { URL(fileURLWithPath: $0).appendingPathComponent("Downloads") },
+            appSupportDir.map { URL(fileURLWithPath: $0) }
+        ].compactMap { $0 }
+
+        for desc in descriptors {
+            guard let relativePath = desc.relativePath else {
+                result[desc.id] = nil
+                continue
+            }
+
+            let fullPath = (documentsPath as NSString).appendingPathComponent(relativePath)
+            var resolvedPath: String? = nil
+
+            if fileManager.fileExists(atPath: fullPath) {
+                resolvedPath = fullPath
+            } else {
+                let fileName = (relativePath as NSString).lastPathComponent
+                let standardFileName = "\(desc.bundleId)_\(desc.version).ipa"
+                let searchFileNames = [fileName, standardFileName]
+
+                for dir in searchDirectories {
+                    for fname in searchFileNames {
+                        let candidate = dir.appendingPathComponent(fname).path
+                        if fileManager.fileExists(atPath: candidate) {
+                            resolvedPath = candidate
+                            break
+                        }
+                    }
+                    if resolvedPath != nil { break }
+                }
+
+                if resolvedPath == nil {
+                    for dir in searchDirectories {
+                        guard let enumerator = fileManager.enumerator(
+                            at: dir,
+                            includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey],
+                            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+                        ) else { continue }
+
+                        for case let url as URL in enumerator {
+                            guard url.pathExtension.lowercased() == "ipa" else { continue }
+                            let matchByName = searchFileNames.contains(url.lastPathComponent)
+                            let matchById = url.lastPathComponent.contains(desc.bundleId) && url.lastPathComponent.contains(desc.version)
+                            if matchByName || matchById {
+                                resolvedPath = url.path
+                                break
+                            }
+                        }
+                        if resolvedPath != nil { break }
+                    }
+                }
+            }
+
+            result[desc.id] = resolvedPath
+        }
+
+        return result
+    }
+
+    private func finishRestore(saveData: DownloadTasksSaveData, resolvedPaths: [UUID: String?]) {
+        var restoredRequests: [DownloadRequest] = []
+        var seenKeys = Set<String>()
+
+        for saveRequest in saveData.downloadRequests {
+            let key = "\(saveRequest.bundleIdentifier)|\(saveRequest.version)"
+            if seenKeys.contains(key) {
+                continue
+            }
+            seenKeys.insert(key)
+
+            let request = DownloadRequest(
+                id: saveRequest.id,
+                bundleIdentifier: saveRequest.bundleIdentifier,
+                version: saveRequest.version,
+                name: saveRequest.name,
+                package: saveRequest.package,
+                versionId: saveRequest.versionId
+            )
+
+            request.runtime.status = saveRequest.runtime.status
+            request.runtime.progressValue = saveRequest.runtime.progressValue
+            request.runtime.error = saveRequest.runtime.error
+            request.runtime.speed = saveRequest.runtime.speed
+            request.createdAt = saveRequest.createdAt
+
+            if let resolved = resolvedPaths[saveRequest.id], let path = resolved {
+                request.localFilePath = path
+            } else {
+                request.localFilePath = nil
+                if request.runtime.status == .completed {
+                    request.runtime.status = .cancelled
+                    request.runtime.error = "本地文件已丢失，请重新下载"
+                }
+            }
+
+            restoredRequests.append(request)
+        }
+
+        downloadRequests = restoredRequests
+
+        completedRequests = Set(saveData.completedRequests)
+        let savedActive = Set(saveData.activeDownloads)
+        let savedWaiting = Set(saveData.waitingDownloads ?? [])
+
+        var newActive: Set<UUID> = []
+        var newWaiting: Set<UUID> = []
+
+        for request in downloadRequests {
+            if completedRequests.contains(request.id) {
+                if request.localFilePath != nil {
+                    request.runtime.status = .completed
+                } else {
+                    completedRequests.remove(request.id)
+                    request.runtime.status = .cancelled
+                    request.runtime.error = "本地文件已丢失，请重新下载"
+                }
+            } else if savedActive.contains(request.id) {
+                request.runtime.status = .downloading
+                newActive.insert(request.id)
+            } else if savedWaiting.contains(request.id) {
+                request.runtime.status = .waiting
+                newWaiting.insert(request.id)
+            }
+        }
+
+        activeDownloads = newActive
+        waitingDownloads = newWaiting
+
+        if let queueOrder = saveData.queueOrder {
+            downloadQueue = queueOrder.compactMap { requestId in
+                downloadRequests.first(where: { $0.id == requestId && newWaiting.contains(requestId) })
+            }
+        } else {
+            downloadQueue = downloadRequests.filter { newWaiting.contains($0.id) }
+        }
+
+        syncDownloadStatus()
     }
 
     func syncDownloadStatus() {
@@ -970,6 +1017,8 @@ private struct DownloadRequestSaveData: Codable {
     let name: String
     let packageIdentifier: Int
     let packageIconURL: String?
+    let packagePrice: Double?
+    let packageCurrency: String?
     let versionId: String?
     let runtime: DownloadRuntimeSaveData
     var createdAt: Date
@@ -981,6 +1030,8 @@ private struct DownloadRequestSaveData: Codable {
         self.name = name
         self.packageIdentifier = package.identifier
         self.packageIconURL = package.iconURL
+        self.packagePrice = package.price
+        self.packageCurrency = package.currency
         self.versionId = versionId
         self.runtime = runtime
         self.createdAt = createdAt
@@ -992,7 +1043,9 @@ private struct DownloadRequestSaveData: Codable {
             name: name,
             version: version,
             identifier: packageIdentifier,
-            iconURL: packageIconURL
+            iconURL: packageIconURL,
+            price: packagePrice,
+            currency: packageCurrency
         )
     }
 }
