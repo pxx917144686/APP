@@ -89,7 +89,7 @@ final class BackgroundDownloadManager: ObservableObject, @unchecked Sendable {
                     completion(.success(fileURL))
                 } else {
 
-                    completion(.failure(NSError(domain: "BackgroundDownload", code: -1, userInfo: [NSLocalizedDescriptionKey: "下载文件URL为空"])))
+                    completion(.failure(NSError(domain: "BackgroundDownload", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_empty_url".localized])))
                 }
             case .failure(let error):
 

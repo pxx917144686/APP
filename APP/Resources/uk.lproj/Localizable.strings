@@ -68,7 +68,6 @@
 "language_switch" = "Змінити мову";
 "language_switch_message" = "Інтерфейс програми оновиться відразу після зміни мови. Деякі системні компоненти можуть потребувати перезапуску для повного набуття чинності.";
 "confirm_switch" = "Підтвердити зміну";
-"app_icon" = "Значок програми";
 "icon_default" = "За замовчуванням";
 "icon_author" = "Значок";
 "icon_love" = "Любов";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Теги функцій";
 "free" = "Отримати";
-"get" = "Отримати";
 "view" = "Переглянути";
 "get_reviews_failed" = "Не вдалося отримати відгуки: %@";
 "x_ratings" = "%@ оцінок";
 "age_rating" = "Віковий рейтинг";
 "x_languages" = "%@ мов";
-"whats_new" = "Що нового";
 "tech_info" = "Технічна інформація";
 "first_release" = "Перший випуск";
-"last_updated" = "Останнє оновлення";
 "requires_ios" = "Потрібно iOS %@ або новішої версії";
 
-"search_placeholder" = "Пошук ігор, програм";
 "login" = "Увійти";
 "clear_all" = "Очистити все";
 "x_results_found" = "Знайдено %@ результатів";
@@ -458,7 +453,6 @@
 "switch" = "Змінити";
 "x_accounts" = "%@ облікових записів";
 "add_new_account" = "Додати новий обліковий запис";
-"account_management" = "Керування обліковими записами";
 "use_account" = "Використати обліковий запис";
 "connection_lost" = "З'єднання втрачено";
 "reconnecting" = "Підключення знову";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Медіа та покупки";
 "sign_in_apple_id" = "Увійдіть на своєму iPhone";
 "sign_in_apple_id_desc" = "Використовуйте свій Apple ID на цьому iPhone";
-"apple_id" = "Apple ID";
-"name" = "Ім'я";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Ім'я, електронна пошта";
 "account_identifier_header" = "Ідентифікатор облікового запису";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Основна інформація";
 "account_identifier" = "Ідентифікатор облікового запису";
-"country_region" = "Країна/Регіон";
 "password_token" = "Токен пароля";
 "auth_info" = "Інформація про автентифікацію";
 "password_token_hint" = "Токен пароля використовується для автоматичної автентифікації. Не діліться ним з іншими.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Перевірте довірене пристрій Apple або SMS і введіть 6-значний код підтвердження нижче.";
-
-
+"tab_purchased" = "Придбано";
+"purchased_search_placeholder" = "Пошук придбаних програм";
+"purchased_syncing" = "Синхронізація покупок…";
+"purchased_empty" = "Покупок ще немає";
+"icon_set_failed" = "Не вдалося встановити піктограму";
+"icon_set_failed_desc" = "Не вдалося змінити піктограму програми. Спробуйте пізніше.";
+"web_load_failed" = "Не вдалося завантажити сторінку: %@";
+"web_server_unreachable" = "Не вдалося підключитися до сервера: %@";
+"status_owned" = "Отримано";
+"status_not_owned" = "Не отримано";
+"rating_count_format" = "Оцінок: %@";
+"legacy_apps_delisted" = "Давні програми (знято)";
+"versions_login_required" = "Увійдіть, щоб завантажити відомості про версії";
+"versions_unavailable" = "Не вдалося завантажити версії. Перевірте з'єднання.";
+"versions_unavailable_retry" = "Не вдалося завантажити історію версій. Спробуйте ще раз.";
+"preparing_install_link" = "Підготовка посилання для встановлення…";
+"widget_weather" = "Погода";
+"weather_sunny" = "Сонячно";

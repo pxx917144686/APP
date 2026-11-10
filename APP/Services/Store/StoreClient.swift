@@ -1,7 +1,5 @@
 import Foundation
 
-typealias iTunesSearchResponse = iTunesResponse
-
 public struct StoreAppVersion: Codable, Identifiable {
     public let id: UUID
     public var versionString: String
@@ -20,7 +18,7 @@ public struct StoreAppVersion: Codable, Identifiable {
     }
 
     public var displayName: String {
-        return isCurrent ? "\(versionString) (当前版本)" : versionString
+        return isCurrent ? "version_current_suffix".localized(versionString) : versionString
     }
 
     public var formattedReleaseDate: String? {
@@ -86,29 +84,45 @@ public class StoreClient: @unchecked Sendable {
         account: Account,
         countryCode: String? = nil
     ) async -> Result<[StoreAppVersion], StoreError> {
-        if let thirdPartyVersions = try? await fetchVersionsFromThirdPartyAPI(appId: trackId), !thirdPartyVersions.isEmpty {
-            return .success(thirdPartyVersions)
-        }
-        if let trackIdInt = Int(trackId) {
-            let regionToUse = countryCode ?? account.countryCode
-            let primaryCountry = regionToUse.isEmpty ? "US" : regionToUse
-            let countries = primaryCountry.uppercased() == "US" ? ["US"] : [primaryCountry, "US"]
-            for cc in countries {
-                if let infos = try? await iTunesClient.shared.versionHistory(id: trackIdInt, country: cc), !infos.isEmpty {
-                    let list = infos.enumerated().map { idx, info in
-                        StoreAppVersion(
-                            versionString: info.version,
-                            versionId: "",
-                            isCurrent: idx == 0,
-                            releaseDate: info.releaseDate,
-                            releaseNotes: info.releaseNotes
-                        )
-                    }
-                    if !list.isEmpty {
-                        return .success(list)
+        let winner: [StoreAppVersion]? = await withTaskGroup(
+            of: [StoreAppVersion]?.self,
+            returning: [StoreAppVersion]?.self
+        ) { group in
+            group.addTask {
+                (try? await self.fetchVersionsFromThirdPartyAPI(appId: trackId)) ?? nil
+            }
+            if let trackIdInt = Int(trackId) {
+                let regionToUse = countryCode ?? account.countryCode
+                let primaryCountry = regionToUse.isEmpty ? "US" : regionToUse
+                let countries = primaryCountry.uppercased() == "US" ? ["US"] : [primaryCountry, "US"]
+                for cc in countries {
+                    group.addTask {
+                        guard let infos = try? await iTunesClient.shared.versionHistory(id: trackIdInt, country: cc),
+                              !infos.isEmpty else { return nil }
+                        return infos.enumerated().map { idx, info in
+                            StoreAppVersion(
+                                versionString: info.version,
+                                versionId: "",
+                                isCurrent: idx == 0,
+                                releaseDate: info.releaseDate,
+                                releaseNotes: info.releaseNotes
+                            )
+                        }
                     }
                 }
             }
+            var first: [StoreAppVersion]? = nil
+            for await result in group {
+                if let result, !result.isEmpty {
+                    first = result
+                    group.cancelAll()
+                    break
+                }
+            }
+            return first
+        }
+        if let winner, !winner.isEmpty {
+            return .success(winner)
         }
         return .failure(.invalidItem)
     }

@@ -10,6 +10,7 @@ class BagManager: ObservableObject {
     private var lastLoadTime: Date?
     private let cacheDuration: TimeInterval = 3600
     private let bagSession: URLSession
+    private var loadTask: Task<Void, Never>?
 
     private init() {
         let cfg = URLSessionConfiguration.ephemeral
@@ -30,6 +31,13 @@ class BagManager: ObservableObject {
             return url
         }
         return "https://p25-buy.itunes.apple.com"
+    }
+
+    var entDownloadBaseURL: String? {
+        if let url = bagData["volumeStoreDownloadProduct"] as? String, !url.isEmpty {
+            return url
+        }
+        return nil
     }
 
     var searchURL: String {
@@ -61,7 +69,17 @@ class BagManager: ObservableObject {
 
         guard needsReload else { return }
 
-        await loadBag(storeFront: storeFront)
+        if let existing = loadTask {
+            await existing.value
+            return
+        }
+
+        let task = Task { @MainActor in
+            await self.loadBag(storeFront: storeFront)
+        }
+        loadTask = task
+        await task.value
+        loadTask = nil
     }
 
     private static let fallback: [String: Any] = [

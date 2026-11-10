@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Combine
 import Foundation
@@ -67,6 +66,10 @@ class HTTPServerManager: ObservableObject, @unchecked Sendable {
     private var activeServers: [UUID: SimpleHTTPServer] = [:]
 
     private init() {}
+
+    func allocatePort() -> Int {
+        SimpleHTTPServer.randomPort(excluding: Set(activeServers.values.map { $0.port }))
+    }
 
     func startServer(for requestId: UUID, port: Int, ipaPath: String, appInfo: AppInfo) {
         let server = SimpleHTTPServer(port: port, ipaPath: ipaPath, appInfo: appInfo)
@@ -224,6 +227,18 @@ struct CORSMiddleware: Middleware {
 #endif
 
 #if canImport(Vapor)
+private final class OnceGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var fired = false
+    func fire(_ body: () -> Void) {
+        lock.lock()
+        if fired { lock.unlock(); return }
+        fired = true
+        lock.unlock()
+        body()
+    }
+}
+
 class SimpleHTTPServer: NSObject, @unchecked Sendable {
     public let port: Int
     private let ipaPath: String
@@ -234,7 +249,11 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
     private var plistData: Data?
     private var plistFileName: String?
 
-    static func randomPort() -> Int {
+    static func randomPort(excluding used: Set<Int> = []) -> Int {
+        for _ in 0..<64 {
+            let candidate = Int.random(in: 4000...8000)
+            if !used.contains(candidate) { return candidate }
+        }
         return Int.random(in: 4000...8000)
     }
 
@@ -245,24 +264,19 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         super.init()
     }
 
-    static let userDefaultsKey = "SimpleHTTPServer"
-
-    static func getSavedPort() -> Int? {
-        return UserDefaults.standard.integer(forKey: "\(userDefaultsKey).port")
-    }
-
-    static func savePort(_ port: Int) {
-        UserDefaults.standard.set(port, forKey: "\(userDefaultsKey).port")
-    }
-
     func start() {
+        guard !isRunning else { return }
+        isRunning = true
 
         requestLocalNetworkPermission { [weak self] granted in
-            if granted {
-                self?.serverQueue.async { [weak self] in
-                    Task { @MainActor in
-                        await self?.startSimpleServer()
-                    }
+            guard let self else { return }
+            guard granted else {
+                self.isRunning = false
+                return
+            }
+            self.serverQueue.async { [weak self] in
+                Task { @MainActor in
+                    await self?.startSimpleServer()
                 }
             }
         }
@@ -272,21 +286,22 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
         let monitor = NWPathMonitor()
         let queue = DispatchQueue(label: "NetworkPermission")
+        let gate = OnceGate()
 
         monitor.pathUpdateHandler = { path in
 
             let hasPermission = path.status == .satisfied || path.status == .requiresConnection
-            DispatchQueue.main.async {
-                completion(hasPermission)
-            }
             monitor.cancel()
+            DispatchQueue.main.async {
+                gate.fire { completion(hasPermission) }
+            }
         }
 
         monitor.start(queue: queue)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             monitor.cancel()
-            completion(true)
+            gate.fire { completion(true) }
         }
     }
 
@@ -323,17 +338,20 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             return "OK"
         }
 
-        app.get("ipa", ":filename") { [weak self] req -> Response in
+        app.get("ipa", ":filename") { [weak self] req async throws -> Response in
             guard let self = self,
                   let filename = req.parameters.get("filename"),
                   filename == self.appInfo.bundleIdentifier else {
                 return Response(status: .notFound)
             }
+            guard FileManager.default.fileExists(atPath: self.ipaPath) else {
+                return Response(status: .notFound)
+            }
 
-            return req.fileio.streamFile(at: self.ipaPath)
+            return try await req.fileio.asyncStreamFile(at: self.ipaPath)
         }
 
-        app.get(":filename") { [weak self] req -> Response in
+        app.get(":filename") { [weak self] req async throws -> Response in
             guard let self = self,
                   let filename = req.parameters.get("filename"),
                   filename == "\(self.appInfo.bundleIdentifier).ipa" else {
@@ -349,7 +367,11 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 path = self.ipaPath
             }
 
-            return req.fileio.streamFile(at: path)
+            guard FileManager.default.fileExists(atPath: path) else {
+                return Response(status: .notFound)
+            }
+
+            return try await req.fileio.asyncStreamFile(at: path)
         }
 
         app.get("plist", ":filename") { [weak self] req -> Response in
@@ -672,7 +694,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
         serverQueue.async { [weak self] in
             self?.app?.shutdown()
-            self?.isRunning = false
+            DispatchQueue.main.async { self?.isRunning = false }
         }
     }
 
@@ -1684,7 +1706,7 @@ struct DownloadCardView: SwiftUI.View {
                     installationMessage = "starting_install_service".localized
                 }
 
-                let port = SimpleHTTPServer.randomPort()
+                let port = HTTPServerManager.shared.allocatePort()
 
                 HTTPServerManager.shared.startServer(
                     for: request.id,
@@ -1693,11 +1715,9 @@ struct DownloadCardView: SwiftUI.View {
                     appInfo: appInfo
                 )
 
-                SimpleHTTPServer.savePort(port)
-
                 await MainActor.run {
                     installationProgress = 0.6
-                    installationMessage = "准备安装链接..."
+                    installationMessage = "preparing_install_link".localized
                 }
 
                 let healthURL = "http://127.0.0.1:\(port)/health"
@@ -1874,6 +1894,7 @@ struct IPAListView: SwiftUI.View {
                 Text(String(format: "delete_file_confirm".localized, deleteFileName ?? ""))
             }
         }
+        .navigationViewStyle(.stack)
         .onAppear {
             loadIPAFiles()
         }

@@ -81,7 +81,6 @@ struct SettingsView: View {
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
-
                     VStack(spacing: 0) {
                         tabBarRowContent
                     }
@@ -138,6 +137,7 @@ struct SettingsView: View {
                 Text(iconErrorMessage)
             }
         }
+        .navigationViewStyle(.stack)
     }
 
     private var accountHeaderSection: some View {
@@ -490,7 +490,7 @@ extension SettingsView {
                     Spacer()
                     HStack(spacing: 8) {
                         HStack(spacing: 0) {
-                            ForEach([TabEnum.settings, .tfapps, .downloads], id: \.self) { tab in
+                            ForEach([TabEnum.settings, .tfapps, .downloads, .purchased], id: \.self) { tab in
                                 VStack(spacing: 2) {
                                     Text(tab.emojiIcon)
                                         .font(.system(size: 14))
@@ -671,7 +671,6 @@ extension SettingsView {
         .buttonStyle(PlainButtonStyle())
     }
 
-
     @ViewBuilder
     private func iconItem(icon: AltIcon) -> some View {
         Button {
@@ -706,4 +705,3 @@ extension SettingsView {
         .opacity(isIconLoading ? 0.5 : 1)
     }
 }
-

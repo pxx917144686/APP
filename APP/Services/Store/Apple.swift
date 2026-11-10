@@ -25,6 +25,8 @@ public struct Account: Codable, Identifiable, Sendable {
     public let adsid: String
     public let idmsToken: String
 
+    public var kbsync: String?
+
     public init(
         name: String,
         email: String,
@@ -40,7 +42,8 @@ public struct Account: Codable, Identifiable, Sendable {
         deviceGUID: String = "",
         hsc: Int = 0,
         adsid: String = "",
-        idmsToken: String = ""
+        idmsToken: String = "",
+        kbsync: String? = nil
     ) {
         self.name = name
         self.email = email
@@ -61,13 +64,13 @@ public struct Account: Codable, Identifiable, Sendable {
         self.hsc = hsc
         self.adsid = adsid
         self.idmsToken = idmsToken
+        self.kbsync = kbsync
     }
 
     private static func generateDeviceGUID() -> String {
         let guid = UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(12).uppercased()
         return String(guid)
     }
-
 
     public var fullName: String {
         let parts = [firstName, lastName].filter { !$0.isEmpty }
@@ -103,6 +106,7 @@ public struct Account: Codable, Identifiable, Sendable {
         case hsc = "hsc"
         case adsid = "adsid"
         case idmsToken = "idms"
+        case kbsync = "kbs"
     }
 }
 

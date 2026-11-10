@@ -252,10 +252,16 @@ final class LanguageManager: ObservableObject {
     }
 
     static func localized(_ key: String) -> String {
-        guard let bundle = shared.currentBundle else {
-            return NSLocalizedString(key, comment: "")
+        if let bundle = shared.currentBundle {
+            let value = bundle.localizedString(forKey: key, value: nil, table: nil)
+            if value != key { return value }
         }
-        return NSLocalizedString(key, bundle: bundle, comment: "")
+        if let path = Bundle.main.path(forResource: "en", ofType: "lproj"),
+           let english = Bundle(path: path) {
+            let value = english.localizedString(forKey: key, value: nil, table: nil)
+            if value != key { return value }
+        }
+        return NSLocalizedString(key, comment: "")
     }
 
     static func localized(_ key: String, _ arguments: CVarArg...) -> String {

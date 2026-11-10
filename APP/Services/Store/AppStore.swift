@@ -37,7 +37,7 @@ class AppStore: ObservableObject {
         }
     }
 
-    private func persistSelectedIndex() {
+    func persistSelectedIndex() {
         if savedAccounts.isEmpty {
             UserDefaults.standard.removeObject(forKey: Self.selectedIndexDefaultsKey)
         } else {
@@ -95,9 +95,6 @@ class AppStore: ObservableObject {
         persistSelectedIndex()
         StoreRequest.shared.savePassword(password, for: account.email)
         try? AuthenticationManager.shared.saveAllAccounts(savedAccounts)
-        Task.detached(priority: .utility) {
-            await StoreRequest.shared.ensureITunesSession(account: account)
-        }
     }
 
     func logoutAccount() {

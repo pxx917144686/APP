@@ -71,14 +71,14 @@ class IPAProcessor: @unchecked Sendable {
         let ipaData = try Data(contentsOf: ipaPath, options: .alwaysMapped)
 
         guard let eocd = FastZipArchive.findEndOfCentralDirectory(in: ipaData) else {
-            throw NSError(domain: "IPAProcessing", code: 10, userInfo: [NSLocalizedDescriptionKey: "无效的IPA文件，未找到中央目录"])
+            throw NSError(domain: "IPAProcessing", code: 10, userInfo: [NSLocalizedDescriptionKey: "dl_err_ipa_no_central_dir".localized])
         }
 
         let entries = try FastZipArchive.readCentralDirectory(from: ipaData, eocd: eocd)
 
         let appFolderName = findAppFolderName(in: entries)
         guard let appName = appFolderName else {
-            throw NSError(domain: "IPAProcessing", code: 11, userInfo: [NSLocalizedDescriptionKey: "未找到Payload中的.app文件夹"])
+            throw NSError(domain: "IPAProcessing", code: 11, userInfo: [NSLocalizedDescriptionKey: "dl_err_ipa_no_app_folder".localized])
         }
 
         let sinfFiles = generateSinfFiles(sinfs: sinfs, appName: appName)
@@ -108,7 +108,7 @@ class IPAProcessor: @unchecked Sendable {
         )
 
         guard success else {
-            throw NSError(domain: "IPAProcessing", code: 12, userInfo: [NSLocalizedDescriptionKey: "增量添加文件失败"])
+            throw NSError(domain: "IPAProcessing", code: 12, userInfo: [NSLocalizedDescriptionKey: "dl_err_incremental_add".localized])
         }
 
         return ipaPath
@@ -288,7 +288,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private var lastUIUpdate: [String: Date] = [:]
     private var downloadDestinations: [String: URL] = [:]
     private var downloadStoreItems: [String: DownloadStoreItem] = [:]
-    private var pendingCompletionHandlers: [String: (Result<DownloadResult, DownloadError>) -> Void] = [:]
     private var startingDownloads: Set<String> = []
     private lazy var urlSession: URLSession = {
         let config = URLSessionConfiguration.background(
@@ -535,6 +534,8 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             return
         }
 
+        completedDownloads.remove(downloadId)
+        isRetryingDownload.remove(downloadId)
         startingDownloads.insert(downloadId)
 
         Task { @MainActor in
@@ -573,7 +574,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                         return
                     }
 
-                    let error: DownloadError = .licenseError("应用未购买，请先前往App Store购买")
+                    let error: DownloadError = .licenseError("dl_err_not_purchased".localized)
                     DispatchQueue.main.async {
                         completion(.failure(error))
                     }
@@ -581,7 +582,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 }
 
                 guard let storeItem = downloadStoreItem else {
-                    let error: DownloadError = .unknownError("无法创建下载项")
+                    let error: DownloadError = .unknownError("dl_err_create_item".localized)
                     DispatchQueue.main.async {
                         completion(.failure(error))
                     }
@@ -597,7 +598,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 )
             } catch StoreError.codeRequired {
                 DispatchQueue.main.async {
-                    completion(.failure(.authenticationError("iTunes 会话已失效且需要双重认证验证码，请重新登录该 Apple ID 完成验证后重试")))
+                    completion(.failure(.authenticationError("dl_err_itunes_session_2fa".localized)))
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -716,7 +717,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     ) async {
         guard let downloadURL = URL(string: storeItem.url) else {
             DispatchQueue.main.async {
-                completion(.failure(.unknownError("无效的下载URL: \(storeItem.url)")))
+                completion(.failure(.unknownError("dl_err_invalid_url_detail".localized(storeItem.url))))
             }
             return
         }
@@ -783,7 +784,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         completion: @escaping @Sendable (Result<DownloadResult, DownloadError>) -> Void
     ) async {
         guard let downloadURL = URL(string: storeItem.url) else {
-            completion(.failure(.unknownError("无效的下载URL")))
+            completion(.failure(.unknownError("dl_err_invalid_url".localized)))
             return
         }
 
@@ -866,7 +867,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         }
 
         guard let downloadURL = URL(string: storeItem.url) else {
-            safeComplete(downloadId: downloadId, result: .failure(.unknownError("无效的下载URL")))
+            safeComplete(downloadId: downloadId, result: .failure(.unknownError("dl_err_invalid_url".localized)))
             return
         }
 
@@ -1072,11 +1073,11 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         storeConfig.timeoutIntervalForRequest = 30
         storeConfig.tlsMinimumSupportedProtocolVersion = .TLSv12
         storeConfig.tlsMaximumSupportedProtocolVersion = .TLSv13
-        let storeSession = URLSession(configuration: storeConfig, delegate: SRPURLSessionDelegate.shared, delegateQueue: nil)
+        let storeSession = URLSession(configuration: storeConfig)
         let (data, response) = try await storeSession.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw DownloadError.networkError(NSError(domain: "StoreAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "无效的HTTP响应"]))
+            throw DownloadError.networkError(NSError(domain: "StoreAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_invalid_http".localized]))
         }
 
         if httpResponse.statusCode != 200 {
@@ -1089,7 +1090,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 }
             } catch {
             }
-            let errorMessage = !parsedCustomer.isEmpty ? parsedCustomer : (String(data: data, encoding: .utf8) ?? "未知错误")
+            let errorMessage = !parsedCustomer.isEmpty ? parsedCustomer : (String(data: data, encoding: .utf8) ?? "dl_err_unknown".localized)
             throw DownloadError.networkError(NSError(domain: "StoreAPI", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode): \(errorMessage.isEmpty ? parsedFailure : errorMessage)"]))
         }
 
@@ -1098,26 +1099,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             options: [],
             format: nil
         ) as? [String: Any] ?? [:]
-
-        if let songList = plist["songList"] as? [[String: Any]], !songList.isEmpty {
-
-            let firstSong = songList[0]
-
-            if let sinfs = firstSong["sinfs"] as? [[String: Any]], !sinfs.isEmpty {
-                for (_, sinf) in sinfs.enumerated() {
-                    if let _ = sinf["sinf"] as? String {
-                    } else {
-                    }
-                }
-            } else {
-                if let _ = firstSong["sinfs"] {
-                }
-            }
-
-            if let _ = firstSong["metadata"] as? [String: Any] {
-            }
-        } else {
-        }
 
         return plist
     }
@@ -1129,13 +1110,13 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private func mapStoreError(_ failureType: String, customerMessage: String?) -> DownloadError {
         switch failureType {
         case "INVALID_ITEM":
-            return .appNotFound(customerMessage ?? "应用未找到")
+            return .appNotFound(customerMessage ?? "dl_err_app_not_found_short".localized)
         case "INVALID_LICENSE":
-            return .licenseError(customerMessage ?? "许可证无效")
+            return .licenseError(customerMessage ?? "dl_err_license_invalid".localized)
         case "INVALID_CREDENTIALS":
-            return .authenticationError(customerMessage ?? "认证失败")
+            return .authenticationError(customerMessage ?? "dl_err_auth_failed".localized)
         default:
-            return .unknownError(customerMessage ?? "未知错误")
+            return .unknownError(customerMessage ?? "dl_err_unknown".localized)
         }
     }
 }
@@ -1226,7 +1207,7 @@ extension AppStoreDownloadManager {
                     expectedMD5: storeItem.md5
                 )
                 if !isValid {
-                    safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("文件完整性校验失败（MD5 不匹配），下载可能已损坏")))
+                    safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_md5_mismatch".localized)))
                     return
                 }
             }
@@ -1289,7 +1270,7 @@ extension AppStoreDownloadManager {
             }
             }
         } catch {
-            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("文件移动失败: \(error.localizedDescription)")))
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_move_failed".localized(error.localizedDescription))))
         }
     }
     func urlSession(
@@ -1712,24 +1693,24 @@ extension AppStoreDownloadManager {
 
                     switch nsError.code {
                     case NSURLErrorNotConnectedToInternet:
-                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "设备未连接到互联网，请检查网络连接后重试"]))))
+                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_offline".localized]))))
                     case NSURLErrorTimedOut:
-                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "下载超时，请检查网络连接后重试"]))))
+                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "dl_err_timeout".localized]))))
                     case NSURLErrorCancelled:
-                        safeComplete(downloadId: downloadId, result: .failure(.unknownError("下载已取消")))
+                        safeComplete(downloadId: downloadId, result: .failure(.unknownError("download_cancelled".localized)))
                     default:
-                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "下载失败，请稍后重试"]))))
+                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized]))))
                     }
                 } else if nsError.domain == "NSCocoaErrorDomain" {
 
-                    safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("文件操作失败，请确保有足够的存储空间")))
+                    safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_file_operation".localized)))
                 } else {
 
-                    safeComplete(downloadId: downloadId, result: .failure(.unknownError("下载过程中发生未知错误")))
+                    safeComplete(downloadId: downloadId, result: .failure(.unknownError("dl_err_unknown_during".localized)))
                 }
             } else {
 
-                safeComplete(downloadId: downloadId, result: .failure(.unknownError("下载失败: \(error.localizedDescription)")))
+                safeComplete(downloadId: downloadId, result: .failure(.unknownError("dl_err_failed_detail".localized(error.localizedDescription))))
             }
         }
     }
@@ -1756,16 +1737,16 @@ extension AppStoreDownloadManager {
             if nsError.domain == NSURLErrorDomain {
                 switch nsError.code {
                 case NSURLErrorNotConnectedToInternet:
-                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "设备未连接到互联网，请检查网络连接后重试"]))))
+                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_offline".localized]))))
                 case NSURLErrorTimedOut:
-                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "下载超时，请检查网络连接后重试"]))))
+                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "dl_err_timeout".localized]))))
                 case NSURLErrorCancelled:
-                    safeComplete(downloadId: downloadId, result: .failure(.unknownError("下载已取消")))
+                    safeComplete(downloadId: downloadId, result: .failure(.unknownError("download_cancelled".localized)))
                 default:
-                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "下载失败，请稍后重试"]))))
+                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized]))))
                 }
             } else {
-                safeComplete(downloadId: downloadId, result: .failure(.unknownError("下载失败: \(error.localizedDescription)")))
+                safeComplete(downloadId: downloadId, result: .failure(.unknownError("dl_err_failed_detail".localized(error.localizedDescription))))
             }
             return
         }
@@ -1783,7 +1764,7 @@ extension AppStoreDownloadManager {
         guard let tempFileURL = directDownloadTempFiles[downloadId],
               FileManager.default.fileExists(atPath: tempFileURL.path),
               downloadedFileSize > 0 else {
-            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("下载数据为空或临时文件不存在")))
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_empty_data".localized)))
             return
         }
 
@@ -1868,7 +1849,7 @@ extension AppStoreDownloadManager {
                 }
             }
         } catch {
-            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("文件写入失败: \(error.localizedDescription)")))
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_write_failed".localized(error.localizedDescription))))
         }
     }
 }
@@ -1941,25 +1922,25 @@ enum DownloadError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL(let message):
-            return "无效的URL: \(message)"
+            return "dl_err_invalid_url_generic".localized(message)
         case .appNotFound(let message):
-            return "应用未找到: \(message)"
+            return "dl_err_app_not_found".localized(message)
         case .licenseError(let message):
-            return "许可证错误: \(message)"
+            return "dl_err_license_error".localized(message)
         case .authenticationError(let message):
-            return "认证错误: \(message)"
+            return "dl_err_auth_error".localized(message)
         case .downloadNotFound(let message):
-            return "下载未找到: \(message)"
+            return "dl_err_download_not_found".localized(message)
         case .fileSystemError(let message):
-            return "文件系统错误: \(message)"
+            return "dl_err_file_system".localized(message)
         case .integrityCheckFailed(let message):
-            return "完整性检查失败: \(message)"
+            return "dl_err_integrity_check".localized(message)
         case .licenseCheckFailed(let message):
-            return "许可证检查失败: \(message)"
+            return "dl_err_license_check".localized(message)
         case .networkError(let error):
-            return "网络错误: \(error.localizedDescription)"
+            return "dl_err_network".localized(error.localizedDescription)
         case .unknownError(let message):
-            return "未知错误: \(message)"
+            return "dl_err_unknown_detail".localized(message)
         }
     }
 }
@@ -2086,7 +2067,7 @@ extension AppStoreDownloadManager {
         )
 
         guard success else {
-            throw NSError(domain: "iTunesMetadataProcessing", code: 1, userInfo: [NSLocalizedDescriptionKey: "FastZipArchive添加iTunesMetadata.plist失败"])
+            throw NSError(domain: "iTunesMetadataProcessing", code: 1, userInfo: [NSLocalizedDescriptionKey: "dl_err_metadata_plist".localized])
         }
 
         return ipaPath

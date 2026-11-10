@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>IPA Tool Runtime</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body><script src="./sap-signer.js"></script><script>
+'use strict';
+// UI is rendered natively. Only fixed stage IDs cross the WebKit bridge.
+window.reportStage = index => {
+  if (Number.isInteger(index) && index >= 1 && index <= 2) {
+    window.webkit?.messageHandlers?.progress?.postMessage(index);
+  }
+};
+</script></body></html>

@@ -68,7 +68,6 @@
 "language_switch" = "Trocar idioma";
 "language_switch_message" = "A interface do app será atualizada imediatamente após a troca de idioma. Alguns componentes do sistema podem exigir uma reinicialização para terem efeito completo.";
 "confirm_switch" = "Confirmar troca";
-"app_icon" = "Ícone do app";
 "icon_default" = "Padrão";
 "icon_author" = "Ícone";
 "icon_love" = "Amor";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Tags de recursos";
 "free" = "Obter";
-"get" = "Obter";
 "view" = "Ver";
 "get_reviews_failed" = "Falha ao obter comentários: %@";
 "x_ratings" = "%@ avaliações";
 "age_rating" = "Classificação etária";
 "x_languages" = "%@ idiomas";
-"whats_new" = "Novidades";
 "tech_info" = "Informações técnicas";
 "first_release" = "Primeiro lançamento";
-"last_updated" = "Última atualização";
 "requires_ios" = "Requer iOS %@ ou posterior";
 
-"search_placeholder" = "Buscar jogos, apps";
 "login" = "Entrar";
 "clear_all" = "Limpar tudo";
 "x_results_found" = "%@ resultados encontrados";
@@ -458,7 +453,6 @@
 "switch" = "Trocar";
 "x_accounts" = "%@ contas";
 "add_new_account" = "Adicionar nova conta";
-"account_management" = "Gerenciamento de contas";
 "use_account" = "Usar conta";
 "connection_lost" = "Conexão perdida";
 "reconnecting" = "Reconectando";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Mídia e compras";
 "sign_in_apple_id" = "Entrar no seu iPhone";
 "sign_in_apple_id_desc" = "Use seu Apple ID neste iPhone";
-"apple_id" = "Apple ID";
-"name" = "Nome";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Nome, E-mail";
 "account_identifier_header" = "Identificador da conta";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Informações básicas";
 "account_identifier" = "Identificador da conta";
-"country_region" = "País/Região";
 "password_token" = "Token de senha";
 "auth_info" = "Informações de autenticação";
 "password_token_hint" = "O token de senha é usado para autenticação automática. Não compartilhe com outras pessoas.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Verifique seu dispositivo Apple de confiança ou SMS e insira o código de 6 dígitos abaixo.";
-
-
+"tab_purchased" = "Compras";
+"purchased_search_placeholder" = "Pesquisar apps comprados";
+"purchased_syncing" = "Sincronizando compras…";
+"purchased_empty" = "Nenhuma compra ainda";
+"icon_set_failed" = "Falha ao definir o ícone";
+"icon_set_failed_desc" = "Não foi possível alterar o ícone do app. Tente novamente mais tarde.";
+"web_load_failed" = "Falha ao carregar a página: %@";
+"web_server_unreachable" = "Não foi possível conectar ao servidor: %@";
+"status_owned" = "Obtido";
+"status_not_owned" = "Não obtido";
+"rating_count_format" = "%@ avaliações";
+"legacy_apps_delisted" = "Apps anteriores (removidos)";
+"versions_login_required" = "Inicie sessão para carregar as versões";
+"versions_unavailable" = "Não foi possível carregar as versões. Verifique a ligação.";
+"versions_unavailable_retry" = "Não foi possível carregar o histórico. Tente novamente.";
+"preparing_install_link" = "A preparar a ligação de instalação…";
+"widget_weather" = "Tempo";
+"weather_sunny" = "Sol";

@@ -68,7 +68,6 @@
 "language_switch" = "언어 전환";
 "language_switch_message" = "언어를 전환하면 앱 인터페이스 언어가 즉시 업데이트됩니다. 일부 시스템 구성 요소는 앱 재시작 후 완전히 적용될 수 있습니다.";
 "confirm_switch" = "전환 확인";
-"app_icon" = "아이콘";
 "icon_default" = "기본";
 "icon_author" = "아이콘";
 "icon_love" = "Love";
@@ -210,7 +209,6 @@
 "screenshots" = "스크린샷";
 "description" = "앱 설명";
 "whats_new" = "새로운 기능";
-"version_history" = "버전 기록";
 "ratings_and_reviews" = "평가 및 리뷰";
 "developer" = "개발자";
 "category" = "카테고리";
@@ -232,7 +230,6 @@
 "full" = "정원 초과";
 "test_duration" = "테스트 기간";
 "remaining_seats" = "남은 자리";
-"install" = "설치";
 "redeem_code" = "리딤 코드";
 "enter_redeem_code" = "리딤 코드 입력";
 
@@ -253,8 +250,6 @@
 "notification_badge" = "뱃지";
 
 "privacy_security" = "개인정보 및 보안";
-"privacy_policy" = "개인정보 처리방침";
-"user_agreement" = "이용 약관";
 "clear_cache" = "캐시 지우기";
 "cache_size" = "캐시 크기";
 "calculating_cache" = "계산 중...";
@@ -270,7 +265,6 @@
 "documents_size" = "문서 크기";
 
 "download_manager" = "다운로드 관리";
-"download_queue" = "다운로드 대기열";
 "batch_operations" = "일괄 작업";
 "select_all" = "전체 선택";
 "deselect_all" = "전체 선택 해제";
@@ -278,13 +272,10 @@
 
 "app_name" = "앱 이름";
 "app_version" = "앱 버전";
-"app_size" = "앱 크기";
 "app_rating" = "앱 평점";
 "app_developer" = "개발자";
 "app_category" = "카테고리";
-"release_date" = "출시일";
 "last_updated" = "최종 업데이트";
-"compatibility" = "호환성";
 "language_support" = "지원 언어";
 "content_rating" = "콘텐츠 등급";
 
@@ -444,7 +435,6 @@
 "auto_switch" = "자동 전환";
 "custom_theme" = "사용자 정의 테마";
 "theme_color" = "테마 색상";
-"accent_color" = "강조 색상";
 "background_color" = "배경색";
 "text_color" = "글자색";
 "font_size" = "글자 크기";
@@ -452,19 +442,15 @@
 
 "feature_tags" = "기능 태그";
 "free" = "무료";
-"get" = "받기";
 "view" = "보기";
 "get_reviews_failed" = "리뷰 가져오기 실패: %@";
 "x_ratings" = "평점 %@개";
 "age_rating" = "연령 등급";
 "x_languages" = "%@개 언어";
-"whats_new" = "새로운 기능";
 "tech_info" = "기술 정보";
 "first_release" = "최초 출시";
-"last_updated" = "마지막 업데이트";
 "requires_ios" = "iOS %@ 이상 필요";
 
-"search_placeholder" = "게임, 앱 검색";
 "login" = "로그인";
 "clear_all" = "모두 지우기";
 "x_results_found" = "결과 %@개";
@@ -486,7 +472,6 @@
 "switch" = "전환";
 "x_accounts" = "계정 %@개";
 "add_new_account" = "새 계정 추가";
-"account_management" = "계정 관리";
 "use_account" = "계정 사용";
 "connection_lost" = "연결이 끊겼습니다";
 "reconnecting" = "재연결 중";
@@ -502,8 +487,6 @@
 "media_purchases_header" = "미디어 및 구입";
 "sign_in_apple_id" = "iPhone에 로그인";
 "sign_in_apple_id_desc" = "이 iPhone에서 Apple ID 사용";
-"apple_id" = "Apple ID";
-"name" = "이름";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "이름, 이메일";
 "account_identifier_header" = "계정 식별자";
@@ -571,7 +554,6 @@
 
 "basic_info" = "기본 정보";
 "account_identifier" = "계정 식별자";
-"country_region" = "국가/지역";
 "password_token" = "비밀번호 토큰";
 "auth_info" = "인증 정보";
 "password_token_hint" = "비밀번호 토큰은 자동 인증에 사용됩니다. 다른 사람과 공유하지 마세요.";
@@ -598,5 +580,21 @@
 "less" = "접기";
 "see_all_reviews" = "모든 리뷰 보기";
 "two_factor_code_intro" = "신뢰하는 Apple 기기 또는 SMS에서 6자리 인증 코드를 확인하여 아래에 입력하세요.";
-
-
+"tab_purchased" = "구입 항목";
+"purchased_search_placeholder" = "구입한 앱 검색";
+"purchased_syncing" = "구입 내역 동기화 중…";
+"purchased_empty" = "구입한 항목이 없습니다";
+"icon_set_failed" = "아이콘 설정 실패";
+"icon_set_failed_desc" = "앱 아이콘을 변경할 수 없습니다. 나중에 다시 시도하세요.";
+"web_load_failed" = "페이지를 불러오지 못했습니다: %@";
+"web_server_unreachable" = "서버에 연결할 수 없습니다: %@";
+"status_owned" = "보유 중";
+"status_not_owned" = "미보유";
+"rating_count_format" = "평가 %@개";
+"legacy_apps_delisted" = "이전 앱(판매 중지)";
+"versions_login_required" = "로그인하면 버전 정보를 불러올 수 있습니다";
+"versions_unavailable" = "버전 정보를 가져올 수 없습니다. 네트워크를 확인하세요.";
+"versions_unavailable_retry" = "버전 기록을 가져올 수 없습니다. 다시 시도하세요.";
+"preparing_install_link" = "설치 링크 준비 중…";
+"widget_weather" = "날씨";
+"weather_sunny" = "맑음";

@@ -31,19 +31,18 @@ enum MachineIdentityProvider {
         #endif
         let machineID = Data(mac)
         let guid = machineID.map { String(format: "%02X", $0) }.joined()
-        if !isValidGUID(guid) {
-        }
         return MachineIdentity(guid: guid, machineID: machineID)
     }
 
     #if os(iOS)
     private static func persistentWiFiAddress() -> [UInt8]? {
-        if let cached = UserDefaults.standard.string(forKey: "sap_mac_address_v1") {
+        
+        if let cached = UserDefaults.standard.string(forKey: "sap_mac_address_v2") {
             return parseMAC(cached)
         }
         let addr = fallbackRandomMAC()
         let s = addr.map { String(format: "%02X", $0) }.joined(separator: ":")
-        UserDefaults.standard.set(s, forKey: "sap_mac_address_v1")
+        UserDefaults.standard.set(s, forKey: "sap_mac_address_v2")
         return addr
     }
     #endif
@@ -82,7 +81,8 @@ enum MachineIdentityProvider {
         for i in 0..<6 {
             addr[i] = UInt8.random(in: 0...255)
         }
-        addr[0] = (addr[0] & 0xFE) | 0x02
+        
+        addr[0] &= 0xFC
         return addr
     }
 

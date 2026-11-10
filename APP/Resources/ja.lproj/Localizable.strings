@@ -68,7 +68,6 @@
 "language_switch" = "言語を切り替え";
 "language_switch_message" = "言語を切り替えると、アプリの表示言語がすぐに更新されます。一部のシステムコンポーネントは、アプリの再起動後に完全に反映される場合があります。";
 "confirm_switch" = "切り替えを確定";
-"app_icon" = "アイコン";
 "icon_default" = "デフォルト";
 "icon_author" = "アイコン";
 "icon_love" = "Love";
@@ -210,7 +209,6 @@
 "screenshots" = "スクリーンショット";
 "description" = "アプリの説明";
 "whats_new" = "新機能";
-"version_history" = "バージョン履歴";
 "ratings_and_reviews" = "評価とレビュー";
 "developer" = "開発者";
 "category" = "カテゴリ";
@@ -232,7 +230,6 @@
 "full" = "満員";
 "test_duration" = "テスト期間";
 "remaining_seats" = "残り枠";
-"install" = "インストール";
 "redeem_code" = "引き換えコード";
 "enter_redeem_code" = "引き換えコードを入力";
 
@@ -253,8 +250,6 @@
 "notification_badge" = "バッジ";
 
 "privacy_security" = "プライバシーとセキュリティ";
-"privacy_policy" = "プライバシーポリシー";
-"user_agreement" = "利用規約";
 "clear_cache" = "キャッシュをクリア";
 "cache_size" = "キャッシュサイズ";
 "calculating_cache" = "計算中...";
@@ -270,7 +265,6 @@
 "documents_size" = "書類サイズ";
 
 "download_manager" = "ダウンロード管理";
-"download_queue" = "ダウンロードキュー";
 "batch_operations" = "一括操作";
 "select_all" = "すべて選択";
 "deselect_all" = "選択を解除";
@@ -278,13 +272,10 @@
 
 "app_name" = "アプリ名";
 "app_version" = "アプリバージョン";
-"app_size" = "アプリサイズ";
 "app_rating" = "アプリ評価";
 "app_developer" = "開発者";
 "app_category" = "カテゴリ";
-"release_date" = "リリース日";
 "last_updated" = "最終更新";
-"compatibility" = "互換性";
 "language_support" = "対応言語";
 "content_rating" = "コンテンツ評価";
 
@@ -444,7 +435,6 @@
 "auto_switch" = "自動切り替え";
 "custom_theme" = "カスタムテーマ";
 "theme_color" = "テーマカラー";
-"accent_color" = "アクセントカラー";
 "background_color" = "背景色";
 "text_color" = "テキスト色";
 "font_size" = "フォントサイズ";
@@ -452,19 +442,15 @@
 
 "feature_tags" = "機能タグ";
 "free" = "無料";
-"get" = "入手";
 "view" = "表示";
 "get_reviews_failed" = "レビューの取得に失敗しました: %@";
 "x_ratings" = "%@ 件の評価";
 "age_rating" = "年齢制限";
 "x_languages" = "%@ 言語";
-"whats_new" = "新機能";
 "tech_info" = "技術情報";
 "first_release" = "初回リリース";
-"last_updated" = "最終更新";
 "requires_ios" = "iOS %@ 以降が必要";
 
-"search_placeholder" = "ゲーム、Appを検索";
 "login" = "ログイン";
 "clear_all" = "すべてクリア";
 "x_results_found" = "%@ 件の結果";
@@ -486,7 +472,6 @@
 "switch" = "切り替え";
 "x_accounts" = "%@ 個のアカウント";
 "add_new_account" = "新しいアカウントを追加";
-"account_management" = "アカウント管理";
 "use_account" = "アカウントを使用";
 "connection_lost" = "接続が切断されました";
 "reconnecting" = "再接続中";
@@ -502,8 +487,6 @@
 "media_purchases_header" = "メディアと購入";
 "sign_in_apple_id" = "iPhoneにサインイン";
 "sign_in_apple_id_desc" = "このiPhoneでApple IDを使用する";
-"apple_id" = "Apple ID";
-"name" = "名前";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "名前、メール";
 "account_identifier_header" = "アカウント識別子";
@@ -571,7 +554,6 @@
 
 "basic_info" = "基本情報";
 "account_identifier" = "アカウント識別子";
-"country_region" = "国/地域";
 "password_token" = "パスワードトークン";
 "auth_info" = "認証情報";
 "password_token_hint" = "パスワードトークンは自動認証に使用されます。他の人と共有しないでください。";
@@ -598,5 +580,21 @@
 "less" = "折りたたむ";
 "see_all_reviews" = "すべてのレビューを見る";
 "two_factor_code_intro" = "信頼済みのAppleデバイスまたはSMSを確認し、下記に6桁の確認コードを入力してください。";
-
-
+"tab_purchased" = "購入済み";
+"purchased_search_placeholder" = "購入済みアプリを検索";
+"purchased_syncing" = "購入履歴を同期中…";
+"purchased_empty" = "購入済みの項目はありません";
+"icon_set_failed" = "アイコンの設定に失敗しました";
+"icon_set_failed_desc" = "アプリのアイコンを変更できません。後でもう一度お試しください。";
+"web_load_failed" = "ページの読み込みに失敗しました: %@";
+"web_server_unreachable" = "サーバーに接続できません: %@";
+"status_owned" = "取得済み";
+"status_not_owned" = "未取得";
+"rating_count_format" = "%@件の評価";
+"legacy_apps_delisted" = "過去のアプリ（配信終了）";
+"versions_login_required" = "サインインするとバージョン情報を取得できます";
+"versions_unavailable" = "バージョン情報を取得できません。ネットワークを確認してください。";
+"versions_unavailable_retry" = "バージョン履歴を取得できません。再試行してください。";
+"preparing_install_link" = "インストールリンクを準備中…";
+"widget_weather" = "天気";
+"weather_sunny" = "晴れ";

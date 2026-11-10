@@ -68,7 +68,6 @@
 "language_switch" = "Nyelv váltása";
 "language_switch_message" = "Az alkalmazás felülete azonnal frissül a nyelv váltása után. Egyes rendszerösszetevők újraindítást igényelhetnek a teljes érvénybe lépéshez.";
 "confirm_switch" = "Váltás megerősítése";
-"app_icon" = "Alkalmazásikon";
 "icon_default" = "Alapértelmezett";
 "icon_author" = "Ikon";
 "icon_love" = "Szerelem";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Funkciócímkék";
 "free" = "Letöltés";
-"get" = "Letöltés";
 "view" = "Megtekintés";
 "get_reviews_failed" = "Vélemények lekérése sikertelen: %@";
 "x_ratings" = "%@ értékelés";
 "age_rating" = "Korhatár";
 "x_languages" = "%@ nyelv";
-"whats_new" = "Újdonságok";
 "tech_info" = "Technikai információ";
 "first_release" = "Első kiadás";
-"last_updated" = "Utolsó frissítés";
 "requires_ios" = "iOS %@ vagy újabb szükséges";
 
-"search_placeholder" = "Játékok, alkalmazások keresése";
 "login" = "Bejelentkezés";
 "clear_all" = "Összes törlése";
 "x_results_found" = "%@ találat";
@@ -458,7 +453,6 @@
 "switch" = "Váltás";
 "x_accounts" = "%@ fiók";
 "add_new_account" = "Új fiók hozzáadása";
-"account_management" = "Fiókkezelés";
 "use_account" = "Fiók használata";
 "connection_lost" = "Kapcsolat megszakadt";
 "reconnecting" = "Újracsatlakozás";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Média és vásárlások";
 "sign_in_apple_id" = "Bejelentkezés az iPhone-ján";
 "sign_in_apple_id_desc" = "Használja az Apple ID-ját ezen az iPhone-on";
-"apple_id" = "Apple ID";
-"name" = "Név";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Név, e-mail";
 "account_identifier_header" = "Fiókazonosító";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Alapvető információ";
 "account_identifier" = "Fiókazonosító";
-"country_region" = "Ország/régió";
 "password_token" = "Jelszójelző";
 "auth_info" = "Hitelesítési információ";
 "password_token_hint" = "A jelszójelző az automatikus hitelesítéshez szolgál. Kérjük, ne ossza meg másokkal.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Ellenőrizd a megbízható Apple-eszközödet vagy az SMS-t, majd add meg alább a 6 számjegyű ellenőrző kódot.";
-
-
+"tab_purchased" = "Megvásárolt";
+"purchased_search_placeholder" = "Megvásárolt appok keresése";
+"purchased_syncing" = "Vásárlások szinkronizálása…";
+"purchased_empty" = "Még nincsenek vásárlások";
+"icon_set_failed" = "Nem sikerült beállítani az ikont";
+"icon_set_failed_desc" = "Az app ikonja nem módosítható. Próbálja újra később.";
+"web_load_failed" = "Nem sikerült betölteni az oldalt: %@";
+"web_server_unreachable" = "Nem sikerült kapcsolódni a szerverhez: %@";
+"status_owned" = "Megszerezve";
+"status_not_owned" = "Nincs megszerezve";
+"rating_count_format" = "%@ értékelés";
+"legacy_apps_delisted" = "Korábbi appok (eltávolítva)";
+"versions_login_required" = "Jelentkezzen be a verzióadatok betöltéséhez";
+"versions_unavailable" = "Nem sikerült betölteni a verziókat. Ellenőrizze a kapcsolatot.";
+"versions_unavailable_retry" = "Nem sikerült betölteni az előzményeket. Próbálja újra.";
+"preparing_install_link" = "Telepítési hivatkozás előkészítése…";
+"widget_weather" = "Időjárás";
+"weather_sunny" = "Napos";

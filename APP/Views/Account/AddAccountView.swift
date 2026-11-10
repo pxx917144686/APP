@@ -221,7 +221,7 @@ struct AddAccountView: View {
                                 }
                             }
                             .padding(.horizontal, 24)
-                            .padding(.bottom, 24)
+                            .padding(.bottom, 32)
                         }
                     }
                 }
@@ -299,8 +299,7 @@ struct AddAccountView: View {
         }
     }
 
-    private func handleTwoFactorAuthRequired() {
-        errorMessage = ""
+    private func handleTwoFactorAuthRequired() {        errorMessage = ""
         if !showTwoFactorField {
             withAnimation(.easeInOut(duration: 0.3)) {
                 showTwoFactorField = true
@@ -310,9 +309,9 @@ struct AddAccountView: View {
                 focusTag = 2
             }
         } else {
-            infoMessage = ""
-            errorMessage = "wrong_verification_code".localized
-            code = ""
+            
+            errorMessage = ""
+            infoMessage = "two_factor_code_intro".localized
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 focusTag = 2
             }

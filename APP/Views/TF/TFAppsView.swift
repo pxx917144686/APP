@@ -144,7 +144,7 @@ struct TFAppsView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
 
-                    Text("加载失败")
+                    Text("load_failed".localized)
                         .font(.system(size: 22, weight: .semibold))
 
                     Text(errorMessage)
@@ -153,7 +153,7 @@ struct TFAppsView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
 
-                    Button("重试") {
+                    Button("retry".localized) {
                         self.errorMessage = nil
                         self.isLoading = true
                         self.webView?.reload()
@@ -182,7 +182,7 @@ struct TFAppsView: View {
                             VStack {
                                 ProgressView()
                                     .scaleEffect(1.5)
-                                Text("正在加载...")
+                                Text("loading".localized)
                                     .font(.headline)
                                     .padding(.top, 16)
                             }
@@ -459,7 +459,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 
             DispatchQueue.main.async {
                 self.parent.isLoading = false
-                self.parent.errorMessage = "网页加载失败: \(error.localizedDescription)"
+                self.parent.errorMessage = "web_load_failed".localized(error.localizedDescription)
             }
         }
 
@@ -467,7 +467,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 
             DispatchQueue.main.async {
                 self.parent.isLoading = false
-                self.parent.errorMessage = "无法连接到服务器: \(error.localizedDescription)"
+                self.parent.errorMessage = "web_server_unreachable".localized(error.localizedDescription)
             }
         }
 

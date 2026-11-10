@@ -179,7 +179,6 @@ struct AccountSheetView: View {
         }
     }
 
-
     private func regionSection(account: Account) -> some View {
         Section {
             HStack {

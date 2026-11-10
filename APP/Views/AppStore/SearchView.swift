@@ -90,27 +90,112 @@ struct UIKitTextField: UIViewRepresentable {
      }
  }
 
+struct SearchTimeoutError: Error {}
+
+final class SearchResultCache: @unchecked Sendable {
+    static let shared = SearchResultCache()
+    private let lock = NSLock()
+    private var memory: [String: [iTunesSearchResult]] = [:]
+    private var order: [String] = []
+    private let maxEntries = 40
+    private let maxAge: TimeInterval = 2 * 60 * 60
+
+    func get(_ key: String) -> [iTunesSearchResult]? {
+        lock.lock()
+        if let hit = memory[key] {
+            lock.unlock()
+            return hit
+        }
+        lock.unlock()
+
+        guard let persisted = DiskCache.shared.read([iTunesSearchResult].self, key: "search_\(key)", maxAge: maxAge),
+              !persisted.isEmpty else { return nil }
+        lock.lock(); memory[key] = persisted; lock.unlock()
+        return persisted
+    }
+
+    func set(_ results: [iTunesSearchResult], for key: String) {
+        guard !results.isEmpty else { return }
+
+        lock.lock()
+        memory[key] = results
+        order.removeAll { $0 == key }
+        order.append(key)
+        var evicted: [String] = []
+        while order.count > maxEntries {
+            let old = order.removeFirst()
+            memory.removeValue(forKey: old)
+            evicted.append(old)
+        }
+        lock.unlock()
+
+        DiskCache.shared.write(results, key: "search_\(key)")
+        for old in evicted { DiskCache.shared.remove(key: "search_\(old)") }
+    }
+
+    func clear() {
+        lock.lock()
+        let keys = order
+        memory.removeAll()
+        order.removeAll()
+        lock.unlock()
+        for key in keys { DiskCache.shared.remove(key: "search_\(key)") }
+    }
+}
+
+final class VersionListCache: @unchecked Sendable {
+    static let shared = VersionListCache()
+    private let lock = NSLock()
+    private var storage: [Int: [StoreAppVersion]] = [:]
+    private let maxAge: TimeInterval = 6 * 60 * 60
+
+    private func diskKey(_ trackId: Int) -> String { "versions_\(trackId)" }
+
+    func get(_ trackId: Int) -> [StoreAppVersion]? {
+        lock.lock()
+        if let hit = storage[trackId] {
+            lock.unlock()
+            return hit
+        }
+        lock.unlock()
+
+        guard let persisted = DiskCache.shared.read([StoreAppVersion].self, key: diskKey(trackId), maxAge: maxAge),
+              !persisted.isEmpty else { return nil }
+        lock.lock(); storage[trackId] = persisted; lock.unlock()
+        return persisted
+    }
+
+    func set(_ versions: [StoreAppVersion], for trackId: Int) {
+        guard !versions.isEmpty else { return }
+        lock.lock(); storage[trackId] = versions; lock.unlock()
+        DiskCache.shared.write(versions, key: diskKey(trackId))
+    }
+
+    func clear() {
+        lock.lock()
+        let keys = Array(storage.keys)
+        storage.removeAll()
+        lock.unlock()
+        for key in keys { DiskCache.shared.remove(key: diskKey(key)) }
+    }
+}
+
 func withTimeout<T>(seconds: Double, operation: @escaping @Sendable () async throws -> T) async throws -> T {
     try await withThrowingTaskGroup(of: T.self) { group in
 
-        let timeoutTask = Task { () -> T in
+        group.addTask {
+            try await operation()
+        }
+
+        group.addTask {
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-            throw CancellationError()
+            throw SearchTimeoutError()
         }
 
-        group.addTask { [timeoutTask] in
-            defer { timeoutTask.cancel() }
-            return try await operation()
-        }
+        defer { group.cancelAll() }
 
-        let result = try await group.next()
-        group.cancelAll()
-
-        if let result = result {
-            return result
-        } else {
-            throw CancellationError()
-        }
+        guard let result = try await group.next() else { throw SearchTimeoutError() }
+        return result
     }
 }
 
@@ -306,13 +391,7 @@ struct EnhancedAppCard: SwiftUI.View {
     }
 
     private func formatRatingCount(_ count: Int) -> String {
-        if count >= 10000 {
-            return "\(count / 10000)万"
-        } else if count >= 1000 {
-            return String(format: "%.1fK", Double(count) / 1000.0)
-        } else {
-            return "\(count)"
-        }
+        CompactNumber.string(count)
     }
 
 }
@@ -1004,14 +1083,16 @@ struct EnhancedAppDetailView: SwiftUI.View {
     }
 
     private func formatReleaseDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        guard let date = parser.date(from: dateString) else { return dateString }
 
-        if let date = formatter.date(from: dateString) {
-            formatter.dateFormat = "yyyy年MM月dd日"
-            return formatter.string(from: date)
-        }
-        return dateString
+        let output = DateFormatter()
+        output.locale = LanguageManager.shared.locale
+        output.dateStyle = .medium
+        output.timeStyle = .none
+        return output.string(from: date)
     }
 
     private func formatShortReleaseDate(_ dateString: String) -> String {
@@ -1162,66 +1243,6 @@ struct SearchView: SwiftUI.View {
 
     @State var purchasingTrackId: Int?
 
-    static let countryCodeMap: [String: String] = [
-        "AE": "United Arab Emirates", "AG": "Antigua and Barbuda", "AI": "Anguilla", "AL": "Albania", "AM": "Armenia",
-        "AO": "Angola", "AR": "Argentina", "AT": "Austria", "AU": "Australia", "AZ": "Azerbaijan",
-        "BB": "Barbados", "BD": "Bangladesh", "BE": "Belgium", "BG": "Bulgaria", "BH": "Bahrain",
-        "BM": "Bermuda", "BN": "Brunei", "BO": "Bolivia", "BR": "Brazil", "BS": "Bahamas",
-        "BW": "Botswana", "BY": "Belarus", "BZ": "Belize", "CA": "Canada", "CH": "Switzerland",
-        "CI": "Côte d'Ivoire", "CL": "Chile", "CN": "China", "CO": "Colombia", "CR": "Costa Rica",
-        "CY": "Cyprus", "CZ": "Czech Republic", "DE": "Germany", "DK": "Denmark", "DM": "Dominica",
-        "DO": "Dominican Republic", "DZ": "Algeria", "EC": "Ecuador", "EE": "Estonia", "EG": "Egypt",
-        "ES": "Spain", "FI": "Finland", "FR": "France", "GB": "United Kingdom", "GD": "Grenada",
-        "GE": "Georgia", "GH": "Ghana", "GR": "Greece", "GT": "Guatemala", "GY": "Guyana",
-        "HK": "Hong Kong", "HN": "Honduras", "HR": "Croatia", "HU": "Hungary", "ID": "Indonesia",
-        "IE": "Ireland", "IL": "Israel", "IN": "India", "IS": "Iceland", "IT": "Italy",
-        "JM": "Jamaica", "JO": "Jordan", "JP": "Japan", "KE": "Kenya", "KN": "Saint Kitts and Nevis",
-        "KR": "South Korea", "KW": "Kuwait", "KY": "Cayman Islands", "KZ": "Kazakhstan", "LB": "Lebanon",
-        "LC": "Saint Lucia", "LI": "Liechtenstein", "LK": "Sri Lanka", "LT": "Lithuania", "LU": "Luxembourg",
-        "LV": "Latvia", "MD": "Moldova", "MG": "Madagascar", "MK": "North Macedonia", "ML": "Mali",
-        "MN": "Mongolia", "MO": "Macao", "MS": "Montserrat", "MT": "Malta", "MU": "Mauritius",
-        "MV": "Maldives", "MX": "Mexico", "MY": "Malaysia", "NE": "Niger", "NG": "Nigeria",
-        "NI": "Nicaragua", "NL": "Netherlands", "NO": "Norway", "NP": "Nepal", "NZ": "New Zealand",
-        "OM": "Oman", "PA": "Panama", "PE": "Peru", "PH": "Philippines", "PK": "Pakistan",
-        "PL": "Poland", "PT": "Portugal", "PY": "Paraguay", "QA": "Qatar", "RO": "Romania",
-        "RS": "Serbia", "RU": "Russia", "SA": "Saudi Arabia", "SE": "Sweden", "SG": "Singapore",
-        "SI": "Slovenia", "SK": "Slovakia", "SN": "Senegal", "SR": "Suriname", "SV": "El Salvador",
-        "TC": "Turks and Caicos", "TH": "Thailand", "TN": "Tunisia", "TR": "Turkey", "TT": "Trinidad and Tobago",
-        "TW": "Taiwan", "TZ": "Tanzania", "UA": "Ukraine", "UG": "Uganda", "US": "United States",
-        "UY": "Uruguay", "UZ": "Uzbekistan", "VC": "Saint Vincent and the Grenadines", "VE": "Venezuela",
-        "VG": "British Virgin Islands", "VN": "Vietnam", "YE": "Yemen", "ZA": "South Africa"
-    ]
-
-    static let countryCodeMapChinese: [String: String] = [
-        "AE": "阿联酋", "AG": "安提瓜和巴布达", "AI": "安圭拉", "AL": "阿尔巴尼亚", "AM": "亚美尼亚",
-        "AO": "安哥拉", "AR": "阿根廷", "AT": "奥地利", "AU": "澳大利亚", "AZ": "阿塞拜疆",
-        "BB": "巴巴多斯", "BD": "孟加拉国", "BE": "比利时", "BG": "保加利亚", "BH": "巴林",
-        "BM": "百慕大", "BN": "文莱", "BO": "玻利维亚", "BR": "巴西", "BS": "巴哈马",
-        "BW": "博茨瓦纳", "BY": "白俄罗斯", "BZ": "伯利兹", "CA": "加拿大", "CH": "瑞士",
-        "CI": "科特迪瓦", "CL": "智利", "CN": "中国", "CO": "哥伦比亚", "CR": "哥斯达黎加",
-        "CY": "塞浦路斯", "CZ": "捷克", "DE": "德国", "DK": "丹麦", "DM": "多米尼克",
-        "DO": "多米尼加", "DZ": "阿尔及利亚", "EC": "厄瓜多尔", "EE": "爱沙尼亚", "EG": "埃及",
-        "ES": "西班牙", "FI": "芬兰", "FR": "法国", "GB": "英国", "GD": "格林纳达",
-        "GE": "格鲁吉亚", "GH": "加纳", "GR": "希腊", "GT": "危地马拉", "GY": "圭亚那",
-        "HK": "香港", "HN": "洪都拉斯", "HR": "克罗地亚", "HU": "匈牙利", "ID": "印度尼西亚",
-        "IE": "爱尔兰", "IL": "以色列", "IN": "印度", "IS": "冰岛", "IT": "意大利",
-        "JM": "牙买加", "JO": "约旦", "JP": "日本", "KE": "肯尼亚", "KN": "圣基茨和尼维斯",
-        "KR": "韩国", "KW": "科威特", "KY": "开曼群岛", "KZ": "哈萨克斯坦", "LB": "黎巴嫩",
-        "LC": "圣卢西亚", "LI": "列支敦士登", "LK": "斯里兰卡", "LT": "立陶宛", "LU": "卢森堡",
-        "LV": "拉脱维亚", "MD": "摩尔多瓦", "MG": "马达加斯加", "MK": "北马其顿", "ML": "马里",
-        "MN": "蒙古", "MO": "澳门", "MS": "蒙特塞拉特", "MT": "马耳他", "MU": "毛里求斯",
-        "MV": "马尔代夫", "MX": "墨西哥", "MY": "马来西亚", "NE": "尼日尔", "NG": "尼日利亚",
-        "NI": "尼加拉瓜", "NL": "荷兰", "NO": "挪威", "NP": "尼泊尔", "NZ": "新西兰",
-        "OM": "阿曼", "PA": "巴拿马", "PE": "秘鲁", "PH": "菲律宾", "PK": "巴基斯坦",
-        "PL": "波兰", "PT": "葡萄牙", "PY": "巴拉圭", "QA": "卡塔尔", "RO": "罗马尼亚",
-        "RS": "塞尔维亚", "RU": "俄罗斯", "SA": "沙特阿拉伯", "SE": "瑞典", "SG": "新加坡",
-        "SI": "斯洛文尼亚", "SK": "斯洛伐克", "SN": "塞内加尔", "SR": "苏里南", "SV": "萨尔瓦多",
-        "TC": "特克斯和凯科斯群岛", "TH": "泰国", "TN": "突尼斯", "TR": "土耳其", "TT": "特立尼达和多巴哥",
-        "TW": "台湾", "TZ": "坦桑尼亚", "UA": "乌克兰", "UG": "乌干达", "US": "美国",
-        "UY": "乌拉圭", "UZ": "乌兹别克斯坦", "VC": "圣文森特和格林纳丁斯", "VE": "委内瑞拉",
-        "VG": "英属维尔京群岛", "VN": "越南", "YE": "也门", "ZA": "南非"
-    ]
-
     static let storeFrontCodeMap = [
         "AE": "143481", "AG": "143540", "AI": "143538", "AL": "143575", "AM": "143524",
         "AO": "143564", "AR": "143505", "AT": "143445", "AU": "143460", "AZ": "143568",
@@ -1263,7 +1284,6 @@ struct SearchView: SwiftUI.View {
     @State var searchError: String? = nil
     @State var searchSuggestions: [String] = []
     @State var isFetchingSuggestions: Bool = false
-    @State var searchCache: [String: [iTunesSearchResult]] = [:]
     @State var showSearchSuggestions = false
     @StateObject private var suggestionsDebounce = Debounce(delay: 0.1)
     private let searchSuggestionsCache = LRUCache<String, [String]>(capacity: 50)
@@ -1504,7 +1524,7 @@ struct SearchView: SwiftUI.View {
                             HStack(spacing: 8) {
                                 Text(flag(country: currentAccount.countryCode))
                                     .font(.caption)
-                                Text(SearchView.countryCodeMapChinese[currentAccount.countryCode] ?? SearchView.countryCodeMap[currentAccount.countryCode] ?? currentAccount.countryCode)
+                                Text(RegionNames.localizedName(for: currentAccount.countryCode))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -1755,7 +1775,7 @@ struct SearchView: SwiftUI.View {
     var legacyResultsSection: some SwiftUI.View {
         VStack(spacing: 16) {
             HStack {
-                Text("历史应用（已下架）")
+                Text("legacy_apps_delisted".localized)
                     .font(.title3.bold())
                     .foregroundColor(.primary)
                 Spacer()
@@ -1777,23 +1797,17 @@ struct SearchView: SwiftUI.View {
     struct ProIDHistoryVersion {
         let version: String
         let versionId: String
+        let releaseDate: Date?
+        init(version: String, versionId: String, releaseDate: Date? = nil) {
+            self.version = version
+            self.versionId = versionId
+            self.releaseDate = releaseDate
+        }
     }
 
     nonisolated func fetchProIDHistory(trackId: Int) async -> [ProIDHistoryVersion] {
-        guard let url = URL(string: "https://appstorepro-id.ericloveyou.dpdns.org/api/history?app_id=\(trackId)") else { return [] }
-        var req = URLRequest(url: url)
-        req.timeoutInterval = 20
-        guard let (data, resp) = try? await URLSession.shared.data(for: req),
-              (resp as? HTTPURLResponse)?.statusCode == 200,
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let arr = obj["versions"] as? [[String: Any]] else { return [] }
-        var out: [ProIDHistoryVersion] = []
-        for item in arr {
-            if let v = item["version"] as? String, let vid = item["versionid"] as? String, !vid.isEmpty {
-                out.append(ProIDHistoryVersion(version: v, versionId: vid))
-            }
-        }
-        return out
+        let list = await IPadnVersionSources.fetch(appID: String(trackId))
+        return list.map { ProIDHistoryVersion(version: $0.version, versionId: $0.versionId, releaseDate: $0.releaseDate) }
     }
 
     func fetchLegacyApps(term: String, exclude: Set<String>) async -> [iTunesSearchResult] {
@@ -1808,13 +1822,25 @@ struct SearchView: SwiftUI.View {
               let arr = obj["data"] as? [[String: Any]] else { return [] }
 
         let region = appStore.selectedAccount?.countryCode ?? "US"
-        var out: [iTunesSearchResult] = []
-        for item in arr.prefix(8) {
-            guard let bid = item["bid"] as? String, !bid.isEmpty, !exclude.contains(bid) else { continue }
-            guard case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: bid, countryCode: region) else { continue }
-            out.append(hit)
+        let bids = arr.prefix(8).compactMap { item -> String? in
+            guard let bid = item["bid"] as? String, !bid.isEmpty, !exclude.contains(bid) else { return nil }
+            return bid
         }
-        return out
+        guard !bids.isEmpty else { return [] }
+
+        return await withTaskGroup(of: (Int, iTunesSearchResult?).self) { group in
+            for (index, bid) in bids.enumerated() {
+                group.addTask {
+                    let hit = try? await iTunesClient.shared.lookup(bundleIdentifier: bid, countryCode: region)
+                    return (index, hit ?? nil)
+                }
+            }
+            var slots = [iTunesSearchResult?](repeating: nil, count: bids.count)
+            for await (index, hit) in group {
+                slots[index] = hit
+            }
+            return slots.compactMap { $0 }
+        }
     }
 
     var searchingIndicator: some SwiftUI.View {
@@ -2093,24 +2119,27 @@ struct SearchView: SwiftUI.View {
     }
 
     func performSearch() async {
-        guard !searchKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let term = searchKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !term.isEmpty else { return }
 
-        AnalyticsManager.shared.track("search", properties: ["keyword": searchKey])
+        AnalyticsManager.shared.track("search", properties: ["keyword": term])
 
         let regionToUse = appStore.selectedAccount?.countryCode ?? "US"
-
-        let curatedHits = await fetchCuratedApps(term: searchKey, country: regionToUse)
 
         withAnimation(.easeInOut) {
             searching = true
             searchResult = []
+            legacyResults = []
             currentPage = 1
             searchError = nil
         }
-        addToSearchHistory(searchKey)
+        addToSearchHistory(term)
         showSearchHistory = false
-        let cacheKey = "\(searchKey)_\(searchType.rawValue)_\(regionToUse)"
-        if let cachedResult = searchCache[cacheKey] {
+
+        let curatedHits = await fetchCuratedApps(term: term, country: regionToUse)
+
+        let cacheKey = "\(term)_\(searchType.rawValue)_\(regionToUse)"
+        if let cachedResult = SearchResultCache.shared.get(cacheKey) {
             let curatedIds = Set(curatedHits.map(\.trackId))
             let merged = curatedHits + cachedResult.filter { !curatedIds.contains($0.trackId) }
             await MainActor.run {
@@ -2124,25 +2153,32 @@ struct SearchView: SwiftUI.View {
 
         do {
             let response = try await iTunesClient.shared.search(
-                term: searchKey,
+                term: term,
                 limit: pageSize,
                 countryCode: regionToUse,
                 deviceFamily: searchType
             )
             var finalResults = response ?? []
-            if finalResults.isEmpty, searchKey.contains("."), case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: searchKey, countryCode: regionToUse) {
+            if finalResults.isEmpty, term.contains("."), case .some(let hit) = try? await iTunesClient.shared.lookup(bundleIdentifier: term, countryCode: regionToUse) {
                 finalResults = [hit]
             }
-            let legacyHits = await fetchLegacyApps(term: searchKey, exclude: Set(finalResults.map(\.bundleId)))
             let curatedIds = Set(curatedHits.map(\.trackId))
             let merged = curatedHits + finalResults.filter { !curatedIds.contains($0.trackId) }
             await MainActor.run {
                 withAnimation(.spring()) {
                     searchResult = merged
-                    legacyResults = legacyHits
                     searching = false
-                    searchCache[cacheKey] = merged
+                    SearchResultCache.shared.set(merged, for: cacheKey)
                     updateSearchSuggestions(from: merged)
+                }
+            }
+            let excludeIds = Set(finalResults.map(\.bundleId))
+            Task { @MainActor in
+                let hits = await fetchLegacyApps(term: term, exclude: excludeIds)
+                if term == searchKey {
+                    withAnimation(.spring()) {
+                        legacyResults = hits
+                    }
                 }
             }
         } catch {
@@ -2255,7 +2291,7 @@ struct SearchView: SwiftUI.View {
         }
     }
     func clearSearchCache() {
-        searchCache.removeAll()
+        SearchResultCache.shared.clear()
     }
     func getSearchSuggestions(for query: String) -> [String] {
         guard !query.isEmpty else { return [] }
@@ -2392,45 +2428,75 @@ struct SearchView: SwiftUI.View {
         #endif
     }
 
-    func loadVersionsForApp(_ app: iTunesSearchResult) {
+    func loadVersionsForApp(_ app: iTunesSearchResult, allowRetry: Bool = true) {
 
-        selectedApp = app
-        isLoadingVersions = true
-        versionError = nil
-        availableVersions = []
-        showVersionPicker = true
+        let isRetry = !allowRetry
+        if !isRetry {
+            selectedApp = app
+            versionError = nil
+            availableVersions = []
+            isLoadingVersions = true
+            showVersionPicker = true
+        }
+
+        if let cached = VersionListCache.shared.get(app.trackId), !cached.isEmpty {
+            availableVersions = cached
+            isLoadingVersions = false
+            return
+        }
 
         Task {
+            let trackId = app.trackId
             do {
                 guard let account = appStore.selectedAccount else {
-                    throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "未登录账户，无法获取版本信息"])
+                    throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "versions_login_required".localized])
                 }
 
                 let accountCopy = account
                 let accountCountry = appStore.selectedAccount?.countryCode ?? "US"
 
-                let storeVersionsResult = try? await withTimeout(seconds: 15, operation: {
+                let proTask = Task { (try? await withTimeout(seconds: 10, operation: {
+                    await fetchProIDHistory(trackId: trackId)
+                })) ?? [] }
+                let storeTask = Task { try? await withTimeout(seconds: 8, operation: {
                     await StoreClient.shared.getAppVersions(
-                        trackId: String(app.trackId),
+                        trackId: String(trackId),
                         account: accountCopy,
                         countryCode: accountCountry
                     )
-                })
-
-                var hist: [iTunesClient.AppVersionInfo] = []
+                }) }
                 let primaryCountries = accountCountry.uppercased() == "US" ? ["US"] : [accountCountry, "US"]
-                for cc in primaryCountries {
-                    if let r = try? await withTimeout(seconds: 10, operation: {
-                        try await iTunesClient.shared.versionHistory(id: app.trackId, country: cc)
-                    }), !r.isEmpty {
-                        hist = r
-                        break
+                let histTask = Task { () -> [iTunesClient.AppVersionInfo] in
+                    for cc in primaryCountries {
+                        if let r = try? await withTimeout(seconds: 5, operation: {
+                            try await iTunesClient.shared.versionHistory(id: trackId, country: cc)
+                        }), !r.isEmpty { return r }
+                    }
+                    return []
+                }
+
+                let proVersions = await proTask.value
+                if !proVersions.isEmpty {
+                    let quick = proVersions.enumerated().map { idx, pv in
+                        StoreAppVersion(versionString: pv.version, versionId: pv.versionId,
+                                        isCurrent: idx == 0, releaseDate: pv.releaseDate, releaseNotes: nil)
+                    }
+                    await MainActor.run {
+                        guard self.selectedApp?.trackId == trackId else { return }
+                        if self.availableVersions.isEmpty {
+                            self.availableVersions = quick
+                            self.versionError = nil
+                            self.isLoadingVersions = false
+                        }
                     }
                 }
 
+                let storeVersionsResult = await storeTask.value
+                let hist = await histTask.value
+
                 if let result = storeVersionsResult, case .success(let versions) = result, !versions.isEmpty {
-                    let proVersions = await fetchProIDHistory(trackId: app.trackId)
                     await MainActor.run {
+                        guard self.selectedApp?.trackId == trackId else { return }
                         var mergedVersions = versions
 
                         var versionInfoMap: [String: (releaseDate: Date?, releaseNotes: String?)] = [:]
@@ -2438,17 +2504,19 @@ struct SearchView: SwiftUI.View {
                             versionInfoMap[h.version] = (h.releaseDate, h.releaseNotes)
                         }
 
+                        var histCursor = 0
                         for i in 0..<mergedVersions.count {
                             let v = mergedVersions[i]
                             let verStr = v.versionString
 
-                            if v.versionString.hasPrefix("历史版本") || v.versionString.isEmpty {
-                                if i < hist.count {
-                                    mergedVersions[i].versionString = hist[i].version
+                            if v.versionString.isEmpty {
+                                if histCursor < hist.count {
+                                    mergedVersions[i].versionString = hist[histCursor].version
                                     if v.releaseDate == nil {
-                                        mergedVersions[i].releaseDate = hist[i].releaseDate
+                                        mergedVersions[i].releaseDate = hist[histCursor].releaseDate
                                     }
-                                    mergedVersions[i].releaseNotes = hist[i].releaseNotes
+                                    mergedVersions[i].releaseNotes = hist[histCursor].releaseNotes
+                                    histCursor += 1
                                 }
                             } else if let info = versionInfoMap[verStr] {
                                 if v.releaseDate == nil {
@@ -2461,21 +2529,22 @@ struct SearchView: SwiftUI.View {
                         }
 
                         let incomingNames = Set(proVersions.map { $0.version })
-                        let kept = mergedVersions.filter { !incomingNames.contains($0.versionString) }
+                        var merged = mergedVersions.filter { !incomingNames.contains($0.versionString) }
                         for pv in proVersions {
-                            mergedVersions.append(StoreAppVersion(
+                            merged.append(StoreAppVersion(
                                 versionString: pv.version,
                                 versionId: pv.versionId,
                                 isCurrent: false,
-                                releaseDate: nil,
+                                releaseDate: pv.releaseDate,
                                 releaseNotes: nil
                             ))
                         }
-                        _ = kept
 
-                        self.availableVersions = mergedVersions
+                        self.availableVersions = merged
                         self.versionHistory = hist
+                        self.versionError = nil
                         self.isLoadingVersions = false
+                        VersionListCache.shared.set(merged, for: trackId)
                     }
                 } else if !hist.isEmpty {
                     let fallbackVersions = hist.enumerated().map { idx, info in
@@ -2488,38 +2557,86 @@ struct SearchView: SwiftUI.View {
                         )
                     }
                     await MainActor.run {
+                        guard self.selectedApp?.trackId == trackId else { return }
                         self.availableVersions = fallbackVersions
                         self.versionHistory = hist
+                        self.versionError = nil
                         self.isLoadingVersions = false
+                        VersionListCache.shared.set(fallbackVersions, for: trackId)
                     }
                 } else {
-                    let proVersions = await fetchProIDHistory(trackId: app.trackId)
-                    guard !proVersions.isEmpty else {
-                        throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "无法获取版本信息，请检查网络"])
-                    }
                     var fallbackVersions: [StoreAppVersion] = []
                     for (idx, pv) in proVersions.enumerated() {
                         fallbackVersions.append(StoreAppVersion(
                             versionString: pv.version,
                             versionId: pv.versionId,
                             isCurrent: idx == 0,
-                            releaseDate: nil,
+                            releaseDate: pv.releaseDate,
                             releaseNotes: nil
                         ))
                     }
+
+                    let fromPro = !fallbackVersions.isEmpty
+                    if fallbackVersions.isEmpty, !app.version.isEmpty {
+                        fallbackVersions = [StoreAppVersion(
+                            versionString: app.version,
+                            versionId: "",
+                            isCurrent: true
+                        )]
+                    }
+
+                    guard !fallbackVersions.isEmpty else {
+                        throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "versions_unavailable".localized])
+                    }
+
+                    let resolved = fallbackVersions
                     await MainActor.run {
-                        self.availableVersions = fallbackVersions
+                        guard self.selectedApp?.trackId == trackId else { return }
+                        self.availableVersions = resolved
+                        self.versionError = nil
                         self.isLoadingVersions = false
+                        if fromPro {
+                            VersionListCache.shared.set(resolved, for: trackId)
+                        }
+                    }
+
+                    if allowRetry && !fromPro {
+                        scheduleVersionRetry(for: app)
                     }
                 }
             } catch {
+                if allowRetry {
+                    scheduleVersionRetry(for: app)
+                }
                 await MainActor.run {
-                    if self.availableVersions.isEmpty {
+                    guard self.selectedApp?.trackId == trackId else { return }
+                    if !self.availableVersions.isEmpty {
+                        self.isLoadingVersions = false
+                    } else if !app.version.isEmpty {
+                        self.availableVersions = [StoreAppVersion(
+                            versionString: app.version,
+                            versionId: "",
+                            isCurrent: true
+                        )]
+                        self.versionError = nil
+                        self.isLoadingVersions = false
+                    } else if allowRetry {
+                        self.isLoadingVersions = true
+                    } else {
                         self.versionError = error.localizedDescription
+                        self.isLoadingVersions = false
                     }
-                    self.isLoadingVersions = false
                 }
             }
+        }
+    }
+
+    private func scheduleVersionRetry(for app: iTunesSearchResult) {
+        Task {
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            guard self.selectedApp?.trackId == app.trackId else { return }
+            guard self.availableVersions.count <= 1 else { return }
+            self.loadVersionsForApp(app, allowRetry: false)
         }
     }
 
@@ -2543,7 +2660,7 @@ struct SearchView: SwiftUI.View {
                     } else if let error = versionError {
                         AnyView(errorView(error: error))
                     } else if availableVersions.isEmpty {
-                        emptyVersionsView
+                        AnyView(errorView(error: "versions_unavailable_retry".localized))
                     } else {
                         versionsListView
                     }
@@ -2602,16 +2719,16 @@ struct SearchView: SwiftUI.View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
    private var emptyVersionsView: some SwiftUI.View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
-            Text("no_versions".localized)
-                .font(.system(size: 22, weight: .semibold))
-            Text("no_versions_desc".localized)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            Text("loading_versions".localized)
+                .font(.system(size: 20, weight: .semibold))
+            Button("action_reload".localized) {
+                if let app = selectedApp { loadVersionsForApp(app) }
+            }
+            .buttonStyle(.borderedProminent)
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -2665,7 +2782,7 @@ struct SearchView: SwiftUI.View {
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
 
-                ForEach(availableVersions, id: \.versionId) {
+                ForEach(availableVersions, id: \.id) {
                     AnyView(createModernVersionRow(version: $0))
                 }
             }
@@ -2934,7 +3051,7 @@ struct SearchView: SwiftUI.View {
                             HStack(spacing: 8) {
                                 Text(flag(country: account.countryCode))
                                     .font(.caption)
-                                Text(SearchView.countryCodeMapChinese[account.countryCode] ?? SearchView.countryCodeMap[account.countryCode] ?? account.countryCode)
+                                Text(RegionNames.localizedName(for: account.countryCode))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
 
@@ -3067,7 +3184,7 @@ struct SearchView: SwiftUI.View {
                         Text(flag(country: account.countryCode))
                             .font(.caption)
 
-                        Text(SearchView.countryCodeMapChinese[account.countryCode] ?? account.countryCode)
+                        Text(RegionNames.localizedName(for: account.countryCode))
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -3117,7 +3234,7 @@ struct SearchView: SwiftUI.View {
                         Text(flag(country: account.countryCode))
                             .font(.caption2)
 
-                        Text(SearchView.countryCodeMapChinese[account.countryCode] ?? account.countryCode)
+                        Text(RegionNames.localizedName(for: account.countryCode))
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }

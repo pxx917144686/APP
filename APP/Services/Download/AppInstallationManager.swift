@@ -79,7 +79,7 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
             Task { @MainActor in
                 guard let self = self else { return }
                 if self.installingRequests[requestId]?.status == .installing {
-                    self.updateState(for: requestId, status: .timeout, error: "安装超时，请检查主屏幕是否已安装")
+                    self.updateState(for: requestId, status: .timeout, error: "install_err_timeout_check_home".localized)
                     self.cleanupMonitoring(for: requestId)
                 }
             }
@@ -94,7 +94,7 @@ final class AppInstallationManager: ObservableObject, @unchecked Sendable {
     private func startPollingInstallationStatus(requestId: UUID, bundleIdentifier: String) {
         installationTimers[requestId]?.invalidate()
 
-        let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 3.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.pollInstallationStatus(requestId: requestId, bundleIdentifier: bundleIdentifier)
             }
@@ -217,13 +217,13 @@ enum InstallationStatus {
 
     var description: String {
         switch self {
-        case .preparing: return "准备安装..."
-        case .prompting: return "正在唤起系统安装..."
-        case .installing: return "安装中，请稍候..."
-        case .completed: return "安装完成"
-        case .failed: return "安装失败"
-        case .timeout: return "安装超时"
-        case .cancelled: return "已取消"
+        case .preparing: return "install_stage_preparing".localized
+        case .prompting: return "install_stage_opening_system".localized
+        case .installing: return "install_stage_in_progress".localized
+        case .completed: return "install_stage_completed".localized
+        case .failed: return "install_stage_failed".localized
+        case .timeout: return "install_stage_timeout".localized
+        case .cancelled: return "status_cancelled".localized
         }
     }
 }

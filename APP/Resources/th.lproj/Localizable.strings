@@ -68,7 +68,6 @@
 "language_switch" = "เปลี่ยนภาษา";
 "language_switch_message" = "อินเทอร์เฟซแอปจะอัปเดตทันทีหลังจากเปลี่ยนภาษา ส่วนประกอบระบบบางอย่างอาจจำเป็นต้องรีสตาร์ทเพื่อให้มีผลอย่างสมบูรณ์";
 "confirm_switch" = "ยืนยันการเปลี่ยน";
-"app_icon" = "ไอคอนแอป";
 "icon_default" = "ค่าเริ่มต้น";
 "icon_author" = "ไอคอน";
 "icon_love" = "รัก";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "แท็กคุณสมบัติ";
 "free" = "รับ";
-"get" = "รับ";
 "view" = "ดู";
 "get_reviews_failed" = "ไม่สามารถรับรีวิวได้: %@";
 "x_ratings" = "%@ เรตติ้ง";
 "age_rating" = "เรตติ้งอายุ";
 "x_languages" = "%@ ภาษา";
-"whats_new" = "มีอะไรใหม่";
 "tech_info" = "ข้อมูลทางเทคนิค";
 "first_release" = "รุ่นแรก";
-"last_updated" = "อัปเดตล่าสุด";
 "requires_ios" = "ต้องการ iOS %@ หรือใหม่กว่า";
 
-"search_placeholder" = "ค้นหาเกม แอป";
 "login" = "เข้าสู่ระบบ";
 "clear_all" = "ล้างทั้งหมด";
 "x_results_found" = "พบ %@ ผลลัพธ์";
@@ -458,7 +453,6 @@
 "switch" = "เปลี่ยน";
 "x_accounts" = "%@ บัญชี";
 "add_new_account" = "เพิ่มบัญชีใหม่";
-"account_management" = "การจัดการบัญชี";
 "use_account" = "ใช้บัญชีนี้";
 "connection_lost" = "การเชื่อมต่อขาดหาย";
 "reconnecting" = "กำลังเชื่อมต่อใหม่";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "สื่อและการซื้อ";
 "sign_in_apple_id" = "เข้าสู่ระบบบน iPhone ของคุณ";
 "sign_in_apple_id_desc" = "ใช้ Apple ID ของคุณบน iPhone นี้";
-"apple_id" = "Apple ID";
-"name" = "ชื่อ";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "ชื่อ, อีเมล";
 "account_identifier_header" = "ตัวระบุบัญชี";
@@ -543,7 +535,6 @@
 
 "basic_info" = "ข้อมูลพื้นฐาน";
 "account_identifier" = "ตัวระบุบัญชี";
-"country_region" = "ประเทศ/ภูมิภาค";
 "password_token" = "โทเคนรหัสผ่าน";
 "auth_info" = "ข้อมูลการยืนยันตัวตน";
 "password_token_hint" = "โทเคนรหัสผ่านใช้สำหรับการยืนยันตัวตนอัตโนมัติ กรุณาอย่าแชร์กับผู้อื่น";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "ตรวจสอบอุปกรณ์ Apple ที่เชื่อถือได้หรือ SMS แล้วกรอกรหัสยืนยัน 6 หลักด้านล่าง";
-
-
+"tab_purchased" = "ซื้อแล้ว";
+"purchased_search_placeholder" = "ค้นหาแอปที่ซื้อแล้ว";
+"purchased_syncing" = "กำลังซิงค์รายการที่ซื้อ…";
+"purchased_empty" = "ยังไม่มีรายการที่ซื้อ";
+"icon_set_failed" = "ตั้งค่าไอคอนไม่สำเร็จ";
+"icon_set_failed_desc" = "ไม่สามารถเปลี่ยนไอคอนแอปได้ โปรดลองอีกครั้งภายหลัง";
+"web_load_failed" = "โหลดหน้าเว็บไม่สำเร็จ: %@";
+"web_server_unreachable" = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์: %@";
+"status_owned" = "มีแล้ว";
+"status_not_owned" = "ยังไม่มี";
+"rating_count_format" = "%@ รีวิว";
+"legacy_apps_delisted" = "แอปเดิม (นำออกแล้ว)";
+"versions_login_required" = "ลงชื่อเข้าใช้เพื่อโหลดข้อมูลเวอร์ชัน";
+"versions_unavailable" = "โหลดเวอร์ชันไม่สำเร็จ ตรวจสอบการเชื่อมต่อ";
+"versions_unavailable_retry" = "โหลดประวัติเวอร์ชันไม่สำเร็จ โปรดลองอีกครั้ง";
+"preparing_install_link" = "กำลังเตรียมลิงก์ติดตั้ง…";
+"widget_weather" = "อากาศ";
+"weather_sunny" = "แดดจัด";

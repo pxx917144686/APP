@@ -68,7 +68,6 @@
 "language_switch" = "Schimbare limbă";
 "language_switch_message" = "Interfața aplicației se va actualiza imediat după schimbarea limbii. Unele componente ale sistemului pot necesita o repornire pentru a avea efect complet.";
 "confirm_switch" = "Confirmare schimbare";
-"app_icon" = "Pictogramă aplicație";
 "icon_default" = "Implicit";
 "icon_author" = "Pictogramă";
 "icon_love" = "Dragoste";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Etichete caracteristici";
 "free" = "Obțineți";
-"get" = "Obțineți";
 "view" = "Vizualizare";
 "get_reviews_failed" = "Obținerea recenziilor a eșuat: %@";
 "x_ratings" = "%@ evaluări";
 "age_rating" = "Clasificare de vârstă";
 "x_languages" = "%@ limbi";
-"whats_new" = "Ce este nou";
 "tech_info" = "Informații tehnice";
 "first_release" = "Prima lansare";
-"last_updated" = "Ultima actualizare";
 "requires_ios" = "Necesită iOS %@ sau mai recent";
 
-"search_placeholder" = "Căutați jocuri, aplicații";
 "login" = "Conectare";
 "clear_all" = "Șterge toate";
 "x_results_found" = "%@ rezultate găsite";
@@ -458,7 +453,6 @@
 "switch" = "Schimbare";
 "x_accounts" = "%@ conturi";
 "add_new_account" = "Adăugare cont nou";
-"account_management" = "Gestionare conturi";
 "use_account" = "Utilizare cont";
 "connection_lost" = "Conexiune pierdută";
 "reconnecting" = "Reconectare";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media și cumpărături";
 "sign_in_apple_id" = "Conectați-vă pe iPhone-ul dvs.";
 "sign_in_apple_id_desc" = "Utilizați Apple ID-ul dvs. pe acest iPhone";
-"apple_id" = "Apple ID";
-"name" = "Nume";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Nume, E-mail";
 "account_identifier_header" = "Identificator cont";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Informații de bază";
 "account_identifier" = "Identificator cont";
-"country_region" = "Țară/Regiune";
 "password_token" = "Token parolă";
 "auth_info" = "Informații autentificare";
 "password_token_hint" = "Token-ul de parolă este utilizat pentru autentificare automată. Vă rugăm să nu îl împărtășiți cu alții.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Verifică dispozitivul Apple de încredere sau SMS-ul și introdu codul de 6 cifre mai jos.";
-
-
+"tab_purchased" = "Achiziționate";
+"purchased_search_placeholder" = "Caută aplicații achiziționate";
+"purchased_syncing" = "Se sincronizează achizițiile…";
+"purchased_empty" = "Încă nicio achiziție";
+"icon_set_failed" = "Setarea pictogramei a eșuat";
+"icon_set_failed_desc" = "Nu se poate schimba pictograma aplicației. Încercați mai târziu.";
+"web_load_failed" = "Încărcarea paginii a eșuat: %@";
+"web_server_unreachable" = "Nu se poate conecta la server: %@";
+"status_owned" = "Deținut";
+"status_not_owned" = "Nedeținut";
+"rating_count_format" = "%@ evaluări";
+"legacy_apps_delisted" = "Aplicații vechi (retrase)";
+"versions_login_required" = "Conectați-vă pentru a încărca versiunile";
+"versions_unavailable" = "Versiunile nu au putut fi încărcate. Verificați conexiunea.";
+"versions_unavailable_retry" = "Istoricul versiunilor nu a putut fi încărcat. Reîncercați.";
+"preparing_install_link" = "Se pregătește linkul de instalare…";
+"widget_weather" = "Vremea";
+"weather_sunny" = "Însorit";

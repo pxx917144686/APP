@@ -68,7 +68,6 @@
 "language_switch" = "Byt språk";
 "language_switch_message" = "Appgränssnittet uppdateras omedelbart efter att du har bytt språk. Vissa systemkomponenter kan kräva en omstart för att träda i kraft helt.";
 "confirm_switch" = "Bekräfta byte";
-"app_icon" = "Appikon";
 "icon_default" = "Standard";
 "icon_author" = "Ikon";
 "icon_love" = "Kärlek";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Funktionstaggar";
 "free" = "Hämta";
-"get" = "Hämta";
 "view" = "Visa";
 "get_reviews_failed" = "Misslyckades att hämta recensioner: %@";
 "x_ratings" = "%@ betyg";
 "age_rating" = "Åldersgräns";
 "x_languages" = "%@ språk";
-"whats_new" = "Vad är nytt";
 "tech_info" = "Teknisk info";
 "first_release" = "Första utgåvan";
-"last_updated" = "Senast uppdaterad";
 "requires_ios" = "Kräver iOS %@ eller senare";
 
-"search_placeholder" = "Sök efter spel, appar";
 "login" = "Logga in";
 "clear_all" = "Rensa alla";
 "x_results_found" = "%@ resultat hittades";
@@ -458,7 +453,6 @@
 "switch" = "Byt";
 "x_accounts" = "%@ konton";
 "add_new_account" = "Lägg till nytt konto";
-"account_management" = "Kontohantering";
 "use_account" = "Använd konto";
 "connection_lost" = "Anslutningen bröts";
 "reconnecting" = "Återansluter";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media och inköp";
 "sign_in_apple_id" = "Logga in på din iPhone";
 "sign_in_apple_id_desc" = "Använd ditt Apple ID på denna iPhone";
-"apple_id" = "Apple ID";
-"name" = "Namn";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Namn, e-post";
 "account_identifier_header" = "Kontoidentifierare";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Grundläggande information";
 "account_identifier" = "Kontoidentifierare";
-"country_region" = "Land/Region";
 "password_token" = "Lösenordstoken";
 "auth_info" = "Autentiseringsinformation";
 "password_token_hint" = "Lösenordstoken används för automatisk autentisering. Dela den inte med andra.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Kontrollera din betrodda Apple-enhet eller SMS och ange den 6-siffriga verifieringskoden nedan.";
-
-
+"tab_purchased" = "Köpt";
+"purchased_search_placeholder" = "Sök köpta appar";
+"purchased_syncing" = "Synkroniserar köp…";
+"purchased_empty" = "Inga köp ännu";
+"icon_set_failed" = "Kunde inte ange ikon";
+"icon_set_failed_desc" = "Det gick inte att ändra appikonen. Försök igen senare.";
+"web_load_failed" = "Det gick inte att läsa in sidan: %@";
+"web_server_unreachable" = "Det gick inte att ansluta till servern: %@";
+"status_owned" = "Ägs";
+"status_not_owned" = "Ägs inte";
+"rating_count_format" = "%@ betyg";
+"legacy_apps_delisted" = "Äldre appar (borttagna)";
+"versions_login_required" = "Logga in för att läsa in versionsinformation";
+"versions_unavailable" = "Det gick inte att läsa in versioner. Kontrollera anslutningen.";
+"versions_unavailable_retry" = "Det gick inte att läsa in versionshistoriken. Försök igen.";
+"preparing_install_link" = "Förbereder installationslänk…";
+"widget_weather" = "Väder";
+"weather_sunny" = "Soligt";

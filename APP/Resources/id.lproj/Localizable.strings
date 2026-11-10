@@ -68,7 +68,6 @@
 "language_switch" = "Ganti Bahasa";
 "language_switch_message" = "Antarmuka aplikasi akan segera diperbarui setelah mengganti bahasa. Beberapa komponen sistem mungkin memerlukan mulai ulang untuk berlaku sepenuhnya.";
 "confirm_switch" = "Konfirmasi Ganti";
-"app_icon" = "Ikon Aplikasi";
 "icon_default" = "Default";
 "icon_author" = "Ikon";
 "icon_love" = "Cinta";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Tag Fitur";
 "free" = "Dapatkan";
-"get" = "Dapatkan";
 "view" = "Lihat";
 "get_reviews_failed" = "Gagal mendapatkan ulasan: %@";
 "x_ratings" = "%@ Peringkat";
 "age_rating" = "Peringkat Usia";
 "x_languages" = "%@ Bahasa";
-"whats_new" = "Yang Baru";
 "tech_info" = "Info Teknis";
 "first_release" = "Rilis Pertama";
-"last_updated" = "Terakhir Diperbarui";
 "requires_ios" = "Membutuhkan iOS %@ atau lebih baru";
 
-"search_placeholder" = "Cari game, aplikasi";
 "login" = "Masuk";
 "clear_all" = "Hapus Semua";
 "x_results_found" = "Ditemukan %@ Hasil";
@@ -458,7 +453,6 @@
 "switch" = "Ganti";
 "x_accounts" = "%@ Akun";
 "add_new_account" = "Tambah Akun Baru";
-"account_management" = "Manajemen Akun";
 "use_account" = "Gunakan Akun";
 "connection_lost" = "Koneksi Hilang";
 "reconnecting" = "Menyambungkan Ulang";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media & Pembelian";
 "sign_in_apple_id" = "Masuk di iPhone Anda";
 "sign_in_apple_id_desc" = "Gunakan Apple ID Anda di iPhone ini";
-"apple_id" = "Apple ID";
-"name" = "Nama";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Nama, Email";
 "account_identifier_header" = "Pengenal Akun";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Info Dasar";
 "account_identifier" = "Pengenal Akun";
-"country_region" = "Negara/Wilayah";
 "password_token" = "Token Kata Sandi";
 "auth_info" = "Info Autentikasi";
 "password_token_hint" = "Token kata sandi digunakan untuk autentikasi otomatis. Jangan bagikan dengan orang lain.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Periksa perangkat Apple tepercaya atau SMS Anda, lalu masukkan kode verifikasi 6 digit di bawah.";
-
-
+"tab_purchased" = "Dibeli";
+"purchased_search_placeholder" = "Cari aplikasi yang dibeli";
+"purchased_syncing" = "Menyinkronkan pembelian…";
+"purchased_empty" = "Belum ada pembelian";
+"icon_set_failed" = "Gagal menyetel ikon";
+"icon_set_failed_desc" = "Tidak dapat mengubah ikon aplikasi. Coba lagi nanti.";
+"web_load_failed" = "Gagal memuat halaman: %@";
+"web_server_unreachable" = "Tidak dapat terhubung ke server: %@";
+"status_owned" = "Dimiliki";
+"status_not_owned" = "Belum dimiliki";
+"rating_count_format" = "%@ penilaian";
+"legacy_apps_delisted" = "Aplikasi lama (ditarik)";
+"versions_login_required" = "Masuk untuk memuat info versi";
+"versions_unavailable" = "Gagal memuat versi. Periksa koneksi Anda.";
+"versions_unavailable_retry" = "Gagal memuat riwayat versi. Coba lagi.";
+"preparing_install_link" = "Menyiapkan tautan pemasangan…";
+"widget_weather" = "Cuaca";
+"weather_sunny" = "Cerah";

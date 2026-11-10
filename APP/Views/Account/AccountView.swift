@@ -30,7 +30,6 @@ struct AccountView: View {
                     }
                 }
 
-
                 if appStore.hasMultipleAccounts {
                     Section {
                         ForEach(Array(appStore.savedAccounts.enumerated()), id: \.element.id) { index, account in
@@ -52,7 +51,6 @@ struct AccountView: View {
                         Text("all_accounts".localized)
                     }
                 }
-
 
                 Section {
                     Button(action: {
@@ -91,7 +89,6 @@ struct AccountView: View {
                         }
                     }
                 }
-
 
                 if let account = appStore.selectedAccount {
                     Section {
@@ -174,8 +171,6 @@ struct AccountView: View {
         }
         .navigationViewStyle(.stack)
     }
-
-
 
     private var emptyAccountCard: some View {
         VStack(spacing: 16) {
@@ -273,8 +268,6 @@ struct AccountView: View {
         .contentShape(Rectangle())
     }
 
-
-
     private func accountRow(account: Account, isSelected: Bool) -> some View {
         HStack(spacing: 12) {
             Circle()
@@ -307,8 +300,6 @@ struct AccountView: View {
         }
         .padding(.vertical, 2)
     }
-
-
 
     private func flag(country: String) -> String {
         let base: UInt32 = 127397

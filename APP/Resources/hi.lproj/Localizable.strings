@@ -68,7 +68,6 @@
 "language_switch" = "भाषा बदलें";
 "language_switch_message" = "भाषा बदलने के बाद ऐप इंटरफ़ेस तुरंत अपडेट हो जाएगा। कुछ सिस्टम घटकों को पूरी तरह से लागू होने के लिए पुनः आरंभ की आवश्यकता हो सकती है।";
 "confirm_switch" = "स्विच की पुष्टि करें";
-"app_icon" = "ऐप आइकन";
 "icon_default" = "डिफ़ॉल्ट";
 "icon_author" = "आइकन";
 "icon_love" = "लव";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "विशेषता टैग";
 "free" = "प्राप्त करें";
-"get" = "प्राप्त करें";
 "view" = "देखें";
 "get_reviews_failed" = "समीक्षाएं प्राप्त करने में असफल: %@";
 "x_ratings" = "%@ रेटिंग";
 "age_rating" = "आयु रेटिंग";
 "x_languages" = "%@ भाषाएं";
-"whats_new" = "नया क्या है";
 "tech_info" = "तकनीकी जानकारी";
 "first_release" = "पहला रिलीज़";
-"last_updated" = "अंतिम अपडेट";
 "requires_ios" = "iOS %@ या बाद का संस्करण आवश्यक है";
 
-"search_placeholder" = "गेम, ऐप खोजें";
 "login" = "साइन इन करें";
 "clear_all" = "सभी साफ़ करें";
 "x_results_found" = "%@ परिणाम मिले";
@@ -458,7 +453,6 @@
 "switch" = "बदलें";
 "x_accounts" = "%@ खाते";
 "add_new_account" = "नया खाता जोड़ें";
-"account_management" = "खाता प्रबंधन";
 "use_account" = "खाता उपयोग करें";
 "connection_lost" = "कनेक्शन टूट गया";
 "reconnecting" = "पुनः कनेक्ट हो रहे हैं";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "मीडिया और खरीदारी";
 "sign_in_apple_id" = "अपने iPhone पर साइन इन करें";
 "sign_in_apple_id_desc" = "इस iPhone पर अपना Apple ID उपयोग करें";
-"apple_id" = "Apple ID";
-"name" = "नाम";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "नाम, ईमेल";
 "account_identifier_header" = "खाता पहचानकर्ता";
@@ -543,7 +535,6 @@
 
 "basic_info" = "मूल जानकारी";
 "account_identifier" = "खाता पहचानकर्ता";
-"country_region" = "देश/क्षेत्र";
 "password_token" = "पासवर्ड टोकन";
 "auth_info" = "प्रमाणीकरण जानकारी";
 "password_token_hint" = "पासवर्ड टोकन का उपयोग स्वचालित प्रमाणीकरण के लिए किया जाता है। कृपया इसे दूसरों के साथ साझा न करें।";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "अपना भरोसेमंद Apple डिवाइस या SMS देखें और नीचे 6 अंकों का सत्यापन कोड दर्ज करें।";
-
-
+"tab_purchased" = "खरीदे गए";
+"purchased_search_placeholder" = "खरीदे गए ऐप्स खोजें";
+"purchased_syncing" = "खरीदारी सिंक हो रही है…";
+"purchased_empty" = "अभी कोई खरीदारी नहीं";
+"icon_set_failed" = "आइकन सेट नहीं हो सका";
+"icon_set_failed_desc" = "ऐप आइकन बदला नहीं जा सका। कृपया बाद में पुनः प्रयास करें।";
+"web_load_failed" = "पेज लोड नहीं हो सका: %@";
+"web_server_unreachable" = "सर्वर से कनेक्ट नहीं हो सका: %@";
+"status_owned" = "प्राप्त";
+"status_not_owned" = "प्राप्त नहीं";
+"rating_count_format" = "%@ रेटिंग";
+"legacy_apps_delisted" = "पुराने ऐप (हटाए गए)";
+"versions_login_required" = "वर्ज़न जानकारी के लिए साइन इन करें";
+"versions_unavailable" = "वर्ज़न लोड नहीं हो सके। नेटवर्क जाँचें।";
+"versions_unavailable_retry" = "वर्ज़न इतिहास लोड नहीं हो सका। पुनः प्रयास करें।";
+"preparing_install_link" = "इंस्टॉल लिंक तैयार हो रहा है…";
+"widget_weather" = "मौसम";
+"weather_sunny" = "धूप";

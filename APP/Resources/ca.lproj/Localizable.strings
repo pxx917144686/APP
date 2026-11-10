@@ -68,7 +68,6 @@
 "language_switch" = "Canvia idioma";
 "language_switch_message" = "La interfície de l'app s'actualitzarà immediatament després de canviar l'idioma. És possible que alguns components del sistema requereixin un reinici.";
 "confirm_switch" = "Confirma el canvi";
-"app_icon" = "Icona de l'app";
 "icon_default" = "Per defecte";
 "icon_author" = "Icona";
 "icon_love" = "Amor";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Etiquetes de característiques";
 "free" = "Obtén";
-"get" = "Obtén";
 "view" = "Mostra";
 "get_reviews_failed" = "No s'han pogut obtenir les ressenyes: %@";
 "x_ratings" = "%@ valoracions";
 "age_rating" = "Classificació per edats";
 "x_languages" = "%@ idiomes";
-"whats_new" = "Novetats";
 "tech_info" = "Informació tècnica";
 "first_release" = "Primer llançament";
-"last_updated" = "Darrera actualització";
 "requires_ios" = "Requereix iOS %@ o posterior";
 
-"search_placeholder" = "Cerca jocs, apps";
 "login" = "Inicia sessió";
 "clear_all" = "Neteja-ho tot";
 "x_results_found" = "S'han trobat %@ resultats";
@@ -458,7 +453,6 @@
 "switch" = "Canvia";
 "x_accounts" = "%@ comptes";
 "add_new_account" = "Afegeix un compte nou";
-"account_management" = "Gestió de comptes";
 "use_account" = "Utilitza el compte";
 "connection_lost" = "S'ha perdut la connexió";
 "reconnecting" = "S'està reconnectant";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Mèdia i compres";
 "sign_in_apple_id" = "Inicia sessió al teu iPhone";
 "sign_in_apple_id_desc" = "Utilitza el teu Apple ID en aquest iPhone";
-"apple_id" = "Apple ID";
-"name" = "Nom";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Nom, correu electrònic";
 "account_identifier_header" = "Identificador del compte";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Informació bàsica";
 "account_identifier" = "Identificador del compte";
-"country_region" = "País/regió";
 "password_token" = "Token de contrasenya";
 "auth_info" = "Informació d'autenticació";
 "password_token_hint" = "El token de contrasenya s'utilitza per a l'autenticació automàtica. No el comparteixis amb ningú.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Consulta el teu dispositiu Apple de confiança o els SMS i introdueix el codi de 6 dígits a continuació.";
-
-
+"tab_purchased" = "Compres";
+"purchased_search_placeholder" = "Cerca apps comprades";
+"purchased_syncing" = "S'estan sincronitzant les compres…";
+"purchased_empty" = "Encara no hi ha compres";
+"icon_set_failed" = "No s'ha pogut definir la icona";
+"icon_set_failed_desc" = "No es pot canviar la icona de l'app. Torna-ho a provar més tard.";
+"web_load_failed" = "No s'ha pogut carregar la pàgina: %@";
+"web_server_unreachable" = "No es pot connectar al servidor: %@";
+"status_owned" = "Obtingut";
+"status_not_owned" = "No obtingut";
+"rating_count_format" = "%@ valoracions";
+"legacy_apps_delisted" = "Apps anteriors (retirades)";
+"versions_login_required" = "Inicia sessió per carregar les versions";
+"versions_unavailable" = "No s'han pogut carregar les versions. Comprova la connexió.";
+"versions_unavailable_retry" = "No s'ha pogut carregar l'historial. Torna-ho a provar.";
+"preparing_install_link" = "S'està preparant l'enllaç d'instal·lació…";
+"widget_weather" = "Temps";
+"weather_sunny" = "Assolellat";

@@ -79,7 +79,7 @@ extension iTunesSearchResult {
     }
     var displayPrice: String {
         if isFree {
-            return "免费"
+            return "price_free".localized
         } else {
             return formattedPrice ?? "\(price ?? 0.0)"
         }

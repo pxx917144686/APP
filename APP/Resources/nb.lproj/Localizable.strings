@@ -68,7 +68,6 @@
 "language_switch" = "Bytt språk";
 "language_switch_message" = "Appens grensesnitt oppdateres umiddelbart etter språkbytte. Noen systemkomponenter kan kreve omstart for å tre i kraft fullt ut.";
 "confirm_switch" = "Bekreft bytte";
-"app_icon" = "App-ikon";
 "icon_default" = "Standard";
 "icon_author" = "Ikon";
 "icon_love" = "Kjærlighet";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Funksjonskoder";
 "free" = "Hent";
-"get" = "Hent";
 "view" = "Vis";
 "get_reviews_failed" = "Kunne ikke hente anmeldelser: %@";
 "x_ratings" = "%@ vurderinger";
 "age_rating" = "Aldersvurdering";
 "x_languages" = "%@ språk";
-"whats_new" = "Hva er nytt";
 "tech_info" = "Teknisk info";
 "first_release" = "Første utgivelse";
-"last_updated" = "Sist oppdatert";
 "requires_ios" = "Krever iOS %@ eller nyere";
 
-"search_placeholder" = "Søk etter spill, apper";
 "login" = "Logg inn";
 "clear_all" = "Tøm alle";
 "x_results_found" = "%@ resultater funnet";
@@ -458,7 +453,6 @@
 "switch" = "Bytt";
 "x_accounts" = "%@ kontoer";
 "add_new_account" = "Legg til ny konto";
-"account_management" = "Kontohåndtering";
 "use_account" = "Bruk konto";
 "connection_lost" = "Tilkoblingen brutt";
 "reconnecting" = "Kobler til på nytt";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media og kjøp";
 "sign_in_apple_id" = "Logg inn på din iPhone";
 "sign_in_apple_id_desc" = "Bruk din Apple ID på denne iPhone";
-"apple_id" = "Apple ID";
-"name" = "Navn";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Navn, e-post";
 "account_identifier_header" = "Kontoidentifikator";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Grunnleggende informasjon";
 "account_identifier" = "Kontoidentifikator";
-"country_region" = "Land/Region";
 "password_token" = "Passord-token";
 "auth_info" = "Autentiseringsinformasjon";
 "password_token_hint" = "Passord-token brukes til automatisk autentisering. Ikke del den med andre.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Sjekk den betrodde Apple-enheten din eller SMS og angi den 6-sifrede verifikasjonskoden nedenfor.";
-
-
+"tab_purchased" = "Kjøpt";
+"purchased_search_placeholder" = "Søk i kjøpte apper";
+"purchased_syncing" = "Synkroniserer kjøp…";
+"purchased_empty" = "Ingen kjøp ennå";
+"icon_set_failed" = "Kunne ikke angi ikon";
+"icon_set_failed_desc" = "Kan ikke endre appikonet. Prøv igjen senere.";
+"web_load_failed" = "Kunne ikke laste inn siden: %@";
+"web_server_unreachable" = "Kan ikke koble til serveren: %@";
+"status_owned" = "Eid";
+"status_not_owned" = "Ikke eid";
+"rating_count_format" = "%@ vurderinger";
+"legacy_apps_delisted" = "Eldre apper (fjernet)";
+"versions_login_required" = "Logg inn for å laste versjonsinformasjon";
+"versions_unavailable" = "Kunne ikke laste versjoner. Sjekk tilkoblingen.";
+"versions_unavailable_retry" = "Kunne ikke laste versjonshistorikk. Prøv igjen.";
+"preparing_install_link" = "Forbereder installasjonslenke…";
+"widget_weather" = "Vær";
+"weather_sunny" = "Sol";

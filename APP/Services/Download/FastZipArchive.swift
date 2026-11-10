@@ -487,7 +487,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
     ) throws -> Data {
         let localHeaderOffset = Int(entry.localHeaderOffset)
         guard localHeaderOffset + 30 <= data.count else {
-            throw NSError(domain: "FastZip", code: -10, userInfo: [NSLocalizedDescriptionKey: "本地文件头越界"])
+            throw NSError(domain: "FastZip", code: -10, userInfo: [NSLocalizedDescriptionKey: "zip_err_local_header_oob".localized])
         }
 
         let filenameLen = data.loadLEUInt16(at: localHeaderOffset + 26)
@@ -497,7 +497,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         let compressedSize = Int(entry.compressedSize)
 
         guard dataOffset + compressedSize <= data.count else {
-            throw NSError(domain: "FastZip", code: -11, userInfo: [NSLocalizedDescriptionKey: "压缩数据越界"])
+            throw NSError(domain: "FastZip", code: -11, userInfo: [NSLocalizedDescriptionKey: "zip_err_data_oob".localized])
         }
 
         let compressedData = data[dataOffset..<dataOffset+compressedSize]
@@ -520,12 +520,12 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             )
 
             guard decompressedSize == expectedSize else {
-                throw NSError(domain: "FastZip", code: -12, userInfo: [NSLocalizedDescriptionKey: "解压失败"])
+                throw NSError(domain: "FastZip", code: -12, userInfo: [NSLocalizedDescriptionKey: "zip_err_inflate_failed".localized])
             }
 
             return Data(bytes: destinationBuffer, count: decompressedSize)
         } else {
-            throw NSError(domain: "FastZip", code: -13, userInfo: [NSLocalizedDescriptionKey: "不支持的压缩方法"])
+            throw NSError(domain: "FastZip", code: -13, userInfo: [NSLocalizedDescriptionKey: "zip_err_unsupported_method".localized])
         }
     }
 
@@ -540,7 +540,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         let baseStd = destURL.standardizedFileURL
         let destStd = destPath.standardizedFileURL
         guard destStd.path == baseStd.path || destStd.path.hasPrefix(baseStd.path + "/") else {
-            throw NSError(domain: "FastZip", code: -20, userInfo: [NSLocalizedDescriptionKey: "路径穿越被拒绝: \(entry.filename)"])
+            throw NSError(domain: "FastZip", code: -20, userInfo: [NSLocalizedDescriptionKey: "zip_err_path_traversal".localized(entry.filename)])
         }
 
         if entry.filename.hasSuffix("/") {
@@ -553,7 +553,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
         let localHeaderOffset = Int(entry.localHeaderOffset)
         guard localHeaderOffset + 30 <= data.count else {
-            throw NSError(domain: "FastZip", code: -1, userInfo: [NSLocalizedDescriptionKey: "本地文件头越界"])
+            throw NSError(domain: "FastZip", code: -1, userInfo: [NSLocalizedDescriptionKey: "zip_err_local_header_oob".localized])
         }
 
         let filenameLen = data.loadLEUInt16(at: localHeaderOffset + 26)
@@ -563,7 +563,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         let compressedSize = Int(entry.compressedSize)
 
         guard dataOffset + compressedSize <= data.count else {
-            throw NSError(domain: "FastZip", code: -2, userInfo: [NSLocalizedDescriptionKey: "压缩数据越界"])
+            throw NSError(domain: "FastZip", code: -2, userInfo: [NSLocalizedDescriptionKey: "zip_err_data_oob".localized])
         }
 
         let compressedData = data[dataOffset..<dataOffset+compressedSize]
@@ -577,11 +577,11 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                 data: compressedData,
                 expectedSize: Int(entry.uncompressedSize)
             ) else {
-                throw NSError(domain: "FastZip", code: -3, userInfo: [NSLocalizedDescriptionKey: "解压失败: \(entry.filename)"])
+                throw NSError(domain: "FastZip", code: -3, userInfo: [NSLocalizedDescriptionKey: "zip_err_inflate_failed_detail".localized(entry.filename)])
             }
             decompressedData = decompressed
         } else {
-            throw NSError(domain: "FastZip", code: -4, userInfo: [NSLocalizedDescriptionKey: "不支持的压缩方法: \(entry.compressionMethod)"])
+            throw NSError(domain: "FastZip", code: -4, userInfo: [NSLocalizedDescriptionKey: "zip_err_unsupported_method_detail".localized(entry.compressionMethod)])
         }
 
         try decompressedData.write(to: destPath)
@@ -593,7 +593,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
     ) throws -> Data {
         let localHeaderOffset = Int(entry.localHeaderOffset)
         guard localHeaderOffset + 30 <= data.count else {
-            throw NSError(domain: "FastZip", code: -5, userInfo: [NSLocalizedDescriptionKey: "本地文件头越界"])
+            throw NSError(domain: "FastZip", code: -5, userInfo: [NSLocalizedDescriptionKey: "zip_err_local_header_oob".localized])
         }
 
         let filenameLen = data.loadLEUInt16(at: localHeaderOffset + 26)
@@ -602,7 +602,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         let totalEntrySize = 30 + Int(filenameLen) + Int(extraFieldLen) + Int(entry.compressedSize)
 
         guard localHeaderOffset + totalEntrySize <= data.count else {
-            throw NSError(domain: "FastZip", code: -6, userInfo: [NSLocalizedDescriptionKey: "文件条目越界"])
+            throw NSError(domain: "FastZip", code: -6, userInfo: [NSLocalizedDescriptionKey: "zip_err_entry_oob".localized])
         }
 
         return data[localHeaderOffset..<localHeaderOffset+totalEntrySize]
@@ -617,7 +617,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         offset: UInt64
     ) throws -> (localHeader: Data, centralHeader: Data) {
         guard let filenameData = filename.data(using: .utf8) else {
-            throw NSError(domain: "FastZip", code: -7, userInfo: [NSLocalizedDescriptionKey: "文件名编码失败"])
+            throw NSError(domain: "FastZip", code: -7, userInfo: [NSLocalizedDescriptionKey: "zip_err_filename_encoding".localized])
         }
 
         var filenameLen = UInt16(filenameData.count)

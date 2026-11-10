@@ -68,7 +68,6 @@
 "language_switch" = "Αλλαγή γλώσσας";
 "language_switch_message" = "Η διεπαφή της εφαρμογής θα ενημερωθεί αμέσως μετά την αλλαγή γλώσσας. Ορισμένα συστατικά του συστήματος ενδέχεται να απαιτούν επανεκκίνηση για πλήρη ισχύ.";
 "confirm_switch" = "Επιβεβαίωση αλλαγής";
-"app_icon" = "Εικονίδιο εφαρμογής";
 "icon_default" = "Προεπιλογή";
 "icon_author" = "Εικονίδιο";
 "icon_love" = "Αγάπη";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Ετικέτες λειτουργιών";
 "free" = "Λήψη";
-"get" = "Λήψη";
 "view" = "Προβολή";
 "get_reviews_failed" = "Αποτυχία λήψης κριτικών: %@";
 "x_ratings" = "%@ βαθμολογίες";
 "age_rating" = "Βαθμολογία ηλικίας";
 "x_languages" = "%@ γλώσσες";
-"whats_new" = "Τι νέο υπάρχει";
 "tech_info" = "Τεχνικές πληροφορίες";
 "first_release" = "Πρώτη κυκλοφορία";
-"last_updated" = "Τελευταία ενημέρωση";
 "requires_ios" = "Απαιτεί iOS %@ ή νεότερη έκδοση";
 
-"search_placeholder" = "Αναζήτηση παιχνιδιών, εφαρμογών";
 "login" = "Σύνδεση";
 "clear_all" = "Εκκαθάριση όλων";
 "x_results_found" = "Βρέθηκαν %@ αποτελέσματα";
@@ -458,7 +453,6 @@
 "switch" = "Εναλλαγή";
 "x_accounts" = "%@ λογαριασμοί";
 "add_new_account" = "Προσθήκη νέου λογαριασμού";
-"account_management" = "Διαχείριση λογαριασμών";
 "use_account" = "Χρήση λογαριασμού";
 "connection_lost" = "Η σύνδεση διακόπηκε";
 "reconnecting" = "Επανασύνδεση";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Μέσα και αγορές";
 "sign_in_apple_id" = "Συνδεθείτε στο iPhone σας";
 "sign_in_apple_id_desc" = "Χρησιμοποιήστε το Apple ID σας σε αυτό το iPhone";
-"apple_id" = "Apple ID";
-"name" = "Όνομα";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Όνομα, Ηλεκτρονικό ταχυδρομείο";
 "account_identifier_header" = "Αναγνωριστικό λογαριασμού";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Βασικές πληροφορίες";
 "account_identifier" = "Αναγνωριστικό λογαριασμού";
-"country_region" = "Χώρα/Περιοχή";
 "password_token" = "Διακριτικό κωδικού πρόσβασης";
 "auth_info" = "Πληροφορίες αυθεντικοποίησης";
 "password_token_hint" = "Το διακριτικό κωδικού πρόσβασης χρησιμοποιείται για αυτόματη αυθεντικοποίηση. Παρακαλώ μην το μοιράζεστε με άλλους.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Ελέγξτε την αξιόπιστη συσκευή Apple ή τα SMS και εισάγετε τον 6ψήφιο κωδικό παρακάτω.";
-
-
+"tab_purchased" = "Αγορασμένα";
+"purchased_search_placeholder" = "Αναζήτηση αγορασμένων εφαρμογών";
+"purchased_syncing" = "Συγχρονισμός αγορών…";
+"purchased_empty" = "Δεν υπάρχουν αγορές ακόμη";
+"icon_set_failed" = "Αποτυχία ορισμού εικονιδίου";
+"icon_set_failed_desc" = "Δεν είναι δυνατή η αλλαγή του εικονιδίου της εφαρμογής. Δοκιμάστε ξανά αργότερα.";
+"web_load_failed" = "Αποτυχία φόρτωσης σελίδας: %@";
+"web_server_unreachable" = "Δεν είναι δυνατή η σύνδεση με τον διακομιστή: %@";
+"status_owned" = "Κτήση";
+"status_not_owned" = "Μη κτήση";
+"rating_count_format" = "%@ αξιολογήσεις";
+"legacy_apps_delisted" = "Παλαιότερες εφαρμογές (αποσύρθηκαν)";
+"versions_login_required" = "Συνδεθείτε για φόρτωση πληροφοριών εκδόσεων";
+"versions_unavailable" = "Δεν ήταν δυνατή η φόρτωση εκδόσεων. Ελέγξτε τη σύνδεση.";
+"versions_unavailable_retry" = "Δεν ήταν δυνατή η φόρτωση του ιστορικού. Δοκιμάστε ξανά.";
+"preparing_install_link" = "Προετοιμασία συνδέσμου εγκατάστασης…";
+"widget_weather" = "Καιρός";
+"weather_sunny" = "Ηλιοφάνεια";

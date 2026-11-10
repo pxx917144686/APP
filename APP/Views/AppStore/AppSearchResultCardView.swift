@@ -165,7 +165,7 @@ struct AppSearchResultCardView: View {
             Image(systemName: isOwned ? "checkmark.circle.fill" : "arrow.down.circle")
                 .font(.system(size: 10))
                 .foregroundColor(isOwned ? .green : .secondary)
-            Text(isOwned ? "已获取" : "未获取")
+            Text(isOwned ? "status_owned".localized : "status_not_owned".localized)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.secondary)
         }
@@ -221,12 +221,6 @@ struct AppSearchResultCardView: View {
     }
 
     private func formatRatingCount(_ count: Int) -> String {
-        if count >= 10000 {
-            return "\(count / 10000)万"
-        } else if count >= 1000 {
-            return String(format: "%.1fK", Double(count) / 1000.0)
-        } else {
-            return "\(count)"
-        }
+        CompactNumber.string(count)
     }
 }

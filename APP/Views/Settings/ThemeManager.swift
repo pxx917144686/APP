@@ -385,14 +385,14 @@ struct ThemePreviewCard: View {
             .frame(width: 50, height: 50)
             .overlay(
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("天气")
+                    Text("widget_weather".localized)
                         .font(.system(size: 7, weight: .medium))
                         .foregroundColor(.white.opacity(0.9))
                     Spacer()
                     Text("24°")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
-                    Text("晴")
+                    Text("weather_sunny".localized)
                         .font(.system(size: 6))
                         .foregroundColor(.white.opacity(0.8))
                 }

@@ -68,7 +68,6 @@
 "language_switch" = "שנה שפה";
 "language_switch_message" = "ממשק האפליקציה יתעדכן מיד לאחר שינוי השפה. ייתכן שרכיבי מערכת מסוימים ידרשו אתחול מחדש כדי שיחולו במלואם.";
 "confirm_switch" = "אשר שינוי";
-"app_icon" = "סמל אפליקציה";
 "icon_default" = "ברירת מחדל";
 "icon_author" = "סמל";
 "icon_love" = "אהבה";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "תגיות תכונות";
 "free" = "קבל";
-"get" = "קבל";
 "view" = "צפה";
 "get_reviews_failed" = "קבלת הביקורות נכשלה: %@";
 "x_ratings" = "%@ דירוגים";
 "age_rating" = "דירוג גיל";
 "x_languages" = "%@ שפות";
-"whats_new" = "מה חדש";
 "tech_info" = "מידע טכני";
 "first_release" = "גרסה ראשונה";
-"last_updated" = "עודכן לאחרונה";
 "requires_ios" = "נדרש iOS %@ או גרסה מאוחרת יותר";
 
-"search_placeholder" = "חפש משחקים, אפליקציות";
 "login" = "התחבר";
 "clear_all" = "נקה הכל";
 "x_results_found" = "נמצאו %@ תוצאות";
@@ -458,7 +453,6 @@
 "switch" = "החלף";
 "x_accounts" = "%@ חשבונות";
 "add_new_account" = "הוסף חשבון חדש";
-"account_management" = "ניהול חשבונות";
 "use_account" = "השתמש בחשבון";
 "connection_lost" = "החיבור אבד";
 "reconnecting" = "מתחבר מחדש";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "מדיה ורכישות";
 "sign_in_apple_id" = "היכנס ל-iPhone שלך";
 "sign_in_apple_id_desc" = "השתמש ב-Apple ID שלך ב-iPhone הזה";
-"apple_id" = "Apple ID";
-"name" = "שם";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "שם, אימייל";
 "account_identifier_header" = "מזהה חשבון";
@@ -543,7 +535,6 @@
 
 "basic_info" = "מידע בסיסי";
 "account_identifier" = "מזהה חשבון";
-"country_region" = "ארצהאזור";
 "password_token" = "אסימון סיסמה";
 "auth_info" = "מידע אימות";
 "password_token_hint" = "אסימון הסיסמה משמש לאימות אוטומטי. אנא אל תשתף אותו עם אחרים.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "בדוק את מכשיר Apple המהימן שלך או SMS והזן את קוד האימות בן 6 הספרות למטה.";
-
-
+"tab_purchased" = "נרכשו";
+"purchased_search_placeholder" = "חיפוש אפליקציות שנרכשו";
+"purchased_syncing" = "מסנכרן רכישות…";
+"purchased_empty" = "אין רכישות עדיין";
+"icon_set_failed" = "הגדרת הסמל נכשלה";
+"icon_set_failed_desc" = "לא ניתן לשנות את סמל האפליקציה. נסו שוב מאוחר יותר.";
+"web_load_failed" = "טעינת העמוד נכשלה: %@";
+"web_server_unreachable" = "לא ניתן להתחבר לשרת: %@";
+"status_owned" = "בבעלותך";
+"status_not_owned" = "לא בבעלותך";
+"rating_count_format" = "%@ דירוגים";
+"legacy_apps_delisted" = "אפליקציות קודמות (הוסרו)";
+"versions_login_required" = "התחבר כדי לטעון מידע גרסאות";
+"versions_unavailable" = "לא ניתן לטעון גרסאות. בדוק את החיבור.";
+"versions_unavailable_retry" = "לא ניתן לטעון את היסטוריית הגרסאות. נסו שוב.";
+"preparing_install_link" = "מכין קישור התקנה…";
+"widget_weather" = "מזג אוויר";
+"weather_sunny" = "שמשי";

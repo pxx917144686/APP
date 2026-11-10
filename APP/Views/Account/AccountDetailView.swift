@@ -80,8 +80,6 @@ struct AccountDetailView: View {
                 Text("password_token_hint".localized)
             }
 
-
-
             Section {
                 Button(role: .destructive, action: {
                     showingDeleteAlert = true

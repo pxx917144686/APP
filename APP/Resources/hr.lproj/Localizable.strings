@@ -68,7 +68,6 @@
 "language_switch" = "Promijeni jezik";
 "language_switch_message" = "Sučelje aplikacije bit će ažurirano odmah nakon promjene jezika. Neke se sistemske komponente možda moraju ponovno pokrenuti.";
 "confirm_switch" = "Potvrdi promjenu";
-"app_icon" = "Ikona aplikacije";
 "icon_default" = "Zadana";
 "icon_author" = "Ikona";
 "icon_love" = "Ljubav";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Oznake značajki";
 "free" = "Preuzmi";
-"get" = "Preuzmi";
 "view" = "Prikaži";
 "get_reviews_failed" = "Dohvaćanje recenzija nije uspjelo: %@";
 "x_ratings" = "%@ ocjena";
 "age_rating" = "Dobna ocjena";
 "x_languages" = "%@ jezika";
-"whats_new" = "Što je novo";
 "tech_info" = "Tehnički podaci";
 "first_release" = "Prvo izdanje";
-"last_updated" = "Zadnje ažurirano";
 "requires_ios" = "Zahtijeva iOS %@ ili noviji";
 
-"search_placeholder" = "Pretraži igre, aplikacije";
 "login" = "Prijavi se";
 "clear_all" = "Očisti sve";
 "x_results_found" = "Pronađeno %@ rezultata";
@@ -458,7 +453,6 @@
 "switch" = "Prebaci";
 "x_accounts" = "%@ računa";
 "add_new_account" = "Dodaj novi račun";
-"account_management" = "Upravljanje računima";
 "use_account" = "Koristi račun";
 "connection_lost" = "Veza je prekinuta";
 "reconnecting" = "Ponovno spajanje";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Mediji i kupnje";
 "sign_in_apple_id" = "Prijavite se na svom iPhoneu";
 "sign_in_apple_id_desc" = "Koristite svoj Apple ID na ovom iPhoneu";
-"apple_id" = "Apple ID";
-"name" = "Ime";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Ime, e-pošta";
 "account_identifier_header" = "Identifikator računa";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Osnovni podaci";
 "account_identifier" = "Identifikator računa";
-"country_region" = "Zemlja/regija";
 "password_token" = "Token lozinke";
 "auth_info" = "Podaci o autentikaciji";
 "password_token_hint" = "Token lozinke koristi se za automatsku autentikaciju. Nemojte ga dijeliti s drugima.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Provjerite svoje pouzdano Apple uređaj ili SMS i unesite 6-znamenkasti kod za provjeru u nastavku.";
-
-
+"tab_purchased" = "Kupljeno";
+"purchased_search_placeholder" = "Pretraži kupljene aplikacije";
+"purchased_syncing" = "Sinkronizacija kupnji…";
+"purchased_empty" = "Još nema kupnji";
+"icon_set_failed" = "Postavljanje ikone nije uspjelo";
+"icon_set_failed_desc" = "Nije moguće promijeniti ikonu aplikacije. Pokušajte kasnije.";
+"web_load_failed" = "Učitavanje stranice nije uspjelo: %@";
+"web_server_unreachable" = "Nije moguće povezati se s poslužiteljem: %@";
+"status_owned" = "Posjedovano";
+"status_not_owned" = "Nije posjedovano";
+"rating_count_format" = "%@ ocjena";
+"legacy_apps_delisted" = "Starije aplikacije (povučene)";
+"versions_login_required" = "Prijavite se za učitavanje podataka o verzijama";
+"versions_unavailable" = "Verzije nije moguće učitati. Provjerite vezu.";
+"versions_unavailable_retry" = "Povijest verzija nije dostupna. Pokušajte ponovno.";
+"preparing_install_link" = "Priprema veze za instalaciju…";
+"widget_weather" = "Vrijeme";
+"weather_sunny" = "Sunčano";

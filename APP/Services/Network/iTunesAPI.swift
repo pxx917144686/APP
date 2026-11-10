@@ -15,27 +15,27 @@ enum SearchError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError(let error):
-            return "网络错误: \(error.localizedDescription)"
+            return "dl_err_network".localized(error.localizedDescription)
         case .invalidResponse:
-            return "无效的API响应"
+            return "api_err_invalid_response".localized
         case .noResults:
-            return "未找到相关应用"
+            return "api_err_no_apps".localized
         case .invalidAppIdentifier:
-            return "无效的应用标识符"
+            return "api_err_invalid_app_id".localized
         case .rateLimited:
-            return "请求频率过高，请稍后重试"
+            return "api_err_rate_limited".localized
         case .emptyQuery:
-            return "搜索词不能为空"
+            return "api_err_empty_term".localized
         case .invalidLimit:
-            return "搜索结果数量限制无效（1-200）"
+            return "api_err_invalid_limit".localized
         case .invalidBundleId:
-            return "无效的应用包标识符"
+            return "api_err_invalid_bundle".localized
         case .invalidTrackId:
-            return "无效的Track ID"
+            return "api_err_invalid_track".localized
         case .missingIdentifier:
-            return "缺少应用标识符或Track ID"
+            return "api_err_missing_identifier".localized
         case .appNotFound:
-            return "未找到指定的应用"
+            return "api_err_app_not_found".localized
         }
     }
 }
@@ -185,7 +185,36 @@ class iTunesClient: @unchecked Sendable {
     private func appsPageURL(country: String, appId: Int) -> URL {
         return URL(string: "https://apps.apple.com/\(country)/app/id\(appId)")!
     }
+    private var ampTokenCache: [String: (token: String, timestamp: Date)] = [:]
+    private var ampTokenInflight: [String: Task<String, Error>] = [:]
+    private let ampTokenTTL: TimeInterval = 30 * 60
+
     private func fetchAMPTargetToken(country: String, appId: Int) async throws -> String {
+        let key = country.lowercased()
+        if let cached = ampTokenCache[key], Date().timeIntervalSince(cached.timestamp) < ampTokenTTL {
+            return cached.token
+        }
+        if let inflight = ampTokenInflight[key] {
+            return try await inflight.value
+        }
+
+        let task = Task { [country, appId] in
+            do {
+                return try await self.scrapeAMPTargetToken(country: country, appId: appId)
+            } catch {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                return try await self.scrapeAMPTargetToken(country: country, appId: appId)
+            }
+        }
+        ampTokenInflight[key] = task
+        defer { ampTokenInflight[key] = nil }
+
+        let token = try await task.value
+        ampTokenCache[key] = (token, Date())
+        return token
+    }
+
+    private func scrapeAMPTargetToken(country: String, appId: Int) async throws -> String {
         let url = appsPageURL(country: country, appId: appId)
         let (data, response) = try await fetchPageManuallyFollowingRedirects(url)
         guard response.statusCode == 200,
@@ -387,11 +416,11 @@ class iTunesClient: @unchecked Sendable {
     func versionHistory(id: Int, country: String = "US") async throws -> [AppVersionInfo] {
         let countryCode = country.isEmpty ? "US" : country
 
-        if let versions = try? await fetchVersionHistoryFromAMPApi(id: id, country: countryCode) {
+        if let versions = try? await fetchVersionHistoryFromAMPApi(id: id, country: countryCode), !versions.isEmpty {
             return versions
         }
 
-        if let versions = try? await fetchVersionHistoryFromLookupApi(id: id, country: countryCode) {
+        if let versions = try? await fetchVersionHistoryFromLookupApi(id: id, country: countryCode), !versions.isEmpty {
             return versions
         }
 

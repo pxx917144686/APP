@@ -4,1185 +4,239 @@ final class AuthCookieCache {
     static let shared = AuthCookieCache()
     private let lock = NSLock()
     private var storage: [String: [String]] = [:]
-
-    func set(dsid: String, cookies: [String]) {
-        lock.lock()
-        defer { lock.unlock() }
-        storage[dsid] = cookies
-    }
-
-    func get(dsid: String) -> [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return storage[dsid] ?? []
-    }
+    func set(dsid: String, cookies: [String]) { lock.lock(); defer { lock.unlock() }; storage[dsid] = cookies }
+    func get(dsid: String) -> [String] { lock.lock(); defer { lock.unlock() }; return storage[dsid] ?? [] }
 }
 
 final class GUIDCache {
     static let shared = GUIDCache()
     private let lock = NSLock()
-    private var cachedGUID: String?
-    private var accountGUIDMap: [String: String] = [:]
-    private static let PERSIST_KEY = "store_legacy_device_guid_v2"
-    private static let LEGACY_SHARED_GUID = "7ECD3C78436E"
+    private var cached: String?
 
     func get() -> String {
         lock.lock()
-        defer { lock.unlock() }
-        if let g = cachedGUID, !g.isEmpty { return g }
-
-        let saved = UserDefaults.standard.string(forKey: Self.PERSIST_KEY) ?? ""
-        if !saved.isEmpty && saved != Self.LEGACY_SHARED_GUID {
-            cachedGUID = saved
-            return saved
-        }
-        // 旧版本所有安装共用同一个写死 GUID，Apple 风控判定"一台设备登录大量
-        // 账号"导致批量锁号；迁移为每安装独立的随机设备 ID
-        let guid = Self.generateRandomGUID()
-        UserDefaults.standard.set(guid, forKey: Self.PERSIST_KEY)
-        cachedGUID = guid
+        let hit = cached
+        lock.unlock()
+        if let hit, !hit.isEmpty { return hit }
+        let guid = (try? MachineIdentityProvider.resolve().guid) ?? ""
+        guard !guid.isEmpty else { return "" }
+        lock.lock()
+        cached = guid
+        lock.unlock()
         return guid
-    }
-
-    private static func generateRandomGUID() -> String {
-        var bytes = [UInt8](repeating: 0, count: 6)
-        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-        return bytes.map { String(format: "%02X", $0) }.joined()
-    }
-
-    func get(for account: Account) -> String {
-        lock.lock()
-        defer { lock.unlock() }
-        let key = account.email
-        if let guid = accountGUIDMap[key], !guid.isEmpty {
-            return guid
-        }
-        let guid = account.deviceGUID
-        accountGUIDMap[key] = guid
-        return guid
-    }
-
-    func set(_ guid: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        cachedGUID = guid
-        if !guid.isEmpty {
-            UserDefaults.standard.set(guid, forKey: Self.PERSIST_KEY)
-        }
-    }
-
-    func set(_ guid: String, for account: Account) {
-        lock.lock()
-        defer { lock.unlock() }
-        accountGUIDMap[account.email] = guid
-    }
-}
-
-class StoreRequestDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust else {
-            completionHandler(.performDefaultHandling, nil)
-            return
-        }
-        completionHandler(.performDefaultHandling, nil)
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-        completionHandler(nil)
     }
 }
 
 @MainActor
 class StoreRequest {
     static let shared = StoreRequest()
-    private let session: URLSession
+    private init() {}
 
-    private let authSession: URLSession
-
-    private let bagSession: URLSession
     private let bagManager = BagManager.shared
 
-    private var baseURL: String {
-        bagManager.downloadURL
-    }
+    private var baseURL: String { bagManager.downloadURL }
+    private var buyBaseURL: String { bagManager.buyURL }
 
-    private var buyBaseURL: String {
-        bagManager.buyURL
-    }
-
-    private init() {
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 30
-        config.httpCookieStorage = HTTPCookieStorage.shared
-        config.httpCookieAcceptPolicy = .always
-        config.httpShouldSetCookies = true
-        config.tlsMinimumSupportedProtocolVersion = .TLSv12
-        config.tlsMaximumSupportedProtocolVersion = .TLSv13
-        config.allowsCellularAccess = true
-        config.allowsExpensiveNetworkAccess = true
-        config.allowsConstrainedNetworkAccess = true
-        config.networkServiceType = .responsiveData
-        let delegate = StoreRequestDelegate()
-        let delegateQueue = OperationQueue()
-        delegateQueue.maxConcurrentOperationCount = 1
-        self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: delegateQueue)
-
-        let authConfig = URLSessionConfiguration.ephemeral
-        authConfig.timeoutIntervalForRequest = 30
-        authConfig.timeoutIntervalForResource = 30
-        let authJar = HTTPCookieStorage()
-        authJar.cookieAcceptPolicy = .always
-        authConfig.httpCookieStorage = authJar
-        authConfig.httpShouldSetCookies = true
-        authConfig.httpCookieAcceptPolicy = .always
-        authConfig.urlCache = nil
-        authConfig.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        authConfig.tlsMinimumSupportedProtocolVersion = .TLSv12
-        authConfig.tlsMaximumSupportedProtocolVersion = .TLSv13
-        authConfig.networkServiceType = .responsiveData
-        self.authSession = URLSession(configuration: authConfig, delegate: delegate, delegateQueue: delegateQueue)
-
-        let bagConfig = URLSessionConfiguration.ephemeral
-        bagConfig.timeoutIntervalForRequest = 15
-        bagConfig.requestCachePolicy = .reloadIgnoringLocalCacheData
-        self.bagSession = URLSession(configuration: bagConfig)
-    }
-
-    func resetAuthCookieJar() {
-        if let jar = authSession.configuration.httpCookieStorage {
-            for c in jar.cookies ?? [] {
-                jar.deleteCookie(c)
-            }
-        }
-    }
-
-    func ensureBagLoaded(storeFront: String? = nil) async {
-        let sf = storeFront ?? "143441-1,32"
-        await bagManager.loadBagIfNeeded(storeFront: sf)
-    }
-
-    func authenticate(
-        email: String,
-        password: String,
-        mfa: String? = nil
-    ) async throws -> StoreAuthResponse {
-        try await sapAuthenticate(email: email, password: password, authCode: mfa ?? "")
-    }
-
-    func authenticateWith2FA(
-        code: String,
-        isSMS: Bool = false,
-        phoneId: String? = nil
-    ) async throws -> StoreAuthResponse {
-        let pending = PendingSAPAuth.pop()
-        guard let p = pending else {
-            throw StoreError.codeRequired
-        }
-        return try await sapAuthenticate(
-            email: p.email,
-            password: p.password,
-            authCode: code
-        )
-    }
-
-    func download(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        appVersion: String? = nil,
-        passwordToken: String? = nil,
-        storeFront: String? = nil
-    ) async throws -> StoreDownloadResponse {
-        let guid = GUIDCache.shared.get()
-        return try await downloadInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: directoryServicesIdentifier,
-            appVersion: appVersion,
-            passwordToken: passwordToken,
-            storeFront: storeFront,
-            guid: guid
-        )
-    }
-
-    func download(
-        appIdentifier: String,
-        account: Account,
-        appVersion: String? = nil
-    ) async throws -> StoreDownloadResponse {
-        do {
-            return try await downloadOnce(appIdentifier: appIdentifier, account: account, appVersion: appVersion)
-        } catch StoreError.invalidCredentials, StoreError.authenticationFailed {
-            if let refreshed = try await refreshPasswordToken(account: account) {
-                return try await downloadOnce(appIdentifier: appIdentifier, account: refreshed, appVersion: appVersion)
-            }
-            throw StoreError.authenticationFailedWithDetails("iTunes 会话已失效且无法自动刷新")
-        }
-    }
-
-    private func downloadOnce(appIdentifier: String, account: Account, appVersion: String?) async throws -> StoreDownloadResponse {
-        let guid = GUIDCache.shared.get(for: account)
-        let pod = !account.pod.isEmpty ? account.pod : AccountPodCache.shared.get(dsid: account.directoryServicesIdentifier)
-        return try await downloadInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: account.directoryServicesIdentifier,
-            appVersion: appVersion,
-            passwordToken: account.passwordToken,
-            storeFront: account.storeResponse.storeFront,
-            guid: guid,
-            pod: pod
-        )
-    }
-
-    func redownload(
-        appIdentifier: String,
-        account: Account,
-        appVersion: String? = nil
-    ) async throws -> StoreDownloadResponse {
-        do {
-            return try await downloadOnce(appIdentifier: appIdentifier, account: account, appVersion: appVersion)
-        } catch StoreError.invalidCredentials, StoreError.authenticationFailed {
-            if let refreshed = try await refreshPasswordToken(account: account) {
-                return try await downloadOnce(appIdentifier: appIdentifier, account: refreshed, appVersion: appVersion)
-            }
-            throw StoreError.authenticationFailedWithDetails("iTunes 会话已失效且无法自动刷新")
-        }
-    }
-
-    static let savedPasswordKeyPrefix = "sap_saved_password_"
-
-    private static func storePassword(_ password: String, for email: String) {
-        let key = Self.savedPasswordKeyPrefix + email
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: "com.app.storepassword",
-            kSecAttrAccount as String: key,
-            kSecValueData as String: Data(password.utf8)
-        ]
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
-    }
-
-    private static func storedPassword(for email: String) -> String? {
-        let key = Self.savedPasswordKeyPrefix + email
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: "com.app.storepassword",
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        var ref: CFTypeRef?
-        if SecItemCopyMatching(query as CFDictionary, &ref) == errSecSuccess,
-           let data = ref as? Data,
-           let pw = String(data: data, encoding: .utf8) {
-            return pw
-        }
-        if let legacy = UserDefaults.standard.string(forKey: key) {
-            storePassword(legacy, for: email)
-            UserDefaults.standard.removeObject(forKey: key)
-            return legacy
-        }
-        return nil
-    }
-
-    func savePassword(_ password: String, for email: String) {
-        Self.storePassword(password, for: email)
-    }
-
-    func ensureITunesSession(account: Account) async {
-        let dsid = account.directoryServicesIdentifier
-        let key = "itunes_session_ts_\(dsid)"
-        if let ts = UserDefaults.standard.object(forKey: key) as? Date,
-           Date().timeIntervalSince(ts) < 3600,
-           !AuthCookieCache.shared.get(dsid: dsid).isEmpty {
-            return
-        }
-        let pw = Self.storedPassword(for: account.email) ?? ""
-        guard !pw.isEmpty else { return }
-        let guid = account.deviceGUID.isEmpty ? GUIDCache.shared.get() : account.deviceGUID
-        do {
-            _ = try await storeAuthenticate(
-                email: account.email, password: pw, code: "", guid: guid, clearSession: false)
-            UserDefaults.standard.set(Date(), forKey: key)
-        } catch {
-        }
-    }
-
-    func refreshPasswordToken(account: Account) async throws -> Account? {
-        let pw = Self.storedPassword(for: account.email) ?? ""
-        guard !pw.isEmpty else {
-            downloadDebugLog("refreshPasswordToken: 无保存的密码")
-            return nil
-        }
-        let aniData: AnisetteData
-        do {
-            aniData = try await AnisetteProvisioner.shared.getAnisette()
-        } catch {
-            downloadDebugLog("refreshPasswordToken: anisette 失败 \(error.localizedDescription)")
-            return nil
-        }
-        let session = GSALoginSession(email: account.email, password: pw, aniData: aniData)
-        let outcome: GSARoundOutcome
-        do {
-            outcome = try await session.beginRound()
-        } catch {
-            return nil
-        }
-        guard case .authenticated(let result) = outcome else {
-            return nil
-        }
-        guard let token = result.passwordToken, isTrueCommerceKitPasswordToken(token),
-              let dsid = result.dsPersonId, !dsid.isEmpty else {
-            return nil
-        }
-        let pod = account.pod
-        var cookieLines = composeCookieLines(dsid: dsid, storeFront: account.storeResponse.storeFront, pod: pod, passwordToken: token)
-        let real = session.sessionCookieLines()
-        if !real.isEmpty {
-            cookieLines.append(contentsOf: real)
-            storeRealSessionCookies(real)
-        }
-        AuthCookieCache.shared.set(dsid: dsid, cookies: cookieLines)
-        syncCookiesToShared(dsPersonId: dsid, passwordToken: token, appleId: account.email, storeFront: account.storeResponse.storeFront)
-        let refreshed = Account(
-            name: account.name,
-            email: account.email,
-            firstName: account.firstName,
-            lastName: account.lastName,
-            passwordToken: token,
-            directoryServicesIdentifier: dsid,
-            dsPersonId: account.dsPersonId.isEmpty ? dsid : account.dsPersonId,
-            cookies: account.cookies,
-            countryCode: account.countryCode,
-            pod: pod,
-            storeResponse: Account.AccountStoreResponse(
-                directoryServicesIdentifier: dsid,
-                passwordToken: token,
-                storeFront: account.storeResponse.storeFront
-            ),
-            deviceGUID: account.deviceGUID,
-            hsc: account.hsc,
-            adsid: result.tokens?.adsid.isEmpty == false ? result.tokens!.adsid : account.adsid,
-            idmsToken: result.tokens?.idmsToken.isEmpty == false ? result.tokens!.idmsToken : account.idmsToken
-        )
-        await ensureITunesSession(account: refreshed)
-        return refreshed
-    }
-
-    func downloadRawPlist(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        appVersion: String? = nil,
-        passwordToken: String? = nil,
-        storeFront: String? = nil
-    ) async throws -> [String: Any] {
-        let guid = GUIDCache.shared.get()
-        let (plist, _) = try await downloadRawPlistInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: directoryServicesIdentifier,
-            appVersion: appVersion,
-            passwordToken: passwordToken,
-            storeFront: storeFront,
-            guid: guid,
-            pod: ""
-        )
-        return plist
-    }
-
-    private func downloadInternal(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        appVersion: String? = nil,
-        passwordToken: String? = nil,
-        storeFront: String? = nil,
-        guid: String,
-        pod initialPod: String = ""
-    ) async throws -> StoreDownloadResponse {
-        let (plist, http) = try await downloadRawPlistInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: directoryServicesIdentifier,
-            appVersion: appVersion,
-            passwordToken: passwordToken,
-            storeFront: storeFront,
-            guid: guid,
-            pod: initialPod
-        )
-        return try parseDownloadResponse(plist: plist, httpResponse: http)
-    }
-
-    private func downloadRawPlistInternal(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        appVersion: String? = nil,
-        passwordToken: String? = nil,
-        storeFront: String? = nil,
-        guid: String,
-        pod initialPod: String = ""
-    ) async throws -> ([String: Any], HTTPURLResponse) {
-        func hasSongs(_ plist: [String: Any]) -> Bool {
-            (plist["songList"] as? [[String: Any]])?.isEmpty == false
-        }
-        var pod = initialPod.isEmpty ? AccountPodCache.shared.get(dsid: directoryServicesIdentifier) : initialPod
-        var body: [String: Any] = [
-            "creditDisplay": "",
-            "guid": guid,
-            "salableAdamId": appIdentifier,
-            "serialNumber": "0"
-        ]
-        var requestedVersionId: String? = nil
-        if let vid = appVersion, !vid.isEmpty {
-            body["externalVersionId"] = vid
-            requestedVersionId = vid
-        }
-        let query = "?guid=\(guid)"
-        var (plist, h) = try await postCommercePlist(
-            path: "/WebObjects/MZFinance.woa/wa/volumeStoreDownloadProduct",
-            query: query,
-            body: body,
-            dsid: directoryServicesIdentifier,
-            passwordToken: passwordToken ?? "",
-            storeFront: storeFront ?? "",
-            pod: &pod
-        )
-        let ft = plist["failureType"] as? String ?? ""
-        downloadDebugLog("volumeStore status=\(h.statusCode) ft=\(ft) msg=\(plist["customerMessage"] as? String ?? "") songs=\((plist["songList"] as? [[String: Any]])?.count ?? -1)")
-        if !ft.isEmpty, requestedVersionId != nil {
-            var bodyLatest = body
-            bodyLatest.removeValue(forKey: "externalVersionId")
-            let (p2, h2) = try await postCommercePlist(
-                path: "/WebObjects/MZFinance.woa/wa/volumeStoreDownloadProduct",
-                query: query,
-                body: bodyLatest,
-                dsid: directoryServicesIdentifier,
-                passwordToken: passwordToken ?? "",
-                storeFront: storeFront ?? "",
-                pod: &pod
-            )
-            plist = p2
-            h = h2
-        }
-        AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
-        if hasSongs(plist) {
-            return (plist, h)
-        }
-        downloadDebugLog("volumeStore 空结果，走 redownload 兜底")
-        do {
-            let lookedUp = try? await lookupLatestExternalVersionId(appIdentifier: appIdentifier, storeFront: storeFront ?? "")
-            downloadDebugLog("catalog lookup: \(lookedUp ?? "nil")")
-            let versionId = requestedVersionId ?? lookedUp
-            guard let vid = versionId, !vid.isEmpty else {
-                return (plist, h)
-            }
-            let redownloadBody: [String: Any] = [
-                "creditDisplay": "",
-                "guid": guid,
-                "salableAdamId": appIdentifier,
-                "appExtVrsId": vid
-            ]
-            let (rp, rh) = try await dispatchPlist(
-                path: "/r/redownload",
-                body: redownloadBody,
-                dsid: directoryServicesIdentifier,
-                passwordToken: passwordToken ?? "",
-                storeFront: storeFront ?? "",
-                guid: guid
-            )
-            downloadDebugLog("redownload status=\(rh.statusCode) ft=\(rp["failureType"] as? String ?? "") msg=\(rp["customerMessage"] as? String ?? "") songs=\((rp["songList"] as? [[String: Any]])?.count ?? -1)")
-            if hasSongs(rp) {
-                return (rp, rh)
-            }
-            let unavailable = rh.statusCode == 200 && (rp["failureType"] as? String ?? "").isEmpty && (rp["songList"] as? [[String: Any]]) == nil
-                && (rp["customerMessage"] as? String ?? "").lowercased().hasSuffix("no longer available")
-            if rh.statusCode == 500 || unavailable {
-                var updateBody = redownloadBody
-                updateBody["serialNumber"] = "0"
-                let (up, uh) = try await dispatchPlist(
-                    path: "/up/updateProduct",
-                    body: updateBody,
-                    dsid: directoryServicesIdentifier,
-                    passwordToken: passwordToken ?? "",
-                    storeFront: storeFront ?? "",
-                    guid: guid
-                )
-                downloadDebugLog("updateProduct status=\(uh.statusCode) ft=\(up["failureType"] as? String ?? "") msg=\(up["customerMessage"] as? String ?? "") songs=\((up["songList"] as? [[String: Any]])?.count ?? -1)")
-                return (up, uh)
-            }
-            return (rp, rh)
-        }
-    }
-
-    private func lookupLatestExternalVersionId(appIdentifier: String, storeFront: String) async throws -> String {
-        let sfCode = storeFront.components(separatedBy: "-").first ?? ""
-        var countryCode = "us"
-        for (cc, sc) in Apple.storeFrontCodeMap where sc == sfCode {
-            countryCode = cc.lowercased()
-            break
-        }
-        let urlString = "https://apps.apple.com/api/apps/v1/catalog/\(countryCode)/apps/\(appIdentifier)?platform=iphone"
-        guard let url = URL(string: urlString) else {
-            throw StoreError.invalidResponse
-        }
-        var req = URLRequest(url: url)
-        req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
-        req.timeoutInterval = 20
-        let (data, response) = try await session.data(for: req)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200,
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let dataArray = json["data"] as? [[String: Any]],
-              let first = dataArray.first,
-              let attributes = first["attributes"] as? [String: Any],
-              let platformAttrs = attributes["platformAttributes"] as? [String: Any],
-              let ios = iosPlatformEntry(platformAttrs) as? [String: Any] else {
-            throw StoreError.invalidResponse
-        }
-        let rawVersion = ios["externalVersionId"]
-        let version: String
-        if let s = rawVersion as? String {
-            version = s
-        } else if let n = rawVersion as? NSNumber {
-            version = n.stringValue
-        } else {
-            throw StoreError.invalidResponse
-        }
-        guard !version.isEmpty else {
-            throw StoreError.invalidResponse
-        }
-        return version
-    }
-
-    private func iosPlatformEntry(_ platformAttrs: [String: Any]) -> Any? {
-        platformAttrs["ios"] ?? platformAttrs["osx"] ?? platformAttrs["appletvos"]
-    }
-
-    private func dispatchPlist(
-        path: String,
-        body: [String: Any],
-        dsid: String,
-        passwordToken: String,
-        storeFront: String,
-        guid: String
-    ) async throws -> ([String: Any], HTTPURLResponse) {
-        let sf = storeFront
-        guard let url = URL(string: "https://downloaddispatch.itunes.apple.com\(path)?guid=\(guid)") else {
-            throw StoreError.invalidResponse
-        }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/x-apple-plist", forHTTPHeaderField: "Content-Type")
-        req.setValue("*/*", forHTTPHeaderField: "Accept")
-        req.setValue("en-us", forHTTPHeaderField: "Accept-Language")
-        req.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
-        req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
-        req.setValue(dsid, forHTTPHeaderField: "X-Dsid")
-        req.setValue(dsid, forHTTPHeaderField: "iCloud-DSID")
-        if !passwordToken.isEmpty {
-            req.setValue(passwordToken, forHTTPHeaderField: "X-Token")
-        }
-        if !sf.isEmpty {
-            req.setValue(sf, forHTTPHeaderField: "X-Apple-Store-Front")
-        }
-        req.httpBody = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        req.httpShouldHandleCookies = true
-        let (data, response) = try await session.data(for: req)
-        guard let http = response as? HTTPURLResponse else {
-            throw StoreError.invalidResponse
-        }
-        let plist = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]) ?? [:]
-        return (plist, http)
-    }
-
-    func purchase(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        passwordToken: String,
-        storeFront: String
-    ) async throws -> StorePurchaseResponse {
-        let guid = GUIDCache.shared.get()
-        return try await purchaseInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: directoryServicesIdentifier,
-            passwordToken: passwordToken,
-            storeFront: storeFront,
-            guid: guid
-        )
-    }
-
-    func purchase(
-        appIdentifier: String,
-        account: Account
-    ) async throws -> StorePurchaseResponse {
-        do {
-            return try await purchaseOnce(appIdentifier: appIdentifier, account: account)
-        } catch StoreError.invalidCredentials, StoreError.authenticationFailed {
-            if let refreshed = try await refreshPasswordToken(account: account) {
-                return try await purchaseOnce(appIdentifier: appIdentifier, account: refreshed)
-            }
-            throw StoreError.authenticationFailedWithDetails("iTunes 会话已失效且无法自动刷新")
-        }
-    }
-
-    private func purchaseOnce(appIdentifier: String, account: Account) async throws -> StorePurchaseResponse {
-        let guid = GUIDCache.shared.get(for: account)
-        let pod = !account.pod.isEmpty ? account.pod : AccountPodCache.shared.get(dsid: account.directoryServicesIdentifier)
-        return try await purchaseInternal(
-            appIdentifier: appIdentifier,
-            directoryServicesIdentifier: account.directoryServicesIdentifier,
-            passwordToken: account.passwordToken,
-            storeFront: account.storeResponse.storeFront,
-            guid: guid,
-            pod: pod
-        )
-    }
-
-    private func purchaseInternal(
-        appIdentifier: String,
-        directoryServicesIdentifier: String,
-        passwordToken: String,
-        storeFront: String,
-        guid: String,
-        pod initialPod: String = ""
-    ) async throws -> StorePurchaseResponse {
-        var pod = initialPod.isEmpty ? AccountPodCache.shared.get(dsid: directoryServicesIdentifier) : initialPod
-        func buildBody(_ pricingParameters: String) -> [String: Any] {
-            [
-                "appExtVrsId": "0",
-                "hasAskedToFulfillPreorder": "true",
-                "buyWithoutAuthorization": "true",
-                "hasDoneAgeCheck": "true",
-                "guid": guid,
-                "needDiv": "0",
-                "origPage": "Software-\(appIdentifier)",
-                "origPageLocation": "Buy",
-                "price": "0",
-                "pricingParameters": pricingParameters,
-                "productType": "C",
-                "salableAdamId": appIdentifier
-            ]
-        }
-        var lastPlist: [String: Any] = [:]
-        var lastH: HTTPURLResponse?
-        downloadDebugLog("buyProduct: 建立签名会话…")
-        let session = try await WasmSAPSigner.openSession(guid: guid)
-        defer { Task { await session.close() } }
-        downloadDebugLog("buyProduct: 会话就绪")
-        for pricing in ["STDQ", "GAME"] {
-            let pricingBody = buildBody(pricing)
-            let bodyData = try PropertyListSerialization.data(fromPropertyList: pricingBody, format: .xml, options: 0)
-            downloadDebugLog("buyProduct: 签名中 pricing=\(pricing)")
-            let signature = try await session.sign(bodyData)
-            downloadDebugLog("buyProduct: 签名完成 \(signature.count)B")
-            let (plist, h) = try await postCommercePlist(
-                path: "/WebObjects/MZFinance.woa/wa/buyProduct",
-                query: "",
-                body: pricingBody,
-                dsid: directoryServicesIdentifier,
-                passwordToken: passwordToken,
-                storeFront: storeFront,
-                pod: &pod,
-                sapSignature: signature
-            )
-            lastPlist = plist
-            lastH = h
-            let jingleType = plist["jingleDocType"] as? String ?? ""
-            let ft = plist["failureType"] as? String ?? ""
-            downloadDebugLog("buyProduct pricing=\(pricing) status=\(h.statusCode) ft=\(ft) jingle=\(jingleType) msg=\(plist["customerMessage"] as? String ?? "")")
-            if h.statusCode == 200 && (jingleType == "purchaseSuccess" || ft == "5002" || ft == "2040" || plist["status"] as? String == "0") {
-                AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
-                let dsPersonId = (plist["dsPersonId"] as? String) ?? (plist["dsPersonID"] as? String) ?? ""
-                return StorePurchaseResponse(
-                    dsPersonId: dsPersonId,
-                    jingleDocType: plist["jingleDocType"] as? String,
-                    jingleAction: plist["jingleAction"] as? String,
-                    pings: plist["pings"] as? [String]
-                )
-            }
-            let cm = plist["customerMessage"] as? String ?? ""
-            if SessionFileStore.isAuthFailure(failureType: ft, customerMessage: cm, httpStatus: h.statusCode) {
-                throw StoreError.invalidCredentials
-            }
-            if pricing == "STDQ" {
-                continue
-            }
-        }
-        AccountPodCache.shared.set(dsid: directoryServicesIdentifier, pod: pod)
-        let plist = lastPlist
-        guard let h = lastH else {
-            throw StoreError.unknownError
-        }
-        return try parsePurchaseResponse(plist: plist, httpResponse: h)
-    }
+    func currentGUID() -> String { GUIDCache.shared.get() }
 
     func commerceUserAgent() -> String {
         "Configurator/2.17 (Macintosh; OS X 15.2; 24C5089c) AppleWebKit/0620.1.16.11.6"
     }
 
-    func storeAuthenticate(
-        email: String,
-        password: String,
-        code: String,
-        guid: String,
-        clearSession: Bool = true
-    ) async throws -> StoreAuthResponse {
-        await ensureBagLoaded()
-        if clearSession {
-            for c in HTTPCookieStorage.shared.cookies ?? [] where c.domain.lowercased().contains("apple.com") {
-                HTTPCookieStorage.shared.deleteCookie(c)
+    func savePassword(_ password: String, for email: String) {
+        UserDefaults.standard.set(password, forKey: "store_password_\(email)")
+    }
+    func storedPassword(for email: String) -> String? {
+        UserDefaults.standard.string(forKey: "store_password_\(email)")
+    }
+
+    private func send(operation: String, path: String, query: String,
+                      body: [String: Any], account: Account? = nil) async throws -> [String: Any] {
+        var acct = account
+        if let a = acct, !a.email.isEmpty {
+            let cached = AuthCookieCache.shared.get(dsid: a.dsPersonId).first
+                ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(a.dsPersonId)") ?? ""
+            if cached.isEmpty, let pwd = storedPassword(for: a.email), !pwd.isEmpty {
+                if let fresh = try? await AuthenticationManager.shared.reauthenticate(email: a.email, password: pwd) {
+                    acct = fresh
+                }
             }
         }
-        let body: [String: String] = [
-            "appleId": email,
-            "attempt": "1",
-            "guid": guid,
-            "password": password + code.filter { !$0.isWhitespace },
-            "rmp": "0",
-            "why": "signIn"
+        let guid = GUIDCache.shared.get()
+        let urlString = (path.hasPrefix("/r/") || path.hasPrefix("/up/") ? baseURL : buyBaseURL) + path + query
+        guard let url = URL(string: urlString) else { throw StoreError.invalidResponse }
+        var headers: [String: String] = [
+            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+            "User-Agent": commerceUserAgent(),
+            "X-Apple-Store-Front": acct?.storeResponse.storeFront ?? "143441-1,34"
         ]
+        if let a = acct {
+            headers["X-Dsid"] = a.dsPersonId
+            headers["iCloud-DSID"] = a.dsPersonId
+            headers["X-Token"] = a.passwordToken
+            if !a.pod.isEmpty { headers["X-Apple-Pod"] = a.pod }
+            let dsid = a.dsPersonId
+            let cookie = AuthCookieCache.shared.get(dsid: dsid).first
+                ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(dsid)")
+            if let cookie, !cookie.isEmpty { headers["Cookie"] = cookie }
+        }
         let bodyData = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        let signer = try await WasmSAPSigner.openSession(guid: guid)
-        defer { Task { await signer.close() } }
 
-        var authURLString = bagManager.authenticateAccountURL
-        do {
-            var bagReq = URLRequest(url: URL(string: "https://init.itunes.apple.com/bag.xml?guid=\(guid)&ignoring-cache=true")!)
-            bagReq.timeoutInterval = 8
-            bagReq.setValue("application/xml", forHTTPHeaderField: "Accept")
-            bagReq.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
-            bagReq.httpShouldHandleCookies = true
-            let (bagData, bagResp) = try await session.data(for: bagReq)
-            if let bodyText = String(data: bagData, encoding: .utf8),
-               let range = bodyText.range(of: "authenticateAccount</key><string>"),
-               let end = bodyText[range.upperBound...].firstIndex(of: "<") {
-                let fromBag = String(bodyText[range.upperBound..<end])
-                if !fromBag.isEmpty { authURLString = fromBag }
-            }
-            _ = bagResp
-        } catch {
-        }
-        if let comps = URLComponents(string: authURLString), !comps.path.hasSuffix("/") {
-            authURLString = authURLString + "/"
-        }
+        let signer = SAPSigner.shared
+        headers["X-Apple-ActionSignature"] = try await signer.sign(bodyData, guid: guid, useCache: true)
 
-        let endpoints: [(name: String, url: String)] = [
-            ("MZFinance", authURLString),
+        let (plist, response) = try await AppleAuthentication.withStoreProof(
+            endpoint: url,
+            baseHeaders: headers,
+            loadProof: { try await signer.storeProofHeaders(guid: guid, useCache: true) },
+            provisionProof: { challenge in
+                try await signer.provisionStoreProof(challenge: challenge, guid: guid, useCache: true)
+            },
+            resetProof: { signer.resetStoreProof(guid: guid) },
+            execute: { headerProvider in
+                try await HTTPClient.shared.plist(
+                    url, body: bodyData,
+                    headers: try await headerProvider(url),
+                    allowRedirects: true,
+                    refreshHeaders: headerProvider)
+            })
+
+        guard response.statusCode == 200 else {
+            throw StoreError.serverErrorWithDetails(response.statusCode, "store_err_request_failed".localized)
+        }
+        return plist
+    }
+
+    private func authHeaders(_ account: Account?) -> [String: String] {
+        var h: [String: String] = ["Content-Type": "application/x-www-form-urlencoded"]
+        guard let account else { return h }
+        h["X-Dsid"] = account.dsPersonId
+        h["iCloud-DSID"] = account.dsPersonId
+        if !account.passwordToken.isEmpty { h["X-Token"] = account.passwordToken }
+        let storeFront = account.storeResponse.storeFront
+        if !storeFront.isEmpty { h["X-Apple-Store-Front"] = storeFront }
+        let dsid = account.dsPersonId
+        let cookie = AuthCookieCache.shared.get(dsid: dsid).first
+            ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(dsid)")
+        if let cookie, !cookie.isEmpty { h["Cookie"] = cookie }
+        return h
+    }
+
+    private func storePlist(_ url: URL, body: Data, headers: [String: String],
+                            guid: String) async throws -> ([String: Any], HTTPURLResponse) {
+        let signer = SAPSigner.shared
+        return try await AppleAuthentication.withStoreProof(
+            endpoint: url,
+            baseHeaders: headers,
+            loadProof: { try await signer.storeProofHeaders(guid: guid, useCache: true) },
+            provisionProof: { challenge in
+                try await signer.provisionStoreProof(challenge: challenge, guid: guid, useCache: true)
+            },
+            resetProof: { signer.resetStoreProof(guid: guid) },
+            execute: { headerProvider in
+                try await HTTPClient.shared.plist(
+                    url, body: body,
+                    headers: try await headerProvider(url),
+                    allowRedirects: true,
+                    refreshHeaders: headerProvider)
+            })
+    }
+
+    private func downloadBody(appIdentifier: String, appVersion: String?) -> [String: Any] {
+        var body: [String: Any] = [
+            "guid": GUIDCache.shared.get(),
+            "salableAdamId": NSNumber(value: UInt64(appIdentifier) ?? 0),
+            "serialNumber": "0"
         ]
-        var attempts: [String] = []
-
-        for (candidateIndex, endpoint) in endpoints.enumerated() {
-            for authAttempt in 1...3 {
-                if authAttempt > 1 {
-                    try? await Task.sleep(nanoseconds: UInt64((authAttempt == 2 ? 3 : 8) * 1_000_000_000))
-                }
-                guard let requestURL = URL(string: endpoint.url) else {
-                    attempts.append("\(endpoint.name): URL 无效")
-                    continue
-                }
-                var req = URLRequest(url: requestURL)
-                req.httpMethod = "POST"
-                req.timeoutInterval = 60
-                req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-                req.setValue("*/*", forHTTPHeaderField: "Accept")
-                req.setValue("en-us", forHTTPHeaderField: "Accept-Language")
-                req.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
-                req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
-                let signature = try await signer.sign(bodyData)
-                req.setValue(signature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
-                req.httpBody = bodyData
-                req.httpShouldHandleCookies = true
-
-                var data = Data()
-                var response: URLResponse?
-                var sendError: Error?
-                for sendAttempt in 1...3 {
-                    sendError = nil
-                    do {
-                        (data, response) = try await session.data(for: req)
-                    } catch {
-                        sendError = error
-                        if sendAttempt < 3 {
-                            try? await Task.sleep(nanoseconds: UInt64(sendAttempt * 1_500_000_000))
-                            continue
-                        }
-                        let host = req.url?.host ?? endpoint.url
-                        throw StoreError.authenticationFailedWithDetails(
-                            "无法连接服务器（\(host)）：\(error.localizedDescription)。请检查网络或代理设置后重试")
-                    }
-                }
-                if let sendError {
-                    let host = req.url?.host ?? endpoint.url
-                    throw StoreError.authenticationFailedWithDetails(
-                        "无法连接服务器（\(host)）：\(sendError.localizedDescription)")
-                }
-                var hops = 0
-            while let httpResp = response as? HTTPURLResponse,
-                  (300..<400).contains(httpResp.statusCode),
-                  let loc = httpResp.value(forHTTPHeaderField: "Location"),
-                  let base = req.url,
-                  let locURL = URL(string: loc, relativeTo: base),
-                  var next = URLComponents(url: locURL, resolvingAgainstBaseURL: true),
-                  hops < 3 {
-                    if (next.queryItems ?? []).isEmpty {
-                        next.queryItems = [URLQueryItem(name: "guid", value: guid)]
-                    }
-                    hops += 1
-                    var req2 = req
-                    req2.url = next.url
-                    do {
-                        let replaySignature = try await signer.sign(bodyData)
-                        req2.setValue(replaySignature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
-                    } catch {
-                        attempts.append("\(endpoint.name): 重放签名失败")
-                        break
-                    }
-                    (data, response) = try await session.data(for: req2)
-                }
-                guard let http = response as? HTTPURLResponse else {
-                    throw StoreError.invalidResponse
-                }
-
-                let plist = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]) ?? [:]
-                let ft = plist["failureType"] as? String ?? ""
-                let cm = plist["customerMessage"] as? String ?? ""
-
-                if cm == "MZFinance.BadLogin.Configurator_message" {
-                    if candidateIndex == endpoints.count - 1 {
-                        if code.isEmpty {
-                            throw StoreError.codeRequired
-                        }
-                        throw StoreError.invalidCredentialsWithDetails(
-                            "Apple 拒绝了凭据。常见原因：①验证码过期（必须使用最新一次推送的验证码，30 秒内输入）②密码错误 ③多次失败后账号被临时锁定（等待 30-60 分钟再试）")
-                    }
-                    attempts.append("\(endpoint.name): Configurator")
-                    break
-                }
-                if ft == "5005" {
-                    throw StoreError.invalidVerificationCode
-                }
-
-                let token = plist["passwordToken"] as? String ?? ""
-                let dsid = (plist["dsPersonId"] as? String) ?? (plist["dsPersonID"] as? String) ?? ""
-                if !token.isEmpty, !dsid.isEmpty {
-                    let jar = (HTTPCookieStorage.shared.cookies ?? []).filter { $0.domain.lowercased().contains("apple.com") }
-                    let lines = jar.map { c -> String in
-                        var line = "\(c.name)=\(c.value); Domain=\(c.domain); Path=\(c.path)"
-                        if c.isSecure { line += "; Secure" }
-                        return line
-                    }
-                    mergeRealCookies(dsid: dsid, lines: lines)
-
-                    let info = plist["accountInfo"] as? [String: Any]
-                    let addr = (info?["address"] as? [String: Any]) ?? [:]
-                    return StoreAuthResponse(
-                        accountInfo: .init(
-                            appleId: (info?["appleId"] as? String) ?? email,
-                            address: .init(firstName: (addr["firstName"] as? String) ?? "",
-                                           lastName: (addr["lastName"] as? String) ?? ""),
-                            dsPersonId: dsid,
-                            countryCode: info?["countryCode"] as? String,
-                            storeFront: http.value(forHTTPHeaderField: "X-Set-Apple-Store-Front")
-                        ),
-                        passwordToken: token,
-                        dsPersonId: dsid,
-                        pings: nil
-                    )
-                }
-
-                if http.statusCode == 204 && authAttempt < 3 {
-                    continue
-                }
-                attempts.append("\(endpoint.name): HTTP \(http.statusCode)")
-                break
-            }
-        }
-        throw StoreError.authenticationFailedWithDetails("登录失败：端点均未返回 token [\(attempts.joined(separator: " | "))]。建议切换网络（Wi-Fi↔蜂窝、关闭代理）后重试")
+        if let v = appVersion, !v.isEmpty { body["externalVersionId"] = v }
+        return body
     }
 
-    private func seedAccountCookies(dsid: String) {
-        restorePersistedCookiesIfNeeded(dsid: dsid)
-        let cookies = AuthCookieCache.shared.get(dsid: dsid)
-        guard !cookies.isEmpty else { return }
-        let origins = [
-            "https://auth.itunes.apple.com",
-            "https://buy.itunes.apple.com",
-            "https://p-buy.itunes.apple.com"
+    func download(appIdentifier: String, account: Account,
+                  appVersion: String? = nil) async throws -> StoreDownloadResponse {
+        try await performDownload(appIdentifier: appIdentifier, account: account,
+                                  appVersion: appVersion, retried: false)
+    }
+
+    private func performDownload(appIdentifier: String, account: Account,
+                                 appVersion: String?, retried: Bool) async throws -> StoreDownloadResponse {
+        let guid = GUIDCache.shared.get()
+        var body = downloadBody(appIdentifier: appIdentifier, appVersion: appVersion)
+        body["guid"] = guid
+        let kbsync = try await SAPSigner.shared.kbsync(guid: guid, dsid: account.dsPersonId, useCache: true)
+        body["kbsync"] = kbsync
+        let url = URL(string: "https://downloaddispatch.itunes.apple.com/WebObjects/DownloadDispatch.woa/wa/ent/download?guid=\(guid)")!
+        let (plist, _) = try await storePlist(url, body: HTTPClient.encodePlist(body),
+                                              headers: authHeaders(account), guid: guid)
+        let ft = plistString(plist["failureType"])
+        if ["2034", "2042"].contains(ft), !retried,
+           let pwd = storedPassword(for: account.email), !pwd.isEmpty,
+           let fresh = try? await AuthenticationManager.shared.reauthenticate(email: account.email, password: pwd) {
+            return try await performDownload(appIdentifier: appIdentifier, account: fresh,
+                                             appVersion: appVersion, retried: true)
+        }
+        return try parseDownloadResponse(plist: plist)
+    }
+
+    func download(appIdentifier: String, directoryServicesIdentifier: String,
+                  appVersion: String? = nil, passwordToken: String? = nil,
+                  storeFront: String? = nil) async throws -> StoreDownloadResponse {
+        let fake = accountStub(dsid: directoryServicesIdentifier, token: passwordToken, storeFront: storeFront)
+        return try await download(appIdentifier: appIdentifier, account: fake, appVersion: appVersion)
+    }
+
+    func redownload(appIdentifier: String, account: Account) async throws -> StoreDownloadResponse {
+        return try await download(appIdentifier: appIdentifier, account: account, appVersion: nil)
+    }
+
+    func purchase(appIdentifier: String, account: Account) async throws -> StorePurchaseResponse {
+        let guid = GUIDCache.shared.get()
+        let body: [String: Any] = [
+            "appExtVrsId": "0", "buyWithoutAuthorization": "true", "guid": guid,
+            "hasAskedToFulfillPreorder": "true", "hasDoneAgeCheck": "true", "price": "0",
+            "pricingParameters": "STDQ", "productType": "C", "salableAdamId": appIdentifier
         ]
-        let headers = ["Set-Cookie": cookies.joined(separator: ", ")]
-        for s in origins {
-            guard let origin = URL(string: s) else { continue }
-            let parsed = HTTPCookie.cookies(withResponseHeaderFields: headers, for: origin)
-            for c in parsed { HTTPCookieStorage.shared.setCookie(c) }
+        var headers = authHeaders(account)
+        headers["Content-Type"] = "application/x-apple-plist"
+        let url = URL(string: "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/buyProduct")!
+        let (plist, _) = try await storePlist(url, body: HTTPClient.encodePlist(body),
+                                              headers: headers, guid: guid)
+        let ft = plistString(plist["failureType"])
+        if ft == "5002" { 
+            return StorePurchaseResponse(dsPersonId: account.dsPersonId, jingleDocType: "purchaseSuccess",
+                                          jingleAction: "buyProduct", pings: nil)
         }
+        return try parsePurchaseResponse(plist: plist)
     }
 
-    private func syncAuthSessionCookiesToShared() {
-        guard let src = authSession.configuration.httpCookieStorage else { return }
-        let dst = HTTPCookieStorage.shared
-        for c in src.cookies ?? [] {
-            if let existing = dst.cookies?.first(where: { $0.name == c.name && $0.domain == c.domain && $0.path == c.path }) {
-                dst.deleteCookie(existing)
-            }
-            dst.setCookie(c)
-        }
-        let names = (src.cookies ?? []).map { $0.name }.sorted()
-        if !names.isEmpty {
-        }
+    func downloadRawPlist(appIdentifier: String, directoryServicesIdentifier: String,
+                          appVersion: String? = nil, passwordToken: String? = nil,
+                          storeFront: String? = nil) async throws -> [String: Any] {
+        let account = accountStub(dsid: directoryServicesIdentifier, token: passwordToken, storeFront: storeFront)
+        let guid = GUIDCache.shared.get()
+        var body = downloadBody(appIdentifier: appIdentifier, appVersion: appVersion)
+        body["guid"] = guid
+        let kbsync = try await SAPSigner.shared.kbsync(guid: guid, dsid: account.dsPersonId, useCache: true)
+        body["kbsync"] = kbsync
+        let url = URL(string: "https://downloaddispatch.itunes.apple.com/WebObjects/DownloadDispatch.woa/wa/ent/download?guid=\(guid)")!
+        let (plist, _) = try await storePlist(url, body: HTTPClient.encodePlist(body),
+                                              headers: authHeaders(account), guid: guid)
+        return plist
     }
 
-    private func postCommercePlist(
-        path: String,
-        query: String,
-        body: [String: Any],
-        dsid: String,
-        passwordToken: String,
-        storeFront: String,
-        pod: inout String,
-        sapSignature: Data? = nil
-    ) async throws -> ([String: Any], HTTPURLResponse) {
-        seedAccountCookies(dsid: dsid)
-        let ua = commerceUserAgent()
-        let sf = storeFront.isEmpty ? "143441-1" : storeFront
-        func makeHeaders(_ r: inout URLRequest, _ pwdTok: String) {
-            r.setValue("application/x-apple-plist", forHTTPHeaderField: "Content-Type")
-            r.setValue("*/*", forHTTPHeaderField: "Accept")
-            r.setValue("en-us", forHTTPHeaderField: "Accept-Language")
-            r.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
-            r.setValue(ua, forHTTPHeaderField: "User-Agent")
-            r.setValue(dsid, forHTTPHeaderField: "X-Dsid")
-            r.setValue(dsid, forHTTPHeaderField: "iCloud-DSID")
-            if !pwdTok.isEmpty {
-                r.setValue(pwdTok, forHTTPHeaderField: "X-Token")
-            }
-            r.setValue(sf, forHTTPHeaderField: "X-Apple-Store-Front")
-        }
-        let host = pod.isEmpty ? "https://buy.itunes.apple.com" : "https://p\(pod)-buy.itunes.apple.com"
-        let firstURL = URL(string: "\(host)\(path)\(query)")!
-        var req = URLRequest(url: firstURL)
-        req.httpMethod = "POST"
-        makeHeaders(&req, passwordToken)
-        let bodyData = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        if let sapSignature {
-            req.setValue(sapSignature.base64EncodedString(), forHTTPHeaderField: "x-apple-actionsignature")
-        }
-        let cookieDesc = (HTTPCookieStorage.shared.cookies(for: firstURL) ?? [])
-            .sorted { $0.name < $1.name }
-            .map { $0.name + "(" + $0.domain + ")" }
-            .joined(separator: ",")
-        downloadDebugLog("cookies[\(path)] token=\(passwordToken.isEmpty ? "none" : "\(passwordToken.count)B") pod=\(pod) cookies=\(cookieDesc)")
-        let (data, response) = try await session.data(for: req)
-        guard let h = response as? HTTPURLResponse else { throw StoreError.invalidResponse }
-        if h.statusCode == 301 || h.statusCode == 302 {
-            let locRaw = (h.allHeaderFields["Location"] as? String) ?? (h.allHeaderFields["location"] as? String) ?? ""
-            guard !locRaw.isEmpty, let loc = URL(string: locRaw) else {
-                throw StoreError.authenticationFailed
-            }
-
-            var extractedPod = ""
-            if let host = loc.host {
-                let m = try? NSRegularExpression(pattern: #"^p(\d+)-buy\.itunes\.apple\.com$"#, options: [])
-                if let m, let r = m.firstMatch(in: host, range: NSRange(host.startIndex..., in: host)),
-                   let r2 = Range(r.range(at: 1), in: host) {
-                    extractedPod = String(host[r2])
-                }
-            }
-            if extractedPod.isEmpty { extractedPod = pod }
-            var comps = URLComponents(url: loc, resolvingAgainstBaseURL: false)
-            comps?.scheme = "https"
-            let retryURL = comps?.url ?? loc
-            if !extractedPod.isEmpty { pod = extractedPod }
-            var req2 = URLRequest(url: retryURL)
-            req2.httpMethod = "POST"
-            makeHeaders(&req2, passwordToken)
-            req2.httpBody = bodyData
-            let (d2, r2) = try await session.data(for: req2)
-            guard let h2 = r2 as? HTTPURLResponse else { throw StoreError.invalidResponse }
-            let p2 = (try? PropertyListSerialization.propertyList(from: d2, options: [], format: nil) as? [String: Any]) ?? [:]
-            return (p2, h2)
-        }
-        let plist = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]) ?? [:]
-        let ft = plist["failureType"] as? String ?? ""
-        let cm = plist["customerMessage"] as? String ?? ""
-        let isErr = !ft.isEmpty || !cm.isEmpty
-        if pod.isEmpty && isErr {
-            var newPod = ""
-            for (k, v) in h.allHeaderFields {
-                let key = String(describing: k).lowercased()
-                if key == "pod", let s = v as? String { newPod = s; break }
-            }
-            if newPod.isEmpty {
-                let lines: [String]
-                if let arr = h.allHeaderFields["Set-Cookie"] as? [String] {
-                    lines = arr
-                } else if let single = h.allHeaderFields["Set-Cookie"] as? String {
-                    lines = [single]
-                } else {
-                    lines = []
-                }
-                for line in lines {
-                    if line.starts(with: "itspod=") {
-                        let p = line.dropFirst(7).split(separator: ";").first ?? ""
-                        newPod = String(p).trimmingCharacters(in: .whitespaces)
-                    }
-                }
-            }
-            if !newPod.isEmpty {
-                pod = newPod
-                let retryURL = URL(string: "https://p\(pod)-buy.itunes.apple.com\(path)\(query)")!
-                var req2 = URLRequest(url: retryURL)
-                req2.httpMethod = "POST"
-                makeHeaders(&req2, passwordToken)
-                req2.httpBody = bodyData
-                let (d2, r2) = try await session.data(for: req2)
-                guard let h2 = r2 as? HTTPURLResponse else { throw StoreError.invalidResponse }
-                let p2 = (try? PropertyListSerialization.propertyList(from: d2, options: [], format: nil) as? [String: Any]) ?? [:]
-                return (p2, h2)
-            }
-        }
-        if isErr {
-        }
-        return (plist, h)
+    private func accountStub(dsid: String, token: String?, storeFront: String?) -> Account {
+        Account(name: "", email: "", firstName: "", lastName: "",
+                passwordToken: token ?? "", directoryServicesIdentifier: dsid,
+                dsPersonId: dsid, cookies: [], countryCode: "", pod: "",
+                storeResponse: Account.AccountStoreResponse(
+                    directoryServicesIdentifier: dsid,
+                    passwordToken: token ?? "",
+                    storeFront: storeFront ?? "143441-1,34"),
+                deviceGUID: GUIDCache.shared.get(), hsc: 0, adsid: "",
+                idmsToken: "", kbsync: nil)
     }
 
-    private func acquireGUID() -> String {
-        GUIDCache.shared.get()
-    }
-
-    func currentGUID() -> String { acquireGUID() }
-
-    nonisolated static func setGUID(_ guid: String) {
-        GUIDCache.shared.set(guid)
-    }
-
-    private func parseAuthResponse(
-        plist: [String: Any],
-        httpResponse: HTTPURLResponse
-    ) throws -> StoreAuthResponse {
-        if httpResponse.statusCode == 200 {
-            let accountInfo = parseAccountInfo(from: plist)
-            let passwordToken = plist["passwordToken"] as? String ?? ""
-            let dsPersonId = (plist["dsPersonId"] as? String) ??
-                           (plist["dsPersonID"] as? String) ??
-                           (plist["dsid"] as? String) ??
-                           (plist["DSID"] as? String) ??
-                           (plist["directoryServicesIdentifier"] as? String) ?? ""
-            let pings = plist["pings"] as? [String]
-            let accountDsPersonId = accountInfo?.dsPersonId ?? ""
-            let finalDsPersonId = !dsPersonId.isEmpty ? dsPersonId : accountDsPersonId
-            let response = StoreAuthResponse(
-                accountInfo: accountInfo ?? StoreAuthResponse.AccountInfo(
-                    appleId: "",
-                    address: StoreAuthResponse.AccountInfo.Address(
-                        firstName: "",
-                        lastName: ""
-                    ),
-                    dsPersonId: finalDsPersonId,
-                    countryCode: nil,
-                    storeFront: nil
-                ),
-                passwordToken: passwordToken,
-                dsPersonId: finalDsPersonId,
-                pings: pings
-            )
-            return response
-        } else {
-            let failureType = plist["failureType"] as? String ?? ""
-            let customerMessage = plist["customerMessage"] as? String ?? ""
-            if !failureType.isEmpty {
-                throw StoreError.fromFailureType(failureType)
-            } else if customerMessage == "MZFinance.BadLogin.Configurator_message" {
-                throw StoreError.codeRequired
-            } else if customerMessage.contains("AMD-Action") {
-                let emptyResponse = StoreAuthResponse(
-                    accountInfo: StoreAuthResponse.AccountInfo(
-                        appleId: "",
-                        address: StoreAuthResponse.AccountInfo.Address(
-                            firstName: "",
-                            lastName: ""
-                        ),
-                        dsPersonId: "",
-                        countryCode: "",
-                        storeFront: nil
-                    ),
-                    passwordToken: "",
-                    dsPersonId: "",
-                    pings: []
-                )
-                return emptyResponse
-            } else {
-                throw StoreError.unknownError
-            }
-        }
-    }
-
-    private func parseAccountInfo(from plist: [String: Any]) -> StoreAuthResponse.AccountInfo? {
-        guard let accountInfo = plist["accountInfo"] as? [String: Any] else {
-            return nil
-        }
-        let appleId = accountInfo["appleId"] as? String ?? ""
-        let resolved = Apple.resolveName(roots: [plist, accountInfo], tag: "parseAccountInfo")
-        let firstName = resolved.firstName.isEmpty ? resolved.fallbackFull : resolved.firstName
-        let lastName = resolved.lastName
-        let dsPersonId = (accountInfo["dsPersonId"] as? String) ??
-                        (accountInfo["dsPersonID"] as? String) ??
-                        (accountInfo["dsid"] as? String) ??
-                        (accountInfo["DSID"] as? String) ??
-                        (accountInfo["directoryServicesIdentifier"] as? String) ?? ""
-        let countryCode = detectCountryCodeFromAccountInfo(accountInfo)
-        let storeFront = detectStoreFrontFromAccountInfo(accountInfo)
-        return StoreAuthResponse.AccountInfo(
-            appleId: appleId,
-            address: StoreAuthResponse.AccountInfo.Address(
-                firstName: firstName,
-                lastName: lastName
-            ),
-            dsPersonId: dsPersonId,
-            countryCode: countryCode,
-            storeFront: storeFront
-        )
-    }
-
-    private func detectCountryCodeFromAccountInfo(_ accountInfo: [String: Any]) -> String? {
-        if let countryCode = accountInfo["countryCode"] as? String, !countryCode.isEmpty {
-            return countryCode
-        }
-        if let storeFront = accountInfo["storeFront"] as? String, !storeFront.isEmpty {
-            return inferCountryCodeFromStoreFront(storeFront)
-        }
-        let regionFields = ["region", "country", "locale", "territory", "market"]
-        for field in regionFields {
-            if let value = accountInfo[field] as? String, !value.isEmpty {
-                return value.uppercased()
-            }
-        }
-        return nil
-    }
-
-    private func detectStoreFrontFromAccountInfo(_ accountInfo: [String: Any]) -> String? {
-        if let storeFront = accountInfo["storeFront"] as? String, !storeFront.isEmpty {
-            return storeFront
-        }
-        let storeFields = ["storefront", "storeFront", "store_front", "marketId", "market_id"]
-        for field in storeFields {
-            if let value = accountInfo[field] as? String, !value.isEmpty {
-                return value
-            }
-        }
-        return nil
-    }
-
-    private func inferCountryCodeFromStoreFront(_ storeFront: String) -> String {
-        let storeFrontCode = storeFront.components(separatedBy: "-").first ?? storeFront
-        for (countryCode, code) in Apple.storeFrontCodeMap {
-            if code == storeFrontCode {
-                return countryCode
-            }
-        }
-        return ""
-    }
-
-    private func parseDownloadResponse(
-        plist: [String: Any],
-        httpResponse: HTTPURLResponse
-    ) throws -> StoreDownloadResponse {
+    private func parseDownloadResponse(plist: [String: Any]) throws -> StoreDownloadResponse {
 
         let failureType = plist["failureType"] as? String ?? ""
         if !failureType.isEmpty {
@@ -1255,10 +309,7 @@ class StoreRequest {
         )
     }
 
-    private func parsePurchaseResponse(
-        plist: [String: Any],
-        httpResponse: HTTPURLResponse
-    ) throws -> StorePurchaseResponse {
+    private func parsePurchaseResponse(plist: [String: Any]) throws -> StorePurchaseResponse {
 
         let failureType = plist["failureType"] as? String ?? ""
         let customerMessage = plist["customerMessage"] as? String ?? ""
@@ -1278,313 +329,6 @@ class StoreRequest {
         )
     }
 
-    private func sapAuthenticate(
-        email: String,
-        password: String,
-        authCode: String,
-        skipGo: Bool = false
-    ) async throws -> StoreAuthResponse {
-        let identity = try MachineIdentityProvider.resolve()
-        GUIDCache.shared.set(identity.guid)
-
-        let knownPod = UserDefaults.standard.string(forKey: "sap_last_pod") ?? ""
-        if !skipGo, !RemoteSAPConfig.isActive, let r = SAPGoLogin.login(email: email, password: password, guid: identity.guid, authCode: authCode, pod: knownPod) {
-            if let token = r.passwordToken, !token.isEmpty, let dsid = r.dsPersonId, !dsid.isEmpty {
-                if token.count < 450 {
-                    if authCode.isEmpty {
-                        PendingSAPAuth.push(email: email, password: password)
-                        throw StoreError.codeRequired
-                    }
-                    throw StoreError.authenticationFailedWithDetails("Apple 接受了验证码但返回降级会话（token \(token.count)B，需≥450B），暂时无法下载。请稍后重试或更换网络环境后重新登录")
-                }
-                let pod = r.pod ?? ""
-                let storeFront = r.storeFront ?? ""
-                if !pod.isEmpty {
-                    UserDefaults.standard.set(pod, forKey: "sap_last_pod")
-                }
-                var cookieLines: [String] = []
-                if !pod.isEmpty {
-                    AccountPodCache.shared.set(dsid: dsid, pod: pod)
-                    cookieLines = composeCookieLines(dsid: dsid, storeFront: storeFront, pod: pod, passwordToken: token)
-                }
-                if let real = r.cookies, !real.isEmpty {
-                    cookieLines.append(contentsOf: real)
-                    storeRealSessionCookies(real)
-                }
-                if !cookieLines.isEmpty {
-                    AuthCookieCache.shared.set(dsid: dsid, cookies: cookieLines)
-                }
-                if !pod.isEmpty {
-                    syncCookiesToShared(dsPersonId: dsid, passwordToken: token, appleId: email, storeFront: storeFront)
-                }
-                let info = StoreAuthResponse.AccountInfo(
-                    appleId: email,
-                    address: StoreAuthResponse.AccountInfo.Address(firstName: "", lastName: ""),
-                    dsPersonId: dsid,
-                    countryCode: nil,
-                    storeFront: storeFront.isEmpty ? nil : storeFront
-                )
-                var resp = StoreAuthResponse(
-                    accountInfo: info,
-                    passwordToken: token,
-                    dsPersonId: dsid,
-                    pings: nil
-                )
-                resp.pod = pod
-                return resp
-            }
-            if r.error == "2FA_REQUIRED" || r.error == "2FA_CODE_INVALID" {
-                PendingSAPAuth.push(email: email, password: password)
-                throw StoreError.codeRequired
-            }
-            if r.error?.hasPrefix("WEAK_TOKEN") == true {
-                if authCode.isEmpty {
-                    PendingSAPAuth.push(email: email, password: password)
-                    throw StoreError.codeRequired
-                }
-                throw StoreError.authenticationFailedWithDetails("Apple 返回降级会话（\(r.error ?? "")），验证码已接受但拿不到下载权限。请稍后重试或更换网络环境后重新登录")
-            }
-        }
-
-        await ensureBagLoaded()
-        let sap = bagManager.sapConfig
-
-        resetAuthCookieJar()
-        AppleIDAuthenticator.clearAppleCookies()
-
-        let signer: SAPActionSigner
-        do {
-            signer = RemoteSAPConfig.isActive
-                ? RemoteSAPSigner(guid: identity.guid)
-                : try await DefaultSAPSignerFactory.shared
-                    .makeSigner(config: sap, machineID: identity.machineID)
-        } catch {
-            throw StoreError.authenticationFailedWithDetails("SAP signer init: \(error.localizedDescription)")
-        }
-        defer { signer.close() }
-
-        let endpoint = sap.authEndpoint
-        var redirect: String? = nil
-        var lastResponse: (plist: [String: Any], http: HTTPURLResponse)?
-
-        for attempt in 1...4 {
-            let actualAttempt = redirect != nil ? 1 : attempt
-            let payload: [String: Any] = [
-                "appleId": email,
-                "attempt": "\(actualAttempt)",
-                "guid": identity.guid,
-                "password": "\(password)\(authCode.filter { !$0.isWhitespace })",
-                "rmp": "0",
-                "why": "signIn"
-            ]
-            let url = redirect ?? endpoint
-            let bodyData = try PropertyListSerialization.data(
-                fromPropertyList: payload,
-                format: .xml,
-                options: 0
-            )
-
-            let signature: Data
-            do {
-                signature = try signer.sign(bodyData)
-            } catch {
-                throw StoreError.authenticationFailedWithDetails("SAP sign: \(error.localizedDescription)")
-            }
-
-            var req = URLRequest(url: URL(string: url)!)
-            req.httpMethod = "POST"
-            req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            req.setValue(commerceUserAgent(), forHTTPHeaderField: "User-Agent")
-            req.setValue(signature.base64EncodedString(), forHTTPHeaderField: "X-Apple-ActionSignature")
-            req.httpBody = bodyData
-            req.httpShouldHandleCookies = true
-
-            let (data, response) = try await authSession.data(for: req)
-            guard let http = response as? HTTPURLResponse else {
-                throw StoreError.invalidResponse
-            }
-
-            if http.statusCode == 301 || http.statusCode == 302 {
-                let loc = (http.allHeaderFields["Location"] as? String)
-                        ?? (http.allHeaderFields["location"] as? String) ?? ""
-                guard !loc.isEmpty else {
-                    throw StoreError.authenticationFailedWithDetails("Apple 重定向(\(http.statusCode))缺少 Location")
-                }
-                guard let validated = try? Self.validateAuthenticationRedirect(loc) else {
-                    throw StoreError.authenticationFailedWithDetails("invalid auth redirect: \(loc)")
-                }
-                redirect = validated
-                continue
-            }
-
-            let plist = (try? PropertyListSerialization.propertyList(
-                from: data, options: [], format: nil
-            ) as? [String: Any]) ?? [:]
-
-            if plist.isEmpty {
-                let snippet = String(data: data.prefix(200), encoding: .utf8)?
-                    .replacingOccurrences(of: "\n", with: " ") ?? ""
-                throw StoreError.authenticationFailedWithDetails(
-                    "非 plist 响应: HTTP=\(http.statusCode) len=\(data.count) body=\(snippet.isEmpty ? "<empty>" : snippet)"
-                )
-            }
-
-            let ft = plist["failureType"] as? String ?? ""
-            let cm = plist["customerMessage"] as? String ?? ""
-
-            if attempt == 1 && ft == "-5000" {
-                continue
-            }
-            if ft.isEmpty && cm == "MZFinance.BadLogin.Configurator_message" {
-                PendingSAPAuth.push(email: email, password: password)
-                throw StoreError.codeRequired
-            }
-            if ft.isEmpty && cm == "Your account is disabled." {
-                throw StoreError.lockedAccount
-            }
-            if !ft.isEmpty {
-                if !cm.isEmpty {
-                    if ft == "5002" || ft == "2040" {
-                        lastResponse = (plist, http)
-                        break
-                    }
-                    throw StoreError.authenticationFailedWithDetails(cm)
-                }
-                throw StoreError.authenticationFailedWithDetails(
-                    "failureType=\(ft) HTTP=\(http.statusCode) keys=\(plist.keys.sorted().prefix(8).joined(separator: ","))"
-                )
-            }
-            if http.statusCode == 200
-                && !(plist["passwordToken"] as? String ?? "").isEmpty
-                && !(plist["dsPersonId"] as? String ?? "").isEmpty {
-                lastResponse = (plist, http)
-                break
-            }
-            lastResponse = (plist, http)
-        }
-
-        guard let last = lastResponse else {
-            throw StoreError.authenticationFailedWithDetails("too many attempts")
-        }
-
-        let lastToken = last.plist["passwordToken"] as? String ?? ""
-        if lastToken.isEmpty {
-            let lastCm = last.plist["customerMessage"] as? String ?? ""
-            throw StoreError.authenticationFailedWithDetails(
-                "无 passwordToken: HTTP=\(last.http.statusCode) cm=\(lastCm.isEmpty ? "-" : lastCm) keys=\(last.plist.keys.sorted().prefix(8).joined(separator: ","))"
-            )
-        }
-        if lastToken.count < 450 {
-            if authCode.isEmpty {
-                PendingSAPAuth.push(email: email, password: password)
-                throw StoreError.codeRequired
-            }
-            throw StoreError.authenticationFailedWithDetails("Apple 返回降级会话（token \(lastToken.count)B，需≥450B），验证码已接受但拿不到下载权限。请稍后重试或更换网络环境后重新登录")
-        }
-
-        let (plist, http) = last
-        let storeFront = (http.allHeaderFields["X-Set-Apple-Store-Front"] as? String)
-            ?? (http.allHeaderFields["x-set-apple-store-front"] as? String) ?? ""
-
-        var pod = ""
-        for (k, v) in http.allHeaderFields {
-            if String(describing: k).lowercased() == "pod", let s = v as? String {
-                pod = s; break
-            }
-        }
-        if pod.isEmpty {
-            let cookies = authSession.configuration.httpCookieStorage?.cookies ?? []
-            for c in cookies {
-                if c.name == "itspod" { pod = c.value; break }
-            }
-        }
-
-        let dsid = (plist["dsPersonId"] as? String)
-            ?? (plist["dsPersonID"] as? String)
-            ?? (plist["dsid"] as? String) ?? ""
-        let token = plist["passwordToken"] as? String ?? ""
-        let firstName: String
-        let lastName: String
-        if let accountInfo = plist["accountInfo"] as? [String: Any] {
-            let addr = accountInfo["address"] as? [String: Any] ?? [:]
-            firstName = addr["firstName"] as? String ?? ""
-            lastName = addr["lastName"] as? String ?? ""
-        } else {
-            firstName = ""
-            lastName = ""
-        }
-
-        if !dsid.isEmpty, !token.isEmpty {
-            AuthCookieCache.shared.set(
-                dsid: dsid,
-                cookies: composeCookieLines(dsid: dsid, storeFront: storeFront, pod: pod, passwordToken: token)
-            )
-            syncCookiesToShared(
-                dsPersonId: dsid,
-                passwordToken: token,
-                appleId: email,
-                storeFront: storeFront
-            )
-            AccountPodCache.shared.set(dsid: dsid, pod: pod)
-            syncAuthSessionCookiesToShared()
-        }
-
-        let addr = StoreAuthResponse.AccountInfo.Address(firstName: firstName, lastName: lastName)
-        let info = StoreAuthResponse.AccountInfo(
-            appleId: email,
-            address: addr,
-            dsPersonId: dsid,
-            countryCode: nil,
-            storeFront: storeFront.isEmpty ? nil : storeFront
-        )
-        var resp = StoreAuthResponse(
-            accountInfo: info,
-            passwordToken: token,
-            dsPersonId: dsid,
-            pings: plist["pings"] as? [String]
-        )
-        resp.pod = pod
-        return resp
-    }
-
-    private static func validateAuthenticationRedirect(_ location: String) throws -> String {
-        guard let url = URL(string: location),
-              url.scheme == "https",
-              let host = url.host?.lowercased() else {
-            throw SAPSignerError.invalidConfig("bad redirect: \(location)")
-        }
-        guard host == "buy.itunes.apple.com" || host.hasSuffix("-buy.itunes.apple.com") else {
-            throw SAPSignerError.invalidConfig("bad redirect host: \(host)")
-        }
-        guard url.path == "/WebObjects/MZFinance.woa/wa/authenticate" else {
-            throw SAPSignerError.invalidConfig("bad redirect path: \(url.path)")
-        }
-        return location
-    }
-}
-
-struct PendingSAPAuth {
-    private static let lock = NSLock()
-    private static var email: String = ""
-    private static var password: String = ""
-
-    static func push(email: String, password: String) {
-        lock.lock(); defer { lock.unlock() }
-        Self.email = email
-        Self.password = password
-    }
-
-    static func pop() -> (email: String, password: String)? {
-        lock.lock(); defer { lock.unlock() }
-        guard !email.isEmpty else { return nil }
-        let (e, p) = (email, password)
-        email = ""; password = ""
-        return (e, p)
-    }
-}
-
-private struct _StoreAuthPodKey {
-    static var podKey: UInt8 = 0
 }
 
 public enum StoreError: Error, LocalizedError, Equatable {
@@ -1655,25 +399,25 @@ public enum StoreError: Error, LocalizedError, Equatable {
             let hex = String(format: "OSStatus=0x%08X(%d)", status, status)
             return "Keychain 失败 \(hex)：\(detail ?? SecCopyErrorMessageString(status, nil) as String? ?? "unknown")"
         case .userInteractionRequired:
-            return "Apple ID 需要身份验证"
+            return "store_err_auth_required".localized
         case .invalidVerificationCode:
-            return "验证码错误，请检查后重试"
+            return "store_err_invalid_code".localized
         case .licenseExpired:
-            return "许可证已过期，需要重新认证"
+            return "store_err_license_expired".localized
         case .paymentVerificationRequired:
-            return "需要验证付款信息"
+            return "purchase_err_payment_verification".localized
         case .termsOfServiceUpdateRequired:
-            return "需要同意新的服务条款"
+            return "purchase_err_terms".localized
         case .storefrontChangeRequired:
-            return "需要切换到正确的商店地区"
+            return "store_err_switch_region".localized
         case .ageVerificationRequired:
-            return "需要进行年龄验证"
+            return "purchase_err_age_verification".localized
         case .tooManyRequests:
-            return "请求过于频繁，请稍后再试"
+            return "store_err_rate_limited".localized
         case .appNotAvailableInStorefront:
-            return "此应用在当前地区商店不可用"
+            return "purchase_err_region_unavailable".localized
         case .notOwned:
-            return "用户未购买此应用"
+            return "store_err_not_purchased".localized
         case .unknownError:
             return "Unknown error occurred"
         }
@@ -1707,7 +451,7 @@ public enum StoreError: Error, LocalizedError, Equatable {
             return .tooManyRequests
         case "appNotAvailableInStorefront", "notAvailableInStorefront":
             return .appNotAvailableInStorefront
-        case "notOwned", "notOwnedLicense", "noLicense":
+        case "notOwned", "notOwnedLicense", "noLicense", "9610":
             return .notOwned
         case "invalidItem":
             return .invalidItem
@@ -1771,6 +515,7 @@ struct StoreAuthResponse: Codable {
     let adsid: String
     let idmsToken: String
     var pod: String = ""
+    var kbsync: String? = nil
 
     struct AccountInfo: Codable {
         let appleId: String
@@ -1785,7 +530,7 @@ struct StoreAuthResponse: Codable {
         }
     }
 
-    init(accountInfo: AccountInfo, passwordToken: String, dsPersonId: String, pings: [String]?, hsc: Int = 0, adsid: String = "", idmsToken: String = "", pod: String = "") {
+    init(accountInfo: AccountInfo, passwordToken: String, dsPersonId: String, pings: [String]?, hsc: Int = 0, adsid: String = "", idmsToken: String = "", pod: String = "", kbsync: String? = nil) {
         self.accountInfo = accountInfo
         self.passwordToken = passwordToken
         self.dsPersonId = dsPersonId
@@ -1794,6 +539,7 @@ struct StoreAuthResponse: Codable {
         self.adsid = adsid
         self.idmsToken = idmsToken
         self.pod = pod
+        self.kbsync = kbsync
     }
 }
 

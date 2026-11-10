@@ -12,7 +12,7 @@ struct RatingBarView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 ratingBarsView
-                Text("\(formatCount(ratingCount)) 个评分")
+                Text("rating_count_format".localized(formatCount(ratingCount)))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -111,13 +111,7 @@ struct RatingBarView: View {
     }
 
     private func formatCount(_ count: Int) -> String {
-        if count >= 10000 {
-            return "\(count / 10000)万"
-        } else if count >= 1000 {
-            return String(format: "%.1fK", Double(count) / 1000.0)
-        } else {
-            return "\(count)"
-        }
+        CompactNumber.string(count)
     }
 }
 

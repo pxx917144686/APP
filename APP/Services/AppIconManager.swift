@@ -46,7 +46,7 @@ final class AppIconManager: NSObject {
                     }
                 }
             } else {
-                let error = NSError(domain: "AppIconManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "设备不支持备用图标"])
+                let error = NSError(domain: "AppIconManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "icon_err_unsupported".localized])
                 completion?(false, error)
             }
         }
@@ -65,7 +65,7 @@ final class AppIconManager: NSObject {
                     throw NSError(
                         domain: "AppIconManager",
                         code: -3,
-                        userInfo: [NSLocalizedDescriptionKey: "没有图标文件被替换"]
+                        userInfo: [NSLocalizedDescriptionKey: "icon_err_none_replaced".localized]
                     )
                 }
 
@@ -97,7 +97,7 @@ final class AppIconManager: NSObject {
             throw NSError(
                 domain: "AppIconManager",
                 code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "应用Bundle目录不可写"]
+                userInfo: [NSLocalizedDescriptionKey: "icon_err_bundle_not_writable".localized]
             )
         }
 
@@ -105,7 +105,7 @@ final class AppIconManager: NSObject {
             throw NSError(
                 domain: "AppIconManager",
                 code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "找不到图标源文件: \(iconName)"]
+                userInfo: [NSLocalizedDescriptionKey: "icon_err_source_missing".localized(iconName)]
             )
         }
 

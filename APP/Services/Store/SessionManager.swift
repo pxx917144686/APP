@@ -28,14 +28,6 @@ class SessionManager: ObservableObject, @unchecked Sendable {
             .store(in: &cancellables)
     }
 
-    deinit {
-        Task { @MainActor [cancellables, sessionTimer] in
-            var c = cancellables
-            c.removeAll()
-            sessionTimer?.invalidate()
-        }
-    }
-
     private func handleAccountChange(_ account: Account?) {
         if account != nil {
             resetSessionState()
@@ -86,7 +78,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
         if reconnectAttempts < maxReconnectAttempts {
             await attemptReconnection()
         } else {
-            sessionError = "Apple ID会话已过期，请重新登录"
+            sessionError = "session_err_expired".localized
             NotificationCenter.default.post(name: .sessionInvalid, object: nil)
         }
     }
@@ -97,7 +89,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
         }
         reconnectAttempts += 1
         isReconnecting = true
-        sessionError = "正在重新连接... (\(reconnectAttempts)/\(maxReconnectAttempts))"
+        sessionError = "session_reconnecting".localized(reconnectAttempts, maxReconnectAttempts)
         let refreshedAccount = AuthenticationManager.shared.refreshCookies(for: account)
         let isValid = await validateSessionWithAPI(account: refreshedAccount)
         if isValid {
@@ -109,7 +101,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
             await notifySessionRestored()
         } else {
             isReconnecting = false
-            sessionError = "重连失败，请检查网络连接"
+            sessionError = "session_err_reconnect_failed".localized
         }
     }
 
@@ -125,7 +117,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
     func forceReauthentication() async {
         isSessionValid = false
         isReconnecting = false
-        sessionError = "需要重新登录"
+        sessionError = "session_err_signin_required".localized
         reconnectAttempts = maxReconnectAttempts
     }
 
@@ -141,7 +133,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
         let downloadManager = UnifiedDownloadManager.shared
         for request in downloadManager.downloadRequests {
             if request.runtime.status == .failed &&
-               request.runtime.error?.contains("认证") == true {
+               (request.runtime.isAuthFailure || request.runtime.error?.contains("认证") == true) {
                 request.runtime.status = .waiting
                 request.runtime.error = nil
                 request.runtime.progressValue = 0

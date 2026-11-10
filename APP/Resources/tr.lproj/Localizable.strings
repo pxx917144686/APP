@@ -68,7 +68,6 @@
 "language_switch" = "Dil Değiştir";
 "language_switch_message" = "Dili değiştirdikten sonra uygulama arayüzü hemen güncellenecektir. Bazı sistem bileşenlerinin tam olarak生效mesi için yeniden başlatma gerekebilir.";
 "confirm_switch" = "Değişikliği Onayla";
-"app_icon" = "Uygulama Simgesi";
 "icon_default" = "Varsayılan";
 "icon_author" = "Simge";
 "icon_love" = "Sevgi";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Özellik Etiketleri";
 "free" = "Al";
-"get" = "Al";
 "view" = "Görüntüle";
 "get_reviews_failed" = "Yorumlar alınamadı: %@";
 "x_ratings" = "%@ Değerlendirme";
 "age_rating" = "Yaş Derecesi";
 "x_languages" = "%@ Dil";
-"whats_new" = "Yenilikler";
 "tech_info" = "Teknik Bilgi";
 "first_release" = "İlk Sürüm";
-"last_updated" = "Son Güncelleme";
 "requires_ios" = "iOS %@ veya sonraki sürümü gerekir";
 
-"search_placeholder" = "Oyun, uygulama ara";
 "login" = "Oturum Aç";
 "clear_all" = "Tümünü Temizle";
 "x_results_found" = "%@ Sonuç Bulundu";
@@ -458,7 +453,6 @@
 "switch" = "Değiştir";
 "x_accounts" = "%@ Hesap";
 "add_new_account" = "Yeni Hesap Ekle";
-"account_management" = "Hesap Yönetimi";
 "use_account" = "Hesap Kullan";
 "connection_lost" = "Bağlantı Kesildi";
 "reconnecting" = "Yeniden Bağlanılıyor";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Medya ve Satın Alımlar";
 "sign_in_apple_id" = "iPhone'unuzda Oturum Açın";
 "sign_in_apple_id_desc" = "Apple Kimliğinizi bu iPhone'da kullanın";
-"apple_id" = "Apple Kimliği";
-"name" = "Ad";
 "apple_id_email" = "Apple Kimliği";
 "name_email_header" = "Ad, E-posta";
 "account_identifier_header" = "Hesap Tanımlayıcı";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Temel Bilgiler";
 "account_identifier" = "Hesap Tanımlayıcı";
-"country_region" = "Ülke/Bölge";
 "password_token" = "Şifre Jetonu";
 "auth_info" = "Kimlik Doğrulama Bilgisi";
 "password_token_hint" = "Şifre jetonu otomatik kimlik doğrulama için kullanılır. Lütfen başkalarıyla paylaşmayın.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Güvenilen Apple cihazınızı veya SMS'i kontrol edin ve aşağıya 6 haneli doğrulama kodunu girin.";
-
-
+"tab_purchased" = "Satın Alınanlar";
+"purchased_search_placeholder" = "Satın alınan uygulamalarda ara";
+"purchased_syncing" = "Satın alımlar eşitleniyor…";
+"purchased_empty" = "Henüz satın alım yok";
+"icon_set_failed" = "Simge ayarlanamadı";
+"icon_set_failed_desc" = "Uygulama simgesi değiştirilemedi. Lütfen daha sonra tekrar deneyin.";
+"web_load_failed" = "Sayfa yüklenemedi: %@";
+"web_server_unreachable" = "Sunucuya bağlanılamıyor: %@";
+"status_owned" = "Alındı";
+"status_not_owned" = "Alınmadı";
+"rating_count_format" = "%@ değerlendirme";
+"legacy_apps_delisted" = "Eski uygulamalar (kaldırıldı)";
+"versions_login_required" = "Sürüm bilgileri için oturum açın";
+"versions_unavailable" = "Sürümler yüklenemedi. Bağlantınızı kontrol edin.";
+"versions_unavailable_retry" = "Sürüm geçmişi yüklenemedi. Lütfen tekrar deneyin.";
+"preparing_install_link" = "Yükleme bağlantısı hazırlanıyor…";
+"widget_weather" = "Hava";
+"weather_sunny" = "Güneşli";

@@ -68,7 +68,6 @@
 "language_switch" = "تبديل اللغة";
 "language_switch_message" = "سيتم تحديث واجهة التطبيق فورًا بعد تبديل اللغة. قد تتطلب بعض مكونات النظام إعادة تشغيل لتسري بالكامل.";
 "confirm_switch" = "تأكيد التبديل";
-"app_icon" = "أيقونة التطبيق";
 "icon_default" = "افتراضي";
 "icon_author" = "أيقونة";
 "icon_love" = "حب";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "علامات الميزات";
 "free" = "الحصول";
-"get" = "الحصول";
 "view" = "عرض";
 "get_reviews_failed" = "فشل الحصول على المراجعات: %@";
 "x_ratings" = "%@ تقييمات";
 "age_rating" = "تصنيف العمر";
 "x_languages" = "%@ لغات";
-"whats_new" = "ما الجديد";
 "tech_info" = "المعلومات التقنية";
 "first_release" = "الإصدار الأول";
-"last_updated" = "آخر تحديث";
 "requires_ios" = "يتطلب iOS %@ أو أحدث";
 
-"search_placeholder" = "البحث عن ألعاب، تطبيقات";
 "login" = "تسجيل الدخول";
 "clear_all" = "مسح الكل";
 "x_results_found" = "تم العثور على %@ نتيجة";
@@ -458,7 +453,6 @@
 "switch" = "تبديل";
 "x_accounts" = "%@ حسابات";
 "add_new_account" = "إضافة حساب جديد";
-"account_management" = "إدارة الحسابات";
 "use_account" = "استخدام الحساب";
 "connection_lost" = "فقدان الاتصال";
 "reconnecting" = "جارٍ إعادة الاتصال";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "الوسائط والمشتريات";
 "sign_in_apple_id" = "تسجيل الدخول على جهاز iPhone الخاص بك";
 "sign_in_apple_id_desc" = "استخدم Apple ID الخاص بك على هذا iPhone";
-"apple_id" = "Apple ID";
-"name" = "الاسم";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "الاسم، البريد الإلكتروني";
 "account_identifier_header" = "معرف الحساب";
@@ -543,7 +535,6 @@
 
 "basic_info" = "المعلومات الأساسية";
 "account_identifier" = "معرف الحساب";
-"country_region" = "البلد/المنطقة";
 "password_token" = "رمز كلمة المرور";
 "auth_info" = "معلومات المصادقة";
 "password_token_hint" = "يتم استخدام رمز كلمة المرور للمصادقة التلقائية. يرجى عدم مشاركته مع الآخرين.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "تحقق من جهاز Apple الموثوق أو الرسائل النصية، ثم أدخل رمز التحقق المكون من 6 أرقام أدناه.";
-
-
+"tab_purchased" = "المشتراة";
+"purchased_search_placeholder" = "البحث في التطبيقات المشتراة";
+"purchased_syncing" = "جارٍ مزامنة المشتريات…";
+"purchased_empty" = "لا توجد مشتريات بعد";
+"icon_set_failed" = "تعذّر تعيين الرمز";
+"icon_set_failed_desc" = "تعذّر تغيير رمز التطبيق. يُرجى المحاولة لاحقًا.";
+"web_load_failed" = "تعذّر تحميل الصفحة: %@";
+"web_server_unreachable" = "تعذّر الاتصال بالخادم: %@";
+"status_owned" = "مملوك";
+"status_not_owned" = "غير مملوك";
+"rating_count_format" = "%@ تقييم";
+"legacy_apps_delisted" = "تطبيقات سابقة (أُزيلت)";
+"versions_login_required" = "سجّل الدخول لتحميل معلومات الإصدارات";
+"versions_unavailable" = "تعذّر تحميل الإصدارات. تحقّق من اتصالك.";
+"versions_unavailable_retry" = "تعذّر تحميل سجل الإصدارات. يُرجى المحاولة مجددًا.";
+"preparing_install_link" = "جارٍ تحضير رابط التثبيت…";
+"widget_weather" = "الطقس";
+"weather_sunny" = "مشمس";

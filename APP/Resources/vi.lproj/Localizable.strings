@@ -68,7 +68,6 @@
 "language_switch" = "Thay đổi ngôn ngữ";
 "language_switch_message" = "Giao diện ứng dụng sẽ cập nhật ngay lập tức sau khi thay đổi ngôn ngữ. Một số thành phần hệ thống có thể cần khởi động lại để có hiệu lực đầy đủ.";
 "confirm_switch" = "Xác nhận thay đổi";
-"app_icon" = "Biểu tượng ứng dụng";
 "icon_default" = "Mặc định";
 "icon_author" = "Biểu tượng";
 "icon_love" = "Yêu";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Thẻ tính năng";
 "free" = "Nhận";
-"get" = "Nhận";
 "view" = "Xem";
 "get_reviews_failed" = "Không thể lấy nhận xét: %@";
 "x_ratings" = "%@ đánh giá";
 "age_rating" = "Xếp hạng độ tuổi";
 "x_languages" = "%@ ngôn ngữ";
-"whats_new" = "Có gì mới";
 "tech_info" = "Thông tin kỹ thuật";
 "first_release" = "Phát hành đầu tiên";
-"last_updated" = "Cập nhật lần cuối";
 "requires_ios" = "Yêu cầu iOS %@ trở lên";
 
-"search_placeholder" = "Tìm kiếm trò chơi, ứng dụng";
 "login" = "Đăng nhập";
 "clear_all" = "Xóa tất cả";
 "x_results_found" = "Tìm thấy %@ kết quả";
@@ -458,7 +453,6 @@
 "switch" = "Chuyển đổi";
 "x_accounts" = "%@ tài khoản";
 "add_new_account" = "Thêm tài khoản mới";
-"account_management" = "Quản lý tài khoản";
 "use_account" = "Sử dụng tài khoản";
 "connection_lost" = "Mất kết nối";
 "reconnecting" = "Đang kết nối lại";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media và Mua hàng";
 "sign_in_apple_id" = "Đăng nhập trên iPhone của bạn";
 "sign_in_apple_id_desc" = "Sử dụng Apple ID của bạn trên iPhone này";
-"apple_id" = "Apple ID";
-"name" = "Tên";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Tên, Email";
 "account_identifier_header" = "Mã định danh tài khoản";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Thông tin cơ bản";
 "account_identifier" = "Mã định danh tài khoản";
-"country_region" = "Quốc gia/Khu vực";
 "password_token" = "Mã thông báo mật khẩu";
 "auth_info" = "Thông tin xác thực";
 "password_token_hint" = "Mã thông báo mật khẩu được sử dụng để xác thực tự động. Vui lòng không chia sẻ với người khác.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Kiểm tra thiết bị Apple đáng tin cậy hoặc SMS, sau đó nhập mã xác minh 6 chữ số bên dưới.";
-
-
+"tab_purchased" = "Đã mua";
+"purchased_search_placeholder" = "Tìm ứng dụng đã mua";
+"purchased_syncing" = "Đang đồng bộ giao dịch mua…";
+"purchased_empty" = "Chưa có mục đã mua";
+"icon_set_failed" = "Không đặt được biểu tượng";
+"icon_set_failed_desc" = "Không thể thay đổi biểu tượng ứng dụng. Vui lòng thử lại sau.";
+"web_load_failed" = "Không tải được trang: %@";
+"web_server_unreachable" = "Không thể kết nối tới máy chủ: %@";
+"status_owned" = "Đã có";
+"status_not_owned" = "Chưa có";
+"rating_count_format" = "%@ đánh giá";
+"legacy_apps_delisted" = "Ứng dụng cũ (đã gỡ)";
+"versions_login_required" = "Đăng nhập để tải thông tin phiên bản";
+"versions_unavailable" = "Không tải được phiên bản. Kiểm tra kết nối mạng.";
+"versions_unavailable_retry" = "Không tải được lịch sử phiên bản. Vui lòng thử lại.";
+"preparing_install_link" = "Đang chuẩn bị liên kết cài đặt…";
+"widget_weather" = "Thời tiết";
+"weather_sunny" = "Nắng";

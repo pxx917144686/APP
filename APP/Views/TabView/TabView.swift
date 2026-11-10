@@ -5,6 +5,7 @@ enum TabEnum: String, CaseIterable, Hashable {
     case settings
     case tfapps
     case downloads
+    case purchased
     case search
 
     var title: String {
@@ -12,6 +13,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "tab_settings".localized
         case .tfapps:     return "tab_tfapps".localized
         case .downloads:  return "tab_downloads".localized
+        case .purchased:  return "tab_purchased".localized
         case .search:     return "tab_search".localized
         }
     }
@@ -21,6 +23,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
         case .tfapps:     return "square.stack.3d.up.fill"
+        case .purchased:  return "bag.fill"
         case .search:     return "magnifyingglass.circle.fill"
         }
     }
@@ -30,6 +33,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "⚙️"
         case .downloads:  return "📥"
         case .tfapps:     return "TF"
+        case .purchased:  return "🛍️"
         case .search:     return "🔍"
         }
     }
@@ -47,12 +51,21 @@ enum TabEnum: String, CaseIterable, Hashable {
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
+            .navigationViewStyle(.stack)
         case .tfapps:
             NavigationView {
                 TFAppsView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
+            .navigationViewStyle(.stack)
+        case .purchased:
+            NavigationView {
+                PurchasedView()
+                    .environmentObject(themeManager)
+                    .environmentObject(tabBarStyleManager)
+            }
+            .navigationViewStyle(.stack)
         case .search:
             SearchView()
                 .environmentObject(themeManager)
@@ -72,6 +85,8 @@ struct TabbarView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var tabBarStyleManager: TabBarStyleManager
 
+    private static let floatingTabMinWidth: CGFloat = 44
+
     var body: some View {
         Group {
             if #available(iOS 18.0, *) {
@@ -84,6 +99,7 @@ struct TabbarView: View {
                 standardTabView
             }
         }
+        .navigationViewStyle(.stack)
         .tint(themeManager.accentColor)
         .background(themeManager.backgroundColor)
         .onAppear {
@@ -138,6 +154,16 @@ struct TabbarView: View {
                 }
                 .tag(TabEnum.downloads)
 
+            TabEnum.view(for: .purchased, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                .tabItem {
+                    Label {
+                        Text(TabEnum.purchased.title)
+                    } icon: {
+                        Image(systemName: TabEnum.purchased.icon)
+                    }
+                }
+                .tag(TabEnum.purchased)
+
             TabEnum.view(for: .search, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                 .tabItem {
                     Label {
@@ -148,8 +174,7 @@ struct TabbarView: View {
                 }
                 .tag(TabEnum.search)
         }
-        // iOS 26 的玻璃底栏会透出页面内容，图标后面像叠了第二个图标；
-        // 强制不透明背景，让"默认"样式的底栏图标干净可读
+        
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarBackground(Color(.systemBackground), for: .tabBar)
     }
@@ -169,6 +194,9 @@ struct TabbarView: View {
                     TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                         .tag(TabEnum.downloads)
 
+                    TabEnum.view(for: .purchased, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                        .tag(TabEnum.purchased)
+
                     TabEnum.view(for: .search, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                         .tag(TabEnum.search)
                 }
@@ -177,12 +205,20 @@ struct TabbarView: View {
                 }
 
                 floatingTabBarContent
-                    .padding(.horizontal, tabBarStyleManager.floatingConfig.horizontalPadding)
+                    .padding(.horizontal, floatingHorizontalPadding(for: geo.size.width))
                     .padding(.bottom, max(geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.bottomOffset - 16, 4))
             }
             .ignoresSafeArea(edges: .bottom)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private func floatingHorizontalPadding(for width: CGFloat) -> CGFloat {
+        let config = tabBarStyleManager.floatingConfig
+        let tabsMinWidth = 4 * Self.floatingTabMinWidth + 16
+        let contentMinWidth = tabsMinWidth + 16 + config.height
+        let roomForPadding = max(0, width - contentMinWidth)
+        return min(config.horizontalPadding, roomForPadding / 2)
     }
 
     private var floatingTabBarContent: some View {
@@ -191,9 +227,9 @@ struct TabbarView: View {
 
         return HStack(spacing: 16) {
             HStack(spacing: 0) {
-                ForEach([TabEnum.settings, .tfapps, .downloads], id: \.self) { tab in
+                ForEach([TabEnum.settings, .tfapps, .downloads, .purchased], id: \.self) { tab in
                     tabButton(for: tab, height: tabHeight)
-                        .frame(minWidth: 60, maxWidth: .infinity)
+                        .frame(minWidth: Self.floatingTabMinWidth, maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, 8)
@@ -270,8 +306,7 @@ struct TabbarView: View {
 
         switch style {
         case .systemDefault:
-            // 不透明背景：iOS 26 的悬浮玻璃底栏半透明，页面内容会透出来
-            // 叠在图标后面，看起来像每个位置有两个图标
+            
             appearance.configureWithOpaqueBackground()
             UITabBar.appearance().isHidden = false
         case .floatingCard:

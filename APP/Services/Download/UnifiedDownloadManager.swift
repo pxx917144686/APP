@@ -319,6 +319,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         activeDownloads.insert(request.id)
         request.runtime.status = DownloadStatus.downloading
         request.runtime.error = nil
+        request.runtime.isAuthFailure = false
 
         request.runtime.progress = Progress(totalUnitCount: 0)
         request.runtime.progress.completedUnitCount = 0
@@ -334,7 +335,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             }
             guard let account = AppStore.this.selectedAccount else {
                 await MainActor.run {
-                    request.runtime.error = "请先添加Apple ID账户"
+                    request.runtime.isAuthFailure = true
+                    request.runtime.error = "session_err_no_account".localized
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
@@ -359,13 +361,15 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 deviceGUID: account.deviceGUID,
                 hsc: account.hsc,
                 adsid: account.adsid,
-                idmsToken: account.idmsToken
+                idmsToken: account.idmsToken,
+                kbsync: account.kbsync
             )
 
             let isValid = await AuthenticationManager.shared.validateAccount(storeAccount)
             if !isValid {
                 await MainActor.run {
-                    request.runtime.error = "Apple ID会话已过期，请重新登录"
+                    request.runtime.isAuthFailure = true
+                    request.runtime.error = "session_err_expired".localized
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
@@ -377,7 +381,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
             if !regionValidation {
                 await MainActor.run {
-                    request.runtime.error = "地区设置不匹配，请检查账户地区设置"
+                    request.runtime.error = "session_err_region_mismatch".localized
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
                 }
@@ -557,6 +561,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
         request.runtime.status = DownloadStatus.cancelled
         request.runtime.error = nil
+        request.runtime.isAuthFailure = false
         saveDownloadTasks()
     }
 
@@ -585,6 +590,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
               request.runtime.status == DownloadStatus.failed else { return }
 
         request.runtime.error = nil
+        request.runtime.isAuthFailure = false
         startDownload(for: request)
     }
 
@@ -624,6 +630,7 @@ class DownloadRuntime: ObservableObject {
     @Published var progress: Progress = Progress(totalUnitCount: 0)
     @Published var speed: String = ""
     @Published var error: String?
+    @Published var isAuthFailure: Bool = false
     @Published var progressValue: Double = 0.0
 
     init() {
@@ -701,7 +708,7 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
         }
         return switch runtime.status {
         case DownloadStatus.waiting:
-            "等待中..."
+            "download_waiting".localized
         case DownloadStatus.downloading:
             [
                 String(Int(runtime.progressValue * 100)) + "%",
@@ -710,13 +717,13 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
             .compactMap { $0 }
             .joined(separator: " ")
         case DownloadStatus.paused:
-            "已暂停"
+            "download_paused".localized
         case DownloadStatus.completed:
-            "已完成"
+            "download_completed".localized
         case DownloadStatus.failed:
-            "下载失败"
+            "download_failed".localized
         case DownloadStatus.cancelled:
-            "已取消"
+            "status_cancelled".localized
         }
     }
 
@@ -787,7 +794,7 @@ extension UnifiedDownloadManager {
         }
     }
 
-    private static func resolveLocalFiles(
+    private nonisolated static func resolveLocalFiles(
         for descriptors: [(id: UUID, bundleId: String, version: String, relativePath: String?)],
         documentsPath: String,
         downloadsPath: String
@@ -894,7 +901,7 @@ extension UnifiedDownloadManager {
                 request.localFilePath = nil
                 if request.runtime.status == .completed {
                     request.runtime.status = .cancelled
-                    request.runtime.error = "本地文件已丢失，请重新下载"
+                    request.runtime.error = "dl_err_local_file_missing".localized
                 }
             }
 
@@ -917,7 +924,7 @@ extension UnifiedDownloadManager {
                 } else {
                     completedRequests.remove(request.id)
                     request.runtime.status = .cancelled
-                    request.runtime.error = "本地文件已丢失，请重新下载"
+                    request.runtime.error = "dl_err_local_file_missing".localized
                 }
             } else if savedActive.contains(request.id) {
                 request.runtime.status = .downloading

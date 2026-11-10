@@ -68,7 +68,6 @@
 "language_switch" = "Zmeniť jazyk";
 "language_switch_message" = "Rozhranie aplikácie sa aktualizuje okamžite po zmene jazyka. Niektoré systémové komponenty môžu vyžadovať reštart.";
 "confirm_switch" = "Potvrdiť zmenu";
-"app_icon" = "Ikona aplikácie";
 "icon_default" = "Predvolená";
 "icon_author" = "Ikona";
 "icon_love" = "Láska";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Funkčné štítky";
 "free" = "Získať";
-"get" = "Získať";
 "view" = "Zobraziť";
 "get_reviews_failed" = "Získanie recenzií zlyhalo: %@";
 "x_ratings" = "%@ hodnotení";
 "age_rating" = "Vekové hodnotenie";
 "x_languages" = "%@ jazykov";
-"whats_new" = "Čo je nové";
 "tech_info" = "Technické informácie";
 "first_release" = "Prvé vydanie";
-"last_updated" = "Naposledy aktualizované";
 "requires_ios" = "Vyžaduje iOS %@ alebo novší";
 
-"search_placeholder" = "Vyhľadať hry, aplikácie";
 "login" = "Prihlásiť sa";
 "clear_all" = "Vymazať všetko";
 "x_results_found" = "Nájdených %@ výsledkov";
@@ -458,7 +453,6 @@
 "switch" = "Prepnúť";
 "x_accounts" = "%@ účtov";
 "add_new_account" = "Pridať nový účet";
-"account_management" = "Správa účtov";
 "use_account" = "Použiť účet";
 "connection_lost" = "Pripojenie stratené";
 "reconnecting" = "Pripájanie znova";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Médiá a nákupy";
 "sign_in_apple_id" = "Prihláste sa na svojom iPhone";
 "sign_in_apple_id_desc" = "Použite svoje Apple ID na tomto iPhone";
-"apple_id" = "Apple ID";
-"name" = "Meno";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Meno, e-mail";
 "account_identifier_header" = "Identifikátor účtu";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Základné informácie";
 "account_identifier" = "Identifikátor účtu";
-"country_region" = "Krajina/oblasť";
 "password_token" = "Token hesla";
 "auth_info" = "Autentifikačné informácie";
 "password_token_hint" = "Token hesla sa používa na automatickú autentifikáciu. Nezdieľajte ho s ostatnými.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Skontrolujte dôveryhodné zariadenie Apple alebo SMS a zadajte 6-miestny overovací kód nižšie.";
-
-
+"tab_purchased" = "Zakúpené";
+"purchased_search_placeholder" = "Hľadať zakúpené aplikácie";
+"purchased_syncing" = "Synchronizácia nákupov…";
+"purchased_empty" = "Zatiaľ žiadne nákupy";
+"icon_set_failed" = "Ikony sa nepodarilo nastaviť";
+"icon_set_failed_desc" = "Ikonu aplikácie sa nedá zmeniť. Skúste to neskôr.";
+"web_load_failed" = "Stránku sa nepodarilo načítať: %@";
+"web_server_unreachable" = "Nemožno sa pripojiť k serveru: %@";
+"status_owned" = "Vlastnené";
+"status_not_owned" = "Nevlastnené";
+"rating_count_format" = "Hodnotení: %@";
+"legacy_apps_delisted" = "Staršie aplikácie (stiahnuté)";
+"versions_login_required" = "Prihláste sa pre načítanie informácií o verziách";
+"versions_unavailable" = "Verzie sa nedajú načítať. Skontrolujte pripojenie.";
+"versions_unavailable_retry" = "Históriu verzií sa nedá načítať. Skúste znova.";
+"preparing_install_link" = "Príprava odkazu na inštaláciu…";
+"widget_weather" = "Počasie";
+"weather_sunny" = "Jasno";

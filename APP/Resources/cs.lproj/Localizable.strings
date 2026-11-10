@@ -68,7 +68,6 @@
 "language_switch" = "Změnit jazyk";
 "language_switch_message" = "Rozhraní aplikace se okamžitě aktualizuje po změně jazyka. Některé systémové komponenty mohou vyžadovat restart, aby se plně projevily.";
 "confirm_switch" = "Potvrdit změnu";
-"app_icon" = "Ikona aplikace";
 "icon_default" = "Výchozí";
 "icon_author" = "Ikona";
 "icon_love" = "Láska";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Štítky funkcí";
 "free" = "Získat";
-"get" = "Získat";
 "view" = "Zobrazit";
 "get_reviews_failed" = "Načtení recenzí selhalo: %@";
 "x_ratings" = "%@ hodnocení";
 "age_rating" = "Věkové hodnocení";
 "x_languages" = "%@ jazyků";
-"whats_new" = "Co je nového";
 "tech_info" = "Technické informace";
 "first_release" = "První vydání";
-"last_updated" = "Naposledy aktualizováno";
 "requires_ios" = "Vyžaduje iOS %@ nebo novější";
 
-"search_placeholder" = "Hledat hry, aplikace";
 "login" = "Přihlásit se";
 "clear_all" = "Vymazat vše";
 "x_results_found" = "Nalezeno %@ výsledků";
@@ -458,7 +453,6 @@
 "switch" = "Přepnout";
 "x_accounts" = "%@ účtů";
 "add_new_account" = "Přidat nový účet";
-"account_management" = "Správa účtu";
 "use_account" = "Použít účet";
 "connection_lost" = "Spojení přerušeno";
 "reconnecting" = "Znovu připojování";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Média a nákupy";
 "sign_in_apple_id" = "Přihlaste se na svém iPhonu";
 "sign_in_apple_id_desc" = "Používejte své Apple ID na tomto iPhonu";
-"apple_id" = "Apple ID";
-"name" = "Jméno";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Jméno, e-mail";
 "account_identifier_header" = "Identifikátor účtu";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Základní informace";
 "account_identifier" = "Identifikátor účtu";
-"country_region" = "Země/Region";
 "password_token" = "Token hesla";
 "auth_info" = "Ověřovací informace";
 "password_token_hint" = "Token hesla se používá pro automatické ověřování. Nesdílejte ho s ostatními.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Zkontrolujte důvěryhodné zařízení Apple nebo SMS a níže zadejte 6místný ověřovací kód.";
-
-
+"tab_purchased" = "Zakoupeno";
+"purchased_search_placeholder" = "Hledat zakoupené aplikace";
+"purchased_syncing" = "Synchronizace nákupů…";
+"purchased_empty" = "Zatím žádné nákupy";
+"icon_set_failed" = "Ikonu se nepodařilo nastavit";
+"icon_set_failed_desc" = "Ikonu aplikace nelze změnit. Zkuste to prosím později.";
+"web_load_failed" = "Stránku se nepodařilo načíst: %@";
+"web_server_unreachable" = "Nelze se připojit k serveru: %@";
+"status_owned" = "Vlastněno";
+"status_not_owned" = "Nevlastněno";
+"rating_count_format" = "Hodnocení: %@";
+"legacy_apps_delisted" = "Starší aplikace (staženo)";
+"versions_login_required" = "Přihlaste se pro načtení informací o verzích";
+"versions_unavailable" = "Verze nelze načíst. Zkontrolujte připojení.";
+"versions_unavailable_retry" = "Historii verzí nelze načíst. Zkuste to znovu.";
+"preparing_install_link" = "Příprava odkazu k instalaci…";
+"widget_weather" = "Počasí";
+"weather_sunny" = "Jasno";

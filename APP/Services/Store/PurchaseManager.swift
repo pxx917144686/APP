@@ -73,14 +73,14 @@ class PurchaseManager: @unchecked Sendable {
                 }
                 return .success(false)
             case .codeRequired:
-                return .failure(.passwordTokenExpired("iTunes 会话已失效且需要双重认证验证码，请重新登录该 Apple ID 完成验证后重试"))
+                return .failure(.passwordTokenExpired("dl_err_itunes_session_2fa".localized))
             case .authenticationFailed, .userInteractionRequired, .paymentVerificationRequired, .lockedAccount, .invalidCredentials:
                 if isFree {
                     return .success(false)
                 }
                 return .failure(.passwordTokenExpired(storeError.localizedDescription))
             case .appNotAvailableInStorefront:
-                return .failure(.licenseCheckFailed("此应用在当前地区商店不可用"))
+                return .failure(.licenseCheckFailed("purchase_err_region_unavailable".localized))
             case .tooManyRequests:
                 return .failure(.networkError(storeError))
             default:
@@ -99,12 +99,6 @@ class PurchaseManager: @unchecked Sendable {
     ) async -> Result<PurchaseResult, PurchaseError> {
         if isFree {
             let purchaseRes = await performPurchase(appIdentifier: appIdentifier, account: account)
-            let purchaseSummary: String
-            switch purchaseRes {
-            case .success(let r): purchaseSummary = "成功 \(r.message)"
-            case .failure(let e): purchaseSummary = "失败 \(e.localizedDescription)"
-            }
-            downloadDebugLog("purchaseAppIfNeeded id=\(appIdentifier) 结果=\(purchaseSummary)")
             if case .success = purchaseRes {
                 return purchaseRes
             }
@@ -117,14 +111,14 @@ class PurchaseManager: @unchecked Sendable {
             switch ownershipFallback {
             case .success(let owned):
                 if owned {
-                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "应用已通过现有许可证获取", licenseInfo: nil))
+                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "purchase_ok_existing_license".localized, licenseInfo: nil))
                 }
                 if case .failure(let pe) = purchaseRes {
                     switch pe {
                     case .passwordTokenExpired:
                         return purchaseRes
                     case .paymentRequired, .licenseCheckFailed, .networkError, .unknownError:
-                        return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "免费应用：跳过购买验证，下载时最终判定", licenseInfo: nil))
+                        return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "purchase_skip_free_purchase".localized, licenseInfo: nil))
                     default:
                         return purchaseRes
                     }
@@ -135,7 +129,7 @@ class PurchaseManager: @unchecked Sendable {
                 case .passwordTokenExpired:
                     return .failure(pe)
                 case .paymentRequired, .licenseCheckFailed, .networkError, .unknownError:
-                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "免费应用：跳过所有权检查，下载时最终判定", licenseInfo: nil))
+                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "purchase_skip_free_ownership".localized, licenseInfo: nil))
                 default:
                     if case .failure = purchaseRes {
                         return purchaseRes
@@ -157,7 +151,7 @@ class PurchaseManager: @unchecked Sendable {
                 let result = PurchaseResult(
                     trackId: appIdentifier,
                     success: true,
-                    message: "应用已拥有，无需购买",
+                    message: "purchase_ok_already_owned".localized,
                     licenseInfo: nil
                 )
                 return .success(result)
@@ -181,7 +175,7 @@ class PurchaseManager: @unchecked Sendable {
             let result = PurchaseResult(
                 trackId: appIdentifier,
                 success: true,
-                message: "已完成获取（零元购买）",
+                message: "purchase_ok_zero_price".localized,
                 licenseInfo: nil
             )
             return .success(result)
@@ -198,7 +192,7 @@ class PurchaseManager: @unchecked Sendable {
                         let result = PurchaseResult(
                             trackId: appIdentifier,
                             success: true,
-                            message: "自动刷新令牌后完成获取",
+                            message: "purchase_ok_token_refreshed".localized,
                             licenseInfo: nil
                         )
                         return .success(result)
@@ -241,34 +235,34 @@ class PurchaseManager: @unchecked Sendable {
                     let result = PurchaseResult(
                         trackId: appIdentifier,
                         success: true,
-                        message: "已通过重新下载获取",
+                        message: "purchase_ok_redownload".localized,
                         licenseInfo: nil
                     )
                     return .success(result)
                 }
-                return .failure(.licenseCheckFailed("无法获取应用许可证"))
+                return .failure(.licenseCheckFailed("purchase_err_no_license".localized))
             } catch {
                 return .failure(.networkError(error))
             }
         case .codeRequired:
-            return .failure(.passwordTokenExpired("iTunes 会话已失效且需要双重认证验证码，请重新登录该 Apple ID 完成验证后重试"))
+            return .failure(.passwordTokenExpired("dl_err_itunes_session_2fa".localized))
         case .authenticationFailed, .invalidCredentials:
-            let detail = "iTunes 会话已失效，请重新登录 Apple ID 刷新密码令牌 (\(error.localizedDescription))"
+            let detail = "purchase_err_itunes_session_expired".localized(error.localizedDescription)
             return .failure(.passwordTokenExpired(detail))
         case .userInteractionRequired:
-            return .failure(.paymentRequired("需要在 App Store 完成一次身份验证"))
+            return .failure(.paymentRequired("purchase_err_identity_verification".localized))
         case .paymentVerificationRequired:
-            return .failure(.paymentRequired("需要验证付款信息"))
+            return .failure(.paymentRequired("purchase_err_payment_verification".localized))
         case .termsOfServiceUpdateRequired:
-            return .failure(.licenseCheckFailed("需要同意新的服务条款"))
+            return .failure(.licenseCheckFailed("purchase_err_terms".localized))
         case .ageVerificationRequired:
-            return .failure(.licenseCheckFailed("需要进行年龄验证"))
+            return .failure(.licenseCheckFailed("purchase_err_age_verification".localized))
         case .storefrontChangeRequired, .appNotAvailableInStorefront:
-            return .failure(.invalidCountry("此应用在当前地区商店不可用"))
+            return .failure(.invalidCountry("purchase_err_region_unavailable".localized))
         case .tooManyRequests:
             return .failure(.networkError(error))
         case .lockedAccount:
-            return .failure(.licenseCheckFailed("账户已被锁定"))
+            return .failure(.licenseCheckFailed("purchase_err_account_locked".localized))
         default:
             return .failure(.unknownError(error.localizedDescription))
         }
@@ -304,25 +298,25 @@ enum PurchaseError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidIdentifier(let message):
-            return "无效的应用标识符: \(message)"
+            return "purchase_err_invalid_app_id".localized(message)
         case .appNotFound(let message):
-            return "应用未找到: \(message)"
+            return "dl_err_app_not_found".localized(message)
         case .priceMismatch(let message):
-            return "价格不匹配: \(message)"
+            return "purchase_err_price_mismatch".localized(message)
         case .invalidCountry(let message):
-            return "无效的国家/地区: \(message)"
+            return "purchase_err_invalid_country".localized(message)
         case .passwordTokenExpired(let message):
-            return "Apple ID 会话已过期，请退出当前账户并重新登录 (\(message))"
+            return "purchase_err_session_expired".localized(message)
         case .licenseAlreadyExists(let message):
-            return "许可证已存在: \(message)"
+            return "purchase_err_license_exists".localized(message)
         case .paymentRequired(let message):
-            return "需要付款: \(message)"
+            return "purchase_err_payment_required".localized(message)
         case .licenseCheckFailed(let message):
-            return "许可证检查失败: \(message)"
+            return "dl_err_license_check".localized(message)
         case .networkError(let error):
-            return "网络错误: \(error.localizedDescription)"
+            return "dl_err_network".localized(error.localizedDescription)
         case .unknownError(let message):
-            return "未知错误: \(message)"
+            return "dl_err_unknown_detail".localized(message)
         }
     }
 }

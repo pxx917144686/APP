@@ -68,7 +68,6 @@
 "language_switch" = "Taal wijzigen";
 "language_switch_message" = "De app-interface wordt onmiddellijk bijgewerkt na het wijzigen van de taal. Sommige systeemcomponenten hebben mogelijk een herstart nodig om volledig van kracht te worden.";
 "confirm_switch" = "Wijziging bevestigen";
-"app_icon" = "App-pictogram";
 "icon_default" = "Standaard";
 "icon_author" = "Pictogram";
 "icon_love" = "Liefde";
@@ -424,19 +423,15 @@
 
 "feature_tags" = "Functietags";
 "free" = "Krijg";
-"get" = "Krijg";
 "view" = "Bekijken";
 "get_reviews_failed" = "Kan recensies niet ophalen: %@";
 "x_ratings" = "%@ beoordelingen";
 "age_rating" = "Leeftijdsclassificatie";
 "x_languages" = "%@ talen";
-"whats_new" = "Wat is nieuw";
 "tech_info" = "Technische info";
 "first_release" = "Eerste release";
-"last_updated" = "Laatst bijgewerkt";
 "requires_ios" = "Vereist iOS %@ of nieuwer";
 
-"search_placeholder" = "Zoek games, apps";
 "login" = "Inloggen";
 "clear_all" = "Alles wissen";
 "x_results_found" = "%@ resultaten gevonden";
@@ -458,7 +453,6 @@
 "switch" = "Wisselen";
 "x_accounts" = "%@ accounts";
 "add_new_account" = "Nieuw account toevoegen";
-"account_management" = "Accountbeheer";
 "use_account" = "Account gebruiken";
 "connection_lost" = "Verbinding verbroken";
 "reconnecting" = "Opnieuw verbinden";
@@ -474,8 +468,6 @@
 "media_purchases_header" = "Media & Aankopen";
 "sign_in_apple_id" = "Inloggen op je iPhone";
 "sign_in_apple_id_desc" = "Gebruik je Apple ID op deze iPhone";
-"apple_id" = "Apple ID";
-"name" = "Naam";
 "apple_id_email" = "Apple ID";
 "name_email_header" = "Naam, E-mail";
 "account_identifier_header" = "Account-ID";
@@ -543,7 +535,6 @@
 
 "basic_info" = "Basisgegevens";
 "account_identifier" = "Account-ID";
-"country_region" = "Land/Regio";
 "password_token" = "Wachtwoordtoken";
 "auth_info" = "Verificatiegegevens";
 "password_token_hint" = "Het wachtwoordtoken wordt gebruikt voor automatische verificatie. Deel dit niet met anderen.";
@@ -590,5 +581,21 @@
 "less" = "{'zh-Hans': '收起', 'ja': '折りたたむ', 'ko': '접기', 'de': 'Weniger', 'fr': 'Réduire', 'es': 'Menos', 'it': 'Meno', 'pt': 'Menos', 'ru': 'Свернуть', 'ar': 'أقل', 'tr': 'Daha Az', 'nl': 'Minder', 'pl': 'Mniej', 'sv': 'Mindre', 'da': 'Mindre', 'fi': 'Vähemmän', 'nb': 'Mindre', 'cs': 'Méně', 'el': 'Λιγότερα', 'he': 'פחות', 'uk': 'Згорнути', 'hu': 'Kevesebb', 'ro': 'Mai puțin', 'sk': 'Menej', 'th': 'ย่อ', 'vi': 'Thu gọn', 'id': 'Lebih Sedikit', 'ms': 'Kurang', 'hi': 'कम', 'hr': 'Manje', 'ca': 'Menys'}";
 "see_all_reviews" = "{'zh-Hans': '查看全部评论', 'ja': 'すべてのレビューを見る', 'ko': '모든 리뷰 보기', 'de': 'Alle Bewertungen ansehen', 'fr': 'Voir tous les avis', 'es': 'Ver todas las reseñas', 'it': 'Vedi tutte le recensioni', 'pt': 'Ver todas as avaliações', 'ru': 'Смотреть все отзывы', 'ar': 'عرض كل المراجعات', 'tr': 'Tüm İncelemeleri Gör', 'nl': 'Bekijk alle reviews', 'pl': 'Zobacz wszystkie recenzje', 'sv': 'Se alla recensioner', 'da': 'Se alle anmeldelser', 'fi': 'Näytä kaikki arvostelut', 'nb': 'Se alle anmeldelser', 'cs': 'Zobrazit všechny recenze', 'el': 'Δείτε όλες τις κριτικές', 'he': 'הצג את כל הביקורות', 'uk': 'Переглянути всі відгуки', 'hu': 'Összes értékelés megtekintése', 'ro': 'Vezi toate recenziile', 'sk': 'Zobraziť všetky recenzie', 'th': 'ดูรีวิวทั้งหมด', 'vi': 'Xem tất cả đánh giá', 'id': 'Lihat Semua Ulasan', 'ms': 'Lihat Semua Ulasan', 'hi': 'सभी समीक्षाएं देखें', 'hr': 'Pogledaj sve recenzije', 'ca': 'Veure totes les ressenyes'}";
 "two_factor_code_intro" = "Controleer je vertrouwde Apple-apparaat of SMS en voer de 6-cijferige verificatiecode hieronder in.";
-
-
+"tab_purchased" = "Gekocht";
+"purchased_search_placeholder" = "Gekochte apps zoeken";
+"purchased_syncing" = "Aankopen synchroniseren…";
+"purchased_empty" = "Nog geen aankopen";
+"icon_set_failed" = "Pictogram instellen mislukt";
+"icon_set_failed_desc" = "Kan het app-pictogram niet wijzigen. Probeer het later opnieuw.";
+"web_load_failed" = "Kan pagina niet laden: %@";
+"web_server_unreachable" = "Kan geen verbinding maken met de server: %@";
+"status_owned" = "In bezit";
+"status_not_owned" = "Niet in bezit";
+"rating_count_format" = "%@ beoordelingen";
+"legacy_apps_delisted" = "Oude apps (verwijderd)";
+"versions_login_required" = "Meld je aan om versie-informatie te laden";
+"versions_unavailable" = "Kan versies niet laden. Controleer je verbinding.";
+"versions_unavailable_retry" = "Kan versiegeschiedenis niet laden. Probeer opnieuw.";
+"preparing_install_link" = "Installatielink voorbereiden…";
+"widget_weather" = "Weer";
+"weather_sunny" = "Zonnig";
