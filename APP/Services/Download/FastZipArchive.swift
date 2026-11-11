@@ -164,42 +164,68 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
     func addFiles(toZipAtPath zipPath: String, files: [(path: String, data: Data)]) -> Bool {
         let fileManager = FileManager.default
-        let tempPath = zipPath + ".tmp"
 
         guard fileManager.fileExists(atPath: zipPath) else {
-
             return false
         }
 
+        var centralDirOffset = 0
+        var originalTail = Data()
+        var handle: FileHandle?
+
         do {
-            let sourceData = try Data(contentsOf: URL(fileURLWithPath: zipPath))
+            let source = try FileHandle(forUpdating: URL(fileURLWithPath: zipPath))
+            handle = source
 
-            guard let eocd = Self.findEndOfCentralDirectoryImpl(in: sourceData) else {
-
+            let totalSize = try source.seekToEnd()
+            guard totalSize >= 22 else {
+                try? source.close()
                 return false
             }
 
-            let existingEntries = try Self.readCentralDirectoryImpl(from: sourceData, eocd: eocd)
-
-            var outputData = Data()
-            var newCentralDir = Data()
-            var currentOffset: UInt64 = 0
-
-            for entry in existingEntries {
-                let localData = try extractLocalFileData(
-                    from: sourceData,
-                    entry: entry
-                )
-                outputData.append(localData)
-
-                let centralHeader = createCentralDirectoryHeader(
-                    from: entry,
-                    newOffset: currentOffset
-                )
-                newCentralDir.append(centralHeader)
-
-                currentOffset += UInt64(localData.count)
+            let tailLength = Int(min(totalSize, 65_557))
+            try source.seek(toOffset: totalSize - UInt64(tailLength))
+            guard let tail = try source.read(upToCount: tailLength),
+                  let tailEOCD = Self.findEndOfCentralDirectoryImpl(in: tail) else {
+                try? source.close()
+                return false
             }
+
+            centralDirOffset = Int(tailEOCD.centralDirOffset)
+            let centralDirSize = Int(tailEOCD.centralDirSize)
+            guard centralDirOffset >= 0, centralDirSize >= 0,
+                  centralDirOffset + centralDirSize <= Int(totalSize) else {
+                try? source.close()
+                return false
+            }
+
+            try source.seek(toOffset: UInt64(centralDirOffset))
+            guard let centralDirData = try source.read(upToCount: centralDirSize),
+                  centralDirData.count == centralDirSize else {
+                try? source.close()
+                return false
+            }
+
+            originalTail = try source.read(upToCount: Int(totalSize) - centralDirOffset) ?? Data()
+
+            let centralDirEOCD = Self.EndOfCentralDirectory(
+                signature: tailEOCD.signature,
+                diskNumber: tailEOCD.diskNumber,
+                centralDirDisk: tailEOCD.centralDirDisk,
+                entriesOnDisk: tailEOCD.entriesOnDisk,
+                totalEntries: tailEOCD.totalEntries,
+                centralDirSize: UInt32(centralDirSize),
+                centralDirOffset: 0,
+                commentLength: tailEOCD.commentLength,
+                fileOffset: 0
+            )
+            let existingEntries = try Self.readCentralDirectoryImpl(from: centralDirData, eocd: centralDirEOCD)
+
+            try source.truncate(atOffset: UInt64(centralDirOffset))
+            try source.seek(toOffset: UInt64(centralDirOffset))
+
+            var currentOffset = UInt64(centralDirOffset)
+            var newCentralDir = Data()
 
             for (filePath, fileData) in files {
                 let (compressedData, crc32, compressionMethod) = compressData(data: fileData)
@@ -213,37 +239,38 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                     offset: currentOffset
                 )
 
-                outputData.append(localHeader)
-                outputData.append(compressedData)
+                try source.write(contentsOf: localHeader)
+                try source.write(contentsOf: compressedData)
                 currentOffset += UInt64(localHeader.count + compressedData.count)
 
                 newCentralDir.append(centralHeader)
-
             }
 
-            let centralDirOffset = currentOffset
-            let centralDirSize = UInt64(newCentralDir.count)
+            try source.write(contentsOf: centralDirData)
+            try source.write(contentsOf: newCentralDir)
 
-            outputData.append(newCentralDir)
-
-            let totalEntries = UInt16(existingEntries.count + files.count)
             let eocdRecord = createEndOfCentralDirectoryRecord(
-                entryCount: totalEntries,
-                centralDirSize: centralDirSize,
-                centralDirOffset: centralDirOffset
+                entryCount: UInt16(existingEntries.count + files.count),
+                centralDirSize: UInt64(centralDirData.count + newCentralDir.count),
+                centralDirOffset: currentOffset
             )
-            outputData.append(eocdRecord)
+            try source.write(contentsOf: eocdRecord)
 
-            try outputData.write(to: URL(fileURLWithPath: tempPath))
-
-            try fileManager.removeItem(atPath: zipPath)
-            try fileManager.moveItem(atPath: tempPath, toPath: zipPath)
+            try source.synchronize()
+            try source.close()
+            handle = nil
 
             return true
 
         } catch {
 
-            try? fileManager.removeItem(atPath: tempPath)
+            if let handle, !originalTail.isEmpty {
+                try? handle.truncate(atOffset: UInt64(centralDirOffset))
+                try? handle.seek(toOffset: UInt64(centralDirOffset))
+                try? handle.write(contentsOf: originalTail)
+                try? handle.synchronize()
+            }
+            try? handle?.close()
             return false
         }
     }
@@ -581,7 +608,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             }
             decompressedData = decompressed
         } else {
-            throw NSError(domain: "FastZip", code: -4, userInfo: [NSLocalizedDescriptionKey: "zip_err_unsupported_method_detail".localized(entry.compressionMethod)])
+            throw NSError(domain: "FastZip", code: -4, userInfo: [NSLocalizedDescriptionKey: "zip_err_unsupported_method_detail".localized(String(entry.compressionMethod))])
         }
 
         try decompressedData.write(to: destPath)

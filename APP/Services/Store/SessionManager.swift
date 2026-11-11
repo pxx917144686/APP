@@ -89,7 +89,7 @@ class SessionManager: ObservableObject, @unchecked Sendable {
         }
         reconnectAttempts += 1
         isReconnecting = true
-        sessionError = "session_reconnecting".localized(reconnectAttempts, maxReconnectAttempts)
+        sessionError = "session_reconnecting".localized(String(reconnectAttempts), String(maxReconnectAttempts))
         let refreshedAccount = AuthenticationManager.shared.refreshCookies(for: account)
         let isValid = await validateSessionWithAPI(account: refreshedAccount)
         if isValid {

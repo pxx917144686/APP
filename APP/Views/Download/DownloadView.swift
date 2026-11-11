@@ -1219,7 +1219,8 @@ struct DownloadProgressView: SwiftUI.View {
                     Text(error)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
-                        .lineLimit(2)
+                        .lineLimit(8)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer()
                 }
@@ -1546,7 +1547,8 @@ struct DownloadCardView: SwiftUI.View {
                     Text(error)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
-                        .lineLimit(2)
+                        .lineLimit(8)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer()
                 }

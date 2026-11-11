@@ -274,6 +274,7 @@ class IPAProcessor: @unchecked Sendable {
 
 class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate, URLSessionDataDelegate, @unchecked Sendable {
     static let shared = AppStoreDownloadManager()
+    static let useSelfWrittenDownload = true
     private var downloadTasks: [String: URLSessionDownloadTask] = [:]
     private var directDownloadTasks: [String: URLSessionDataTask] = [:]
     private var directDownloadData: [String: Data] = [:]
@@ -281,8 +282,8 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private var directDownloadFileHandles: [String: FileHandle] = [:]
     private var directDownloadTempFiles: [String: URL] = [:]
     private var directDownloadBytesWritten: [String: Int64] = [:]
-    private var progressHandlers: [String: (DownloadProgress) -> Void] = [:]
-    private var completionHandlers: [String: (Result<DownloadResult, DownloadError>) -> Void] = [:]
+    private var progressHandlers: [String: @Sendable (DownloadProgress) -> Void] = [:]
+    private var completionHandlers: [String: @Sendable (Result<DownloadResult, DownloadError>) -> Void] = [:]
     private var downloadStartTimes: [String: Date] = [:]
     private var lastProgressUpdate: [String: (bytes: Int64, time: Date)] = [:]
     private var lastUIUpdate: [String: Date] = [:]
@@ -336,6 +337,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private var resumeDataStore: [String: Data] = [:]
     private var isRetryingDownload: Set<String> = []
     private var completedDownloads: Set<String> = []
+    private var autoRetriedDownloads: Set<String> = []
     private var persistedContexts: [String: DownloadContext] = [:]
 
     private struct DownloadContext: Codable {
@@ -350,6 +352,23 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private override init() {
         super.init()
         loadPersistedContexts()
+        migrateResumeDataIfNeeded()
+    }
+
+    private func migrateResumeDataIfNeeded() {
+        let key = "ResumeDataSchemaVersion"
+        let current = 2
+        if UserDefaults.standard.integer(forKey: key) >= current { return }
+
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("ResumeData", isDirectory: true)
+        if let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+            for file in files {
+                try? FileManager.default.removeItem(at: file)
+            }
+        }
+        resumeDataStore.removeAll()
+        UserDefaults.standard.set(current, forKey: key)
     }
 
     private func loadPersistedContexts() {
@@ -722,9 +741,9 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             return
         }
 
-        let isTrollStore = EnvironmentDetector.shared.isTrollStore
-        let isJailbroken = EnvironmentDetector.shared.isJailbroken
-        let useDirectDownload = isTrollStore || isJailbroken
+        let useDirectDownload = Self.useSelfWrittenDownload
+            || EnvironmentDetector.shared.isTrollStore
+            || EnvironmentDetector.shared.isJailbroken
 
         if useDirectDownload {
             activeSessionType[downloadId] = "direct"
@@ -744,8 +763,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
 
         var request = URLRequest(url: downloadURL)
 
-        request.setValue("keep-alive", forHTTPHeaderField: "Connection")
-        request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+        request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
         request.setValue("*/*", forHTTPHeaderField: "Accept")
 
         let downloadTask: URLSessionDownloadTask
@@ -756,7 +774,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         } else if let savedResumeData = loadResumeData(for: downloadId) {
             downloadTask = session.downloadTask(withResumeData: savedResumeData)
         } else {
-            request.setValue("bytes=0-", forHTTPHeaderField: "Range")
             downloadTask = session.downloadTask(with: request)
         }
 
@@ -829,7 +846,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         }
 
         var request = URLRequest(url: downloadURL)
-        request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+        request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
         request.setValue("*/*", forHTTPHeaderField: "Accept")
 
         let dataTask = foregroundSession.dataTask(with: request)
@@ -872,7 +889,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         }
 
         var request = URLRequest(url: downloadURL)
-        request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+        request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
         request.setValue("*/*", forHTTPHeaderField: "Accept")
 
         let dataTask = foregroundSession.dataTask(with: request)
@@ -883,11 +900,20 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     }
 
     private func verifyFileIntegrity(fileURL: URL, expectedMD5: String) -> Bool {
-        guard let fileData = try? Data(contentsOf: fileURL) else {
+        guard let handle = try? FileHandle(forReadingFrom: fileURL) else {
             return false
         }
-        let digest = Insecure.MD5.hash(data: fileData)
-        let calculatedMD5 = digest.map { String(format: "%02hhx", $0) }.joined()
+        defer { try? handle.close() }
+
+        var hasher = Insecure.MD5()
+        while true {
+            guard let chunk = try? handle.read(upToCount: 1 << 20), !chunk.isEmpty else {
+                break
+            }
+            hasher.update(data: chunk)
+        }
+
+        let calculatedMD5 = hasher.finalize().map { String(format: "%02hhx", $0) }.joined()
         return calculatedMD5.lowercased() == expectedMD5.lowercased()
     }
 
@@ -1012,6 +1038,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         directDownloadTempFiles.removeValue(forKey: downloadId)
 
         isRetryingDownload.remove(downloadId)
+        autoRetriedDownloads.remove(downloadId)
         removePersistedContext(for: downloadId)
 
     }
@@ -1135,9 +1162,17 @@ extension AppStoreDownloadManager {
         didFinishDownloadingTo location: URL
     ) {
 
-        guard let downloadId = downloadId(for: downloadTask),
-              let destinationURL = downloadDestinations[downloadId],
+        guard let downloadId = downloadId(for: downloadTask) else { return }
+
+        if downloadDestinations[downloadId] == nil || downloadStoreItems[downloadId] == nil,
+           let context = persistedContexts[downloadId] {
+            downloadDestinations[downloadId] = URL(fileURLWithPath: context.destinationPath)
+            downloadStoreItems[downloadId] = context.storeItem
+        }
+
+        guard let destinationURL = downloadDestinations[downloadId],
               let storeItem = downloadStoreItems[downloadId] else {
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_local_file_missing".localized)))
             return
         }
 
@@ -1189,12 +1224,17 @@ extension AppStoreDownloadManager {
                 try FileManager.default.moveItem(at: actualLocation, to: tempTargetURL)
 
                 if FileManager.default.fileExists(atPath: destinationURL.path) {
-                    let _ = try? FileManager.default.replaceItemAt(
-                        destinationURL,
-                        withItemAt: tempTargetURL,
-                        backupItemName: nil,
-                        options: []
-                    )
+                    do {
+                        _ = try FileManager.default.replaceItemAt(
+                            destinationURL,
+                            withItemAt: tempTargetURL,
+                            backupItemName: nil,
+                            options: []
+                        )
+                    } catch {
+                        try? FileManager.default.removeItem(at: destinationURL)
+                        try FileManager.default.moveItem(at: tempTargetURL, to: destinationURL)
+                    }
                 } else {
                     try FileManager.default.moveItem(at: tempTargetURL, to: destinationURL)
                 }
@@ -1668,8 +1708,8 @@ extension AppStoreDownloadManager {
 
         guard let downloadTask = task as? URLSessionDownloadTask,
               let downloadId = downloadId(for: downloadTask),
-              let _ = downloadDestinations[downloadId],
-              let _ = downloadStoreItems[downloadId] else {
+              let destinationURL = downloadDestinations[downloadId],
+              let storeItem = downloadStoreItems[downloadId] else {
             return
         }
 
@@ -1687,6 +1727,48 @@ extension AppStoreDownloadManager {
                 resumeDataStore[downloadId] = resumeData
             }
 
+            let errorCode = (error as NSError).code
+            let isDecodingFailure = errorCode == NSURLErrorDownloadDecodingFailedMidStream
+                || errorCode == NSURLErrorDownloadDecodingFailedToComplete
+
+            if isDecodingFailure {
+                resumeDataStore.removeValue(forKey: downloadId)
+                deleteResumeData(for: downloadId)
+
+                if let salvaged = lastResortFileSearch(
+                    expectedSize: downloadTask.countOfBytesReceived,
+                    downloadId: downloadId
+                ) {
+                    NSLog("[Download] \(downloadId) decoding failure \(errorCode), salvaged complete file")
+                    self.urlSession(session, downloadTask: downloadTask, didFinishDownloadingTo: salvaged)
+                    return
+                }
+
+                if !autoRetriedDownloads.contains(downloadId) {
+                    autoRetriedDownloads.insert(downloadId)
+                    NSLog("[Download] \(downloadId) decoding failure \(errorCode), switching to foreground data task")
+                    Task { @MainActor in
+                        self.isRetryingDownload.insert(downloadId)
+                        self.retryWithForegroundDownload(
+                            downloadId: downloadId,
+                            storeItem: storeItem,
+                            destinationURL: destinationURL
+                        )
+                    }
+                    return
+                }
+            }
+
+            let received = downloadTask.countOfBytesReceived
+            let expected = downloadTask.countOfBytesExpectedToReceive
+            let allBytesReceived = expected > 0 && received >= expected
+
+            if allBytesReceived, !isDecodingFailure, !autoRetriedDownloads.contains(downloadId) {
+                NSLog("[Download] \(downloadId) \(received)/\(expected) tail error, retry once")
+                autoRetryBackgroundDownload(downloadId: downloadId)
+                return
+            }
+
             if let nsError = error as NSError? {
 
                 if nsError.domain == NSURLErrorDomain {
@@ -1699,7 +1781,12 @@ extension AppStoreDownloadManager {
                     case NSURLErrorCancelled:
                         safeComplete(downloadId: downloadId, result: .failure(.unknownError("download_cancelled".localized)))
                     default:
-                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized]))))
+                        if !isDecodingFailure, !autoRetriedDownloads.contains(downloadId), resumeDataStore[downloadId] != nil {
+                            NSLog("[Download] \(downloadId) NSURLError \(nsError.code), retry once")
+                            autoRetryBackgroundDownload(downloadId: downloadId)
+                            return
+                        }
+                        safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: nsError.code, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (NSURLError \(nsError.code), \(responseDetail(downloadTask)))"]))))
                     }
                 } else if nsError.domain == "NSCocoaErrorDomain" {
 
@@ -1715,9 +1802,44 @@ extension AppStoreDownloadManager {
         }
     }
 
+    private func responseDetail(_ task: URLSessionTask) -> String {
+        guard let http = task.response as? HTTPURLResponse else {
+            return "no-response recv=\(task.countOfBytesReceived)/\(task.countOfBytesExpectedToReceive)"
+        }
+        let encoding = http.value(forHTTPHeaderField: "Content-Encoding") ?? "-"
+        let transfer = http.value(forHTTPHeaderField: "Transfer-Encoding") ?? "-"
+        let length = http.value(forHTTPHeaderField: "Content-Length") ?? "-"
+        let cache = http.value(forHTTPHeaderField: "X-Cache") ?? "-"
+        let host = http.url?.host ?? "-"
+        return "HTTP \(http.statusCode) enc=\(encoding) te=\(transfer) len=\(length) recv=\(task.countOfBytesReceived)/\(task.countOfBytesExpectedToReceive) cache=\(cache) host=\(host)"
+    }
+
+    private func autoRetryBackgroundDownload(downloadId: String) {
+        guard !autoRetriedDownloads.contains(downloadId) else { return }
+        autoRetriedDownloads.insert(downloadId)
+
+        Task { @MainActor [weak self] in
+            guard let self,
+                  let storeItem = self.downloadStoreItems[downloadId],
+                  let destination = self.downloadDestinations[downloadId],
+                  let progressHandler = self.progressHandlers[downloadId],
+                  let completion = self.completionHandlers[downloadId] else { return }
+            self.downloadTasks.removeValue(forKey: downloadId)
+            await self.startFileDownload(
+                downloadId: downloadId,
+                storeItem: storeItem,
+                destinationURL: destination,
+                progressHandler: progressHandler,
+                completion: completion
+            )
+        }
+    }
+
     private func handleDirectDownloadCompletion(downloadId: String, error: Error?) {
         guard let destinationURL = downloadDestinations[downloadId],
               let storeItem = downloadStoreItems[downloadId] else {
+            NSLog("[Download] \(downloadId) 完成回调缺少目标或元数据，放弃本次下载")
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_local_file_missing".localized)))
             return
         }
 
@@ -1734,7 +1856,14 @@ extension AppStoreDownloadManager {
 
         if let error = error {
             let nsError = error as NSError
-            if nsError.domain == NSURLErrorDomain {
+
+            let received = directDownloadBytesWritten[downloadId] ?? 0
+            let expected = directDownloadExpectedSize[downloadId] ?? 0
+            let allBytesReceived = expected > 0 && received >= expected
+
+            if allBytesReceived {
+                NSLog("[Download] \(downloadId) \(nsError.domain)/\(nsError.code) but \(received)/\(expected) received")
+            } else if nsError.domain == NSURLErrorDomain {
                 switch nsError.code {
                 case NSURLErrorNotConnectedToInternet:
                     safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_offline".localized]))))
@@ -1743,12 +1872,13 @@ extension AppStoreDownloadManager {
                 case NSURLErrorCancelled:
                     safeComplete(downloadId: downloadId, result: .failure(.unknownError("download_cancelled".localized)))
                 default:
-                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized]))))
+                    safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: nsError.code, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (NSURLError \(nsError.code))"]))))
                 }
+                return
             } else {
                 safeComplete(downloadId: downloadId, result: .failure(.unknownError("dl_err_failed_detail".localized(error.localizedDescription))))
+                return
             }
-            return
         }
 
         var downloadedFileSize: Int64 = 0
@@ -1783,12 +1913,17 @@ extension AppStoreDownloadManager {
             try FileManager.default.moveItem(at: tempFileURL, to: tempTargetURL)
 
             if FileManager.default.fileExists(atPath: destinationURL.path) {
-                let _ = try? FileManager.default.replaceItemAt(
-                    destinationURL,
-                    withItemAt: tempTargetURL,
-                    backupItemName: nil,
-                    options: []
-                )
+                do {
+                    _ = try FileManager.default.replaceItemAt(
+                        destinationURL,
+                        withItemAt: tempTargetURL,
+                        backupItemName: nil,
+                        options: []
+                    )
+                } catch {
+                    try? FileManager.default.removeItem(at: destinationURL)
+                    try FileManager.default.moveItem(at: tempTargetURL, to: destinationURL)
+                }
             } else {
                 try FileManager.default.moveItem(at: tempTargetURL, to: destinationURL)
             }

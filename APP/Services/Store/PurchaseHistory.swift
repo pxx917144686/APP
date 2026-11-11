@@ -67,7 +67,7 @@ enum DMAP {
             throw ToolError.message("dmap_err_sync_failed".localized)
         }
         if status != 200 {
-            throw ToolError.message("dmap_err_sync_failed_status".localized(status))
+            throw ToolError.message("dmap_err_sync_failed_status".localized(String(status)))
         }
     }
     static func ownedApps(_ data: Data) throws -> [OwnedApp] {
