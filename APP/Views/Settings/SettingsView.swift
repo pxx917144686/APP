@@ -103,6 +103,7 @@ struct SettingsView: View {
                     .background(Color(.secondarySystemGroupedBackground))
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -490,7 +491,7 @@ extension SettingsView {
                     Spacer()
                     HStack(spacing: 8) {
                         HStack(spacing: 0) {
-                            ForEach([TabEnum.settings, .tfapps, .downloads, .purchased], id: \.self) { tab in
+                            ForEach([TabEnum.settings, .downloads, .purchased], id: \.self) { tab in
                                 VStack(spacing: 2) {
                                     Text(tab.emojiIcon)
                                         .font(.system(size: 14))

@@ -1242,6 +1242,7 @@ struct SearchView: SwiftUI.View {
     @State var isDownloading = false
 
     @State var purchasingTrackId: Int?
+    @State private var purchasedTrackIds: Set<Int> = []
 
     static let storeFrontCodeMap = [
         "AE": "143481", "AG": "143540", "AI": "143538", "AL": "143575", "AM": "143524",
@@ -1373,7 +1374,11 @@ struct SearchView: SwiftUI.View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ForceRefreshUI"))) { _ in
             animateLogo = true
         }
-
+        .alert("tips".localized, isPresented: $showPurchaseAlert) {
+            Button("got_it".localized, role: .cancel) {}
+        } message: {
+            Text(purchaseAlertText)
+        }
     }
 
     var modernSearchBar: some SwiftUI.View {
@@ -2046,7 +2051,9 @@ struct SearchView: SwiftUI.View {
         }, onGetAction: {
 
             handleDownloadApp(item)
-        }, isDownloading: $isDownloading, isPreview: isScrollingFast)
+        }, isDownloading: purchasingTrackId == item.trackId,
+           isPreview: isScrollingFast,
+           isOwned: purchasedTrackIds.contains(item.trackId) ? true : nil)
         .environmentObject(themeManager)
         .id(item.trackId)
         .animation(nil, value: isScrollingFast)
@@ -2336,88 +2343,6 @@ struct SearchView: SwiftUI.View {
         return from512 ?? fallback100 ?? ""
     }
 
-    func purchaseButton(item: iTunesSearchResult) -> some SwiftUI.View {
-        Group {
-            if (item.price ?? 0.0) == 0.0 {
-                Button {
-                    Task { await purchaseFreeAppIfNeeded(item: item) }
-                } label: {
-                    HStack(spacing: 6) {
-                        let loading = (purchasingTrackId == (item.trackId))
-                        if loading { ProgressView().scaleEffect(0.7) }
-                        Text(loading ? "purchasing".localized : "purchase".localized)
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Capsule().fill(themeManager.accentColor))
-                    .foregroundColor(.white)
-                }
-                .disabled(purchasingTrackId != nil && purchasingTrackId != item.trackId)
-                .buttonStyle(.plain)
-                .alert("tips".localized, isPresented: $showPurchaseAlert) {
-                    Button("got_it".localized, role: .cancel) {}
-                } message: {
-                    Text(purchaseAlertText)
-                }
-            }
-        }
-    }
-
-    func purchaseFreeAppIfNeeded(item: iTunesSearchResult) async {
-        guard let account = appStore.selectedAccount else {
-            purchaseAlertText = "please_login_first".localized
-            showPurchaseAlert = true
-            return
-        }
-        let currentId = item.trackId
-        await MainActor.run { purchasingTrackId = currentId }
-
-        let isFree = (item.price ?? 0.0) == 0.0
-        if isFree {
-            let purchaseTask = Task.detached(priority: .userInitiated) { @Sendable in
-                await PurchaseManager.shared.purchaseAppIfNeeded(
-                    appIdentifier: String(item.trackId),
-                    account: account,
-                    countryCode: account.countryCode,
-                    isFree: true
-                )
-            }
-            do {
-                _ = try await withTimeout(seconds: 8, operation: { @Sendable in
-                    await purchaseTask.value
-                })
-            } catch {
-            }
-            await MainActor.run {
-                loadVersionsForApp(item)
-                purchasingTrackId = nil
-            }
-            if !purchaseTask.isCancelled { purchaseTask.cancel() }
-            return
-        }
-
-        defer { Task { await MainActor.run { purchasingTrackId = nil } } }
-        let check = await PurchaseManager.shared.checkAppOwnership(
-            appIdentifier: String(item.trackId),
-            account: account,
-            countryCode: account.countryCode
-        )
-        switch check {
-        case .success(let owned):
-            if owned {
-                await MainActor.run { loadVersionsForApp(item) }
-                return
-            } else {
-                openAppStorePage(for: item)
-                return
-            }
-        case .failure:
-            await MainActor.run { loadVersionsForApp(item) }
-            return
-        }
-    }
-
     private func openAppStorePage(for item: iTunesSearchResult) {
         let urlStr = item.trackViewUrl
         guard let url = URL(string: urlStr) else { return }
@@ -2439,7 +2364,9 @@ struct SearchView: SwiftUI.View {
             showVersionPicker = true
         }
 
-        if let cached = VersionListCache.shared.get(app.trackId), !cached.isEmpty {
+        if var cached = VersionListCache.shared.get(app.trackId), !cached.isEmpty {
+            // Caches written before the ordering fix may still be unsorted.
+            cached.normalizeVersionOrder()
             availableVersions = cached
             isLoadingVersions = false
             return
@@ -2477,10 +2404,11 @@ struct SearchView: SwiftUI.View {
 
                 let proVersions = await proTask.value
                 if !proVersions.isEmpty {
-                    let quick = proVersions.enumerated().map { idx, pv in
+                    var quick = proVersions.map { pv in
                         StoreAppVersion(versionString: pv.version, versionId: pv.versionId,
-                                        isCurrent: idx == 0, releaseDate: pv.releaseDate, releaseNotes: nil)
+                                        isCurrent: false, releaseDate: pv.releaseDate, releaseNotes: nil)
                     }
+                    quick.normalizeVersionOrder()
                     await MainActor.run {
                         guard self.selectedApp?.trackId == trackId else { return }
                         if self.availableVersions.isEmpty {
@@ -2540,37 +2468,39 @@ struct SearchView: SwiftUI.View {
                             ))
                         }
 
+                        merged.normalizeVersionOrder()
                         self.availableVersions = merged
-                        self.versionHistory = hist
+                        self.versionHistory = hist.sorted { $0.releaseDate > $1.releaseDate }
                         self.versionError = nil
                         self.isLoadingVersions = false
                         VersionListCache.shared.set(merged, for: trackId)
                     }
                 } else if !hist.isEmpty {
-                    let fallbackVersions = hist.enumerated().map { idx, info in
+                    var fallbackVersions = hist.map { info in
                         StoreAppVersion(
                             versionString: info.version,
                             versionId: "",
-                            isCurrent: idx == 0,
+                            isCurrent: false,
                             releaseDate: info.releaseDate,
                             releaseNotes: info.releaseNotes
                         )
                     }
+                    fallbackVersions.normalizeVersionOrder()
                     await MainActor.run {
                         guard self.selectedApp?.trackId == trackId else { return }
                         self.availableVersions = fallbackVersions
-                        self.versionHistory = hist
+                        self.versionHistory = hist.sorted { $0.releaseDate > $1.releaseDate }
                         self.versionError = nil
                         self.isLoadingVersions = false
                         VersionListCache.shared.set(fallbackVersions, for: trackId)
                     }
                 } else {
                     var fallbackVersions: [StoreAppVersion] = []
-                    for (idx, pv) in proVersions.enumerated() {
+                    for pv in proVersions {
                         fallbackVersions.append(StoreAppVersion(
                             versionString: pv.version,
                             versionId: pv.versionId,
-                            isCurrent: idx == 0,
+                            isCurrent: false,
                             releaseDate: pv.releaseDate,
                             releaseNotes: nil
                         ))
@@ -2589,6 +2519,7 @@ struct SearchView: SwiftUI.View {
                         throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "versions_unavailable".localized])
                     }
 
+                    fallbackVersions.normalizeVersionOrder()
                     let resolved = fallbackVersions
                     await MainActor.run {
                         guard self.selectedApp?.trackId == trackId else { return }
@@ -3372,37 +3303,53 @@ struct SearchView: SwiftUI.View {
     }
 
     private func handleDownloadApp(_ app: iTunesSearchResult) {
-
         guard let account = appStore.selectedAccount else {
-
             openAppStorePage(for: app)
             return
         }
 
+        // Already fetched in this session: the only thing left to do is pick a
+        // version, so skip the SAP round-trip entirely.
+        if purchasedTrackIds.contains(app.trackId) {
+            loadVersionsForApp(app)
+            return
+        }
+
+        // Only one SAP flow at a time; a second tap used to spawn a duplicate.
+        guard purchasingTrackId == nil else { return }
+
         Task {
             await MainActor.run { purchasingTrackId = app.trackId }
+            defer { Task { await MainActor.run { purchasingTrackId = nil } } }
 
-            let isFree = (app.price ?? 0.0) == 0.0
-            if isFree {
-                let purchaseTask = Task.detached(priority: .userInitiated) { @Sendable in
-                    await PurchaseManager.shared.purchaseAppIfNeeded(
-                        appIdentifier: String(app.trackId),
-                        account: account,
-                        countryCode: account.countryCode,
-                        isFree: true
-                    )
-                }
+            if (app.price ?? 0) == 0 {
                 do {
-                    _ = try await withTimeout(seconds: 8, operation: { @Sendable in
-                        await purchaseTask.value
+                    _ = try await withTimeout(seconds: 6, operation: { @Sendable in
+                        await PurchaseManager.shared.purchaseAppIfNeeded(
+                            appIdentifier: String(app.trackId),
+                            account: account,
+                            countryCode: account.countryCode,
+                            isFree: true
+                        )
                     })
+                    await MainActor.run {
+                        _ = purchasedTrackIds.insert(app.trackId)
+                        // Clear the spinner first, then present the version picker;
+                        // the picker fills itself in asynchronously.
+                        purchasingTrackId = nil
+                        loadVersionsForApp(app)
+                    }
+                } catch is SearchTimeoutError {
+                    await MainActor.run {
+                        purchaseAlertText = "purchase_timeout".localized
+                        showPurchaseAlert = true
+                    }
                 } catch {
+                    await MainActor.run {
+                        purchaseAlertText = error.localizedDescription
+                        showPurchaseAlert = true
+                    }
                 }
-                await MainActor.run {
-                    loadVersionsForApp(app)
-                    purchasingTrackId = nil
-                }
-                if !purchaseTask.isCancelled { purchaseTask.cancel() }
                 return
             }
 
@@ -3411,20 +3358,19 @@ struct SearchView: SwiftUI.View {
                 account: account,
                 countryCode: account.countryCode
             )
-
             switch check {
             case .success(let owned):
                 if owned {
-
                     await MainActor.run {
+                        _ = purchasedTrackIds.insert(app.trackId)
                         loadVersionsForApp(app)
                     }
                 } else {
-
                     openAppStorePage(for: app)
                 }
             case .failure:
                 await MainActor.run {
+                    _ = purchasedTrackIds.insert(app.trackId)
                     loadVersionsForApp(app)
                 }
             }

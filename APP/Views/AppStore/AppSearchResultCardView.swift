@@ -4,7 +4,7 @@ struct AppSearchResultCardView: View {
     let app: iTunesSearchResult
     let onTap: () -> Void
     let onGetAction: () -> Void
-    @Binding var isDownloading: Bool
+    var isDownloading: Bool
     var isPreview: Bool = false
     var showLicenseHint: Bool = false
     var isOwned: Bool? = nil
@@ -147,6 +147,12 @@ struct AppSearchResultCardView: View {
             Group {
                 if isDownloading {
                     AppStoreProgressButtonStyle()
+                } else if isOwned == true {
+                    // Still tappable: tapping opens the version picker again.
+                    Button(action: onGetAction) {
+                        AppStoreOwnedButtonStyle()
+                    }
+                    .buttonStyle(.plain)
                 } else {
                     Button(action: onGetAction) {
                         Text(buttonTitle)

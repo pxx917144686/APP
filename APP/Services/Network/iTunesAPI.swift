@@ -390,26 +390,77 @@ class iTunesClient: @unchecked Sendable {
             self.releaseNotes = releaseNotes
         }
 
+        private enum AltKeys: String, CodingKey {
+            case version
+            case releaseDate
+            case releaseTimestamp
+        }
+
+        /// ISO8601 with and without fractional seconds, plus a few loose forms
+        /// Apple has used over the years. Returns nil when nothing matches.
+        static func parseDateString(_ raw: String) -> Date? {
+            let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return nil }
+
+            let withFraction = ISO8601DateFormatter()
+            withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = withFraction.date(from: trimmed) { return date }
+
+            let plain = ISO8601DateFormatter()
+            plain.formatOptions = [.withInternetDateTime]
+            if let date = plain.date(from: trimmed) { return date }
+
+            for pattern in ["yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd"] {
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                formatter.dateFormat = pattern
+                if let date = formatter.date(from: trimmed) { return date }
+            }
+            return nil
+        }
+
+        /// Apple sends epoch milliseconds; tolerate seconds too.
+        static func parseTimestamp(_ value: Double) -> Date {
+            let seconds = value > 1_000_000_000_000 ? value / 1000.0 : value
+            return Date(timeIntervalSince1970: seconds)
+        }
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            version = try container.decode(String.self, forKey: .version)
-            releaseNotes = try container.decodeIfPresent(String.self, forKey: .releaseNotes)
 
-            let dateString = try container.decode(String.self, forKey: .releaseDate)
-            let timestampString = try container.decodeIfPresent(String.self, forKey: .releaseTimestamp)
-
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-            if let date = formatter.date(from: dateString) {
-                releaseDate = date
-            } else if let timestampString = timestampString,
-                      let timestamp = TimeInterval(timestampString) {
-                releaseDate = Date(timeIntervalSince1970: timestamp / 1000.0)
+            // versionDisplay is the AMP key; plain "version" shows up in other payloads.
+            if let display = try? container.decode(String.self, forKey: .version) {
+                version = display
             } else {
-
-                releaseDate = Date()
+                let alt = try decoder.container(keyedBy: AltKeys.self)
+                version = try alt.decode(String.self, forKey: .version)
             }
+
+            releaseNotes = try? container.decodeIfPresent(String.self, forKey: .releaseNotes)
+
+            var parsed: Date?
+
+            if let raw = try? container.decode(String.self, forKey: .releaseDate) {
+                parsed = Self.parseDateString(raw)
+            }
+            if parsed == nil, let number = try? container.decode(Double.self, forKey: .releaseDate) {
+                parsed = Self.parseTimestamp(number)
+            }
+            if parsed == nil, let raw = try? container.decode(String.self, forKey: .releaseTimestamp) {
+                if let seconds = TimeInterval(raw) {
+                    parsed = Self.parseTimestamp(seconds)
+                } else {
+                    parsed = Self.parseDateString(raw)
+                }
+            }
+            if parsed == nil, let number = try? container.decode(Double.self, forKey: .releaseTimestamp) {
+                parsed = Self.parseTimestamp(number)
+            }
+
+            // Never substitute "now": that collapses every unparsed row onto the
+            // same instant and destroys any meaningful ordering.
+            releaseDate = parsed ?? .distantPast
         }
     }
 
@@ -417,11 +468,11 @@ class iTunesClient: @unchecked Sendable {
         let countryCode = country.isEmpty ? "US" : country
 
         if let versions = try? await fetchVersionHistoryFromAMPApi(id: id, country: countryCode), !versions.isEmpty {
-            return versions
+            return Self.sortVersionInfo(versions)
         }
 
         if let versions = try? await fetchVersionHistoryFromLookupApi(id: id, country: countryCode), !versions.isEmpty {
-            return versions
+            return Self.sortVersionInfo(versions)
         }
 
         throw SearchError.invalidResponse
@@ -526,7 +577,19 @@ class iTunesClient: @unchecked Sendable {
     private func parseVersionHistory(from jsonArray: [Any]) throws -> [AppVersionInfo] {
         let decoder = JSONDecoder()
         let data = try JSONSerialization.data(withJSONObject: jsonArray)
-        return try decoder.decode([AppVersionInfo].self, from: data)
+        let decoded = try decoder.decode([AppVersionInfo].self, from: data)
+        // AMP returns versionHistory in no guaranteed order.
+        return Self.sortVersionInfo(decoded)
+    }
+
+    /// Newest first; unparsed dates sink to the bottom instead of clustering at "now".
+    private static func sortVersionInfo(_ items: [AppVersionInfo]) -> [AppVersionInfo] {
+        items.sorted { lhs, rhs in
+            if lhs.releaseDate != rhs.releaseDate {
+                return lhs.releaseDate > rhs.releaseDate
+            }
+            return lhs.version.compare(rhs.version, options: .numeric) == .orderedDescending
+        }
     }
 
     struct SuggestTerm: Codable, Identifiable, Hashable { let term: String; var id: String { term } }

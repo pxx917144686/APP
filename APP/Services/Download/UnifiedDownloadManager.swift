@@ -1,6 +1,9 @@
 import Foundation
 import SwiftUI
 import Combine
+/// Serial queue for download-list persistence so writes never interleave.
+let downloadPersistQueue = DispatchQueue(label: "com.app.download.persist")
+
 
 @MainActor
 class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
@@ -761,15 +764,47 @@ extension UnifiedDownloadManager {
             queueOrder: downloadQueue.map { $0.id }
         )
 
-        DispatchQueue.global(qos: .utility).async {
+        // Persist to a file first (atomic write, previous copy kept as .bak) and
+        // only then mirror into UserDefaults. A crash mid-write can no longer
+        // wipe the whole list: the worst case is losing the last few seconds.
+        // Encoding happens on the background queue so a long list never stalls the UI.
+        downloadPersistQueue.async {
             guard let data = try? JSONEncoder().encode(saveData) else { return }
+            let url = Self.tasksFileURL
+            let manager = FileManager.default
+            if manager.fileExists(atPath: url.path) {
+                let backup = url.appendingPathExtension("bak")
+                try? manager.removeItem(at: backup)
+                try? manager.copyItem(at: url, to: backup)
+            }
+            try? data.write(to: url, options: .atomic)
             UserDefaults.standard.set(data, forKey: "DownloadTasks")
         }
     }
 
+    static var tasksFileURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("DownloadTasks.json")
+    }
+
+    /// File, then backup file, then the legacy UserDefaults key.
+    static func loadPersistedTasksData() -> Data? {
+        let url = tasksFileURL
+        if let data = try? Data(contentsOf: url),
+           (try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data)) != nil {
+            return data
+        }
+        let backup = url.appendingPathExtension("bak")
+        if let data = try? Data(contentsOf: backup),
+           (try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data)) != nil {
+            return data
+        }
+        return UserDefaults.standard.data(forKey: "DownloadTasks")
+    }
+
     func restoreDownloadTasks() {
 
-        guard let data = UserDefaults.standard.data(forKey: "DownloadTasks") else {
+        guard let data = Self.loadPersistedTasksData() else {
             return
         }
 

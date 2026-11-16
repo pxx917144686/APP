@@ -761,3 +761,45 @@
 "auth_err_signin_unavailable" = "Apple 暂时无法完成登录，请稍后重试。";
 "auth_err_signin_no_info" = "Apple 未返回登录信息，请检查账号后重试。";
 "version_unknown" = "未知版本";
+
+
+"dc_action" = "脱壳";
+"dc_status_failed" = "失败";
+"dc_err_missing" = "文件不存在";
+"dc_err_unzip" = "解压失败，包可能不完整";
+"dc_err_no_binary" = "包里没有可执行文件";
+"dc_err_copy" = "写入失败：%@";
+
+
+"dc_pending_hint" = "已扫描：加密。点「脱壳」开始。";
+"dc_done_detail" = "已脱壳 %d 个二进制，%d 个失败";
+"dc_err_no_appgroup" = "此 app 没有 App Group 权限，无法脱壳。签名时需要包含 application-groups entitlement。";
+"dc_err_not_decryptable" = "无法脱壳此包：主二进制未通过 FairPlay 校验。";
+"dc_done_plain" = "此包未加密，已复制";
+"dc_err_space" = "空间不足：可用 %@，需要约 %@";
+"dc_err_busy" = "另一个包正在脱壳，请等它结束";
+"analyzing" = "正在分析…";
+"detail_action" = "查看详情";
+"detail_min_os" = "最低系统";
+"detail_devices" = "设备类型";
+"detail_arch" = "架构";
+"detail_size" = "解压后体积";
+"detail_files" = "文件数";
+"detail_binaries" = "二进制数";
+"detail_section_basics" = "基本信息";
+"detail_encrypted" = "受 FairPlay 加密";
+"detail_plain" = "未加密";
+"detail_scinfo" = "许可证";
+"detail_section_encryption" = "加密状态";
+"detail_team" = "Team ID";
+"detail_profile" = "描述文件";
+"detail_expiry" = "过期时间";
+"detail_devices_count" = "授权设备数";
+"detail_section_signing" = "签名与权限";
+"detail_section_components" = "组件";
+"detail_section_libraries" = "链接的动态库";
+"dc_err_cancelled" = "已取消脱壳";
+"dc_cancel" = "取消脱壳";
+"dc_share_decrypted" = "分享脱壳后的包";
+"purchased" = "已购";
+"purchase_timeout" = "获取超时，请检查网络后重试";

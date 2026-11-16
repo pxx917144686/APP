@@ -264,6 +264,9 @@ final class LanguageManager: ObservableObject {
         return NSLocalizedString(key, comment: "")
     }
 
+    /// - Warning: `%@` expects an object. Passing an `Int` crashes inside
+    ///   `String(format:)` with EXC_BAD_ACCESS at a tiny address, and the
+    ///   compiler does not catch it. Use `%d` / `%ld` for numbers.
     static func localized(_ key: String, _ arguments: CVarArg...) -> String {
         let format = localized(key)
         return String(format: format, locale: shared.locale, arguments: arguments)

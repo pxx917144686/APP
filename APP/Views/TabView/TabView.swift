@@ -3,7 +3,6 @@ import UIKit
 
 enum TabEnum: String, CaseIterable, Hashable {
     case settings
-    case tfapps
     case downloads
     case purchased
     case search
@@ -11,7 +10,6 @@ enum TabEnum: String, CaseIterable, Hashable {
     var title: String {
         switch self {
         case .settings:  return "tab_settings".localized
-        case .tfapps:     return "tab_tfapps".localized
         case .downloads:  return "tab_downloads".localized
         case .purchased:  return "tab_purchased".localized
         case .search:     return "tab_search".localized
@@ -22,7 +20,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
-        case .tfapps:     return "square.stack.3d.up.fill"
         case .purchased:  return "bag.fill"
         case .search:     return "magnifyingglass.circle.fill"
         }
@@ -32,7 +29,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "⚙️"
         case .downloads:  return "📥"
-        case .tfapps:     return "TF"
         case .purchased:  return "🛍️"
         case .search:     return "🔍"
         }
@@ -48,13 +44,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .downloads:
             NavigationView {
                 DownloadView()
-                    .environmentObject(themeManager)
-                    .environmentObject(tabBarStyleManager)
-            }
-            .navigationViewStyle(.stack)
-        case .tfapps:
-            NavigationView {
-                TFAppsView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
@@ -134,16 +123,6 @@ struct TabbarView: View {
                 }
                 .tag(TabEnum.settings)
 
-            TabEnum.view(for: .tfapps, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                .tabItem {
-                    Label {
-                        Text(TabEnum.tfapps.title)
-                    } icon: {
-                        Image(systemName: TabEnum.tfapps.icon)
-                    }
-                }
-                .tag(TabEnum.tfapps)
-
             TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                 .tabItem {
                     Label {
@@ -188,9 +167,6 @@ struct TabbarView: View {
                     TabEnum.view(for: .settings, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                         .tag(TabEnum.settings)
 
-                    TabEnum.view(for: .tfapps, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                        .tag(TabEnum.tfapps)
-
                     TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
                         .tag(TabEnum.downloads)
 
@@ -215,7 +191,7 @@ struct TabbarView: View {
 
     private func floatingHorizontalPadding(for width: CGFloat) -> CGFloat {
         let config = tabBarStyleManager.floatingConfig
-        let tabsMinWidth = 4 * Self.floatingTabMinWidth + 16
+        let tabsMinWidth = 3 * Self.floatingTabMinWidth + 16
         let contentMinWidth = tabsMinWidth + 16 + config.height
         let roomForPadding = max(0, width - contentMinWidth)
         return min(config.horizontalPadding, roomForPadding / 2)
@@ -227,7 +203,7 @@ struct TabbarView: View {
 
         return HStack(spacing: 16) {
             HStack(spacing: 0) {
-                ForEach([TabEnum.settings, .tfapps, .downloads, .purchased], id: \.self) { tab in
+                ForEach([TabEnum.settings, .downloads, .purchased], id: \.self) { tab in
                     tabButton(for: tab, height: tabHeight)
                         .frame(minWidth: Self.floatingTabMinWidth, maxWidth: .infinity)
                 }

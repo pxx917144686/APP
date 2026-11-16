@@ -10,6 +10,10 @@ struct App: SwiftUI.App {
     @State private var languageToggle = false
     @State private var isAppInitialized = false
 
+    init() {
+        CrashLogger.install()
+    }
+
     var body: some SwiftUI.Scene {
         WindowGroup {
             Group {

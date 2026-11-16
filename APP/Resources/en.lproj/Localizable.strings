@@ -761,3 +761,45 @@
 "auth_err_signin_unavailable" = "Apple cannot complete sign-in right now. Please try again.";
 "auth_err_signin_no_info" = "Apple did not return sign-in information. Check your account and try again.";
 "version_unknown" = "Unknown version";
+
+
+"dc_action" = "Decrypt";
+"dc_status_failed" = "Failed";
+"dc_err_missing" = "File not found";
+"dc_err_unzip" = "Unzip failed; the package may be incomplete";
+"dc_err_no_binary" = "No executable found in the package";
+"dc_err_copy" = "Write failed: %@";
+
+
+"dc_pending_hint" = "Scanned: encrypted. Tap Decrypt to start.";
+"dc_done_detail" = "%d binaries decrypted, %d failed";
+"dc_err_no_appgroup" = "This app has no App Group entitlement, so decryption is unavailable. Sign it with application-groups included.";
+"dc_err_not_decryptable" = "Cannot decrypt: the main binary did not pass FairPlay.";
+"dc_done_plain" = "Package was not encrypted; copied to Decrypt";
+"dc_err_space" = "Not enough space: %@ available, about %@ needed";
+"dc_err_busy" = "Another package is being decrypted. Wait for it to finish.";
+"analyzing" = "Analyzing…";
+"detail_action" = "View Details";
+"detail_min_os" = "Minimum OS";
+"detail_devices" = "Devices";
+"detail_arch" = "Architectures";
+"detail_size" = "Unpacked Size";
+"detail_files" = "Files";
+"detail_binaries" = "Binaries";
+"detail_section_basics" = "Basics";
+"detail_encrypted" = "FairPlay encrypted";
+"detail_plain" = "Not encrypted";
+"detail_scinfo" = "License";
+"detail_section_encryption" = "Encryption";
+"detail_team" = "Team ID";
+"detail_profile" = "Profile";
+"detail_expiry" = "Expires";
+"detail_devices_count" = "Provisioned devices";
+"detail_section_signing" = "Signing & Entitlements";
+"detail_section_components" = "Components";
+"detail_section_libraries" = "Linked Libraries";
+"dc_err_cancelled" = "Decryption cancelled";
+"dc_cancel" = "Cancel";
+"dc_share_decrypted" = "Share decrypted package";
+"purchased" = "Purchased";
+"purchase_timeout" = "Timed out. Check your network and try again.";

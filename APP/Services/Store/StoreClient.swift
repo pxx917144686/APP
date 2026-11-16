@@ -4,7 +4,7 @@ public struct StoreAppVersion: Codable, Identifiable {
     public let id: UUID
     public var versionString: String
     public let versionId: String
-    public let isCurrent: Bool
+    public var isCurrent: Bool
     public var releaseDate: Date?
     public var releaseNotes: String?
 
@@ -27,6 +27,69 @@ public struct StoreAppVersion: Codable, Identifiable {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: date)
+    }
+
+    /// Numeric, segment-wise comparison so 7.2.10 ranks above 7.2.9.
+    /// Returns -1, 0 or 1. Non-numeric segments fall back to string order.
+    public static func compareVersionStrings(_ lhs: String, _ rhs: String) -> Int {
+        if lhs == rhs { return 0 }
+        let left = lhs.split(separator: ".")
+        let right = rhs.split(separator: ".")
+        let count = max(left.count, right.count)
+
+        for index in 0..<count {
+            let l = index < left.count ? String(left[index]) : "0"
+            let r = index < right.count ? String(right[index]) : "0"
+
+            if let ln = Int(l), let rn = Int(r) {
+                if ln != rn { return ln < rn ? -1 : 1 }
+            } else {
+                let result = l.compare(r, options: .numeric)
+                if result != .orderedSame {
+                    return result == .orderedAscending ? -1 : 1
+                }
+            }
+        }
+        return 0
+    }
+}
+
+extension Array where Element == StoreAppVersion {
+    /// Newest first: release date when both sides have one, numeric version otherwise.
+    /// Keeps the existing "current" marker if there is one, otherwise marks the first row.
+    public mutating func normalizeVersionOrder() {
+        guard count > 1 else {
+            if count == 1, !self[0].isCurrent {
+                self[0].isCurrent = true
+            }
+            return
+        }
+
+        let currentVersion = first(where: { $0.isCurrent })?.versionString
+
+        sort { lhs, rhs in
+            switch (lhs.releaseDate, rhs.releaseDate) {
+            case let (left?, right?):
+                if left != right { return left > right }
+                return StoreAppVersion.compareVersionStrings(lhs.versionString, rhs.versionString) > 0
+            case (_?, nil):
+                return true    // rows with a date always outrank rows without one
+            case (nil, _?):
+                return false
+            case (nil, nil):
+                return StoreAppVersion.compareVersionStrings(lhs.versionString, rhs.versionString) > 0
+            }
+        }
+
+        if let currentVersion {
+            for index in indices {
+                self[index].isCurrent = (self[index].versionString == currentVersion)
+            }
+        } else {
+            for index in indices {
+                self[index].isCurrent = (index == 0)
+            }
+        }
     }
 }
 

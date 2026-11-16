@@ -1,14 +1,18 @@
 import SwiftUI
 
+/// Fixed-size capsule so the title, the spinner and "已购" all occupy the same
+/// space — the button used to resize on every state change.
 struct AppStoreButtonStyle: ButtonStyle {
     @EnvironmentObject var themeManager: ThemeManager
+    var width: CGFloat = 78
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 15, weight: .semibold))
+            .font(.system(size: 13, weight: .semibold))
             .foregroundColor(themeManager.accentColor)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .frame(width: width, height: 32)
             .background(
                 Capsule()
                     .fill(themeManager.accentColor.opacity(0.12))
@@ -21,10 +25,10 @@ struct AppStoreButtonStyle: ButtonStyle {
 struct AppStoreOrangeButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 15, weight: .semibold))
+            .font(.system(size: 13, weight: .semibold))
             .foregroundColor(.orange)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
+            .lineLimit(1)
+            .frame(width: 78, height: 32)
             .background(
                 Capsule()
                     .fill(Color.orange.opacity(0.12))
@@ -36,16 +40,45 @@ struct AppStoreOrangeButtonStyle: ButtonStyle {
 
 struct AppStoreProgressButtonStyle: View {
     @EnvironmentObject var themeManager: ThemeManager
+    var width: CGFloat = 78
 
     var body: some View {
-        ProgressView()
-            .progressViewStyle(CircularProgressViewStyle(tint: themeManager.accentColor))
-            .frame(width: 20, height: 20)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(themeManager.accentColor.opacity(0.12))
-            )
+        HStack(spacing: 5) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: themeManager.accentColor))
+                .scaleEffect(0.6)
+                .frame(width: 13, height: 13)
+
+            Text("purchasing".localized)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(themeManager.accentColor)
+                .lineLimit(1)
+        }
+        .frame(width: width, height: 32)
+        .background(
+            Capsule()
+                .fill(themeManager.accentColor.opacity(0.12))
+        )
+    }
+}
+
+/// Shown once the licence is already on the account.
+struct AppStoreOwnedButtonStyle: View {
+    var width: CGFloat = 78
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "checkmark")
+                .font(.system(size: 10, weight: .bold))
+            Text("purchased".localized)
+                .font(.system(size: 12, weight: .semibold))
+                .lineLimit(1)
+        }
+        .foregroundColor(.secondary)
+        .frame(width: width, height: 32)
+        .background(
+            Capsule()
+                .fill(Color.secondary.opacity(0.12))
+        )
     }
 }
