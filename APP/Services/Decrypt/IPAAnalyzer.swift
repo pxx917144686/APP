@@ -1,7 +1,5 @@
 import Foundation
 
-/// Static description of a package. Everything here is read locally from the
-/// archive: no network, no FairPlay, no code execution.
 struct IPADetails {
     struct Component: Identifiable {
         enum Kind: String {
@@ -80,8 +78,6 @@ enum IPAAnalyzer {
         }
     }
 
-    /// Unpacks the archive to a scratch directory and reads everything it can.
-    /// Slow for large packages: call it off the main thread.
     static func analyze(ipaURL: URL, progress: ((String) -> Void)? = nil) throws -> IPADetails {
         let manager = FileManager.default
         let work = manager.temporaryDirectory
@@ -111,7 +107,6 @@ enum IPAAnalyzer {
         var details = IPADetails()
         details.name = bundleName.replacingOccurrences(of: ".app", with: "")
 
-        // Info.plist
         let infoURL = appDir.appendingPathComponent("Info.plist")
         if let info = NSDictionary(contentsOf: infoURL) as? [String: Any] {
             details.bundleIdentifier = info["CFBundleIdentifier"] as? String ?? ""
@@ -129,7 +124,6 @@ enum IPAAnalyzer {
             }
         }
 
-        // Provisioning profile
         progress?("SIGNING")
         let profileURL = appDir.appendingPathComponent("embedded.mobileprovision")
         if let profile = readProvisioningProfile(at: profileURL) {
@@ -140,16 +134,13 @@ enum IPAAnalyzer {
             details.entitlements = profile.entitlements
         }
 
-        // SC_Info presence
         details.hasSCInfo = manager.fileExists(
             atPath: appDir.appendingPathComponent("SC_Info").path
         )
 
-        // Walk every file: sizes, Mach-O count, encryption, components
         progress?("SCAN")
         details.components = scanTree(appDir: appDir, details: &details)
 
-        // Main binary details
         progress?("BINARY")
         if let executable = executableName(in: appDir) {
             let binaryURL = appDir.appendingPathComponent(executable)
@@ -163,8 +154,6 @@ enum IPAAnalyzer {
 
         return details
     }
-
-    // MARK: - tree scan
 
     private static func scanTree(appDir: URL, details: inout IPADetails) -> [IPADetails.Component] {
         let manager = FileManager.default
@@ -213,7 +202,6 @@ enum IPAAnalyzer {
         return components
     }
 
-    /// Groups a relative path into the top-level component that owns it.
     private static func componentKey(for relative: String) -> String? {
         let parts = relative.split(separator: "/").map(String.init)
         guard let first = parts.first else { return nil }
@@ -236,8 +224,6 @@ enum IPAAnalyzer {
         if path.hasPrefix("Frameworks") { return .framework }
         return .main
     }
-
-    // MARK: - helpers
 
     private static func isMachO(_ head: Data) -> Bool {
         guard head.count == 4 else { return false }
@@ -275,8 +261,6 @@ enum IPAAnalyzer {
         }
     }
 
-    // MARK: - provisioning profile
-
     struct ProvisioningProfile {
         let name: String?
         let teamIdentifier: String?
@@ -285,8 +269,6 @@ enum IPAAnalyzer {
         let entitlements: [IPADetails.Entitlement]
     }
 
-    /// `embedded.mobileprovision` is a CMS blob with a plain XML plist inside;
-    /// slicing between the XML markers avoids needing any private CMS API.
     static func readProvisioningProfile(at url: URL) -> ProvisioningProfile? {
         guard let data = try? Data(contentsOf: url) else { return nil }
         guard let start = data.range(of: Data("<?xml".utf8)),

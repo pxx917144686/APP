@@ -396,8 +396,6 @@ class iTunesClient: @unchecked Sendable {
             case releaseTimestamp
         }
 
-        /// ISO8601 with and without fractional seconds, plus a few loose forms
-        /// Apple has used over the years. Returns nil when nothing matches.
         static func parseDateString(_ raw: String) -> Date? {
             let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return nil }
@@ -420,7 +418,6 @@ class iTunesClient: @unchecked Sendable {
             return nil
         }
 
-        /// Apple sends epoch milliseconds; tolerate seconds too.
         static func parseTimestamp(_ value: Double) -> Date {
             let seconds = value > 1_000_000_000_000 ? value / 1000.0 : value
             return Date(timeIntervalSince1970: seconds)
@@ -429,7 +426,6 @@ class iTunesClient: @unchecked Sendable {
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
-            // versionDisplay is the AMP key; plain "version" shows up in other payloads.
             if let display = try? container.decode(String.self, forKey: .version) {
                 version = display
             } else {
@@ -458,8 +454,6 @@ class iTunesClient: @unchecked Sendable {
                 parsed = Self.parseTimestamp(number)
             }
 
-            // Never substitute "now": that collapses every unparsed row onto the
-            // same instant and destroys any meaningful ordering.
             releaseDate = parsed ?? .distantPast
         }
     }
@@ -578,11 +572,9 @@ class iTunesClient: @unchecked Sendable {
         let decoder = JSONDecoder()
         let data = try JSONSerialization.data(withJSONObject: jsonArray)
         let decoded = try decoder.decode([AppVersionInfo].self, from: data)
-        // AMP returns versionHistory in no guaranteed order.
         return Self.sortVersionInfo(decoded)
     }
 
-    /// Newest first; unparsed dates sink to the bottom instead of clustering at "now".
     private static func sortVersionInfo(_ items: [AppVersionInfo]) -> [AppVersionInfo] {
         items.sorted { lhs, rhs in
             if lhs.releaseDate != rhs.releaseDate {

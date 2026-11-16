@@ -1,9 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
-/// Serial queue for download-list persistence so writes never interleave.
 let downloadPersistQueue = DispatchQueue(label: "com.app.download.persist")
-
 
 @MainActor
 class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
@@ -764,10 +762,6 @@ extension UnifiedDownloadManager {
             queueOrder: downloadQueue.map { $0.id }
         )
 
-        // Persist to a file first (atomic write, previous copy kept as .bak) and
-        // only then mirror into UserDefaults. A crash mid-write can no longer
-        // wipe the whole list: the worst case is losing the last few seconds.
-        // Encoding happens on the background queue so a long list never stalls the UI.
         downloadPersistQueue.async {
             guard let data = try? JSONEncoder().encode(saveData) else { return }
             let url = Self.tasksFileURL
@@ -787,7 +781,6 @@ extension UnifiedDownloadManager {
             .appendingPathComponent("DownloadTasks.json")
     }
 
-    /// File, then backup file, then the legacy UserDefaults key.
     static func loadPersistedTasksData() -> Data? {
         let url = tasksFileURL
         if let data = try? Data(contentsOf: url),

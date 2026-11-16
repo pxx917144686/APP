@@ -1,9 +1,5 @@
 import Foundation
 
-/// Minimal crash capture.
-///
-/// Handlers must be plain C function pointers, so they cannot capture anything:
-/// everything they need lives in file-scope storage below.
 private var crashLogSignalPath: UnsafeMutablePointer<CChar>?
 
 private func crashLogWriteSignal(_ sig: Int32) {
@@ -13,8 +9,6 @@ private func crashLogWriteSignal(_ sig: Int32) {
             let message = "\n=== FATAL SIGNAL \(sig) ===\n"
             message.withCString { _ = Darwin.write(fd, $0, strlen($0)) }
 
-            // Raw frames: async-signal-safe enough in practice, and the only way
-            // to get any stack at all from inside a signal handler.
             var frames = [UnsafeMutableRawPointer?](repeating: nil, count: 64)
             let count = backtrace(&frames, 32)
             backtrace_symbols_fd(&frames, count, fd)
@@ -22,8 +16,6 @@ private func crashLogWriteSignal(_ sig: Int32) {
         }
     }
 
-    // Hand the signal back to the system. Calling exit() here would suppress the
-    // system crash report entirely, leaving only our bare signal number.
     signal(sig, SIG_DFL)
     raise(sig)
 }

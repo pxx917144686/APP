@@ -148,7 +148,6 @@ struct AppSearchResultCardView: View {
                 if isDownloading {
                     AppStoreProgressButtonStyle()
                 } else if isOwned == true {
-                    // Still tappable: tapping opens the version picker again.
                     Button(action: onGetAction) {
                         AppStoreOwnedButtonStyle()
                     }

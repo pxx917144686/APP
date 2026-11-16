@@ -1,7 +1,5 @@
 import Foundation
 
-/// Reads architecture, deployment target and linked libraries straight from a
-/// Mach-O header. Only load commands are parsed, never the full file.
 enum MachOInspector {
     struct Result {
         var architectures: [String] = []
@@ -16,8 +14,6 @@ enum MachOInspector {
         let fileOffset: UInt32
     }
 
-    /// Returns the sections of the first slice. Fat binaries only expose their
-    /// first architecture, which is arm64 for every App Store package.
     static func sections(url: URL) -> [Section] {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return [] }
         defer { try? handle.close() }
@@ -43,7 +39,7 @@ enum MachOInspector {
               let header = try? handle.read(upToCount: 32), header.count >= 28 else { return [] }
 
         let magic = header.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }
-        guard magic == magic64 else { return [] }   // sections only parsed for 64-bit
+        guard magic == magic64 else { return [] }
 
         let ncmds = header.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 16, as: UInt32.self) }
         let sizeofcmds = header.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 20, as: UInt32.self) }
@@ -63,7 +59,6 @@ enum MachOInspector {
             let cmdSize = readUInt32(bytes, cursor + 4)
             guard cmdSize >= 8, cursor + Int(cmdSize) <= bytes.count else { break }
 
-            // LC_SEGMENT_64 = 0x19
             if cmd == 0x19, cmdSize >= 72 {
                 let nsects = readUInt32(bytes, cursor + 64)
                 var sectionOffset = cursor + 72
@@ -189,7 +184,6 @@ enum MachOInspector {
         let sizeofcmds = header.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 20, as: UInt32.self) }
         guard ncmds > 0, ncmds < 8192, sizeofcmds > 0, sizeofcmds < 4 << 20 else { return result }
 
-        // Reposition to the first load command: the header is 28 bytes on 32-bit.
         guard (try? handle.seek(toOffset: offset + UInt64(headerSize))) != nil,
               let commands = try? handle.read(upToCount: Int(sizeofcmds)),
               commands.count == Int(sizeofcmds) else { return result }
@@ -235,8 +229,6 @@ enum MachOInspector {
         return result
     }
 
-    // MARK: - byte helpers
-
     private static func readUInt32(_ bytes: [UInt8], _ offset: Int) -> UInt32 {
         guard offset + 4 <= bytes.count else { return 0 }
         return UInt32(bytes[offset])
@@ -245,8 +237,6 @@ enum MachOInspector {
             | (UInt32(bytes[offset + 3]) << 24)
     }
 
-    /// `lc_str` offsets are relative to the start of the load command, not to the
-    /// dylib struct that follows the 8-byte header.
     private static func readDylibName(_ bytes: [UInt8], _ commandStart: Int, _ end: Int) -> String? {
         guard commandStart + 12 <= end, commandStart + 12 <= bytes.count else { return nil }
         let nameOffset = Int(readUInt32(bytes, commandStart + 8))

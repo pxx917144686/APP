@@ -803,3 +803,9 @@
 "dc_share_decrypted" = "Share decrypted package";
 "purchased" = "Purchased";
 "purchase_timeout" = "Timed out. Check your network and try again.";
+"dc_err_no_appgroup_missing" = "This build's signature has no App Group (Team %@), so decryption is unavailable.\nApp Groups are granted by the signing profile; resigning with a third-party certificate drops them, so it must be signed with an account that has the group.";
+"dc_err_no_appgroup_unregistered" = "The App Group did not take effect (Team %@).\nIt declares %@, but no container was granted: the group may not be registered under the signing account, or the signature stripped it.";
+"dc_group_wildcard" = "App ID is a wildcard (TEAMID.*); wildcard App IDs cannot carry App Groups";
+"dc_group_none" = "No App Group in the signature";
+"dc_group_notgranted" = "App Group is declared but no container was granted";
+"dc_group_ok" = "App Group available";

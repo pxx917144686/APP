@@ -803,3 +803,9 @@
 "dc_share_decrypted" = "分享脱壳后的包";
 "purchased" = "已购";
 "purchase_timeout" = "获取超时，请检查网络后重试";
+"dc_err_no_appgroup_missing" = "此包签名里没有 App Group（Team %@），无法脱壳。\nApp Group 由签名描述文件授予，第三方证书重签会丢掉它，必须用带该 group 的账号重新签名。";
+"dc_err_no_appgroup_unregistered" = "App Group 未生效（Team %@）。\n声明了 %@，但系统没给出容器：可能是该 group 没在签名账号下注册，或签名时被剥离。";
+"dc_group_wildcard" = "App ID 是通配符（TEAMID.*），通配符 App ID 不支持 App Group";
+"dc_group_none" = "签名里没有 App Group 声明";
+"dc_group_notgranted" = "声明了 App Group，但系统没有分配容器";
+"dc_group_ok" = "App Group 可用";

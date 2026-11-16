@@ -210,8 +210,6 @@ enum DecryptService {
         defer { try? manager.removeItem(at: workDirectory) }
         try? manager.createDirectory(at: workDirectory, withIntermediateDirectories: true)
 
-        // FastZipArchive loads the whole archive into memory, which fails on
-        // large IPAs. Use the streaming extractor instead.
         var errBuf = [CChar](repeating: 0, count: 512)
         let status = ipaURL.path.withCString { source in
             workDirectory.path.withCString { destination in
@@ -283,15 +281,11 @@ enum DecryptService {
             return record
         }
 
-        // Lightweight by design: the download screen must return instantly.
-        // Encryption is decided during decryption, where the archive is unpacked
-        // anyway, so scanning here would unpack every IPA twice.
         record.status = .pending
         record.message = "dc_pending_hint".localized
         return record
     }
 
-    /// Decrypts an encrypted IPA in place inside the shared App Group container.
     static func decrypt(
         _ record: DecryptRecord,
         cancelToken: DecryptCancelToken? = nil,
@@ -326,7 +320,6 @@ enum DecryptService {
         return updated
     }
 
-    /// Decrypts several IPAs one after another. Each is independent, so a failure does not stop the rest.
     static func decryptBatch(
         _ records: [DecryptRecord],
         onEvent: (@Sendable (DecryptEvent) -> Void)? = nil
@@ -362,9 +355,6 @@ enum DecryptService {
             record.message = "dc_err_missing".localized
             return record
         }
-        // Decrypt straight away: the extractor inside FairPlayDecryptor already
-        // determines whether the package is encrypted, so a separate scan would
-        // only unpack the same archive twice.
         return await decrypt(record, cancelToken: cancelToken, onEvent: onEvent)
     }
 }

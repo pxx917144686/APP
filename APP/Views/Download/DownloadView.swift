@@ -1384,8 +1384,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-    // MARK: - 脱壳
-
     private var compactDecryptProgress: some SwiftUI.View {
         VStack(alignment: .leading, spacing: 5) {
             GeometryReader { geo in
@@ -1423,7 +1421,6 @@ struct DownloadCardView: SwiftUI.View {
         .padding(.top, 2)
     }
 
-    /// Theme colour normally; red while running so the cancel action reads clearly.
     private var decryptGradient: [Color] {
         if isDecrypting {
             return [Color(red: 0.95, green: 0.31, blue: 0.28),
@@ -1467,7 +1464,12 @@ struct DownloadCardView: SwiftUI.View {
     private func startDecrypt() {
         guard let path = request.localFilePath else { return }
         guard FairPlayDecryptor.isAvailable else {
-            decryptMessage = "dc_err_no_appgroup".localized
+            let report = AppGroupDiagnostics.inspect()
+            decryptMessage = report.headline + "\n" + report.facts
+            decryptLog.reset(title: "NOGROUP")
+            for line in report.facts.split(separator: "\n") {
+                decryptLog.append(String(line), level: .failure)
+            }
             return
         }
         if DecryptCoordinator.shared.isBusy,
@@ -1484,7 +1486,6 @@ struct DownloadCardView: SwiftUI.View {
         let log = decryptLog
         let token = DecryptCoordinator.shared.begin(requestID: request.id)
 
-        // Keep the process alive while backgrounded; iOS grants a short grace period.
         var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier.invalid
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "decrypt") {
             if backgroundTask != UIBackgroundTaskIdentifier.invalid {
@@ -1515,8 +1516,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-    /// Picks up a package decrypted in an earlier session.
-    /// Runs off the main thread: `onAppear` fires for every visible card while scrolling.
     private func loadExistingDecrypted() {
         guard decryptedURL == nil, let path = request.localFilePath else { return }
         let stem = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent

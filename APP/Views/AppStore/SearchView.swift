@@ -2365,7 +2365,6 @@ struct SearchView: SwiftUI.View {
         }
 
         if var cached = VersionListCache.shared.get(app.trackId), !cached.isEmpty {
-            // Caches written before the ordering fix may still be unsorted.
             cached.normalizeVersionOrder()
             availableVersions = cached
             isLoadingVersions = false
@@ -3308,14 +3307,11 @@ struct SearchView: SwiftUI.View {
             return
         }
 
-        // Already fetched in this session: the only thing left to do is pick a
-        // version, so skip the SAP round-trip entirely.
         if purchasedTrackIds.contains(app.trackId) {
             loadVersionsForApp(app)
             return
         }
 
-        // Only one SAP flow at a time; a second tap used to spawn a duplicate.
         guard purchasingTrackId == nil else { return }
 
         Task {
@@ -3334,8 +3330,6 @@ struct SearchView: SwiftUI.View {
                     })
                     await MainActor.run {
                         _ = purchasedTrackIds.insert(app.trackId)
-                        // Clear the spinner first, then present the version picker;
-                        // the picker fills itself in asynchronously.
                         purchasingTrackId = nil
                         loadVersionsForApp(app)
                     }

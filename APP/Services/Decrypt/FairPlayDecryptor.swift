@@ -1,32 +1,11 @@
 import Foundation
 
-/// In-app FairPlay decryption.
-///
-/// fairplayd refuses to read a binary that sits in an app's data container
-/// (Documents / Library / tmp) and returns EPERM or EINVAL. It *does* read
-/// files under the shared App Group container, which is why this decryptor
-/// works entirely inside `containerURLForSecurityApplicationGroupIdentifier`.
-///
-/// Verified on iOS 27.0.1: 16/16 encrypted Mach-O decrypted, 0 failures.
 enum FairPlayDecryptor {
 
-    /// Candidate group identifiers, tried in order. The first one that resolves wins.
-    /// Override with `AppGroupIdentifier` in Info.plist if your signing profile differs.
     static var candidateGroups: [String] {
-        if let configured = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String,
-           !configured.isEmpty {
-            return [configured]
-        }
-        return [
-            "group.b26d9af3ffccda33.1",
-            "group.b26d9af3ffccda33.2",
-            "group.b26d9af3ffccda33.3",
-            "group.b26d9af3ffccda33.4",
-            "group.b26d9af3ffccda33.5"
-        ]
+        AppGroupDiagnostics.candidateGroups()
     }
 
-    /// The shared container, or nil when the app was signed without App Group entitlements.
     static func containerURL() -> URL? {
         for group in candidateGroups {
             if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) {
@@ -77,7 +56,6 @@ enum FairPlayDecryptor {
         let elapsed: TimeInterval
     }
 
-    /// Decrypt an IPA in place inside the shared container and write the result to Documents/Decrypted.
     static func decrypt(
         ipaURL: URL,
         cancelToken: DecryptCancelToken? = nil,
@@ -94,8 +72,6 @@ enum FairPlayDecryptor {
 
         let sourceSize = (try? manager.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
-        // Extraction plus repack needs roughly three times the IPA on disk.
-        // Failing early beats dying mid-write with a half-written container.
         if let capacity = try? groupRoot.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
             .volumeAvailableCapacityForImportantUsage {
             let needed = sourceSize * 3
@@ -105,7 +81,6 @@ enum FairPlayDecryptor {
             }
         }
 
-        // 1. extract
         onEvent?(.phase("EXTRACT"))
         onEvent?(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
 
@@ -121,14 +96,11 @@ enum FairPlayDecryptor {
             throw DecryptError.badArchive(detail)
         }
 
-        // Unpacking is one long C call with no cancel point; honour a cancel
-        // request as soon as it returns.
         if cancelToken?.isCancelled == true {
             onEvent?(.line("cancelled", .warning))
             throw DecryptError.cancelled
         }
 
-        // 2. locate Payload/*.app
         let payloadRoot = workRoot.appendingPathComponent("Payload", isDirectory: true)
         let entries = (try? manager.contentsOfDirectory(atPath: payloadRoot.path)) ?? []
         guard let bundleName = entries.first(where: { $0.hasSuffix(".app") }) else {
@@ -138,12 +110,10 @@ enum FairPlayDecryptor {
         let appDir = payloadRoot.appendingPathComponent(bundleName, isDirectory: true)
         onEvent?(.line("payload  \(bundleName)", .info))
 
-        // 3. replicate SINF so every nested Mach-O has <dir>/SC_Info/<name>.sinf
         onEvent?(.phase("SINF"))
         let replicated = replicateSinf(appDir: appDir)
         onEvent?(.line("replicated to \(replicated) paths", replicated > 0 ? .info : .warning))
 
-        // 4. decrypt every Mach-O
         let total = countMachOs(in: appDir)
         onEvent?(.phase("DECRYPT"))
         onEvent?(.line("\(total) Mach-O found", .info))
@@ -184,7 +154,6 @@ enum FairPlayDecryptor {
         let outDir = documents.appendingPathComponent("Decrypted", isDirectory: true)
         try? manager.createDirectory(at: outDir, withIntermediateDirectories: true)
 
-        // Nothing encrypted and nothing failed: the package is already plain.
         if decrypted == 0 && failedCount == 0 {
             onEvent?(.phase("DONE"))
             onEvent?(.line("package is not encrypted, copied as-is", .warning))
@@ -216,12 +185,9 @@ enum FairPlayDecryptor {
             throw DecryptError.notDecryptable
         }
 
-        // 5. repack
         onEvent?(.phase("PACK"))
         let suffix = failedCount > 0 ? "-PARTIAL" : "-decrypted"
         let outURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa")
-        // Pack into a temp file first: re-running a decryption must not destroy
-        // the previous good result if this attempt fails.
         let tempURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa.tmp")
         try? manager.removeItem(at: tempURL)
 
@@ -256,8 +222,6 @@ enum FairPlayDecryptor {
         )
     }
 
-    // MARK: - helpers
-
     private final class EventBox {
         let handler: (@Sendable (DecryptEvent) -> Void)?
         let cancelToken: DecryptCancelToken?
@@ -276,7 +240,6 @@ enum FairPlayDecryptor {
         return formatter.string(fromByteCount: value)
     }
 
-    /// Copies SC_Info/<name>.sinf to every path listed in SC_Info/Manifest.plist.
     @discardableResult
     private static func replicateSinf(appDir: URL) -> Int {
         let manager = FileManager.default

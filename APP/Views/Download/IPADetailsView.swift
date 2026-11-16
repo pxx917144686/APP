@@ -1,8 +1,6 @@
 import SwiftUI
 import UIKit
 
-/// Read-only package inspector. Everything shown here is parsed locally from
-/// the archive; nothing is installed, decrypted or uploaded.
 struct IPADetailsView: View {
     let ipaURL: URL
     let appName: String
@@ -38,8 +36,6 @@ struct IPADetailsView: View {
         .task { await load() }
     }
 
-    // MARK: - states
-
     private var loadingState: some View {
         VStack(spacing: 14) {
             ProgressView()
@@ -70,8 +66,6 @@ struct IPADetailsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
-    // MARK: - content
 
     private func content(_ details: IPADetails) -> some View {
         List {
@@ -261,8 +255,6 @@ struct IPADetailsView: View {
             Text("detail_section_libraries".localized)
         }
     }
-
-    // MARK: - helpers
 
     private func infoRow(_ label: String, _ value: String, mono: Bool = false) -> some View {
         HStack {

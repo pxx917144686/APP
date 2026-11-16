@@ -1,6 +1,5 @@
 import Foundation
 
-/// Thread-safe cancellation flag polled by the C walker between files.
 final class DecryptCancelToken {
     private let lock = NSLock()
     private var cancelled = false
@@ -17,10 +16,6 @@ final class DecryptCancelToken {
     }
 }
 
-/// Tracks which card is currently decrypting.
-///
-/// Progress lives on the card itself, so this only exists so a second card knows
-/// to stay disabled, and so cancellation has a single owner.
 @MainActor
 final class DecryptCoordinator: ObservableObject {
     static let shared = DecryptCoordinator()

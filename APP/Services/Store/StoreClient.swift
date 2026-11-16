@@ -29,8 +29,6 @@ public struct StoreAppVersion: Codable, Identifiable {
         return formatter.string(from: date)
     }
 
-    /// Numeric, segment-wise comparison so 7.2.10 ranks above 7.2.9.
-    /// Returns -1, 0 or 1. Non-numeric segments fall back to string order.
     public static func compareVersionStrings(_ lhs: String, _ rhs: String) -> Int {
         if lhs == rhs { return 0 }
         let left = lhs.split(separator: ".")
@@ -55,8 +53,6 @@ public struct StoreAppVersion: Codable, Identifiable {
 }
 
 extension Array where Element == StoreAppVersion {
-    /// Newest first: release date when both sides have one, numeric version otherwise.
-    /// Keeps the existing "current" marker if there is one, otherwise marks the first row.
     public mutating func normalizeVersionOrder() {
         guard count > 1 else {
             if count == 1, !self[0].isCurrent {
@@ -73,7 +69,7 @@ extension Array where Element == StoreAppVersion {
                 if left != right { return left > right }
                 return StoreAppVersion.compareVersionStrings(lhs.versionString, rhs.versionString) > 0
             case (_?, nil):
-                return true    // rows with a date always outrank rows without one
+                return true
             case (nil, _?):
                 return false
             case (nil, nil):

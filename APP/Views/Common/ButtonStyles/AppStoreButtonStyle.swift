@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Fixed-size capsule so the title, the spinner and "已购" all occupy the same
-/// space — the button used to resize on every state change.
 struct AppStoreButtonStyle: ButtonStyle {
     @EnvironmentObject var themeManager: ThemeManager
     var width: CGFloat = 78
@@ -62,7 +60,6 @@ struct AppStoreProgressButtonStyle: View {
     }
 }
 
-/// Shown once the licence is already on the account.
 struct AppStoreOwnedButtonStyle: View {
     var width: CGFloat = 78
 

@@ -1,10 +1,9 @@
 import Foundation
 
-/// Severity of a single console line.
 enum DecryptLogLevel {
-    case phase      // stage banner, e.g. "EXTRACT"
-    case info       // ordinary progress
-    case detail     // raw diagnostic from the C core
+    case phase
+    case info
+    case detail
     case success
     case warning
     case failure
@@ -17,18 +16,12 @@ struct DecryptLogLine: Identifiable {
     let time: Date
 }
 
-/// Events emitted while a package is being decrypted.
 enum DecryptEvent: Sendable {
     case phase(String)
     case line(String, DecryptLogLevel)
     case entry(String, Int32)
 }
 
-/// Collects the live console output for one decryption run.
-///
-/// Events arrive from a background thread; they are hopped to the main queue and
-/// batched at ~10 Hz before touching `@Published`. Publishing per line stalls the
-/// UI once a package with dozens of Mach-O files starts streaming diagnostics.
 final class DecryptLog: ObservableObject {
     @Published private(set) var lines: [DecryptLogLine] = []
     @Published private(set) var phase: String = ""
@@ -103,7 +96,6 @@ final class DecryptLog: ObservableObject {
         onMain { self.total = value }
     }
 
-    /// Feeds one event into the console, mapping it to a line and counters.
     func consume(_ event: DecryptEvent) {
         onMain {
             switch event {
@@ -117,8 +109,6 @@ final class DecryptLog: ObservableObject {
             }
         }
     }
-
-    // MARK: - batching
 
     private func appendOnMain(_ text: String, level: DecryptLogLevel) {
         let trimmed = text.trimmingCharacters(in: .newlines)
@@ -172,7 +162,6 @@ final class DecryptLog: ObservableObject {
         ticker?.invalidate()
     }
 
-    /// Runs on the main queue, preserving submission order.
     private func onMain(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
