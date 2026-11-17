@@ -4,15 +4,29 @@ final class HTTPClient: Sendable {
     static let shared = HTTPClient()
     static let userAgent = "Configurator/2.21 (Macintosh; OS X 15.2; 24C5089c) AppleWebKit/0620.1.16.11.6"
     private let session: URLSession
+    private let directSession: URLSession
 
     init(protocolClasses: [AnyClass]? = nil) {
         let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = 45
+        config.timeoutIntervalForRequest = 20
         config.timeoutIntervalForResource = 90
         config.httpCookieStorage = nil
         config.httpShouldSetCookies = false
         if let protocolClasses { config.protocolClasses = protocolClasses }
         self.session = URLSession(configuration: config, delegate: RedirectPolicy(), delegateQueue: nil)
+
+        let direct = URLSessionConfiguration.ephemeral
+        direct.timeoutIntervalForRequest = 20
+        direct.timeoutIntervalForResource = 90
+        direct.httpCookieStorage = nil
+        direct.httpShouldSetCookies = false
+        direct.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0
+        ]
+        if let protocolClasses { direct.protocolClasses = protocolClasses }
+        self.directSession = URLSession(configuration: direct, delegate: RedirectPolicy(), delegateQueue: nil)
     }
 
     private final class RedirectPolicy: NSObject, URLSessionTaskDelegate {
@@ -36,22 +50,26 @@ final class HTTPClient: Sendable {
                  authentication: Bool = false, allowRedirects: Bool = true,
                  retryTransient: Bool? = nil,
                  refreshHeaders: ((URL) async throws -> [String: String])? = nil) async throws -> (Data, HTTPURLResponse) {
-        let retries = (retryTransient ?? (method == "GET")) ? 2 : 0
+        let retries = (retryTransient ?? (method == "GET")) ? 2 : 1
         var attempt = 0
+        var useDirect = false
         while true {
             do {
-                return try await requestOnce(url, method: method, body: body, headers: headers, appleRedirects: appleRedirects,
+                return try await requestOnce(session: useDirect ? directSession : session,
+                                             url: url, method: method, body: body, headers: headers,
+                                             appleRedirects: appleRedirects,
                                              authentication: authentication, allowRedirects: allowRedirects,
                                              refreshHeaders: refreshHeaders)
             } catch {
                 guard attempt < retries, Self.isTransient(error), !Task.isCancelled else { throw error }
                 attempt += 1
-                try await Task.sleep(nanoseconds: UInt64(attempt) * 700_000_000)
+                useDirect = true
+                try await Task.sleep(nanoseconds: UInt64(attempt) * 500_000_000)
             }
         }
     }
 
-    private func requestOnce(_ url: URL, method: String, body: Data?,
+    private func requestOnce(session: URLSession, url: URL, method: String, body: Data?,
                              headers: [String: String], appleRedirects: Bool,
                              authentication: Bool, allowRedirects: Bool,
                              refreshHeaders: ((URL) async throws -> [String: String])?) async throws -> (Data, HTTPURLResponse) {

@@ -22,7 +22,7 @@ enum DecryptEvent: Sendable {
     case entry(String, Int32)
 }
 
-final class DecryptLog: ObservableObject {
+final class DecryptLog: ObservableObject, @unchecked Sendable {
     @Published private(set) var lines: [DecryptLogLine] = []
     @Published private(set) var phase: String = ""
     @Published private(set) var decrypted = 0

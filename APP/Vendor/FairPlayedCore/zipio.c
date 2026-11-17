@@ -1,4 +1,3 @@
-// Minimal ZIP reader/writer (deflate via zlib, ZIP64 offsets) for IPA handling.
 #include "zipio.h"
 
 #include <errno.h>

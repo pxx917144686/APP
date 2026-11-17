@@ -1,4 +1,3 @@
-// FairPlayed — FairPlay decryption research tool.
 #include "fpcore.h"
 
 #include <dlfcn.h>
@@ -29,7 +28,7 @@ static int raw_mremap_encrypted(void *addr, size_t len, uint32_t cryptid, uint32
     register uint64_t x2 __asm__("x2") = cryptid;
     register uint64_t x3 __asm__("x3") = cputype;
     register uint64_t x4 __asm__("x4") = cpusubtype;
-    register uint64_t x16 __asm__("x16") = 489; // SYS_mremap_encrypted
+    register uint64_t x16 __asm__("x16") = 489;
     uint64_t failed;
     __asm__ volatile("svc #0x80\n\tcset %[f], cs\n"
                      : "+r"(x0), "+r"(x1), [f] "=r"(failed)
@@ -78,7 +77,7 @@ static uint32_t code_words(const uint8_t *p, size_t n) {
     uint32_t c = 0;
     for (size_t i = 0; i + 4 <= n; i += 4) {
         uint32_t w; memcpy(&w, p + i, 4);
-        if (w == 0xd65f03c0 /* ret */ || w == 0xd503237f /* pacibsp */ || w == 0xd65f0fff /* retab */) c++;
+        if (w == 0xd65f03c0 || w == 0xd503237f || w == 0xd65f0fff) c++;
     }
     return c;
 }
@@ -175,7 +174,7 @@ int fp_parse(const char *path, fp_slice_t *slices, int max, int *count, char *er
                 struct fat_arch fa; if (!pread_full(fd, &fa, sizeof fa, p)) break; p += sizeof fa;
                 o = OSSwapBigToHostInt32(fa.offset); sz = OSSwapBigToHostInt32(fa.size); ct = OSSwapBigToHostInt32(fa.cputype);
             }
-            if (!(ct & CPU_ARCH_ABI64)) continue; // 32-bit slices are irrelevant on arm64-only devices
+            if (!(ct & CPU_ARCH_ABI64)) continue;
             char e2[128];
             if (parse_thin(fd, o, sz, &slices[*count], e2, sizeof e2) == 0) (*count)++;
         }
@@ -226,8 +225,6 @@ int fp_attempt(const char *path, const fp_slice_t *s, int mode, bool addsigs, ui
     res->mremap_errno = res->mremap_ret == 0 ? 0 : errno;
 
     if (res->mremap_ret == 0) {
-        // Read through the remapped range with vm_read_overwrite so that a failing
-        // page-in (decrypt error) is reported as a kern_return_t instead of SIGBUS.
         uint64_t total = (s->cryptsize + pg - 1) / pg;
         res->pages_total = total;
         for (uint64_t i = 0; i < total; i++) {
@@ -272,8 +269,6 @@ void fp_attempt_describe(const fp_attempt_t *a, char *buf, size_t len) {
 }
 
 static bool attempt_looks_decrypted(const fp_attempt_t *a) {
-    // Encrypted text has ~8.0 bits/byte regardless of size; decrypted arm64 code stays below 7.5.
-    // Require only one new RET/PACIBSP word so tiny (1-page) binaries are not rejected.
     return a->mremap_ret == 0 && a->pages_ok == a->pages_total && a->changed &&
            a->ent_before > 7.9 && a->ent_after < 7.5 && a->ret_after > a->ret_before;
 }

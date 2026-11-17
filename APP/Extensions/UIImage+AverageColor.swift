@@ -1,6 +1,8 @@
 import UIKit
 
 extension UIImage {
+    private static let averageColorContext = CIContext(options: [.workingColorSpace: kCFNull!])
+
     func averageColor() -> UIColor? {
         guard let inputImage = CIImage(image: self) else { return nil }
 
@@ -20,8 +22,7 @@ extension UIImage {
         ), let outputImage = filter.outputImage else { return nil }
 
         var bitmap = [UInt8](repeating: 0, count: 4)
-        let context = CIContext(options: [.workingColorSpace: kCFNull!])
-        context.render(
+        Self.averageColorContext.render(
             outputImage,
             toBitmap: &bitmap,
             rowBytes: 4,

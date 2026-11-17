@@ -131,8 +131,8 @@ public class StoreClient: @unchecked Sendable {
             "HTTPSProxy": "",
             "SOCKSProxy": ""
         ]
-        config.timeoutIntervalForRequest = 15
-        config.timeoutIntervalForResource = 30
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
         config.tlsMinimumSupportedProtocolVersion = .TLSv12
         config.tlsMaximumSupportedProtocolVersion = .TLSv13
         self.session = URLSession(configuration: config)

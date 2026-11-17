@@ -14,7 +14,7 @@ class BagManager: ObservableObject {
 
     private init() {
         let cfg = URLSessionConfiguration.ephemeral
-        cfg.timeoutIntervalForRequest = 15
+        cfg.timeoutIntervalForRequest = 30
         cfg.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.bagSession = URLSession(configuration: cfg)
     }

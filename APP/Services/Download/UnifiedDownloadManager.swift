@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-let downloadPersistQueue = DispatchQueue(label: "com.app.download.persist")
 
 @MainActor
 class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
@@ -762,37 +761,60 @@ extension UnifiedDownloadManager {
             queueOrder: downloadQueue.map { $0.id }
         )
 
-        downloadPersistQueue.async {
-            guard let data = try? JSONEncoder().encode(saveData) else { return }
-            let url = Self.tasksFileURL
-            let manager = FileManager.default
-            if manager.fileExists(atPath: url.path) {
-                let backup = url.appendingPathExtension("bak")
-                try? manager.removeItem(at: backup)
-                try? manager.copyItem(at: url, to: backup)
-            }
-            try? data.write(to: url, options: .atomic)
-            UserDefaults.standard.set(data, forKey: "DownloadTasks")
+        if DownloadStore.shared.isAvailable {
+            DownloadStore.shared.save(saveData)
+        } else {
+            Self.saveLegacy(saveData)
         }
     }
 
-    static var tasksFileURL: URL {
+    private static func saveLegacy(_ saveData: DownloadTasksSaveData) {
+        guard let data = try? JSONEncoder().encode(saveData) else { return }
+        let url = tasksFileURL
+        let manager = FileManager.default
+        if manager.fileExists(atPath: url.path) {
+            let backup = url.appendingPathExtension("bak")
+            try? manager.removeItem(at: backup)
+            try? manager.copyItem(at: url, to: backup)
+        }
+        try? data.write(to: url, options: .atomic)
+        UserDefaults.standard.set(data, forKey: "DownloadTasks")
+    }
+
+    nonisolated static var tasksFileURL: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("DownloadTasks.json")
     }
 
     static func loadPersistedTasksData() -> Data? {
+        if let stored = DownloadStore.shared.load(),
+           let data = try? JSONEncoder().encode(stored) {
+            return data
+        }
+
         let url = tasksFileURL
         if let data = try? Data(contentsOf: url),
-           (try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data)) != nil {
+           let decoded = try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data) {
+            DownloadStore.shared.save(decoded)
+            try? FileManager.default.moveItem(at: url, to: url.appendingPathExtension("migrated"))
             return data
         }
+
         let backup = url.appendingPathExtension("bak")
         if let data = try? Data(contentsOf: backup),
-           (try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data)) != nil {
+           let decoded = try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data) {
+            DownloadStore.shared.save(decoded)
             return data
         }
-        return UserDefaults.standard.data(forKey: "DownloadTasks")
+
+        if let data = UserDefaults.standard.data(forKey: "DownloadTasks"),
+           let decoded = try? JSONDecoder().decode(DownloadTasksSaveData.self, from: data) {
+            DownloadStore.shared.save(decoded)
+            UserDefaults.standard.removeObject(forKey: "DownloadTasks")
+            return data
+        }
+
+        return nil
     }
 
     func restoreDownloadTasks() {
@@ -1037,7 +1059,7 @@ extension UnifiedDownloadManager {
     }
 }
 
-private struct DownloadTasksSaveData: Codable {
+struct DownloadTasksSaveData: Codable {
     let downloadRequests: [DownloadRequestSaveData]
     let completedRequests: [UUID]
     let activeDownloads: [UUID]
@@ -1045,7 +1067,7 @@ private struct DownloadTasksSaveData: Codable {
     let queueOrder: [UUID]?
 }
 
-private struct DownloadRequestSaveData: Codable {
+struct DownloadRequestSaveData: Codable {
     let id: UUID
     let bundleIdentifier: String
     let version: String
@@ -1085,7 +1107,7 @@ private struct DownloadRequestSaveData: Codable {
     }
 }
 
-private struct DownloadRuntimeSaveData: Codable {
+struct DownloadRuntimeSaveData: Codable {
     let status: DownloadStatus
     let progressValue: Double
     let error: String?

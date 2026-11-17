@@ -11,6 +11,7 @@
 		851F44E62FDDECA400574B00 /* Vapor in Frameworks */ = {isa = PBXBuildFile; productRef = 851F44E52FDDECA400574B00 /* Vapor */; };
 		A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */ = {isa = PBXBuildFile; productRef = A1C000000000000000000002 /* AsyncHTTPClient */; };
 		D50DBD7A600A5337B02DD11E /* SRP in Frameworks */ = {isa = PBXBuildFile; productRef = E2BFBE6BCBC4081A86D24867 /* SRP */; };
+		D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D6A1B2C3D4E5F60718293002 /* GRDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -68,6 +69,7 @@
 			files = (
 				851F44E62FDDECA400574B00 /* Vapor in Frameworks */,
 				850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */,
+				D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */,
 				D50DBD7A600A5337B02DD11E /* SRP in Frameworks */,
 				A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */,
 			);
@@ -116,6 +118,7 @@
 			packageProductDependencies = (
 				851F44E52FDDECA400574B00 /* Vapor */,
 				850E83342FEDA2C30047BDF8 /* Alamofire */,
+				D6A1B2C3D4E5F60718293002 /* GRDB */,
 				E2BFBE6BCBC4081A86D24867 /* SRP */,
 			);
 			productName = APP;
@@ -183,6 +186,7 @@
 				850E83332FEDA2C30047BDF8 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				955DE4CABD7624367200C85A /* XCRemoteSwiftPackageReference "swift-srp" */,
 				A1C000000000000000000003 /* XCRemoteSwiftPackageReference "async-http-client" */,
+				D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 851FD9602E578774002136BA /* Products */;
@@ -382,7 +386,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.6.5;
+				MARKETING_VERSION = 2.6.7;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -443,7 +447,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.6.5;
+				MARKETING_VERSION = 2.6.7;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -518,6 +522,14 @@
 				minimumVersion = 1.25.0;
 			};
 		};
+		D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -535,6 +547,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1C000000000000000000003 /* XCRemoteSwiftPackageReference "async-http-client" */;
 			productName = AsyncHTTPClient;
+		};
+		D6A1B2C3D4E5F60718293002 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
 		};
 		E2BFBE6BCBC4081A86D24867 /* SRP */ = {
 			isa = XCSwiftPackageProductDependency;

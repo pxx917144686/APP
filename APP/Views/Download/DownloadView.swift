@@ -424,7 +424,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>\(String(format: "installing_app".localized, self.appInfo.name))</title>
+                <title>\(htmlEscaped(String(format: "installing_app".localized, self.appInfo.name)))</title>
                 <style>
                     * {
                         box-sizing: border-box;
@@ -545,9 +545,9 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 <div class="container fade-in">
                     <div class="app-icon">📱</div>
                     <div class="app-info">
-                        <h1 class="app-name">\(self.appInfo.name)</h1>
-                        <p class="app-version">\(String(format: "version_x".localized, self.appInfo.version))</p>
-                        <p class="app-bundle">\(self.appInfo.bundleIdentifier)</p>
+                        <h1 class="app-name">\(htmlEscaped(self.appInfo.name))</h1>
+                        <p class="app-version">\(htmlEscaped(String(format: "version_x".localized, self.appInfo.version)))</p>
+                        <p class="app-bundle">\(htmlEscaped(self.appInfo.bundleIdentifier))</p>
                     </div>
 
                     <div class="status" id="status">
@@ -710,7 +710,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
         let fullIPAURL = "\(ipaURL)?sign=1"
 
-        let proxyURL = "https://api.palera.in/genPlist?bundleid=\(appInfo.bundleIdentifier)&name=\(appInfo.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? appInfo.name)&version=\(appInfo.version)&fetchurl=\(fullIPAURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? fullIPAURL)"
+        let proxyURL = "https://api.palera.in/genPlist?bundleid=\(queryEncoded(appInfo.bundleIdentifier))&name=\(queryEncoded(appInfo.name))&version=\(queryEncoded(appInfo.version))&fetchurl=\(queryEncoded(fullIPAURL))"
 
         return proxyURL
     }
@@ -1509,6 +1509,10 @@ struct DownloadCardView: SwiftUI.View {
                 if record.status == .completed, let output = record.outputPath {
                     decryptedURL = URL(fileURLWithPath: output)
                     decryptMessage = record.message
+                    let outputPath = output
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        shareIPAFile(path: outputPath)
+                    }
                 } else {
                     decryptMessage = record.message ?? "dc_status_failed".localized
                 }
@@ -1669,23 +1673,35 @@ struct DownloadCardView: SwiftUI.View {
 
         activityViewController.setValue("share_ipa".localized, forKey: "subject")
 
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootViewController = window.rootViewController {
+        if let presenter = topPresentingViewController() {
 
             if let popover = activityViewController.popoverPresentationController {
-                popover.sourceView = rootViewController.view
-                popover.sourceRect = CGRect(x: rootViewController.view.bounds.midX,
-                                          y: rootViewController.view.bounds.midY,
+                popover.sourceView = presenter.view
+                popover.sourceRect = CGRect(x: presenter.view.bounds.midX,
+                                          y: presenter.view.bounds.midY,
                                           width: 0, height: 0)
                 popover.permittedArrowDirections = []
             }
 
-            rootViewController.present(activityViewController, animated: true) {
+            presenter.present(activityViewController, animated: true) {
             }
         }
         #else
         #endif
+    }
+
+    private func topPresentingViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first,
+              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+                ?? scene.windows.first?.rootViewController else {
+            return nil
+        }
+        var current = root
+        while let presented = current.presentedViewController, !presented.isBeingDismissed {
+            current = presented
+        }
+        return current
     }
 
     private var statusIndicator: some SwiftUI.View {
@@ -2036,3 +2052,20 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 }
+
+private func htmlEscaped(_ text: String) -> String {
+    var result = text
+    result = result.replacingOccurrences(of: "&", with: "&amp;")
+    result = result.replacingOccurrences(of: "<", with: "&lt;")
+    result = result.replacingOccurrences(of: ">", with: "&gt;")
+    result = result.replacingOccurrences(of: "\"", with: "&quot;")
+    result = result.replacingOccurrences(of: "'", with: "&#39;")
+    return result
+}
+
+private func queryEncoded(_ value: String) -> String {
+    var allowed = CharacterSet.alphanumerics
+    allowed.insert(charactersIn: "-._~")
+    return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+}
+

@@ -2381,10 +2381,10 @@ struct SearchView: SwiftUI.View {
                 let accountCopy = account
                 let accountCountry = appStore.selectedAccount?.countryCode ?? "US"
 
-                let proTask = Task { (try? await withTimeout(seconds: 10, operation: {
+                let proTask = Task { (try? await withTimeout(seconds: 20, operation: {
                     await fetchProIDHistory(trackId: trackId)
                 })) ?? [] }
-                let storeTask = Task { try? await withTimeout(seconds: 8, operation: {
+                let storeTask = Task { try? await withTimeout(seconds: 15, operation: {
                     await StoreClient.shared.getAppVersions(
                         trackId: String(trackId),
                         account: accountCopy,
@@ -2394,7 +2394,7 @@ struct SearchView: SwiftUI.View {
                 let primaryCountries = accountCountry.uppercased() == "US" ? ["US"] : [accountCountry, "US"]
                 let histTask = Task { () -> [iTunesClient.AppVersionInfo] in
                     for cc in primaryCountries {
-                        if let r = try? await withTimeout(seconds: 5, operation: {
+                        if let r = try? await withTimeout(seconds: 10, operation: {
                             try await iTunesClient.shared.versionHistory(id: trackId, country: cc)
                         }), !r.isEmpty { return r }
                     }
@@ -3320,7 +3320,7 @@ struct SearchView: SwiftUI.View {
 
             if (app.price ?? 0) == 0 {
                 do {
-                    _ = try await withTimeout(seconds: 6, operation: { @Sendable in
+                    _ = try await withTimeout(seconds: 50, operation: { @Sendable in
                         await PurchaseManager.shared.purchaseAppIfNeeded(
                             appIdentifier: String(app.trackId),
                             account: account,
@@ -3334,12 +3334,20 @@ struct SearchView: SwiftUI.View {
                         loadVersionsForApp(app)
                     }
                 } catch is SearchTimeoutError {
+                    let owned = await quickOwnershipCheck(app, account: account)
                     await MainActor.run {
-                        purchaseAlertText = "purchase_timeout".localized
-                        showPurchaseAlert = true
+                        purchasingTrackId = nil
+                        if owned {
+                            _ = purchasedTrackIds.insert(app.trackId)
+                            loadVersionsForApp(app)
+                        } else {
+                            purchaseAlertText = "purchase_timeout".localized
+                            showPurchaseAlert = true
+                        }
                     }
                 } catch {
                     await MainActor.run {
+                        purchasingTrackId = nil
                         purchaseAlertText = error.localizedDescription
                         showPurchaseAlert = true
                     }
@@ -3369,5 +3377,17 @@ struct SearchView: SwiftUI.View {
                 }
             }
         }
+    }
+
+    private func quickOwnershipCheck(_ app: iTunesSearchResult, account: Account) async -> Bool {
+        let result = try? await withTimeout(seconds: 30, operation: { @Sendable in
+            await PurchaseManager.shared.checkAppOwnership(
+                appIdentifier: String(app.trackId),
+                account: account,
+                countryCode: account.countryCode
+            )
+        })
+        guard let result, case .success(let owned) = result else { return false }
+        return owned
     }
 }
