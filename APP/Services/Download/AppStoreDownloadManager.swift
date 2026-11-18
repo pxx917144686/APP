@@ -1676,7 +1676,7 @@ extension AppStoreDownloadManager {
 
         guard let downloadTask = task as? URLSessionDownloadTask else { return }
         let captured: CompleteCapture? = locked {
-            guard let downloadId = downloadId(for: downloadTask),
+            guard let downloadId = self.downloadId(for: downloadTask),
                   let destinationURL = downloadDestinations[downloadId],
                   let storeItem = downloadStoreItems[downloadId] else {
                 return nil
