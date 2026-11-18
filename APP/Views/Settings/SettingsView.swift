@@ -76,6 +76,11 @@ struct SettingsView: View {
 
                     VStack(spacing: 0) {
                         languageRow
+
+                        Divider()
+                            .padding(.leading, 56)
+
+                        tabOrderRow
                     }
                     .background(Color(.secondarySystemGroupedBackground))
                     .cornerRadius(16)
@@ -642,6 +647,31 @@ extension SettingsView {
             Slider(value: value, in: minValue...maxValue, step: 1)
                 .tint(themeManager.accentColor)
         }
+    }
+
+    private var tabOrderRow: some View {
+        NavigationLink(destination: TabOrderSettingsView().environmentObject(themeManager)) {
+            HStack(spacing: 12) {
+                Image(systemName: "square.grid.2x2")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(themeManager.accentColor)
+                    .frame(width: 28, height: 28)
+
+                Text("tab_order_title".localized)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary.opacity(0.6))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 
     private var languageRow: some View {

@@ -794,6 +794,10 @@ struct DownloadView: SwiftUI.View {
     @State private var showThemeSelector = false
     @State private var isScrollingFast = false
     @State private var scrollVelocity: CGFloat = 0
+    @State private var showDecryptedFiles = false
+    @State private var decryptedCount = 0
+    @State private var showDeleteConfirm = false
+    @State private var pendingDelete: DownloadRequest?
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var themeManager: ThemeManager
@@ -838,6 +842,7 @@ struct DownloadView: SwiftUI.View {
 
         .onAppear {
             vm.syncDownloadStatus()
+            refreshDecryptedCount()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             handleAppEnteredBackground()
@@ -845,7 +850,59 @@ struct DownloadView: SwiftUI.View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             handleAppBecameActive()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DecryptedFilesChanged"))) { _ in
+            refreshDecryptedCount()
+        }
         .environmentObject(GlobalInstallationManager.shared)
+        .overlay(alignment: .bottomTrailing) {
+            decryptedFilesButton
+        }
+        .sheet(isPresented: $showDecryptedFiles, onDismiss: { refreshDecryptedCount() }) {
+            DecryptedFilesView()
+                .environmentObject(themeManager)
+        }
+    }
+
+    private var decryptedFilesButton: some SwiftUI.View {
+        Button {
+            showDecryptedFiles = true
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "shippingbox.fill")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 52, height: 52)
+                    .background(
+                        LinearGradient(
+                            colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.78)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .clipShape(Circle())
+                    .shadow(color: themeManager.accentColor.opacity(0.38), radius: 10, y: 4)
+
+                if decryptedCount > 0 {
+                    Text("\(decryptedCount)")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(minWidth: 18, minHeight: 18)
+                        .background(Circle().fill(Color.red))
+                        .offset(x: 3, y: -3)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.trailing, 18)
+        .padding(.bottom, tabBarStyleManager.currentStyle == .floatingCard ? 96 : 24)
+    }
+
+    private func refreshDecryptedCount() {
+        let urls = (try? FileManager.default.contentsOfDirectory(
+            at: DecryptedFilesView.folderURL,
+            includingPropertiesForKeys: nil
+        )) ?? []
+        decryptedCount = urls.filter { $0.pathExtension.lowercased() == "ipa" }.count
     }
 
     private func handleAppEnteredBackground() {
@@ -898,20 +955,32 @@ struct DownloadView: SwiftUI.View {
                             }
 
                             Button(role: .destructive) {
-                                UnifiedDownloadManager.shared.deleteDownload(request: request)
-                                UnifiedDownloadManager.shared.saveDownloadTasks()
-
-                                if let localFilePath = request.localFilePath, FileManager.default.fileExists(atPath: localFilePath) {
-                                    do {
-                                        try FileManager.default.removeItem(atPath: localFilePath)
-                                    } catch {
-                                    }
+                                if Self.decryptedOutputURLs(for: request).isEmpty {
+                                    deleteDownload(request)
+                                } else {
+                                    pendingDelete = request
+                                    showDeleteConfirm = true
                                 }
-
-                                NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
                             } label: {
                                 Label("delete".localized, systemImage: "trash")
                             }
+                        }
+                        .confirmationDialog(
+                            "delete".localized,
+                            isPresented: $showDeleteConfirm,
+                            titleVisibility: .visible
+                        ) {
+                            Button("delete_all".localized, role: .destructive) {
+                                if let pendingDelete {
+                                    deleteDownload(pendingDelete)
+                                }
+                                pendingDelete = nil
+                            }
+                            Button("cancel".localized, role: .cancel) {
+                                pendingDelete = nil
+                            }
+                        } message: {
+                            Text("delete_decrypted_hint".localized)
                         }
                     }
                 }
@@ -1068,8 +1137,31 @@ struct DownloadView: SwiftUI.View {
         .padding(.vertical, 32)
     }
 
-    private func deleteDownload() {
+    private static func decryptedOutputURLs(for request: DownloadRequest) -> [URL] {
+        guard let path = request.localFilePath else { return [] }
+        let stem = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let folder = documents.appendingPathComponent("Decrypted", isDirectory: true)
+        return ["-decrypted.ipa", "-PARTIAL.ipa"].compactMap { suffix in
+            let url = folder.appendingPathComponent(stem + suffix)
+            return FileManager.default.fileExists(atPath: url.path) ? url : nil
+        }
+    }
 
+    private func deleteDownload(_ request: DownloadRequest) {
+        UnifiedDownloadManager.shared.deleteDownload(request: request)
+        UnifiedDownloadManager.shared.saveDownloadTasks()
+
+        let manager = FileManager.default
+        if let localFilePath = request.localFilePath {
+            try? manager.removeItem(atPath: localFilePath)
+        }
+        for url in Self.decryptedOutputURLs(for: request) {
+            try? manager.removeItem(at: url)
+        }
+
+        refreshDecryptedCount()
+        NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
     }
 
     private func retryDownload() {
@@ -1509,6 +1601,7 @@ struct DownloadCardView: SwiftUI.View {
                 if record.status == .completed, let output = record.outputPath {
                     decryptedURL = URL(fileURLWithPath: output)
                     decryptMessage = record.message
+                    NotificationCenter.default.post(name: NSNotification.Name("DecryptedFilesChanged"), object: nil)
                     let outputPath = output
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                         shareIPAFile(path: outputPath)
@@ -1842,22 +1935,6 @@ struct DownloadCardView: SwiftUI.View {
 
         UnifiedDownloadManager.shared.resumeDownload(request: request)
 
-    }
-
-    private func deleteDownload() {
-
-        UnifiedDownloadManager.shared.deleteDownload(request: request)
-
-        UnifiedDownloadManager.shared.saveDownloadTasks()
-
-        if let localFilePath = request.localFilePath, FileManager.default.fileExists(atPath: localFilePath) {
-            do {
-                try FileManager.default.removeItem(atPath: localFilePath)
-            } catch {
-            }
-        }
-
-        NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
     }
 
     private func cancelDownload() {

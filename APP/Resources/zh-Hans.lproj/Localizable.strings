@@ -809,3 +809,14 @@
 "dc_group_none" = "签名里没有 App Group 声明";
 "dc_group_notgranted" = "声明了 App Group，但系统没有分配容器";
 "dc_group_ok" = "App Group 可用";
+"delete_all" = "删除全部";
+"delete_decrypted_hint" = "会同时删除原始 IPA 和脱壳后的文件";
+"decrypted_files_title" = "已脱壳";
+"decrypted_files_empty" = "还没有脱壳过的文件";
+"decrypted_files_total" = "%d 个文件 · %@";
+"decrypted_files_partial" = "部分失败";
+"lang_chinese_traditional" = "繁体中文（台湾）";
+"tab_order_title" = "底部栏顺序";
+"tab_order_hint" = "拖动右侧把手调整顺序。";
+"tab_order_reset" = "恢复默认顺序";
+"tab_order_search_hint" = "悬浮样式下固定在右侧";

@@ -809,3 +809,14 @@
 "dc_group_none" = "No App Group in the signature";
 "dc_group_notgranted" = "App Group is declared but no container was granted";
 "dc_group_ok" = "App Group available";
+"delete_all" = "Delete All";
+"delete_decrypted_hint" = "Removes the original IPA and the decrypted file together.";
+"decrypted_files_title" = "Decrypted";
+"decrypted_files_empty" = "Nothing decrypted yet";
+"decrypted_files_total" = "%d files · %@";
+"decrypted_files_partial" = "partial";
+"lang_chinese_traditional" = "Chinese (Traditional, Taiwan)";
+"tab_order_title" = "Tab Bar Order";
+"tab_order_hint" = "Drag the handles to reorder.";
+"tab_order_reset" = "Reset to Default";
+"tab_order_search_hint" = "Fixed on the right in floating style";

@@ -71,6 +71,7 @@ enum TabEnum: String, CaseIterable, Hashable {
 
 struct TabbarView: View {
     @State private var selectedTab: TabEnum = .settings
+    @ObservedObject private var tabOrder = TabOrderStore.shared
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var tabBarStyleManager: TabBarStyleManager
 
@@ -113,45 +114,18 @@ struct TabbarView: View {
     @ViewBuilder
     private var standardTabView: some View {
         TabView(selection: $selectedTab) {
-            TabEnum.view(for: .settings, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                .tabItem {
-                    Label {
-                        Text(TabEnum.settings.title)
-                    } icon: {
-                        Image(systemName: TabEnum.settings.icon)
+            ForEach(tabOrder.order, id: \.self) { tab in
+                TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                    .tabItem {
+                        Label {
+                            Text(tab.title)
+                        } icon: {
+                            Image(systemName: tab.icon)
+                        }
                     }
-                }
-                .tag(TabEnum.settings)
+                    .tag(tab)
+            }
 
-            TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                .tabItem {
-                    Label {
-                        Text(TabEnum.downloads.title)
-                    } icon: {
-                        Image(systemName: TabEnum.downloads.icon)
-                    }
-                }
-                .tag(TabEnum.downloads)
-
-            TabEnum.view(for: .purchased, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                .tabItem {
-                    Label {
-                        Text(TabEnum.purchased.title)
-                    } icon: {
-                        Image(systemName: TabEnum.purchased.icon)
-                    }
-                }
-                .tag(TabEnum.purchased)
-
-            TabEnum.view(for: .search, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                .tabItem {
-                    Label {
-                        Text(TabEnum.search.title)
-                    } icon: {
-                        Image(systemName: TabEnum.search.icon)
-                    }
-                }
-                .tag(TabEnum.search)
         }
         
         .toolbarBackground(.visible, for: .tabBar)
@@ -191,7 +165,7 @@ struct TabbarView: View {
 
     private func floatingHorizontalPadding(for width: CGFloat) -> CGFloat {
         let config = tabBarStyleManager.floatingConfig
-        let tabsMinWidth = 3 * Self.floatingTabMinWidth + 16
+        let tabsMinWidth = CGFloat(TabOrderStore.reorderable.count - 1) * Self.floatingTabMinWidth + 16
         let contentMinWidth = tabsMinWidth + 16 + config.height
         let roomForPadding = max(0, width - contentMinWidth)
         return min(config.horizontalPadding, roomForPadding / 2)
@@ -203,7 +177,7 @@ struct TabbarView: View {
 
         return HStack(spacing: 16) {
             HStack(spacing: 0) {
-                ForEach([TabEnum.settings, .downloads, .purchased], id: \.self) { tab in
+                ForEach(tabOrder.order.filter { $0 != .search }, id: \.self) { tab in
                     tabButton(for: tab, height: tabHeight)
                         .frame(minWidth: Self.floatingTabMinWidth, maxWidth: .infinity)
                 }

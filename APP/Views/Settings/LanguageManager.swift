@@ -4,6 +4,7 @@ import SwiftUI
 enum AppLanguage: String, CaseIterable, Identifiable {
     case system = "system"
     case zhHans = "zh-Hans"
+    case zhHant = "zh-Hant"
     case en = "en"
     case ja = "ja"
     case ko = "ko"
@@ -44,6 +45,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
             return LanguageManager.localized("system_language")
         case .zhHans:
             return LanguageManager.localized("lang_chinese_simplified")
+        case .zhHant:
+            return LanguageManager.localized("lang_chinese_traditional")
         case .en:
             return LanguageManager.localized("lang_english")
         case .ja:
@@ -113,6 +116,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         switch self {
         case .system: return "system_language".localized
         case .zhHans: return "简体中文"
+        case .zhHant: return "繁體中文"
         case .en: return "English"
         case .ja: return "日本語"
         case .ko: return "한국어"
@@ -151,6 +155,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         switch self {
         case .system: return "⚙️"
         case .zhHans: return "🇨🇳"
+        case .zhHant: return "🇨🇳"
         case .en: return "🇺🇸"
         case .ja: return "🇯🇵"
         case .ko: return "🇰🇷"
@@ -291,6 +296,8 @@ final class LanguageManager: ObservableObject {
             return Locale.current
         case .zhHans:
             return Locale(identifier: "zh_Hans_CN")
+        case .zhHant:
+            return Locale(identifier: "zh_Hant_TW")
         case .en:
             return Locale(identifier: "en_US")
         case .ja:

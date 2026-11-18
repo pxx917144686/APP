@@ -259,7 +259,7 @@ class AuthenticationManager: @unchecked Sendable {
 
     private func inferCountryCodeFromStoreFront(_ storeFront: String) -> String {
         let code = storeFront.components(separatedBy: "-").first ?? storeFront
-        return Apple.storeFrontCodeMap.first { $0.value == code }?.key ?? ""
+        return Apple.storeFrontCountryMap[code] ?? ""
     }
 
     private func detectCountryCodeFromCookies() -> String {
