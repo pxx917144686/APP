@@ -347,6 +347,19 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         return body()
     }
 
+    private struct WriteCapture: Sendable {
+        let id: String
+        let handler: @Sendable (DownloadProgress) -> Void
+        let start: Date
+        let last: (bytes: Int64, time: Date)?
+    }
+
+    private struct CompleteCapture: Sendable {
+        let id: String
+        let destination: URL
+        let storeItem: DownloadStoreItem
+    }
+
     private struct DownloadContext: Codable {
         let downloadId: String
         let destinationPath: String
@@ -1251,13 +1264,14 @@ extension AppStoreDownloadManager {
         totalBytesExpectedToWrite: Int64
     ) {
 
-        let captured: (id: String, handler: @Sendable (DownloadProgress) -> Void, start: Date, last: (bytes: Int64, time: Date)?)? = locked {
+        let captured: WriteCapture? = locked {
             guard let downloadId = downloadId(for: downloadTask),
                   let progressHandler = progressHandlers[downloadId],
                   let startTime = downloadStartTimes[downloadId] else {
                 return nil
             }
-            return (downloadId, progressHandler, startTime, lastProgressUpdate[downloadId])
+            return WriteCapture(id: downloadId, handler: progressHandler,
+                                start: startTime, last: lastProgressUpdate[downloadId])
         }
         guard let captured else { return }
         let downloadId = captured.id
@@ -1661,7 +1675,7 @@ extension AppStoreDownloadManager {
         }
 
         guard let downloadTask = task as? URLSessionDownloadTask else { return }
-        let captured: (id: String, destination: URL, storeItem: DownloadStoreItem)? = locked {
+        let captured: CompleteCapture? = locked {
             guard let downloadId = downloadId(for: downloadTask),
                   let destinationURL = downloadDestinations[downloadId],
                   let storeItem = downloadStoreItems[downloadId] else {
@@ -1670,7 +1684,7 @@ extension AppStoreDownloadManager {
             if isRetryingDownload.contains(downloadId) || completedDownloads.contains(downloadId) {
                 return nil
             }
-            return (downloadId, destinationURL, storeItem)
+            return CompleteCapture(id: downloadId, destination: destinationURL, storeItem: storeItem)
         }
         guard let captured else { return }
         let downloadId = captured.id
