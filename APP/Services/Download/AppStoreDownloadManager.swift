@@ -1265,7 +1265,7 @@ extension AppStoreDownloadManager {
     ) {
 
         let captured: WriteCapture? = locked {
-            guard let downloadId = downloadId(for: downloadTask),
+            guard let downloadId = self.downloadId(for: downloadTask),
                   let progressHandler = progressHandlers[downloadId],
                   let startTime = downloadStartTimes[downloadId] else {
                 return nil
