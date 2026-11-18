@@ -6,6 +6,23 @@ final class AuthCookieCache {
     private var storage: [String: [String]] = [:]
     func set(dsid: String, cookies: [String]) { lock.lock(); defer { lock.unlock() }; storage[dsid] = cookies }
     func get(dsid: String) -> [String] { lock.lock(); defer { lock.unlock() }; return storage[dsid] ?? [] }
+
+    static func persistedCookie(for dsid: String) -> String? {
+        let key = "ipadn_cookie_\(dsid)"
+        if let value = SecureKeyValueStore.value(forKey: key) { return value }
+        if let legacy = UserDefaults.standard.string(forKey: key) {
+            SecureKeyValueStore.setValue(legacy, forKey: key)
+            UserDefaults.standard.removeObject(forKey: key)
+            return legacy
+        }
+        return nil
+    }
+
+    static func persistCookie(_ cookie: String, for dsid: String) {
+        guard !cookie.isEmpty else { return }
+        SecureKeyValueStore.setValue(cookie, forKey: "ipadn_cookie_\(dsid)")
+        UserDefaults.standard.removeObject(forKey: "ipadn_cookie_\(dsid)")
+    }
 }
 
 final class GUIDCache {
@@ -44,10 +61,21 @@ class StoreRequest {
     }
 
     func savePassword(_ password: String, for email: String) {
-        UserDefaults.standard.set(password, forKey: "store_password_\(email)")
+        let defaultsKey = "store_password_\(email)"
+        let legacy = UserDefaults.standard.string(forKey: defaultsKey)
+        SecureKeyValueStore.setValue(password, forKey: "store_password_\(email)")
+        if legacy != nil { UserDefaults.standard.removeObject(forKey: defaultsKey) }
     }
     func storedPassword(for email: String) -> String? {
-        UserDefaults.standard.string(forKey: "store_password_\(email)")
+        let value = SecureKeyValueStore.value(forKey: "store_password_\(email)")
+        if value == nil {
+            if let legacy = UserDefaults.standard.string(forKey: "store_password_\(email)") {
+                SecureKeyValueStore.setValue(legacy, forKey: "store_password_\(email)")
+                UserDefaults.standard.removeObject(forKey: "store_password_\(email)")
+                return legacy
+            }
+        }
+        return value
     }
 
     private func send(operation: String, path: String, query: String,
@@ -55,7 +83,7 @@ class StoreRequest {
         var acct = account
         if let a = acct, !a.email.isEmpty {
             let cached = AuthCookieCache.shared.get(dsid: a.dsPersonId).first
-                ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(a.dsPersonId)") ?? ""
+                ?? AuthCookieCache.persistedCookie(for: a.dsPersonId) ?? ""
             if cached.isEmpty, let pwd = storedPassword(for: a.email), !pwd.isEmpty {
                 if let fresh = try? await AuthenticationManager.shared.reauthenticate(email: a.email, password: pwd) {
                     acct = fresh
@@ -77,7 +105,7 @@ class StoreRequest {
             if !a.pod.isEmpty { headers["X-Apple-Pod"] = a.pod }
             let dsid = a.dsPersonId
             let cookie = AuthCookieCache.shared.get(dsid: dsid).first
-                ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(dsid)")
+                ?? AuthCookieCache.persistedCookie(for: dsid)
             if let cookie, !cookie.isEmpty { headers["Cookie"] = cookie }
         }
         let bodyData = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
@@ -117,7 +145,7 @@ class StoreRequest {
         if !storeFront.isEmpty { h["X-Apple-Store-Front"] = storeFront }
         let dsid = account.dsPersonId
         let cookie = AuthCookieCache.shared.get(dsid: dsid).first
-            ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(dsid)")
+            ?? AuthCookieCache.persistedCookie(for: dsid)
         if let cookie, !cookie.isEmpty { h["Cookie"] = cookie }
         return h
     }
@@ -202,9 +230,15 @@ class StoreRequest {
         let (plist, _) = try await storePlist(url, body: HTTPClient.encodePlist(body),
                                               headers: headers, guid: guid)
         let ft = plistString(plist["failureType"])
-        if ft == "5002" { 
-            return StorePurchaseResponse(dsPersonId: account.dsPersonId, jingleDocType: "purchaseSuccess",
-                                          jingleAction: "buyProduct", pings: nil)
+        if ft == "5002" {
+            let customerMessage = plistString(plist["customerMessage"]).lowercased()
+            if customerMessage.contains("already purchased") || customerMessage.contains("已购买") {
+                return StorePurchaseResponse(dsPersonId: account.dsPersonId, jingleDocType: "purchaseSuccess",
+                                              jingleAction: "buyProduct", pings: nil)
+            }
+            if !customerMessage.isEmpty {
+                throw StoreError.unknown(customerMessage)
+            }
         }
         return try parsePurchaseResponse(plist: plist)
     }

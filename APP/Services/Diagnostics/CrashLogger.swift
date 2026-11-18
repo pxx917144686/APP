@@ -48,6 +48,10 @@ enum CrashLogger {
     static func write(_ text: String) {
         let stamp = ISO8601DateFormatter().string(from: Date())
         let body = "\n=== \(stamp) ===\n\(text)\n"
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+           let size = attrs[.size] as? Int64, size > 1_000_000 {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
         if let handle = try? FileHandle(forWritingTo: fileURL) {
             handle.seekToEndOfFile()
             handle.write(Data(body.utf8))

@@ -47,6 +47,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     }
 
     private var notificationObserver: Any?
+    private var lastAppliedAccentHex: String?
 
     private init() {
 
@@ -60,6 +61,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
 
         _selectedTheme = Published(initialValue: initialTheme)
 
+        lastAppliedAccentHex = UserDefaults.standard.string(forKey: "APP.userTintColor")
         updateAccentColor()
 
         notificationObserver = NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
@@ -84,14 +86,17 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     private func updateAccentColor() {
 
         let savedColorHex = UserDefaults.standard.string(forKey: "APP.userTintColor") ?? "#007AFF"
+        guard savedColorHex != lastAppliedAccentHex else { return }
         let newColor = Color(hex: savedColorHex)
 
         guard newColor.toHex() != accentColor.toHex() else { return }
+        lastAppliedAccentHex = savedColorHex
         accentColor = newColor
     }
 
     private func saveAccentColor() {
         let hex = accentColor.toHex()
+        lastAppliedAccentHex = hex
         UserDefaults.standard.set(hex, forKey: "APP.userTintColor")
     }
 

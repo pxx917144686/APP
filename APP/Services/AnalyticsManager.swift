@@ -110,7 +110,7 @@ final class FileAnalyticsProvider: AnalyticsProvider {
     func flush(events: [[String: Any]]) async throws {
         let data = try JSONSerialization.data(withJSONObject: events, options: .prettyPrinted)
 
-        if let existing = try? Data(contentsOf: fileURL) {
+        if let existing = try? Data(contentsOf: fileURL), existing.count < 1_000_000 {
             var combined = existing
             combined.append("\n".data(using: .utf8)!)
             combined.append(data)

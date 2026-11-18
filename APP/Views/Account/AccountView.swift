@@ -154,11 +154,8 @@ struct AccountView: View {
                     if let account = accountToDelete {
                         if appStore.savedAccounts.count == 1 {
                             appStore.logoutAccount()
-                        } else if let index = appStore.savedAccounts.firstIndex(where: { $0.id == account.id }) {
+                        } else if appStore.savedAccounts.contains(where: { $0.id == account.id }) {
                             appStore.deleteAccount(account)
-                            if index <= appStore.selectedAccountIndex && appStore.selectedAccountIndex > 0 {
-                                appStore.selectedAccountIndex -= 1
-                            }
                         }
                         accountToDelete = nil
                     }

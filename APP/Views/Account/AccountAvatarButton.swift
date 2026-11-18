@@ -93,21 +93,24 @@ struct AccountAvatarButton: View {
     private func saveCustomAvatar(_ image: UIImage) {
         guard let account = appStore.selectedAccount else { return }
         let cacheKey = "custom_avatar_\(account.email)"
-        if let pngData = image.pngData() {
+        let normalized = image.normalizedUpright()
+        let scaled = normalized.resized(maxDimension: 512) ?? normalized
+        if let pngData = scaled.pngData() {
             UserDefaults.standard.set(pngData, forKey: cacheKey)
         }
     }
 
     private func cropToSquare(image: UIImage) -> UIImage {
-        let imageSize = image.size
+        let upright = image.normalizedUpright()
+        let imageSize = upright.size
         let sideLength = min(imageSize.width, imageSize.height)
         let x = (imageSize.width - sideLength) / 2
         let y = (imageSize.height - sideLength) / 2
         let cropRect = CGRect(x: x, y: y, width: sideLength, height: sideLength)
-        if let cgImage = image.cgImage?.cropping(to: cropRect) {
-            return UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+        if let cgImage = upright.cgImage?.cropping(to: cropRect) {
+            return UIImage(cgImage: cgImage, scale: upright.scale, orientation: .up)
         }
-        return image
+        return upright
     }
 }
 
@@ -151,4 +154,28 @@ struct ImagePicker: UIViewControllerRepresentable {
     AccountAvatarButton()
         .environmentObject(AppStore.this)
         .environmentObject(ThemeManager.shared)
+}
+
+
+private extension UIImage {
+    func normalizedUpright() -> UIImage {
+        guard imageOrientation != .up else { return self }
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = scale
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+
+    func resized(maxDimension: CGFloat) -> UIImage? {
+        let largest = max(size.width, size.height)
+        guard largest > maxDimension, largest > 0 else { return nil }
+        let ratio = maxDimension / largest
+        let newSize = CGSize(width: size.width * ratio, height: size.height * ratio)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = scale
+        return UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
 }

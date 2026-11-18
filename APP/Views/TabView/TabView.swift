@@ -70,7 +70,13 @@ enum TabEnum: String, CaseIterable, Hashable {
 }
 
 struct TabbarView: View {
-    @State private var selectedTab: TabEnum = .settings
+    @State private var selectedTab: TabEnum = {
+        if let raw = UserDefaults.standard.string(forKey: "initialTab"),
+           let tab = TabEnum(rawValue: raw) {
+            return tab
+        }
+        return .settings
+    }()
     @ObservedObject private var tabOrder = TabOrderStore.shared
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var tabBarStyleManager: TabBarStyleManager
@@ -256,7 +262,6 @@ struct TabbarView: View {
 
         switch style {
         case .systemDefault:
-            
             appearance.configureWithOpaqueBackground()
             UITabBar.appearance().isHidden = false
         case .floatingCard:

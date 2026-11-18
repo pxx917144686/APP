@@ -142,6 +142,7 @@ struct SettingsView: View {
             } message: {
                 Text(iconErrorMessage)
             }
+
         }
         .navigationViewStyle(.stack)
     }
@@ -252,12 +253,19 @@ struct SettingsView_Previews: PreviewProvider {
 }
 
 extension SettingsView {
+    private var availableTabStyles: [TabBarStyle] {
+        if #available(iOS 18.0, *) {
+            return TabBarStyle.allCases
+        }
+        return TabBarStyle.allCases.filter { $0 != .floatingCard }
+    }
+
     @ViewBuilder
     private var tabBarRowContent: some View {
         VStack(spacing: 0) {
-            ForEach(Array(TabBarStyle.allCases.enumerated()), id: \.element.id) { index, style in
+            ForEach(Array(availableTabStyles.enumerated()), id: \.element.id) { index, style in
                 tabBarStyleItem(style: style)
-                if index < TabBarStyle.allCases.count - 1 {
+                if index < availableTabStyles.count - 1 {
                     Divider()
                         .padding(.leading, 16)
                 }

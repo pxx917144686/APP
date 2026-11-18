@@ -12,6 +12,9 @@ enum AppCache {
             diskCapacity: diskCapacity,
             diskPath: "app_http_cache"
         )
+        DispatchQueue.global(qos: .utility).async {
+            DiskCache.shared.purgeExpired(olderThan: 7 * 24 * 60 * 60)
+        }
     }
 }
 
@@ -44,11 +47,26 @@ final class DiskCache {
     }
 
     func write<T: Encodable>(_ value: T, key: String) {
-        guard let data = try? JSONEncoder().encode(value) else { return }
-        try? data.write(to: fileURL(for: key), options: .atomic)
+        let url = fileURL(for: key)
+        DispatchQueue.global(qos: .utility).async {
+            guard let data = try? JSONEncoder().encode(value) else { return }
+            try? data.write(to: url, options: .atomic)
+        }
     }
 
     func remove(key: String) {
         try? FileManager.default.removeItem(at: fileURL(for: key))
+    }
+
+    func purgeExpired(olderThan maxAge: TimeInterval) {
+        let fm = FileManager.default
+        guard let files = try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey]) else { return }
+        let cutoff = Date().addingTimeInterval(-maxAge)
+        for file in files where file.pathExtension == "json" {
+            if let modified = try? file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
+               modified < cutoff {
+                try? fm.removeItem(at: file)
+            }
+        }
     }
 }

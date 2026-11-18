@@ -24,64 +24,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
 
     private override init() {}
 
-    func unzipFile(atPath path: String, toDestination destination: String) -> Bool {
-        let fileManager = FileManager.default
-        let destURL = URL(fileURLWithPath: destination)
-
-        do {
-            try fileManager.createDirectory(at: destURL, withIntermediateDirectories: true)
-
-            guard let zipHandle = FileHandle(forReadingAtPath: path) else {
-
-                return false
-            }
-            defer { zipHandle.closeFile() }
-
-            let fileData = try Data(contentsOf: URL(fileURLWithPath: path))
-
-            guard let eocd = Self.findEndOfCentralDirectoryImpl(in: fileData) else {
-
-                return false
-            }
-
-            let entries = try Self.readCentralDirectoryImpl(from: fileData, eocd: eocd)
-
-            let group = DispatchGroup()
-            let queue = DispatchQueue(label: "com.fastzip.unzip", attributes: .concurrent)
-            var hasError = false
-            let errorLock = NSLock()
-
-            for entry in entries {
-                if hasError { break }
-
-                queue.async(group: group) {
-                    autoreleasepool {
-                        do {
-                            try self.extractEntry(
-                                entry,
-                                from: fileData,
-                                to: destURL
-                            )
-                        } catch {
-                            errorLock.lock()
-                            hasError = true
-                            errorLock.unlock()
-
-                        }
-                    }
-                }
-            }
-
-            group.wait()
-
-            return !hasError
-
-        } catch {
-
-            return false
-        }
-    }
-
     func createZipFile(atPath path: String, withContentsOfDirectory directory: String) -> Bool {
         let fileManager = FileManager.default
         let sourceURL = URL(fileURLWithPath: directory)
@@ -614,27 +556,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         try decompressedData.write(to: destPath)
     }
 
-    private func extractLocalFileData(
-        from data: Data,
-        entry: CentralDirectoryEntry
-    ) throws -> Data {
-        let localHeaderOffset = Int(entry.localHeaderOffset)
-        guard localHeaderOffset + 30 <= data.count else {
-            throw NSError(domain: "FastZip", code: -5, userInfo: [NSLocalizedDescriptionKey: "zip_err_local_header_oob".localized])
-        }
-
-        let filenameLen = data.loadLEUInt16(at: localHeaderOffset + 26)
-        let extraFieldLen = data.loadLEUInt16(at: localHeaderOffset + 28)
-
-        let totalEntrySize = 30 + Int(filenameLen) + Int(extraFieldLen) + Int(entry.compressedSize)
-
-        guard localHeaderOffset + totalEntrySize <= data.count else {
-            throw NSError(domain: "FastZip", code: -6, userInfo: [NSLocalizedDescriptionKey: "zip_err_entry_oob".localized])
-        }
-
-        return data[localHeaderOffset..<localHeaderOffset+totalEntrySize]
-    }
-
     private func createLocalFileHeader(
         filename: String,
         compressedSize: UInt64,
@@ -719,72 +640,6 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         centralHeader.append(filenameData)
 
         return (localHeader, centralHeader)
-    }
-
-    private func createCentralDirectoryHeader(
-        from entry: CentralDirectoryEntry,
-        newOffset: UInt64
-    ) -> Data {
-        var data = Data()
-        data.append(contentsOf: [0x50, 0x4B, 0x01, 0x02])
-
-        var versionMade = entry.versionMadeBy
-        withUnsafeBytes(of: &versionMade) { data.append(contentsOf: $0) }
-
-        var versionNeed = entry.versionNeeded
-        withUnsafeBytes(of: &versionNeed) { data.append(contentsOf: $0) }
-
-        var flags = entry.flags
-        withUnsafeBytes(of: &flags) { data.append(contentsOf: $0) }
-
-        var method = entry.compressionMethod
-        withUnsafeBytes(of: &method) { data.append(contentsOf: $0) }
-
-        var modTime = entry.lastModTime
-        withUnsafeBytes(of: &modTime) { data.append(contentsOf: $0) }
-
-        var modDate = entry.lastModDate
-        withUnsafeBytes(of: &modDate) { data.append(contentsOf: $0) }
-
-        var crc = entry.crc32
-        withUnsafeBytes(of: &crc) { data.append(contentsOf: $0) }
-
-        var compSize = entry.compressedSize
-        withUnsafeBytes(of: &compSize) { data.append(contentsOf: $0) }
-
-        var uncompSize = entry.uncompressedSize
-        withUnsafeBytes(of: &uncompSize) { data.append(contentsOf: $0) }
-
-        var fnameLen = entry.filenameLength
-        withUnsafeBytes(of: &fnameLen) { data.append(contentsOf: $0) }
-
-        var extraLen = entry.extraFieldLength
-        withUnsafeBytes(of: &extraLen) { data.append(contentsOf: $0) }
-
-        var commLen = entry.commentLength
-        withUnsafeBytes(of: &commLen) { data.append(contentsOf: $0) }
-
-        var diskStart = entry.diskNumberStart
-        withUnsafeBytes(of: &diskStart) { data.append(contentsOf: $0) }
-
-        var intAttr = entry.internalAttrs
-        withUnsafeBytes(of: &intAttr) { data.append(contentsOf: $0) }
-
-        var extAttr = entry.externalAttrs
-        withUnsafeBytes(of: &extAttr) { data.append(contentsOf: $0) }
-
-        var localOffset = UInt32(truncatingIfNeeded: newOffset)
-        withUnsafeBytes(of: &localOffset) { data.append(contentsOf: $0) }
-
-        if let fnameData = entry.filename.data(using: .utf8) {
-            data.append(fnameData)
-        }
-        data.append(entry.extraField)
-        if let commData = entry.comment.data(using: .utf8) {
-            data.append(commData)
-        }
-
-        return data
     }
 
     private func createEndOfCentralDirectoryRecord(

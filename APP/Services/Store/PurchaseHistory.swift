@@ -153,7 +153,7 @@ enum PurchaseHistoryService {
         let storeFront = account.storeResponse.storeFront
         if !storeFront.isEmpty { headers["X-Apple-Store-Front"] = storeFront }
         let cookie = AuthCookieCache.shared.get(dsid: account.dsPersonId).first
-            ?? UserDefaults.standard.string(forKey: "ipadn_cookie_\(account.dsPersonId)")
+            ?? AuthCookieCache.persistedCookie(for: account.dsPersonId)
         if let cookie, !cookie.isEmpty { headers["Cookie"] = cookie }
         return headers
     }

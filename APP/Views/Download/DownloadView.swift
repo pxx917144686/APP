@@ -72,6 +72,7 @@ class HTTPServerManager: ObservableObject, @unchecked Sendable {
     }
 
     func startServer(for requestId: UUID, port: Int, ipaPath: String, appInfo: AppInfo) {
+        stopServer(for: requestId)
         let server = SimpleHTTPServer(port: port, ipaPath: ipaPath, appInfo: appInfo)
         server.start()
         activeServers[requestId] = server
@@ -312,7 +313,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             app = try await Application.make(config)
 
             app?.http.server.configuration.port = port
-            app?.http.server.configuration.address = .hostname("0.0.0.0", port: port)
+            app?.http.server.configuration.address = .hostname("127.0.0.1", port: port)
             app?.http.server.configuration.tcpNoDelay = true
             app?.http.server.configuration.requestDecompression = .enabled
             app?.http.server.configuration.responseCompression = .enabled
@@ -323,10 +324,12 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
             setupSimpleRoutes()
 
-            try await app?.execute()
             isRunning = true
+            try await app?.execute()
+            isRunning = false
 
         } catch {
+            InstallLog.shared.add("install server failed: \(error.localizedDescription)")
             isRunning = false
         }
     }
@@ -792,8 +795,7 @@ struct DownloadView: SwiftUI.View {
     @State private var showSafariWebView = false
     @State private var safariURL: URL? = nil
     @State private var showThemeSelector = false
-    @State private var isScrollingFast = false
-    @State private var scrollVelocity: CGFloat = 0
+    @StateObject private var scrollTracker = ScrollVelocityTracker()
     @State private var showDecryptedFiles = false
     @State private var decryptedCount = 0
     @State private var showDeleteConfirm = false
@@ -804,8 +806,6 @@ struct DownloadView: SwiftUI.View {
     @EnvironmentObject private var globalInstallManager: GlobalInstallationManager
     @EnvironmentObject private var tabBarStyleManager: TabBarStyleManager
 
-    @State private var lastScrollOffset: CGFloat = 0
-    @State private var lastScrollTime: Date = Date()
     @StateObject private var decryptCoordinator = DecryptCoordinator.shared
 
     var body: some SwiftUI.View {
@@ -933,12 +933,12 @@ struct DownloadView: SwiftUI.View {
                     ForEach(Array(vm.sortedDownloadRequests.enumerated()), id: \.element.id) { index, request in
                         DownloadCardView(
                             request: request,
-                            isPreview: isScrollingFast
+                            isPreview: scrollTracker.isFast
                         )
                         .scaleEffect(animateCards ? 1 : 0.9)
                         .opacity(animateCards ? 1 : 0)
                         .animation(Animation.spring().delay(Double(index) * 0.1), value: animateCards)
-                        .animation(nil, value: isScrollingFast)
+                        .animation(nil, value: scrollTracker.isFast)
                         .id(request.id)
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -965,25 +965,25 @@ struct DownloadView: SwiftUI.View {
                                 Label("delete".localized, systemImage: "trash")
                             }
                         }
-                        .confirmationDialog(
-                            "delete".localized,
-                            isPresented: $showDeleteConfirm,
-                            titleVisibility: .visible
-                        ) {
-                            Button("delete_all".localized, role: .destructive) {
-                                if let pendingDelete {
-                                    deleteDownload(pendingDelete)
-                                }
-                                pendingDelete = nil
-                            }
-                            Button("cancel".localized, role: .cancel) {
-                                pendingDelete = nil
-                            }
-                        } message: {
-                            Text("delete_decrypted_hint".localized)
-                        }
                     }
                 }
+            }
+            .confirmationDialog(
+                "delete".localized,
+                isPresented: $showDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("delete_all".localized, role: .destructive) {
+                    if let pendingDelete {
+                        deleteDownload(pendingDelete)
+                    }
+                    pendingDelete = nil
+                }
+                Button("cancel".localized, role: .cancel) {
+                    pendingDelete = nil
+                }
+            } message: {
+                Text("delete_decrypted_hint".localized)
             }
             .background(
                 GeometryReader { geometry in
@@ -992,41 +992,16 @@ struct DownloadView: SwiftUI.View {
                 }
             )
             .onPreferenceChange(DownloadScrollOffsetPreferenceKey.self) { value in
-                detectScrollVelocity(offset: value)
+                scrollTracker.update(offset: value)
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .background(Color.clear)
-        .onAppear {
-            UITableView.appearance().backgroundColor = .clear
-        }
         .coordinateSpace(name: "downloadScroll")
         .refreshable {
             vm.syncDownloadStatus()
         }
-    }
-
-    private func detectScrollVelocity(offset: CGFloat) {
-        let now = Date()
-        let timeDiff = now.timeIntervalSince(lastScrollTime)
-
-        if timeDiff > 0 {
-            let offsetDiff = abs(offset - lastScrollOffset)
-            let velocity = offsetDiff / timeDiff
-            scrollVelocity = velocity
-
-            let fastThreshold: CGFloat = 800
-            let isFast = velocity > fastThreshold
-
-            if isFast != isScrollingFast {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isScrollingFast = isFast
-                }
-            }
-        }
-
-        lastScrollOffset = offset
-        lastScrollTime = now
     }
 
     private func shareIPAFile(path: String, name: String) {
@@ -1168,31 +1143,6 @@ struct DownloadView: SwiftUI.View {
 
     }
 
-    private func isUnpurchasedAppError() -> Bool {
-
-        return false
-    }
-
-    private func openAppStore() {
-
-        let appStoreURL = "https://apps.apple.com/"
-
-        guard let url = URL(string: appStoreURL) else {
-            return
-        }
-
-        #if canImport(UIKit)
-        if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url) { success in
-                if success {
-                } else {
-                }
-            }
-        } else {
-        }
-        #endif
-    }
-
 }
 
 struct DownloadScrollOffsetPreferenceKey: PreferenceKey {
@@ -1304,9 +1254,6 @@ struct DownloadCardView: SwiftUI.View {
     @EnvironmentObject var themeManager: ThemeManager
     var isPreview: Bool = false
 
-    @State private var showDetailView = false
-    @State private var showInstallView = false
-
     @State private var isInstalling = false
     @State private var installationProgress: Double = 0.0
     @State private var installationMessage: String = ""
@@ -1315,6 +1262,8 @@ struct DownloadCardView: SwiftUI.View {
     @State private var decryptMessage: String?
     @State private var decryptedURL: URL?
     @State private var showDetails = false
+    @State private var decryptTask: Task<Void, Never>?
+    @State private var fileSizeText: String?
     @StateObject private var decryptLog = DecryptLog()
 
     private var progress: Double {
@@ -1334,7 +1283,9 @@ struct DownloadCardView: SwiftUI.View {
                     progress: progress,
                     status: status,
                     error: request.runtime.error,
-                    accentColor: themeManager.accentColor
+                    accentColor: themeManager.accentColor,
+                    speed: request.runtime.speed.isEmpty ? nil : request.runtime.speed,
+                    isPreview: isPreview
                 )
             }
 
@@ -1383,7 +1334,19 @@ struct DownloadCardView: SwiftUI.View {
         .onTapGesture {
             handleCardTap()
         }
-        .onAppear { loadExistingDecrypted() }
+        .onAppear {
+            loadExistingDecrypted()
+            fileSizeText = request.localFilePath.flatMap { getFileSize(path: $0) }
+        }
+        .onChange(of: request.localFilePath) { _, _ in
+            fileSizeText = request.localFilePath.flatMap { getFileSize(path: $0) }
+        }
+        .onDisappear {
+            decryptTask?.cancel()
+            if DecryptCoordinator.shared.activeRequestID == request.id {
+                DecryptCoordinator.shared.cancel()
+            }
+        }
         .sheet(isPresented: $showDetails) {
             if let path = request.localFilePath {
                 IPADetailsView(
@@ -1455,13 +1418,11 @@ struct DownloadCardView: SwiftUI.View {
                 .foregroundColor(.secondary)
                 .lineLimit(1)
 
-            if let localFilePath = request.localFilePath {
-                if let fileSize = getFileSize(path: localFilePath) {
-                    Text(String(format: "file_size_x".localized, fileSize))
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
+            if let fileSizeText {
+                Text(String(format: "file_size_x".localized, fileSizeText))
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1586,7 +1547,7 @@ struct DownloadCardView: SwiftUI.View {
             }
         }
 
-        Task {
+        let task = Task {
             let record = await DecryptService.decryptFull(ipaPath: path, cancelToken: token) { event in
                 log.consume(event)
             }
@@ -1611,6 +1572,7 @@ struct DownloadCardView: SwiftUI.View {
                 }
             }
         }
+        decryptTask = task
     }
 
     private func loadExistingDecrypted() {
@@ -1723,30 +1685,16 @@ struct DownloadCardView: SwiftUI.View {
                         .foregroundColor(themeManager.accentColor)
                 }
                 .buttonStyle(.plain)
+                .disabled(request.localFilePath == nil)
+                .opacity(request.localFilePath == nil ? 0 : 1)
                 .accessibilityLabel("detail_action".localized)
             }
         }
     }
 
     private func handleCardTap() {
-        switch request.runtime.status {
-        case DownloadStatus.completed:
-
-            if request.localFilePath != nil {
-                showInstallView = true
-            } else {
-
-                showDetailView = true
-            }
-        case DownloadStatus.failed:
-
-            showDetailView = true
-        case DownloadStatus.cancelled:
-
-            showDetailView = true
-        default:
-
-            showDetailView = true
+        if request.runtime.status == .completed, request.localFilePath != nil {
+            showDetails = true
         }
     }
 
@@ -1919,18 +1867,6 @@ struct DownloadCardView: SwiftUI.View {
         return nil
     }
 
-    private func isUnpurchasedAppError() -> Bool {
-
-        return false
-    }
-
-    private func openAppStore() {
-
-        if let appStoreURL = URL(string: "https://apps.apple.com/") {
-            UIApplication.shared.open(appStoreURL)
-        }
-    }
-
     private func retryDownload() {
 
         UnifiedDownloadManager.shared.resumeDownload(request: request)
@@ -1954,6 +1890,10 @@ struct DownloadCardView: SwiftUI.View {
     private func startInstallation(for request: DownloadRequest) {
         guard let localFilePath = request.localFilePath, FileManager.default.fileExists(atPath: localFilePath) else {
             installationMessage = "ipa_not_found".localized
+            return
+        }
+        guard GlobalInstallationManager.shared.startInstallation(for: request.id) else {
+            installationMessage = "dc_err_busy".localized
             return
         }
 
@@ -2098,6 +2038,7 @@ struct DownloadCardView: SwiftUI.View {
                     installationProgress = 0.0
 
                     HTTPServerManager.shared.stopServer(for: request.id)
+                    GlobalInstallationManager.shared.finishInstallation(for: request.id)
                 }
                 UIApplication.shared.endBackgroundTask(backgroundTaskID)
             }
@@ -2111,6 +2052,7 @@ struct DownloadCardView: SwiftUI.View {
                 isInstalling = false
                 installationProgress = 0.0
                 installationMessage = ""
+                GlobalInstallationManager.shared.finishInstallation(for: requestId)
 
                 if !keepServer {
                     HTTPServerManager.shared.stopServer(for: requestId)

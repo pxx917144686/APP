@@ -89,8 +89,14 @@ class AuthenticationManager: @unchecked Sendable {
             let cookieString = cookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
             if !cookieString.isEmpty {
                 AuthCookieCache.shared.set(dsid: dsid, cookies: [cookieString])
-                UserDefaults.standard.set(cookieString, forKey: "ipadn_cookie_\(dsid)")
+                AuthCookieCache.persistCookie(cookieString, for: dsid)
             }
+            let podHeader = response.value(forHTTPHeaderField: "X-Apple-Pod")?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !podHeader.isEmpty {
+                AccountPodCache.shared.set(dsid: dsid, pod: podHeader)
+            }
+
             let info = raw["accountInfo"] as? [String: Any] ?? [:]
             let appleId = plistString(info["appleId"])
             let address = info["address"] as? [String: Any] ?? [:]
@@ -109,7 +115,7 @@ class AuthenticationManager: @unchecked Sendable {
                 passwordToken: token,
                 dsPersonId: dsid,
                 pings: nil,
-                pod: "",
+                pod: podHeader,
                 kbsync: nil)
         } catch let e as StoreError {
             throw e

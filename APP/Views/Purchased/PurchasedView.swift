@@ -8,9 +8,6 @@ struct PurchasedView: View {
     @State private var isLoading = false
     @State private var errorText: String?
     @State private var query = ""
-    @State private var tick = 0
-
-    private let refreshTicker = Timer.publish(every: 0.8, on: .main, in: .common).autoconnect()
 
     private var filtered: [OwnedApp] {
         guard !query.isEmpty else { return apps }
@@ -29,13 +26,8 @@ struct PurchasedView: View {
         }
         .navigationBarHidden(true)
         .task(id: appStore.selectedAccount?.email) {
-            if let account = appStore.selectedAccount, apps.isEmpty {
+            if let account = appStore.selectedAccount {
                 await load(account)
-            }
-        }
-        .onReceive(refreshTicker) { _ in
-            if !downloadManager.downloadRequests.isEmpty {
-                tick &+= 1
             }
         }
     }
@@ -261,21 +253,6 @@ struct PurchasedView: View {
         }
     }
 
-    private func searchResult(_ app: OwnedApp) -> iTunesSearchResult {
-        let id = Int(app.id) ?? 0
-        let icon = app.iconURL?.absoluteString
-        return iTunesSearchResult(
-            trackId: id, trackName: app.name, artistName: nil, bundleId: app.bundleID,
-            version: app.version, formattedPrice: nil, price: nil, currency: nil,
-            trackViewUrl: "https://apps.apple.com/app/id\(id)",
-            artworkUrl60: icon, artworkUrl100: icon, artworkUrl512: icon,
-            screenshotUrls: nil, ipadScreenshotUrls: nil, description: nil, releaseNotes: nil,
-            sellerName: nil, genres: nil, primaryGenreName: nil, contentAdvisoryRating: nil,
-            averageUserRating: nil, userRatingCount: nil, fileSizeBytes: nil, minimumOsVersion: nil,
-            currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
-            supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
-    }
-
     private func hint(_ text: String, systemImage: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: systemImage).font(.system(size: 48)).foregroundColor(.secondary)
@@ -313,13 +290,6 @@ final class PurchasedListCache: @unchecked Sendable {
         DiskCache.shared.write(apps, key: diskKey(key))
     }
 
-    func clear() {
-        lock.lock()
-        let keys = Array(lists.keys)
-        lists.removeAll()
-        lock.unlock()
-        for key in keys { DiskCache.shared.remove(key: diskKey(key)) }
-    }
 }
 
 final class PurchasedIconCache: @unchecked Sendable {

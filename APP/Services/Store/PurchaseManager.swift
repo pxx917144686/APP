@@ -68,9 +68,6 @@ class PurchaseManager: @unchecked Sendable {
         if let storeError = error as? StoreError {
             switch storeError {
             case .invalidLicense, .notOwned:
-                if isFree {
-                    return .success(false)
-                }
                 return .success(false)
             case .codeRequired:
                 return .failure(.passwordTokenExpired("dl_err_itunes_session_2fa".localized))

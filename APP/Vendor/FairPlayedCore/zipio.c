@@ -231,7 +231,12 @@ int zip_create_from_dir(const char *src_dir, const char *zip_path, char *err, si
         if (e->fts_info == FTS_DP || e->fts_level == 0) continue;
         if (e->fts_info != FTS_D && e->fts_info != FTS_F && e->fts_info != FTS_SL) continue;
         const char *rel = e->fts_path + rootlen + 1;
-        if (cnt == cap) { cap *= 2; ents = realloc(ents, cap * sizeof *ents); }
+        if (cnt == cap) {
+            cap *= 2;
+            went_t *grown = realloc(ents, cap * sizeof *ents);
+            if (!grown) { rc = -1; snprintf(err, errlen, "out of memory"); break; }
+            ents = grown;
+        }
         went_t *w = &ents[cnt]; memset(w, 0, sizeof *w);
         struct stat *st = e->fts_statp;
         dos_time(st->st_mtime, &w->dtime, &w->ddate);

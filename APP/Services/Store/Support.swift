@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 enum ToolError: Error, LocalizedError {
     case message(String)
@@ -7,6 +8,67 @@ enum ToolError: Error, LocalizedError {
         case .message(let m): return m
         }
     }
+}
+
+enum SecureKeyValueStore {
+    private static let service = "ipadn.securestore"
+    private static let lock = NSLock()
+
+    static func setValue(_ value: String?, forKey key: String) {
+        lock.lock(); defer { lock.unlock() }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key
+        ]
+        guard let value, !value.isEmpty else {
+            SecItemDelete(query as CFDictionary)
+            return
+        }
+        let data = Data(value.utf8)
+        let attributes = [kSecValueData as String: data]
+        var status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+            status = SecItemAdd(addQuery as CFDictionary, nil)
+        }
+        if status != errSecSuccess && status != errSecDuplicateItem {
+            UserDefaults.standard.set(value, forKey: fallbackKey(key))
+        }
+    }
+
+    static func value(forKey key: String) -> String? {
+        lock.lock(); defer { lock.unlock() }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var ref: CFTypeRef?
+        if SecItemCopyMatching(query as CFDictionary, &ref) == errSecSuccess,
+           let data = ref as? Data, let value = String(data: data, encoding: .utf8) {
+            return value
+        }
+        if let fallback = UserDefaults.standard.string(forKey: fallbackKey(key)) {
+            return fallback
+        }
+        return nil
+    }
+
+    static func migrateFromDefaults(key: String, defaultsKey: String) {
+        if let legacy = UserDefaults.standard.string(forKey: defaultsKey), !legacy.isEmpty {
+            if value(forKey: key) == nil {
+                setValue(legacy, forKey: key)
+            }
+            UserDefaults.standard.removeObject(forKey: defaultsKey)
+        }
+    }
+
+    private static func fallbackKey(_ key: String) -> String { "securestore_fallback_\(key)" }
 }
 
 func plistString(_ value: Any?) -> String {

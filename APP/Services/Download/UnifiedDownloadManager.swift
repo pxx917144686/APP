@@ -377,18 +377,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 return
             }
 
-            let regionValidation = (account.countryCode == storeAccount.countryCode)
-
-            if !regionValidation {
-                await MainActor.run {
-                    request.runtime.error = "session_err_region_mismatch".localized
-                    request.runtime.status = DownloadStatus.failed
-                    self.activeDownloads.remove(request.id)
-                }
-                self.processNextInQueue()
-                return
-            }
-
             let purchaseResult = await purchaseManager.purchaseAppIfNeeded(
                 appIdentifier: String(request.package.identifier),
                 account: storeAccount,
@@ -538,12 +526,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         startDownload(for: nextRequest)
     }
 
-    func moveToFront(requestId: UUID) {
-        guard let index = downloadQueue.firstIndex(where: { $0.id == requestId }) else { return }
-        let request = downloadQueue.remove(at: index)
-        downloadQueue.insert(request, at: 0)
-    }
-
     func cancelDownload(request: DownloadRequest) {
         if let index = downloadQueue.firstIndex(where: { $0.id == request.id }) {
             downloadQueue.remove(at: index)
@@ -587,7 +569,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
     func resumeDownload(request: DownloadRequest) {
         guard request.runtime.status == DownloadStatus.paused ||
-              request.runtime.status == DownloadStatus.failed else { return }
+              request.runtime.status == DownloadStatus.failed ||
+              request.runtime.status == DownloadStatus.cancelled else { return }
 
         request.runtime.error = nil
         request.runtime.isAuthFailure = false
@@ -958,7 +941,10 @@ extension UnifiedDownloadManager {
             restoredRequests.append(request)
         }
 
-        downloadRequests = restoredRequests
+        let preexisting = downloadRequests.filter { request in
+            !restoredRequests.contains(where: { $0.id == request.id })
+        }
+        downloadRequests = preexisting + restoredRequests
 
         completedRequests = Set(saveData.completedRequests)
         let savedActive = Set(saveData.activeDownloads)
@@ -1031,6 +1017,7 @@ extension UnifiedDownloadManager {
 
         for request in downloadRequests {
             if request.runtime.status == DownloadStatus.downloading {
+                downloadManager.pauseDownload(downloadId: request.id.uuidString)
                 request.runtime.status = DownloadStatus.paused
                 activeDownloads.remove(request.id)
             }

@@ -172,61 +172,28 @@ struct AccountDetailView: View {
         .padding(.vertical, 2)
     }
 
-    private func tokenRow(title: String, value: String, visible: Bool) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(title)
-                .font(.system(size: 15))
-                .foregroundColor(.primary)
-                .frame(minWidth: 96, alignment: .leading)
-
-            Spacer()
-
-            if value.isEmpty {
-                Text("no_value".localized)
-                    .font(.system(size: 13, design: .monospaced))
-                    .foregroundColor(.secondary.opacity(0.5))
-            } else if visible {
-                Text(value)
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .lineLimit(6)
-                    .truncationMode(.tail)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .textSelection(.enabled)
+    private func flag(country code: String) -> String {
+        guard code.count == 2 else { return "🌐" }
+        let base: UInt32 = 0x1F1E6
+        var scalars = String.UnicodeScalarView()
+        for scalar in code.uppercased().unicodeScalars {
+            guard scalar.value >= 65, scalar.value <= 90 else { return "🌐" }
+            if let flagScalar = Unicode.Scalar(base + (scalar.value - 65)) {
+                scalars.append(flagScalar)
             } else {
-                Text(String(repeating: "•", count: min(value.count, 24)))
-                    .font(.system(size: 13, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                return "🌐"
             }
         }
-        .padding(.vertical, 4)
-    }
-
-    private func deleteAccount() {
-        if appStore.savedAccounts.count == 1 {
-            appStore.logoutAccount()
-        } else {
-            appStore.deleteAccount(account)
-        }
-        dismiss()
-    }
-
-    private func flag(country: String) -> String {
-        let base: UInt32 = 127397
-        var s = ""
-        for v in country.uppercased().unicodeScalars {
-            if let scalar = UnicodeScalar(base + v.value) {
-                s.unicodeScalars.append(scalar)
-            }
-        }
-        return s
+        return scalars.count == 2 ? String(scalars) : "🌐"
     }
 
     private func countryName(_ code: String) -> String {
-        let locale = LanguageManager.shared.locale
-        return locale.localizedString(forRegionCode: code) ?? code.uppercased()
+        RegionNames.localizedName(for: code)
     }
+
+    private func deleteAccount() {
+        AppStore.this.deleteAccount(account)
+        dismiss()
+    }
+
 }

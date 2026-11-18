@@ -128,19 +128,6 @@ class SessionManager: ObservableObject, @unchecked Sendable {
         reconnectAttempts = 0
         lastSessionCheck = Date()
     }
-
-    func resumeFailedDownloads() async {
-        let downloadManager = UnifiedDownloadManager.shared
-        for request in downloadManager.downloadRequests {
-            if request.runtime.status == .failed &&
-               (request.runtime.isAuthFailure || request.runtime.error?.contains("认证") == true) {
-                request.runtime.status = .waiting
-                request.runtime.error = nil
-                request.runtime.progressValue = 0
-                downloadManager.startDownload(for: request)
-            }
-        }
-    }
 }
 
 extension Notification.Name {

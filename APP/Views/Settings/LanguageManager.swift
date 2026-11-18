@@ -212,7 +212,12 @@ final class LanguageManager: ObservableObject {
     @Published private(set) var currentLanguage: AppLanguage
 
     private let userDefaultsKey = "AppleLanguages"
-    private var currentBundle: Bundle?
+    private var _currentBundle: Bundle?
+    private let bundleLock = NSLock()
+    private var currentBundle: Bundle? {
+        get { bundleLock.lock(); defer { bundleLock.unlock() }; return _currentBundle }
+        set { bundleLock.lock(); defer { bundleLock.unlock() }; _currentBundle = newValue }
+    }
 
     private init() {
         if let languages = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String],

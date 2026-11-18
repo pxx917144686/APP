@@ -69,9 +69,6 @@ struct ArtworkView: View {
     private var placeholderBackground: some View {
         if let color = placeholderColor {
             color
-        } else if let image = loadedImage, let avgColor = image.averageColor() {
-            Color(uiColor: avgColor.adjustedForDisplay)
-                .opacity(loadedImage != nil ? 0 : 1)
         } else {
             Color(.systemGray6)
         }

@@ -247,6 +247,7 @@ struct AddAccountView: View {
     }
 
     private func authenticate() async {
+        guard !isLoading else { return }
         if email.isEmpty || password.isEmpty {
             errorMessage = "enter_full_credentials".localized
             return
