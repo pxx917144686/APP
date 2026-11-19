@@ -1409,3 +1409,8 @@
 "dl_transfer_left" = "剩餘 %@";
 "sign_profile_fallback_warning" = "描述檔 App ID 為 %@，不涵蓋這個 IPA。將繼續用目前描述檔簽名；如果描述檔無法套用，安裝可能被拒絕。";
 "sign_team_mismatch_warning" = "憑證與描述檔不屬於同一個 Team。仍會嘗試簽名，但安裝很可能失敗；請選擇同 Team 的憑證和描述檔。";
+"sign_import_wrong_type" = "請選擇 .ipa 或 .zip 檔案。";
+"sign_target_control_center" = "控制中心";
+"sign_remove_uncovered_extensions" = "移除未涵蓋擴充功能";
+"sign_remove_uncovered_extensions_hint" = "沒有符合描述檔的 NE、小工具、大工具、控制中心等擴充功能會自動移除，保證主 App 能安裝。要保留請匯入對應擴充功能描述檔。";
+"sign_self_injection_warning" = "你正在簽名這個簽名工具本身。內建「内购破解.dylib」不會注入；注入它可能破壞檔案選擇器和其他系統整合。";

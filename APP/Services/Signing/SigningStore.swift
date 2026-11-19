@@ -261,6 +261,21 @@ final class SigningStore: ObservableObject {
         return profile
     }
 
+    func importIPABackground(from source: URL) async throws -> URL {
+        let fileName = source.lastPathComponent.isEmpty ? UUID().uuidString + ".ipa" : source.lastPathComponent
+        let destination = importedIPADirectory.appendingPathComponent("\(UUID().uuidString)-\(fileName)")
+        let needsScope = source.startAccessingSecurityScopedResource()
+        return try await Task.detached(priority: .utility) {
+            defer { if needsScope { source.stopAccessingSecurityScopedResource() } }
+            do {
+                try FileManager.default.copyItem(at: source, to: destination)
+                return destination
+            } catch {
+                throw SigningStoreError.fileWriteFailed
+            }
+        }.value
+    }
+
     func importIPA(from source: URL) throws -> URL {
         let fileName = source.lastPathComponent.isEmpty ? UUID().uuidString + ".ipa" : source.lastPathComponent
         let destination = importedIPADirectory.appendingPathComponent("\(UUID().uuidString)-\(fileName)")

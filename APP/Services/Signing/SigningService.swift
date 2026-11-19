@@ -94,6 +94,7 @@ struct SigningIPTask: Sendable {
     let injections: [SigningInjection]
     let removeExtensions: Bool
     let removeWatchApp: Bool
+    let removeTargetPaths: [String]
     let targetCredentials: [SigningTargetCredentials]
     let outputDirectory: URL
 }
@@ -180,12 +181,24 @@ enum SigningEngine {
         }
         onUpdate(SigningUpdate(progress: 0.32, text: "bundle  \(appURL.lastPathComponent)", level: .info))
 
+        if !task.removeTargetPaths.isEmpty {
+            for path in task.removeTargetPaths where !path.isEmpty {
+                let target = appURL.appendingPathComponent(path).standardizedFileURL
+                guard target.path.hasPrefix(appURL.standardizedFileURL.path + "/") else { continue }
+                if FileManager.default.fileExists(atPath: target.path) {
+                    try? FileManager.default.removeItem(at: target)
+                    onUpdate(SigningUpdate(progress: 0.33, text: "remove uncovered target  \(path)", level: .warning))
+                }
+            }
+        }
         if task.removeExtensions {
             try removeAllExtensions(from: appURL, onUpdate: onUpdate)
         }
         if task.removeWatchApp {
             removeWatchAppBundle(from: appURL, onUpdate: onUpdate)
         }
+
+        embedNestedProvisioningProfiles(in: appURL, task: task, onUpdate: onUpdate)
 
         var entitlementsPath = ""
         if let entitlementsPlist = task.entitlementsPlist {
@@ -262,6 +275,61 @@ enum SigningEngine {
         }
         try? FileManager.default.removeItem(at: watchURL)
         onUpdate(SigningUpdate(progress: 0.33, text: "watch  removed", level: .success))
+    }
+
+    /// SideInstaller-style fix: every surviving .appex must carry its own
+    /// embedded.mobileprovision before the recursive signer reaches it. Covered
+    /// targets use their per-target profile; uncovered targets reuse the main
+    /// profile (SideStore "reuse main profile for extensions").
+    private static func embedNestedProvisioningProfiles(
+        in appURL: URL,
+        task: SigningIPTask,
+        onUpdate: @escaping @Sendable (SigningUpdate) -> Void
+    ) {
+        let fileManager = FileManager.default
+        let root = appURL.standardizedFileURL
+        let rootPrefix = root.path + "/"
+        var embedded = 0
+
+        for credentials in task.targetCredentials {
+            let target = appURL.appendingPathComponent(credentials.bundlePath).standardizedFileURL
+            guard target.path.hasPrefix(rootPrefix),
+                  target.pathExtension.lowercased() == "appex",
+                  fileManager.fileExists(atPath: target.path) else { continue }
+            write(profile: credentials.profileURL, into: target, fileManager: fileManager)
+            embedded += 1
+            onUpdate(SigningUpdate(progress: 0.335, text: "profile  \(credentials.bundlePath) / \(credentials.profile.displayName)", level: .info))
+        }
+
+        guard let enumerator = fileManager.enumerator(
+            at: appURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return }
+
+        for case let url as URL in enumerator {
+            guard (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else { continue }
+            guard url.pathExtension.lowercased() == "appex" else { continue }
+            let relative = String(url.standardizedFileURL.path.dropFirst(rootPrefix.count))
+            if task.targetCredentials.contains(where: { $0.bundlePath == relative }) {
+                continue
+            }
+            guard !task.removeTargetPaths.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) else { continue }
+            write(profile: task.profileURL, into: url, fileManager: fileManager)
+            embedded += 1
+            onUpdate(SigningUpdate(progress: 0.335, text: "profile  \(relative) / main", level: .info))
+        }
+
+        if embedded > 0 {
+            onUpdate(SigningUpdate(progress: 0.336, text: "embedded.mobileprovision  \(embedded) appex", level: .success))
+        }
+    }
+
+    private static func write(profile profileURL: URL, into bundleURL: URL, fileManager: FileManager) {
+        guard fileManager.fileExists(atPath: profileURL.path) else { return }
+        let destination = bundleURL.appendingPathComponent("embedded.mobileprovision")
+        try? fileManager.removeItem(at: destination)
+        try? fileManager.copyItem(at: profileURL, to: destination)
     }
 
     private static func removeAllExtensions(

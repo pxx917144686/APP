@@ -4,6 +4,7 @@ struct SigningTarget: Identifiable, Hashable, Sendable {
     enum Kind: String, Hashable, Sendable {
         case main
         case widget
+        case controlCenter
         case networkExtension
         case watchApp
         case appClip
@@ -16,6 +17,7 @@ struct SigningTarget: Identifiable, Hashable, Sendable {
             switch self {
             case .main: return "sign_target_main".localized
             case .widget: return "sign_target_widget".localized
+            case .controlCenter: return "sign_target_control_center".localized
             case .networkExtension: return "sign_target_ne".localized
             case .watchApp: return "sign_target_watch".localized
             case .appClip: return "sign_target_app_clip".localized
@@ -30,6 +32,7 @@ struct SigningTarget: Identifiable, Hashable, Sendable {
             switch self {
             case .main: return "app.fill"
             case .widget: return "square.grid.2x2.fill"
+            case .controlCenter: return "switch.2"
             case .networkExtension: return "network"
             case .watchApp: return "applewatch"
             case .appClip: return "app.badge"
@@ -44,13 +47,14 @@ struct SigningTarget: Identifiable, Hashable, Sendable {
             switch self {
             case .main: return 0
             case .widget: return 1
-            case .networkExtension: return 2
-            case .watchApp: return 3
-            case .appClip: return 4
-            case .share: return 5
-            case .notification: return 6
-            case .intents: return 7
-            case .other: return 8
+            case .controlCenter: return 2
+            case .networkExtension: return 3
+            case .watchApp: return 4
+            case .appClip: return 5
+            case .share: return 6
+            case .notification: return 7
+            case .intents: return 8
+            case .other: return 9
             }
         }
     }
@@ -240,6 +244,7 @@ enum SigningTargetScanner {
     private static func classify(_ point: String?) -> SigningTarget.Kind {
         let lower = (point ?? "").lowercased()
         if lower.contains("widget") { return .widget }
+        if lower.contains("control-center") || lower.contains("controlcenter") { return .controlCenter }
         if lower.contains("network-extension") || lower.contains("networkextension") || lower.contains("packet-tunnel") || lower.contains("packettunnel") || lower.contains("dns-proxy") {
             return .networkExtension
         }

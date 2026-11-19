@@ -19,6 +19,7 @@ struct SignView: SwiftUI.View {
     @State private var removeProvision = false
     @State private var removeAllExtensions = false
     @State private var removeWatchApp = false
+    @State private var removeUncoveredExtensions = true
     @State private var useTargetProfiles = true
     @State private var autoInstallAfterSign = false
     @State private var showSelfInstallAlert = false
@@ -167,6 +168,10 @@ struct SignView: SwiftUI.View {
         if let selectedIPA, selectedIPA.isEncrypted {
             issues.append(SigningIssue(text: "sign_ipa_encrypted".localized, isError: true))
         }
+        if trimmedBundleID == Bundle.main.bundleIdentifier,
+           injections.contains(where: { $0.name == "内购破解.dylib" }) {
+            issues.append(SigningIssue(text: "sign_self_injection_warning".localized, isError: false))
+        }
         if !trimmedBundleID.isEmpty, trimmedBundleID == Bundle.main.bundleIdentifier {
             issues.append(SigningIssue(text: "sign_self_bundle_warning".localized, isError: false))
         }
@@ -298,8 +303,11 @@ struct SignView: SwiftUI.View {
         .fileImporter(isPresented: $showProfileImporter, allowedContentTypes: [profileType], allowsMultipleSelection: false) { result in
             handleProfileImport(result)
         }
-        .fileImporter(isPresented: $showIPAImporter, allowedContentTypes: [ipaType], allowsMultipleSelection: false) { result in
-            handleIPAImport(result)
+        .sheet(isPresented: $showIPAImporter) {
+            DocumentPicker(types: [.item]) { url in
+                showIPAImporter = false
+                handlePickedIPA(url)
+            }
         }
         .fileImporter(isPresented: $showDylibImporter, allowedContentTypes: [dylibType], allowsMultipleSelection: true) { result in
             handleDylibImport(result)
@@ -881,10 +889,12 @@ struct SignView: SwiftUI.View {
 
     private var targetSigningCredentials: [SigningTargetCredentials] {
         guard useTargetProfiles, profile != nil else { return [] }
+        let removedPaths = Set(targetsToRemove.map(\.bundlePath))
         return targets.compactMap { target in
             guard target.kind != .main else { return nil }
             if removeAllExtensions { return nil }
             if removeWatchApp && target.kind == .watchApp { return nil }
+            if removedPaths.contains(target.bundlePath) { return nil }
             guard let matched = independentProfile(for: target) else { return nil }
             return SigningTargetCredentials(
                 targetID: target.id,
@@ -1485,6 +1495,18 @@ struct SignView: SwiftUI.View {
                 }
                 .tint(accent)
 
+                Toggle(isOn: $removeUncoveredExtensions) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("sign_remove_uncovered_extensions".localized)
+                            .font(.system(size: 12, weight: .medium))
+                        Text("sign_remove_uncovered_extensions_hint".localized)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .tint(accent)
+
                 Toggle(isOn: $useTargetProfiles) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("sign_use_target_profiles".localized)
@@ -2000,6 +2022,7 @@ struct SignView: SwiftUI.View {
         let finalBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
         let finalName = trimmedDisplayName.isEmpty ? ipa.displayName : trimmedDisplayName
         let finalVersion = trimmedVersion.isEmpty ? ipa.version : trimmedVersion
+        let isSigningSelf = finalBundleID == Bundle.main.bundleIdentifier
         let effectiveInjections = injections.map { item in
             var copy = item
             if removeAllExtensions {
@@ -2011,6 +2034,8 @@ struct SignView: SwiftUI.View {
                 }
             }
             return copy
+        }.filter { item in
+            !(isSigningSelf && item.name == "内购破解.dylib")
         }
 
         let taskRequest = SigningIPTask(
@@ -2028,6 +2053,7 @@ struct SignView: SwiftUI.View {
             injections: effectiveInjections,
             removeExtensions: removeAllExtensions,
             removeWatchApp: removeWatchApp,
+            removeTargetPaths: targetsToRemove.map(\.bundlePath),
             targetCredentials: targetSigningCredentials,
             outputDirectory: store.signedOutputDirectory
         )
@@ -2532,18 +2558,25 @@ struct SignView: SwiftUI.View {
         }
     }
 
-    private func handleIPAImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard let url = urls.first else { return }
+    private func handlePickedIPA(_ url: URL) {
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ipa" || ext == "zip" else {
+            presentError(message: "sign_import_wrong_type".localized)
+            return
+        }
+        isLoadingIPA = true
+        Task {
             do {
-                let destination = try store.importIPA(from: url)
-                applyIPA(destination)
+                let destination = try await store.importIPABackground(from: url)
+                await MainActor.run {
+                    applyIPA(destination)
+                }
             } catch {
-                presentError(error)
+                await MainActor.run {
+                    isLoadingIPA = false
+                    presentError(error)
+                }
             }
-        case .failure(let error):
-            presentError(error)
         }
     }
 
@@ -2576,6 +2609,11 @@ struct SignView: SwiftUI.View {
             available = available.filter { $0.kind != .watchApp }
         }
         return available
+    }
+
+    private var targetsToRemove: [SigningTarget] {
+        guard removeUncoveredExtensions, !removeAllExtensions else { return [] }
+        return uncoveredExtensionTargets
     }
 
     private var uncoveredExtensionTargets: [SigningTarget] {
@@ -2719,8 +2757,16 @@ struct SignView: SwiftUI.View {
         UTType(filenameExtension: "mobileprovision") ?? .data
     }
 
-    private var ipaType: UTType {
-        UTType(filenameExtension: "ipa") ?? .archive
+    private var ipaTypes: [UTType] {
+        var types: [UTType] = [.data, .archive]
+        if let ipa = UTType(filenameExtension: "ipa") {
+            types.append(ipa)
+        }
+        if let apple = UTType("com.apple.itunes.ipa") {
+            types.append(apple)
+        }
+        var seen = Set<String>()
+        return types.filter { seen.insert($0.identifier).inserted }
     }
 
     private var dylibType: UTType {

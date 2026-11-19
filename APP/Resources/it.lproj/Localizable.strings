@@ -1401,3 +1401,8 @@
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "Profile App ID is %@, which does not cover this IPA. Signing will continue with the selected profile; the installation may be rejected if the profile cannot be applied.";
 "sign_team_mismatch_warning" = "The certificate and profile belong to different teams. Signing will be attempted, but installation will probably fail; choose a certificate and profile from the same team.";
+"sign_import_wrong_type" = "Choose an .ipa or .zip file.";
+"sign_target_control_center" = "Control Center";
+"sign_remove_uncovered_extensions" = "Remove Uncovered Extensions";
+"sign_remove_uncovered_extensions_hint" = "NE, widgets, control center and other extensions without a matching profile are removed automatically so the main app can install. Import their profiles to keep them.";
+"sign_self_injection_warning" = "You are signing this signing tool itself. The built-in 内购破解.dylib will not be injected; injecting it can break file pickers and other system integrations.";
