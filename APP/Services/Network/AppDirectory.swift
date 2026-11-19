@@ -1,8 +1,5 @@
 import Foundation
 
-/// 本地应用目录：跨会话累积"见过的应用"元数据（bundleId → 名称/trackId/版本/图标）。
-/// 参考下架应用场景：iTunes lookup 已查不到的下架应用，只要曾经录入过目录，
-/// 搜索时仍能以完整元数据出现在"下架应用"区块中。
 struct DirectoryEntry: Codable, Identifiable {
     var id: String { bundleId }
     var bundleId: String
@@ -130,9 +127,6 @@ final class AppDirectory: @unchecked Sendable {
     }
 }
 
-
-// MARK: - 内置名称目录（含别名）：补位 iTunes 搜索索引缺失的下架应用
-
 struct NameDirectoryEntry: Codable {
     let id: String
     let name: String
@@ -160,7 +154,6 @@ enum NameDirectory {
 
     static var all: [NameDirectoryEntry] { entries }
 
-    /// 名称/别名 与搜索词双向包含匹配
     static func matches(_ term: String) -> [NameDirectoryEntry] {
         let needle = normalized(term)
         guard !needle.isEmpty else { return [] }

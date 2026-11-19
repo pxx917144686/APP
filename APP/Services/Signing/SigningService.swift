@@ -277,10 +277,6 @@ enum SigningEngine {
         onUpdate(SigningUpdate(progress: 0.33, text: "watch  removed", level: .success))
     }
 
-    /// SideInstaller-style fix: every surviving .appex must carry its own
-    /// embedded.mobileprovision before the recursive signer reaches it. Covered
-    /// targets use their per-target profile; uncovered targets reuse the main
-    /// profile (SideStore "reuse main profile for extensions").
     private static func embedNestedProvisioningProfiles(
         in appURL: URL,
         task: SigningIPTask,

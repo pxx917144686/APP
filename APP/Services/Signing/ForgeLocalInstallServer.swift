@@ -40,9 +40,6 @@ enum LocalHTTPRoute {
     }
 }
 
-/// Tracks unique IPA bytes served across full and Range requests. iOS can
-/// download an IPA in several ranges, so one completed HTTP response is not
-/// enough to decide that the package was delivered.
 struct LocalIPAProgress {
     private(set) var ranges: [Range<UInt64>] = []
 
@@ -73,18 +70,6 @@ struct LocalIPAProgress {
     }
 }
 
-/// Local OTA install server (semi-local, Feather-style).
-///
-/// `itms-services` requires an HTTPS manifest URL that iOS trusts. The public
-/// `*.backloop.dev` leaf is now issued under Let's Encrypt YR1 / ISRG Root YR,
-/// which Apple's trust store does not include — Safari shows "This Connection
-/// Is Not Private". Instead we:
-///
-/// 1. Serve the IPA over plain HTTP on `127.0.0.1` (loopback; no cert needed).
-/// 2. Point `itms-services` at a remote HTTPS plist from `api.palera.in`
-///    (`genPlist`) whose `software-package` URL is our local IPA.
-///
-/// Same approach Feather uses for its "semi-local" / server-method-1 install.
 final class LocalInstallServer: @unchecked Sendable {
     private struct State: @unchecked Sendable {
         var listenerFD: Int32 = -1
@@ -101,15 +86,12 @@ final class LocalInstallServer: @unchecked Sendable {
     }
 
     private let state = OSAllocatedUnfairLock(initialState: State())
-    /// A random token in every served path. A process on this device that finds
-    /// the port cannot fetch the IPA or the install page without it (audit N8).
     let installToken: String = {
         var bytes = [UInt8](repeating: 0, count: 16)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         return bytes.map { String(format: "%02x", $0) }.joined()
     }()
 
-    /// At most this many connections are served at once; the rest wait in the backlog (audit N8).
     private let connectionSlots = DispatchSemaphore(value: 4)
 
     private let connectionQueue = DispatchQueue(
@@ -118,8 +100,6 @@ final class LocalInstallServer: @unchecked Sendable {
         attributes: .concurrent
     )
 
-    /// Local loopback base (plain HTTP). Used for the IPA and the Safari
-    /// handoff page — never for the itms-services manifest URL.
     var installBaseURL: String {
         "http://127.0.0.1:\(port)"
     }
@@ -128,8 +108,6 @@ final class LocalInstallServer: @unchecked Sendable {
         "\(installBaseURL)/\(installToken)/app.ipa"
     }
 
-    /// Trusted HTTPS manifest URL (plistserver). This is what itms-services
-    /// actually fetches.
     var remoteManifestURL: String {
         let config = state.withLock { ($0.bundleId, $0.title, $0.bundleVersion, $0.port) }
         var comps = URLComponents(string: "https://api.palera.in/genPlist")!
@@ -146,7 +124,6 @@ final class LocalInstallServer: @unchecked Sendable {
         state.withLock { $0.port }
     }
 
-    /// Starts the loopback HTTP server and returns the bound port.
     func start(ipa: URL, bundleId: String, bundleVersion: String, title: String) async throws -> UInt16 {
         let fd = socket(AF_INET, SOCK_STREAM, 0)
         guard fd >= 0 else {
@@ -157,9 +134,6 @@ final class LocalInstallServer: @unchecked Sendable {
         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(MemoryLayout<Int32>.size))
         var noSigPipe: Int32 = 1
         setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &noSigPipe, socklen_t(MemoryLayout<Int32>.size))
-        // Non-blocking listener: the accept loop polls with a timeout so stop()
-        // ends the thread promptly. A blocking accept would stay parked on a
-        // closed fd until the next connection (an fd-reuse hazard).
         let flags = fcntl(fd, F_GETFL, 0)
         if flags >= 0 {
             _ = fcntl(fd, F_SETFL, flags | O_NONBLOCK)
@@ -232,8 +206,6 @@ final class LocalInstallServer: @unchecked Sendable {
         if fd >= 0 { close(fd) }
     }
 
-    // MARK: Accept loop
-
     private func acceptLoop(_ fd: Int32) {
         while true {
             let shouldRun = state.withLock { $0.running && $0.listenerFD == fd }
@@ -245,9 +217,6 @@ final class LocalInstallServer: @unchecked Sendable {
 
             let client = accept(fd, nil, nil)
             if client >= 0 {
-                // Darwin inherits O_NONBLOCK from the listener. The worker's
-                // recv/send loops require blocking sockets: an accepted TCP
-                // connection may not have sent its HTTP headers yet.
                 let flags = fcntl(client, F_GETFL, 0)
                 guard flags >= 0, fcntl(client, F_SETFL, flags & ~O_NONBLOCK) == 0 else {
                     close(client)
@@ -280,7 +249,6 @@ final class LocalInstallServer: @unchecked Sendable {
 
         var buffer = Data()
         var raw = [UInt8](repeating: 0, count: 4096)
-        // The whole header block must arrive within 15 s, not each read (audit N8).
         let deadline = Date().addingTimeInterval(15)
         while buffer.count < 64 * 1024, Date() < deadline {
             let n = recv(fd, &raw, raw.count, 0)
@@ -338,9 +306,6 @@ final class LocalInstallServer: @unchecked Sendable {
                 state.onIPADelivered = newValue
                 return state.didDeliverIPA
             }
-            // The server begins accepting connections before the controller
-            // installs its callback. If a fast client finished in that gap,
-            // deliver the notification as soon as the callback is attached.
             if alreadyDelivered { newValue?() }
         }
     }
@@ -384,8 +349,6 @@ final class LocalInstallServer: @unchecked Sendable {
             sendResponse(fd, status: "404 Not Found", contentType: "text/plain", body: Data(), headOnly: false)
             return
         }
-        // The throwing FileHandle APIs report I/O errors instead of raising an
-        // Objective-C exception that would crash the app mid-install.
         guard let fileSize = try? handle.seekToEnd() else {
             try? handle.close()
             sendResponse(fd, status: "500 Internal Server Error", contentType: "text/plain", body: Data(), headOnly: false)
@@ -394,11 +357,8 @@ final class LocalInstallServer: @unchecked Sendable {
         let resolved: (offset: UInt64, length: UInt64, headers: String, full: Bool)?
         switch range {
         case .absent, .invalid:
-            // RFC 9110 §14.2: a Range header the server cannot use (multiple
-            // ranges, another unit) is ignored and the whole file is sent.
             resolved = (0, fileSize, "", true)
         case .bounded(let start, let requestedEnd) where requestedEnd < start:
-            // "bytes=5-1" is syntactically invalid, so it is ignored as well.
             resolved = (0, fileSize, "", true)
         case .bounded(let start, let requestedEnd):
             guard fileSize > 0, start < fileSize else { resolved = nil; break }
@@ -450,11 +410,8 @@ final class LocalInstallServer: @unchecked Sendable {
         try? handle.close()
     }
 
-    /// Safari-facing fallback. A visible tap keeps the user on this page if
-    /// iOS rejects the handoff, so they can read the recovery instructions.
     private func installPage() -> String {
         let itms = itmsServicesURL
-        // Titles come from filenames; escape before embedding in HTML.
         func html(_ s: String) -> String {
             s.replacingOccurrences(of: "&", with: "&amp;")
              .replacingOccurrences(of: "<", with: "&lt;")
@@ -500,8 +457,6 @@ final class LocalInstallServer: @unchecked Sendable {
     }
 
     var itmsServicesURL: String {
-        // Encode the entire HTTPS plist URL for the itms-services query value
-        // (same encoding Feather uses for its external/semi-local link).
         var allowed = CharacterSet.alphanumerics
         allowed.insert(charactersIn: "-._~")
         let encoded = remoteManifestURL.addingPercentEncoding(withAllowedCharacters: allowed)

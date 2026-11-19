@@ -83,7 +83,6 @@ struct UIKitTextField: UIViewRepresentable {
     }
 }
 
-
 struct SearchTimeoutError: Error {}
 
 final class SearchResultCache: @unchecked Sendable {
@@ -264,7 +263,6 @@ struct SearchView: SwiftUI.View {
 
     @State var purchasingTrackId: Int?
     @State private var purchasedTrackIds: Set<Int> = []
-
 
     @State var searchResult: [iTunesSearchResult] = []
     @State var legacyResults: [iTunesSearchResult] = []
@@ -595,7 +593,6 @@ struct SearchView: SwiftUI.View {
         var seen = Set<Int>()
         let region = appStore.selectedAccount?.countryCode ?? "US"
 
-        // ① Agzy 名称搜索：覆盖已下架但数据库仍有记录的应用
         var searchRegions = [region.lowercased()]
         if !searchRegions.contains("us") { searchRegions.append("us") }
         if let termEnc = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
@@ -637,7 +634,6 @@ struct SearchView: SwiftUI.View {
             }
         }
 
-        // ② 内置名称目录（含别名）：lookup?id 查得到 → 正常结果；查不到 → 下架兜底
         for entry in NameDirectory.matches(term) {
             guard let candidateId = Int(entry.id), candidateId > 0, !seen.contains(candidateId) else { continue }
             var req = URLRequest(url: URL(string: "https://itunes.apple.com/lookup?id=\(candidateId)&country=\(region)")!)
@@ -737,7 +733,6 @@ struct SearchView: SwiftUI.View {
             currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
             supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
     }
-
 
     private static func directoryEntry(fromAppdbMetadata metadata: [String: Any]?, bundleId: String) -> DirectoryEntry? {
         guard let metadata else { return nil }
