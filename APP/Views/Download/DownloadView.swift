@@ -196,7 +196,7 @@ struct ModernCard<Content: SwiftUI.View>: SwiftUI.View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(.ultraThinMaterial)
                     .shadow(
                         color: shadowColor,
                         radius: shadowRadius,
@@ -924,19 +924,11 @@ struct DownloadView: SwiftUI.View {
             showDecryptedFiles = true
         } label: {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: "shippingbox.fill")
-                    .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(.white)
+                Image("XcodeIcon")
+                    .resizable()
+                    .scaledToFit()
                     .frame(width: 52, height: 52)
-                    .background(
-                        LinearGradient(
-                            colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.78)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .clipShape(Circle())
-                    .shadow(color: themeManager.accentColor.opacity(0.38), radius: 10, y: 4)
+                    .shadow(color: Color.black.opacity(0.28), radius: 10, y: 4)
 
                 if decryptedCount > 0 {
                     Text("\(decryptedCount)")
@@ -1336,12 +1328,15 @@ struct DownloadCardView: SwiftUI.View {
             topSection
 
             if shouldShowProgress {
-                ECGDownloadProgressView(
+                WindowsTransferProgressView(
                     progress: progress,
                     status: status,
                     error: request.runtime.error,
                     accentColor: themeManager.accentColor,
                     speed: request.runtime.speed.isEmpty ? nil : request.runtime.speed,
+                    completedBytes: request.runtime.completedBytes,
+                    totalBytes: request.runtime.totalBytes,
+                    remainingTime: request.runtime.remainingTime,
                     isPreview: isPreview
                 )
             }
@@ -1405,7 +1400,7 @@ struct DownloadCardView: SwiftUI.View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(.ultraThinMaterial)
                 .shadow(
                     color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08),
                     radius: colorScheme == .dark ? 10 : 6,

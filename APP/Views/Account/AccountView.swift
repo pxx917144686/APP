@@ -203,7 +203,7 @@ struct AccountView: View {
         .padding(.vertical, 40)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(.ultraThinMaterial)
         )
         .padding(.horizontal, 16)
     }
@@ -259,7 +259,7 @@ struct AccountView: View {
         .padding(.vertical, 24)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(.ultraThinMaterial)
         )
         .padding(.horizontal, 16)
         .contentShape(Rectangle())

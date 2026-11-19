@@ -14,6 +14,16 @@ final class ImageLoader {
 
     private init() {}
 
+    func prefetch(_ urls: [URL]) {
+        let unique = Array(Set(urls)).prefix(24)
+        guard !unique.isEmpty else { return }
+        Task { [weak self] in
+            for url in unique {
+                _ = await self?.loadLowQualityImage(from: url)
+            }
+        }
+    }
+
     func loadImage(from url: URL, lowQualityFirst: Bool = false) async -> UIImage? {
         if let cached = memoryCache.value(forKey: url) {
             return cached

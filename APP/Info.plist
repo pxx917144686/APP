@@ -66,7 +66,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.7.0</string>
+	<string>2.7.1</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>itms-services</string>
@@ -81,6 +81,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>用于解锁隐藏的签名记录和签名库。</string>
 	<key>NSCameraUsageDescription</key>
 	<string>需要访问相机以扫描二维码下载应用。</string>
 	<key>NSLocalNetworkUsageDescription</key>

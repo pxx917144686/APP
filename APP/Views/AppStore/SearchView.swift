@@ -1648,7 +1648,7 @@ struct SearchView: SwiftUI.View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(.secondarySystemBackground))
+                        .fill(.ultraThinMaterial)
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 )
                 .padding(.horizontal, 16)
@@ -2074,7 +2074,7 @@ struct SearchView: SwiftUI.View {
                     .disabled(directInput.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                .background(RoundedRectangle(cornerRadius: 12).fill(.ultraThinMaterial))
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
 

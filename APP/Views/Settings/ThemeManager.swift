@@ -39,6 +39,26 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
         }
     }
 
+    @Published var waterEffectEnabled: Bool = {
+        if UserDefaults.standard.object(forKey: "APP.waterEffect") == nil { return true }
+        return UserDefaults.standard.bool(forKey: "APP.waterEffect")
+    }() {
+        didSet {
+            UserDefaults.standard.set(waterEffectEnabled, forKey: "APP.waterEffect")
+            objectWillChange.send()
+        }
+    }
+
+    @Published var liquidGlassEnabled: Bool = {
+        if UserDefaults.standard.object(forKey: "APP.liquidGlass") == nil { return true }
+        return UserDefaults.standard.bool(forKey: "APP.liquidGlass")
+    }() {
+        didSet {
+            UserDefaults.standard.set(liquidGlassEnabled, forKey: "APP.liquidGlass")
+            objectWillChange.send()
+        }
+    }
+
     @Published var accentColor: Color = Color(hex: "#007AFF") {
         didSet {
             updateWindowTintColor()
@@ -137,6 +157,7 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
     }
 
     var backgroundColor: Color {
+        if liquidGlassEnabled { return .clear }
         switch selectedTheme {
         case .light:
             return .white

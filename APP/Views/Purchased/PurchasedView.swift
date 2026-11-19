@@ -59,7 +59,7 @@ struct PurchasedView: View {
         .padding(.vertical, 9)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(.ultraThinMaterial)
         )
         .padding(.horizontal, 16)
         .padding(.top, 8)

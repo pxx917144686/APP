@@ -1,5 +1,5 @@
 {
-  "originHash" : "39f698f59511aed60ec5cfe0b7eb18806ec886b82eae6c64238cab6f8bd9c500",
+  "originHash" : "2b9d4e80f91daaf80c83411dd458acb2d905dcd1e76f98e814117e43cbae9606",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -62,6 +62,15 @@
       "state" : {
         "revision" : "3498e60218e6003894ff95192d756e238c01f44e",
         "version" : "4.7.1"
+      }
+    },
+    {
+      "identity" : "openssl",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/OpenSSL",
+      "state" : {
+        "revision" : "0a6149bff4fb00921ce0ec1811f726b166638095",
+        "version" : "3.6.5000"
       }
     },
     {

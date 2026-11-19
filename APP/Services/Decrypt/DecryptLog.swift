@@ -1,6 +1,6 @@
 import Foundation
 
-enum DecryptLogLevel {
+enum DecryptLogLevel: Sendable {
     case phase
     case info
     case detail

@@ -137,7 +137,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 Task { @MainActor in
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
-                        total: downloadProgress.totalBytes
+                        total: downloadProgress.totalBytes,
+                        speed: downloadProgress.speed,
+                        remainingTime: downloadProgress.remainingTime
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
 
@@ -202,7 +204,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
-                        total: downloadProgress.totalBytes
+                        total: downloadProgress.totalBytes,
+                        speed: downloadProgress.speed,
+                        remainingTime: downloadProgress.remainingTime
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
                     request.runtime.status = .downloading
@@ -468,7 +472,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
-                        total: downloadProgress.totalBytes
+                        total: downloadProgress.totalBytes,
+                        speed: downloadProgress.speed,
+                        remainingTime: downloadProgress.remainingTime
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
 
@@ -631,6 +637,10 @@ class DownloadRuntime: ObservableObject {
     @Published var error: String?
     @Published var isAuthFailure: Bool = false
     @Published var progressValue: Double = 0.0
+    @Published var completedBytes: Int64 = 0
+    @Published var totalBytes: Int64 = 0
+    @Published var bytesPerSecond: Double = 0
+    @Published var remainingTime: TimeInterval = 0
 
     init() {
 
@@ -638,11 +648,15 @@ class DownloadRuntime: ObservableObject {
     }
 
     @MainActor
-    func updateProgress(completed: Int64, total: Int64) {
+    func updateProgress(completed: Int64, total: Int64, speed: Double = 0, remainingTime: TimeInterval = 0) {
 
         progress = Progress(totalUnitCount: total)
         progress.completedUnitCount = completed
         progressValue = total > 0 ? Double(completed) / Double(total) : 0.0
+        completedBytes = completed
+        totalBytes = total
+        bytesPerSecond = speed
+        self.remainingTime = remainingTime
 
         objectWillChange.send()
     }

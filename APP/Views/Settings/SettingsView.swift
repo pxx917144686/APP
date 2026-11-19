@@ -63,14 +63,14 @@ struct SettingsView: View {
                     VStack(spacing: 0) {
                         appearanceRow
                     }
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         colorRow
                     }
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
@@ -82,14 +82,14 @@ struct SettingsView: View {
 
                         tabOrderRow
                     }
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         tabBarRowContent
                     }
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
@@ -97,7 +97,7 @@ struct SettingsView: View {
                         VStack(spacing: 0) {
                             floatingTabBarSettingsContent
                         }
-                        .background(Color(.secondarySystemGroupedBackground))
+                        .liquidGlassSurface(cornerRadius: 16)
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
                     }
@@ -105,7 +105,7 @@ struct SettingsView: View {
                     VStack(spacing: 0) {
                         iconGridContent
                     }
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
@@ -114,7 +114,7 @@ struct SettingsView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 20)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color.clear)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(true)
             .onAppear {
@@ -221,7 +221,7 @@ struct SettingsView: View {
             }
         }
         .buttonStyle(ScaleButtonStyle())
-        .background(Color(.secondarySystemGroupedBackground))
+        .liquidGlassSurface(cornerRadius: 16)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
     }
@@ -475,7 +475,6 @@ extension SettingsView {
     private func tabBarStylePreview(style: TabBarStyle) -> some View {
         ZStack {
             Color(.systemBackground)
-                .ignoresSafeArea()
 
             switch style {
             case .systemDefault:
@@ -485,9 +484,9 @@ extension SettingsView {
                         ForEach(TabEnum.allCases, id: \.self) { tab in
                             VStack(spacing: 3) {
                                 Text(tab.emojiIcon)
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 15))
                                 Text(tab.title)
-                                    .font(.system(size: 9, weight: .regular))
+                                    .font(.system(size: 7.5, weight: .regular))
                                     .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
@@ -502,40 +501,40 @@ extension SettingsView {
             case .floatingCard:
                 VStack {
                     Spacer()
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         HStack(spacing: 0) {
-                            ForEach([TabEnum.settings, .downloads, .purchased], id: \.self) { tab in
-                                VStack(spacing: 2) {
+                            ForEach([TabEnum.settings, .downloads, .purchased, .sign], id: \.self) { tab in
+                                VStack(spacing: 1) {
                                     Text(tab.emojiIcon)
-                                        .font(.system(size: 14))
+                                        .font(.system(size: 11))
                                     Text(tab.title)
-                                        .font(.system(size: 7, weight: .regular))
+                                        .font(.system(size: 6, weight: .regular))
                                         .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.5)
                                 }
-                                .frame(width: 36)
+                                .frame(width: 23)
                             }
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .fill(.ultraThinMaterial)
-                                .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                                .shadow(color: Color.black.opacity(0.12), radius: 5, x: 0, y: 2)
                         )
 
                         Circle()
                             .fill(themeManager.accentColor)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 28, height: 28)
                             .overlay(
                                 Text(TabEnum.search.emojiIcon)
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 12))
                             )
-                            .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
+                            .shadow(color: Color.black.opacity(0.15), radius: 5, x: 0, y: 2)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 10)
+                    .padding(.horizontal, 6)
+                    .padding(.bottom, 8)
                 }
             }
         }

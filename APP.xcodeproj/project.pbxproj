@@ -10,7 +10,9 @@
 		850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 850E83342FEDA2C30047BDF8 /* Alamofire */; };
 		851F44E62FDDECA400574B00 /* Vapor in Frameworks */ = {isa = PBXBuildFile; productRef = 851F44E52FDDECA400574B00 /* Vapor */; };
 		A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */ = {isa = PBXBuildFile; productRef = A1C000000000000000000002 /* AsyncHTTPClient */; };
+		A1D100000000000000000002 /* APP/InAppPurchase.dylib in Copy InAppPurchase.dylib */ = {isa = PBXBuildFile; fileRef = A1D100000000000000000001 /* APP/InAppPurchase.dylib */; };
 		D50DBD7A600A5337B02DD11E /* SRP in Frameworks */ = {isa = PBXBuildFile; productRef = E2BFBE6BCBC4081A86D24867 /* SRP */; };
+		D5A1B2C3D4E5F60718293010 /* ZsignSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D5A1B2C3D4E5F60718293011 /* ZsignSwift */; };
 		D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D6A1B2C3D4E5F60718293002 /* GRDB */; };
 /* End PBXBuildFile section */
 
@@ -35,16 +37,29 @@
 			name = "Copy libiosexec to App Root";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1D100000000000000000003 /* Copy InAppPurchase.dylib */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 1;
+			files = (
+				A1D100000000000000000002 /* APP/InAppPurchase.dylib in Copy InAppPurchase.dylib */,
+			);
+			name = "Copy InAppPurchase.dylib";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		851FD95F2E578774002136BA /* APP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APP.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1D100000000000000000001 /* APP/InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "APP/InAppPurchase.dylib"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		A1C100000000000000000001 /* Exceptions for "APP" folder in "APP" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"InAppPurchase.dylib",
 				Info.plist,
 			);
 			target = 851FD95E2E578774002136BA /* APP */;
@@ -70,6 +85,7 @@
 				851F44E62FDDECA400574B00 /* Vapor in Frameworks */,
 				850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */,
 				D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */,
+				D5A1B2C3D4E5F60718293010 /* ZsignSwift in Frameworks */,
 				D50DBD7A600A5337B02DD11E /* SRP in Frameworks */,
 				A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */,
 			);
@@ -83,6 +99,7 @@
 			children = (
 				851FD9612E578774002136BA /* APP */,
 				851FD9602E578774002136BA /* Products */,
+				856CCA8930AF298000764042 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -92,6 +109,14 @@
 				851FD95F2E578774002136BA /* APP.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		856CCA8930AF298000764042 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				A1D100000000000000000001 /* APP/InAppPurchase.dylib */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -106,6 +131,7 @@
 				851FD95D2E578774002136BA /* Resources */,
 				85B1AA9B2F00000000D00002 /* Copy Files */,
 				85B1AAC02F00000000D0000C /* Copy libiosexec to App Root */,
+				A1D100000000000000000003 /* Copy InAppPurchase.dylib */,
 			);
 			buildRules = (
 			);
@@ -119,6 +145,7 @@
 				851F44E52FDDECA400574B00 /* Vapor */,
 				850E83342FEDA2C30047BDF8 /* Alamofire */,
 				D6A1B2C3D4E5F60718293002 /* GRDB */,
+				D5A1B2C3D4E5F60718293011 /* ZsignSwift */,
 				E2BFBE6BCBC4081A86D24867 /* SRP */,
 			);
 			productName = APP;
@@ -188,6 +215,7 @@
 				955DE4CABD7624367200C85A /* XCRemoteSwiftPackageReference "swift-srp" */,
 				A1C000000000000000000003 /* XCRemoteSwiftPackageReference "async-http-client" */,
 				D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 851FD9602E578774002136BA /* Products */;
@@ -387,7 +415,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.7.1;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -448,7 +476,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.7.1;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -489,6 +517,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Zsign;
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
 		850E83332FEDA2C30047BDF8 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
@@ -548,6 +583,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1C000000000000000000003 /* XCRemoteSwiftPackageReference "async-http-client" */;
 			productName = AsyncHTTPClient;
+		};
+		D5A1B2C3D4E5F60718293011 /* ZsignSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */;
+			productName = ZsignSwift;
 		};
 		D6A1B2C3D4E5F60718293002 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;

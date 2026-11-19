@@ -54,7 +54,7 @@ struct App: SwiftUI.App {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             Task { @MainActor in
-                _ = ImageLoader.shared
+                AppPrewarmer.warm()
             }
         }
 

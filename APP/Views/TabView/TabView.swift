@@ -5,6 +5,7 @@ enum TabEnum: String, CaseIterable, Hashable {
     case settings
     case downloads
     case purchased
+    case sign
     case search
 
     var title: String {
@@ -12,6 +13,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "tab_settings".localized
         case .downloads:  return "tab_downloads".localized
         case .purchased:  return "tab_purchased".localized
+        case .sign:       return "tab_sign".localized
         case .search:     return "tab_search".localized
         }
     }
@@ -21,6 +23,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
         case .purchased:  return "bag.fill"
+        case .sign:       return "signature"
         case .search:     return "magnifyingglass.circle.fill"
         }
     }
@@ -30,6 +33,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "⚙️"
         case .downloads:  return "📥"
         case .purchased:  return "🛍️"
+        case .sign:       return "✍️"
         case .search:     return "🔍"
         }
     }
@@ -51,6 +55,13 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .purchased:
             NavigationView {
                 PurchasedView()
+                    .environmentObject(themeManager)
+                    .environmentObject(tabBarStyleManager)
+            }
+            .navigationViewStyle(.stack)
+        case .sign:
+            NavigationView {
+                SignView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
@@ -84,15 +95,19 @@ struct TabbarView: View {
     private static let floatingTabMinWidth: CGFloat = 44
 
     var body: some View {
-        Group {
-            if #available(iOS 18.0, *) {
-                if tabBarStyleManager.currentStyle == .floatingCard {
-                    floatingCardTabView
+        ZStack {
+            LiquidGlassBackdrop()
+                .environmentObject(themeManager)
+            Group {
+                if #available(iOS 18.0, *) {
+                    if tabBarStyleManager.currentStyle == .floatingCard {
+                        floatingCardTabView
+                    } else {
+                        systemTabView
+                    }
                 } else {
-                    systemTabView
+                    standardTabView
                 }
-            } else {
-                standardTabView
             }
         }
         .navigationViewStyle(.stack)
@@ -134,8 +149,6 @@ struct TabbarView: View {
 
         }
         
-        .toolbarBackground(.visible, for: .tabBar)
-        .toolbarBackground(Color(.systemBackground), for: .tabBar)
     }
 
     @available(iOS 18.0, *)
@@ -144,17 +157,10 @@ struct TabbarView: View {
         GeometryReader { geo in
             ZStack(alignment: .bottom) {
                 TabView(selection: $selectedTab) {
-                    TabEnum.view(for: .settings, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                        .tag(TabEnum.settings)
-
-                    TabEnum.view(for: .downloads, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                        .tag(TabEnum.downloads)
-
-                    TabEnum.view(for: .purchased, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                        .tag(TabEnum.purchased)
-
-                    TabEnum.view(for: .search, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                        .tag(TabEnum.search)
+                    ForEach(tabOrder.order, id: \.self) { tab in
+                        TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                            .tag(tab)
+                    }
                 }
                 .safeAreaInset(edge: .bottom) {
                     Color.clear.frame(height: geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
@@ -191,12 +197,9 @@ struct TabbarView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
             .frame(height: tabHeight)
-            .background(
-                RoundedRectangle(cornerRadius: config.cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
-                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
-            )
+            .liquidGlassSurface(cornerRadius: config.cornerRadius)
+            .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
             .overlay(
                 RoundedRectangle(cornerRadius: config.cornerRadius, style: .continuous)
                     .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
@@ -262,7 +265,14 @@ struct TabbarView: View {
 
         switch style {
         case .systemDefault:
-            appearance.configureWithOpaqueBackground()
+            if themeManager.liquidGlassEnabled {
+                appearance.configureWithTransparentBackground()
+                appearance.backgroundColor = .clear
+                appearance.shadowImage = UIImage()
+                appearance.backgroundImage = UIImage()
+            } else {
+                appearance.configureWithOpaqueBackground()
+            }
             UITabBar.appearance().isHidden = false
         case .floatingCard:
             appearance.configureWithTransparentBackground()
