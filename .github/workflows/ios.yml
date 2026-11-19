@@ -9,18 +9,21 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
+
 jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-     - uses: actions/checkout@v4
-     - name: Compile
-       run: make
+      - uses: actions/checkout@v7
 
-     - name: Upload artifact
-       uses: actions/upload-artifact@v4
-       with:
-        name: APP
-        path: APP.ipa
-        if-no-files-found: error
+      - name: Compile
+        run: make
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: APP
+          path: APP.ipa
+          archive: false
+          if-no-files-found: error
