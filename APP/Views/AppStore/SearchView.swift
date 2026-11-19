@@ -137,22 +137,26 @@ final class VersionListCache: @unchecked Sendable {
 
     private func diskKey(_ trackId: Int) -> String { "versions_\(trackId)" }
 
+    static func isUsable(_ versions: [StoreAppVersion]) -> Bool {
+        versions.count > 1 || versions.contains { !$0.versionId.isEmpty }
+    }
+
     func get(_ trackId: Int) -> [StoreAppVersion]? {
         lock.lock()
         if let hit = storage[trackId] {
             lock.unlock()
-            return hit
+            return Self.isUsable(hit) ? hit : nil
         }
         lock.unlock()
 
         guard let persisted = DiskCache.shared.read([StoreAppVersion].self, key: diskKey(trackId), maxAge: maxAge),
-              !persisted.isEmpty else { return nil }
+              Self.isUsable(persisted) else { return nil }
         lock.lock(); storage[trackId] = persisted; lock.unlock()
         return persisted
     }
 
     func set(_ versions: [StoreAppVersion], for trackId: Int) {
-        guard !versions.isEmpty else { return }
+        guard Self.isUsable(versions) else { return }
         lock.lock(); storage[trackId] = versions; lock.unlock()
         DiskCache.shared.write(versions, key: diskKey(trackId))
     }
@@ -253,6 +257,8 @@ struct SearchView: SwiftUI.View {
 
     @State var showLoginSheet = false
     @State var showAccountSheet = false
+    @State var showDirectSheet = false
+    @State var directInput = ""
 
     @State var isDownloading = false
 
@@ -331,6 +337,11 @@ struct SearchView: SwiftUI.View {
                     .environmentObject(appStore)
                     .environmentObject(themeManager)
             }
+            .sheet(isPresented: $showDirectSheet) {
+                directEntrySheet
+                    .environmentObject(appStore)
+                    .environmentObject(themeManager)
+            }
             .sheet(isPresented: $showLoginSheet) {
                 AddAccountView()
                     .environmentObject(appStore)
@@ -342,6 +353,11 @@ struct SearchView: SwiftUI.View {
             loadSearchHistory()
             sessionManager.startSessionMonitoring()
             animateLogo = true
+            if let autoTerm = UserDefaults.standard.string(forKey: "autoSearch"), !autoTerm.isEmpty {
+                UserDefaults.standard.removeObject(forKey: "autoSearch")
+                searchKey = autoTerm
+                Task { await performSearch() }
+            }
         }
         .onDisappear {
 
@@ -471,6 +487,23 @@ struct SearchView: SwiftUI.View {
                 Spacer()
 
                 Button(action: {
+                    showDirectSheet = true
+                }) {
+                    Text("delisted_apps_short".localized)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(themeManager.accentColor)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(Capsule().fill(themeManager.accentColor.opacity(0.1)))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("legacy_apps_delisted".localized)
+
+                Spacer()
+
+                Button(action: {
                     showAccountSheet = true
                 }) {
                     AccountAvatarButton(size: 36, isEditable: false)
@@ -558,36 +591,303 @@ struct SearchView: SwiftUI.View {
         return list.map { ProIDHistoryVersion(version: $0.version, versionId: $0.versionId, releaseDate: $0.releaseDate) }
     }
     func fetchLegacyApps(term: String, exclude: Set<String>) async -> [iTunesSearchResult] {
-        guard let termEnc = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "https://api.appdb.to/v1/search/\(termEnc)") else { return [] }
-        var req = URLRequest(url: url)
-        req.timeoutInterval = 12
-        req.setValue("Asspp/1.0", forHTTPHeaderField: "User-Agent")
-        guard let (data, _) = try? await URLSession.shared.data(for: req),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              (obj["status"] as? String) == "ok",
-              let arr = obj["data"] as? [[String: Any]] else { return [] }
-
+        var results: [iTunesSearchResult] = []
+        var seen = Set<Int>()
         let region = appStore.selectedAccount?.countryCode ?? "US"
-        let bids = arr.prefix(8).compactMap { item -> String? in
-            guard let bid = item["bid"] as? String, !bid.isEmpty, !exclude.contains(bid) else { return nil }
-            return bid
-        }
-        guard !bids.isEmpty else { return [] }
 
-        return await withTaskGroup(of: (Int, iTunesSearchResult?).self) { group in
-            for (index, bid) in bids.enumerated() {
-                group.addTask {
-                    let hit = try? await iTunesClient.shared.lookup(bundleIdentifier: bid, countryCode: region)
-                    return (index, hit ?? nil)
+        // ① Agzy 名称搜索：覆盖已下架但数据库仍有记录的应用
+        var searchRegions = [region.lowercased()]
+        if !searchRegions.contains("us") { searchRegions.append("us") }
+        if let termEnc = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            for searchRegion in searchRegions {
+                guard let url = URL(string: "https://app.agzy.cn/searchApp?country=\(searchRegion)&name=\(termEnc)&limit=15") else { continue }
+                var req = URLRequest(url: url)
+                req.timeoutInterval = 12
+                req.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
+                guard let (data, _) = try? await URLSession.shared.data(for: req),
+                      let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      (obj["code"] as? Int) == 200,
+                      let arr = obj["data"] as? [[String: Any]] else { continue }
+
+                var candidates: [AgzyCandidate] = []
+                for item in arr.prefix(15) {
+                    if let candidate = Self.agzyCandidate(from: item) {
+                        candidates.append(candidate)
+                    }
+                }
+
+                let hits = await withTaskGroup(of: iTunesSearchResult?.self) { group -> [iTunesSearchResult] in
+                    for candidate in candidates {
+                        group.addTask {
+                            let available = await Self.isAppAvailable(id: candidate.appId, region: region)
+                            return available ? nil : candidate.toSearchResult()
+                        }
+                    }
+                    var acc: [iTunesSearchResult] = []
+                    for await value in group {
+                        if let value { acc.append(value) }
+                    }
+                    return acc
+                }
+
+                for hit in hits where !seen.contains(hit.trackId) {
+                    seen.insert(hit.trackId)
+                    results.append(hit)
                 }
             }
-            var slots = [iTunesSearchResult?](repeating: nil, count: bids.count)
-            for await (index, hit) in group {
-                slots[index] = hit
-            }
-            return slots.compactMap { $0 }
         }
+
+        // ② 内置名称目录（含别名）：lookup?id 查得到 → 正常结果；查不到 → 下架兜底
+        for entry in NameDirectory.matches(term) {
+            guard let candidateId = Int(entry.id), candidateId > 0, !seen.contains(candidateId) else { continue }
+            var req = URLRequest(url: URL(string: "https://itunes.apple.com/lookup?id=\(candidateId)&country=\(region)")!)
+            req.timeoutInterval = 12
+            guard let (ldata, _) = try? await URLSession.shared.data(for: req),
+                  let lobj = try? JSONSerialization.jsonObject(with: ldata) as? [String: Any],
+                  let larr = lobj["results"] as? [[String: Any]], let first = larr.first else {
+                results.append(Self.delistedResult(fromDirectory: entry))
+                continue
+            }
+            if let decoded = try? JSONDecoder().decode(iTunesSearchResult.self, from: JSONSerialization.data(withJSONObject: first)) {
+                if seen.insert(decoded.trackId).inserted { results.append(decoded) }
+            } else {
+                results.append(Self.delistedResult(fromDirectory: entry))
+            }
+        }
+        return results
+    }
+
+    private struct AgzyCandidate: Sendable {
+        let appId: Int
+        let name: String
+        let artistName: String
+        let icon: String?
+        let version: String
+        let price: String?
+        let summary: String?
+
+        func toSearchResult() -> iTunesSearchResult {
+            iTunesSearchResult(
+                trackId: appId,
+                trackName: name,
+                artistName: artistName,
+                bundleId: "",
+                version: version,
+                formattedPrice: price,
+                price: 0.0,
+                currency: nil,
+                trackViewUrl: "https://apps.apple.com/app/id\(appId)",
+                artworkUrl60: icon, artworkUrl100: icon, artworkUrl512: icon,
+                screenshotUrls: nil, ipadScreenshotUrls: nil,
+                description: summary, releaseNotes: nil,
+                sellerName: artistName, genres: nil, primaryGenreName: nil, contentAdvisoryRating: nil,
+                averageUserRating: nil, userRatingCount: nil, fileSizeBytes: nil, minimumOsVersion: nil,
+                currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
+                supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
+        }
+    }
+
+    private static func agzyCandidate(from item: [String: Any]) -> AgzyCandidate? {
+        guard let appId = intValue(item["appId"]), appId > 0 else { return nil }
+        let name = (item["name"] as? String) ?? ""
+        guard !name.isEmpty else { return nil }
+        return AgzyCandidate(
+            appId: appId,
+            name: name,
+            artistName: (item["artistName"] as? String) ?? "",
+            icon: item["pic"] as? String,
+            version: (item["version"] as? String) ?? "",
+            price: item["price"] as? String,
+            summary: (item["description"] as? String)?.replacingOccurrences(of: "<br>", with: "\n")
+        )
+    }
+
+    private static func intValue(_ value: Any?) -> Int? {
+        if let value = value as? Int { return value }
+        if let value = value as? NSNumber { return value.intValue }
+        if let value = value as? String { return Int(value) }
+        return nil
+    }
+
+    private static func isAppAvailable(id: Int, region: String) async -> Bool {
+        guard let url = URL(string: "https://itunes.apple.com/lookup?id=\(id)&country=\(region.lowercased())") else { return true }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return true
+        }
+        return ((obj["resultCount"] as? Int) ?? 0) > 0
+    }
+
+    private static func delistedResult(fromDirectory entry: NameDirectoryEntry) -> iTunesSearchResult {
+        let trackId = Int(entry.id) ?? 0
+        return iTunesSearchResult(
+            trackId: trackId,
+            trackName: entry.name,
+            artistName: nil,
+            bundleId: "",
+            version: "",
+            formattedPrice: nil, price: 0.0, currency: nil,
+            trackViewUrl: "https://apps.apple.com/app/id\(trackId)",
+            artworkUrl60: nil, artworkUrl100: nil, artworkUrl512: nil,
+            screenshotUrls: nil, ipadScreenshotUrls: nil, description: nil, releaseNotes: nil,
+            sellerName: nil, genres: nil, primaryGenreName: nil, contentAdvisoryRating: nil,
+            averageUserRating: nil, userRatingCount: nil, fileSizeBytes: nil, minimumOsVersion: nil,
+            currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
+            supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
+    }
+
+
+    private static func directoryEntry(fromAppdbMetadata metadata: [String: Any]?, bundleId: String) -> DirectoryEntry? {
+        guard let metadata else { return nil }
+        let name = (metadata["name"] as? String)
+            ?? (metadata["trackName"] as? String)
+            ?? (metadata["itemName"] as? String) ?? ""
+        guard !name.isEmpty else { return nil }
+        let version = (metadata["version"] as? String) ?? (metadata["trackVersion"] as? String)
+        let icon = (metadata["icon"] as? String)
+            ?? (metadata["icon512"] as? String)
+            ?? (metadata["artwork"] as? String)
+            ?? (metadata["artworkUrl512"] as? String)
+        var trackId: Int?
+        for key in ["trackId", "itemId", "id"] {
+            if let v = metadata[key] as? Int { trackId = v; break }
+            if let s = metadata[key] as? String, let v = Int(s), v > 0 { trackId = v; break }
+        }
+        return DirectoryEntry(bundleId: bundleId, name: name, trackId: trackId,
+                              version: version, iconURL: icon, updatedAt: Date())
+    }
+
+    private static func legacyResult(from entry: DirectoryEntry) -> iTunesSearchResult? {
+        guard !entry.name.isEmpty else { return nil }
+        return iTunesSearchResult(
+            trackId: entry.trackId ?? 0,
+            trackName: entry.name,
+            artistName: nil,
+            bundleId: entry.bundleId,
+            version: entry.version ?? "",
+            formattedPrice: nil, price: 0.0, currency: nil,
+            trackViewUrl: "https://apps.apple.com/app/id\(entry.trackId ?? 0)",
+            artworkUrl60: entry.iconURL, artworkUrl100: entry.iconURL, artworkUrl512: entry.iconURL,
+            screenshotUrls: nil, ipadScreenshotUrls: nil, description: nil, releaseNotes: nil,
+            sellerName: nil, genres: nil, primaryGenreName: nil, contentAdvisoryRating: nil,
+            averageUserRating: nil, userRatingCount: nil, fileSizeBytes: nil, minimumOsVersion: nil,
+            currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
+            supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
+    }
+
+    static func resolveDelistedApp(_ app: iTunesSearchResult) async -> iTunesSearchResult {
+        guard app.bundleId.isEmpty, app.trackId > 0,
+              let url = URL(string: "https://app.agzy.cn/searchVersion?appid=\(app.trackId)") else { return app }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 12
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return app }
+
+        let bundleId = (obj["bundleId"] as? String) ?? ""
+        guard !bundleId.isEmpty else { return app }
+        let latestVersion = (obj["version"] as? String) ?? ""
+        let resolvedName = (obj["name"] as? String) ?? ""
+        let icon = app.artworkUrl512 ?? app.artworkUrl100 ?? app.artworkUrl60
+
+        return iTunesSearchResult(
+            trackId: app.trackId,
+            trackName: app.trackName.isEmpty ? resolvedName : app.trackName,
+            artistName: app.artistName,
+            bundleId: bundleId,
+            version: app.version.isEmpty ? latestVersion : app.version,
+            formattedPrice: app.formattedPrice,
+            price: app.price,
+            currency: app.currency,
+            trackViewUrl: app.trackViewUrl,
+            artworkUrl60: app.artworkUrl60 ?? icon,
+            artworkUrl100: app.artworkUrl100 ?? icon,
+            artworkUrl512: icon,
+            screenshotUrls: app.screenshotUrls,
+            ipadScreenshotUrls: app.ipadScreenshotUrls,
+            description: app.description,
+            releaseNotes: app.releaseNotes,
+            sellerName: app.sellerName,
+            genres: app.genres,
+            primaryGenreName: app.primaryGenreName,
+            contentAdvisoryRating: app.contentAdvisoryRating,
+            averageUserRating: app.averageUserRating,
+            userRatingCount: app.userRatingCount,
+            fileSizeBytes: app.fileSizeBytes,
+            minimumOsVersion: app.minimumOsVersion,
+            currentVersionReleaseDate: app.currentVersionReleaseDate,
+            releaseDate: app.releaseDate,
+            isGameCenterEnabled: app.isGameCenterEnabled,
+            supportedDevices: app.supportedDevices,
+            languageCodesISO2A: app.languageCodesISO2A,
+            advisories: app.advisories,
+            features: app.features
+        )
+    }
+
+    static func placeholderResult(trackId: Int) -> iTunesSearchResult {
+        iTunesSearchResult(
+            trackId: trackId, trackName: "", artistName: nil, bundleId: "", version: "",
+            formattedPrice: nil, price: 0.0, currency: nil,
+            trackViewUrl: "https://apps.apple.com/app/id\(trackId)",
+            artworkUrl60: nil, artworkUrl100: nil, artworkUrl512: nil,
+            screenshotUrls: nil, ipadScreenshotUrls: nil, description: nil, releaseNotes: nil,
+            sellerName: nil, genres: nil, primaryGenreName: nil, contentAdvisoryRating: nil,
+            averageUserRating: nil, userRatingCount: nil, fileSizeBytes: nil, minimumOsVersion: nil,
+            currentVersionReleaseDate: nil, releaseDate: nil, isGameCenterEnabled: nil,
+            supportedDevices: nil, languageCodesISO2A: nil, advisories: nil, features: nil)
+    }
+
+    private static func storeRegions(_ accountRegion: String) -> [String] {
+        var seen = Set<String>()
+        return ([accountRegion, "US", "CN", "HK", "TW", "JP", "GB"])
+            .map { $0.uppercased() }
+            .filter { seen.insert($0).inserted }
+    }
+
+    static func lookupAcrossRegions(bundleId: String, accountRegion: String) async -> iTunesSearchResult? {
+        let regions = storeRegions(accountRegion)
+        let hits = await withTaskGroup(of: (String, iTunesSearchResult?).self) { group -> [String: iTunesSearchResult] in
+            for region in regions {
+                group.addTask {
+                    let hit = try? await iTunesClient.shared.lookup(bundleIdentifier: bundleId, countryCode: region)
+                    return (region, hit)
+                }
+            }
+            var acc: [String: iTunesSearchResult] = [:]
+            for await (region, hit) in group {
+                if let hit { acc[region] = hit }
+            }
+            return acc
+        }
+        for region in regions {
+            if let hit = hits[region] { return hit }
+        }
+        return nil
+    }
+
+    static func lookupAcrossRegions(trackId: Int, accountRegion: String) async -> iTunesSearchResult? {
+        let regions = storeRegions(accountRegion)
+        let hits = await withTaskGroup(of: (String, iTunesSearchResult?).self) { group -> [String: iTunesSearchResult] in
+            for region in regions {
+                group.addTask {
+                    let hit = try? await iTunesClient.shared.lookup(trackId: trackId, countryCode: region)
+                    return (region, hit)
+                }
+            }
+            var acc: [String: iTunesSearchResult] = [:]
+            for await (region, hit) in group {
+                if let hit { acc[region] = hit }
+            }
+            return acc
+        }
+        for region in regions {
+            if let hit = hits[region] { return hit }
+        }
+        return nil
     }
 
     var searchingIndicator: some SwiftUI.View {
@@ -934,6 +1234,15 @@ struct SearchView: SwiftUI.View {
                     searching = false
                 }
             }
+            let excludeIds = Set(cachedResult.map(\.bundleId))
+            Task { @MainActor in
+                let hits = await fetchLegacyApps(term: term, exclude: excludeIds)
+                if term == searchKey.trimmingCharacters(in: .whitespacesAndNewlines) {
+                    withAnimation(.spring()) {
+                        legacyResults = hits
+                    }
+                }
+            }
             return
         }
 
@@ -956,6 +1265,7 @@ struct SearchView: SwiftUI.View {
                     searching = false
                     SearchResultCache.shared.set(merged, for: cacheKey)
                     updateSearchSuggestions(from: merged)
+                    AppDirectory.shared.record(apps: merged)
                 }
             }
             let excludeIds = Set(finalResults.map(\.bundleId))
@@ -968,10 +1278,16 @@ struct SearchView: SwiftUI.View {
                 }
             }
         } catch {
+            let hits = await fetchLegacyApps(term: term, exclude: [])
             await MainActor.run {
                 withAnimation(.easeInOut) {
                     searching = false
-                    searchError = error.localizedDescription
+                    if hits.isEmpty {
+                        searchError = error.localizedDescription
+                    } else {
+                        searchError = nil
+                        legacyResults = hits
+                    }
                 }
             }
         }
@@ -1074,7 +1390,7 @@ struct SearchView: SwiftUI.View {
             showVersionPicker = true
         }
 
-        if var cached = VersionListCache.shared.get(app.trackId), !cached.isEmpty {
+        if !isRetry, app.trackId > 0, var cached = VersionListCache.shared.get(app.trackId) {
             cached.normalizeVersionOrder()
             availableVersions = cached
             isLoadingVersions = false
@@ -1082,25 +1398,42 @@ struct SearchView: SwiftUI.View {
         }
 
         Task {
-            let trackId = app.trackId
-            do {
-                guard let account = appStore.selectedAccount else {
-                    throw NSError(domain: "SearchView", code: -1, userInfo: [NSLocalizedDescriptionKey: "versions_login_required".localized])
-                }
+            let accountCountry = self.appStore.selectedAccount?.countryCode
+                ?? Locale.current.region?.identifier
+                ?? "US"
 
-                let accountCopy = account
-                let accountCountry = appStore.selectedAccount?.countryCode ?? "US"
+            var targetApp = app
+            if targetApp.trackId <= 0, !targetApp.bundleId.isEmpty {
+                if let hit = await Self.lookupAcrossRegions(bundleId: targetApp.bundleId, accountRegion: accountCountry) {
+                    targetApp = hit
+                    await MainActor.run {
+                        if self.selectedApp?.bundleId == app.bundleId {
+                            self.selectedApp = hit
+                        }
+                    }
+                }
+            }
+
+            let trackId = targetApp.trackId
+            do {
+                guard trackId > 0 else {
+                    throw NSError(domain: "SearchView", code: -2, userInfo: [NSLocalizedDescriptionKey: "api_err_app_not_found".localized])
+                }
+                let accountCopy = appStore.selectedAccount
 
                 let proTask = Task { (try? await withTimeout(seconds: 20, operation: {
                     await fetchProIDHistory(trackId: trackId)
                 })) ?? [] }
-                let storeTask = Task { try? await withTimeout(seconds: 15, operation: {
-                    await StoreClient.shared.getAppVersions(
-                        trackId: String(trackId),
-                        account: accountCopy,
-                        countryCode: accountCountry
-                    )
-                }) }
+                let storeTask: Task<Result<[StoreAppVersion], StoreError>?, Never>? = {
+                    guard let accountCopy else { return nil }
+                    return Task { try? await withTimeout(seconds: 15, operation: {
+                        await StoreClient.shared.getAppVersions(
+                            trackId: String(trackId),
+                            account: accountCopy,
+                            countryCode: accountCountry
+                        )
+                    }) }
+                }()
                 let primaryCountries = accountCountry.uppercased() == "US" ? ["US"] : [accountCountry, "US"]
                 let histTask = Task { () -> [iTunesClient.AppVersionInfo] in
                     for cc in primaryCountries {
@@ -1128,7 +1461,8 @@ struct SearchView: SwiftUI.View {
                     }
                 }
 
-                let storeVersionsResult = await storeTask.value
+                var storeVersionsResult: Result<[StoreAppVersion], StoreError>? = nil
+                if let storeTask { storeVersionsResult = await storeTask.value }
                 let hist = await histTask.value
 
                 if let result = storeVersionsResult, case .success(let versions) = result, !versions.isEmpty {
@@ -1204,6 +1538,11 @@ struct SearchView: SwiftUI.View {
                         VersionListCache.shared.set(fallbackVersions, for: trackId)
                     }
                 } else {
+                    var resolvedApp = targetApp
+                    if resolvedApp.version.isEmpty, resolvedApp.bundleId.isEmpty {
+                        resolvedApp = await Self.resolveDelistedApp(resolvedApp)
+                    }
+
                     var fallbackVersions: [StoreAppVersion] = []
                     for pv in proVersions {
                         fallbackVersions.append(StoreAppVersion(
@@ -1216,9 +1555,9 @@ struct SearchView: SwiftUI.View {
                     }
 
                     let fromPro = !fallbackVersions.isEmpty
-                    if fallbackVersions.isEmpty, !app.version.isEmpty {
+                    if fallbackVersions.isEmpty, !resolvedApp.version.isEmpty {
                         fallbackVersions = [StoreAppVersion(
-                            versionString: app.version,
+                            versionString: resolvedApp.version,
                             versionId: "",
                             isCurrent: true
                         )]
@@ -1232,6 +1571,7 @@ struct SearchView: SwiftUI.View {
                     let resolved = fallbackVersions
                     await MainActor.run {
                         guard self.selectedApp?.trackId == trackId else { return }
+                        self.selectedApp = resolvedApp
                         self.availableVersions = resolved
                         self.versionError = nil
                         self.isLoadingVersions = false
@@ -1543,19 +1883,32 @@ struct SearchView: SwiftUI.View {
     func downloadVersion(app: iTunesSearchResult, version: StoreAppVersion) async {
         showVersionPicker = false
         guard appStore.selectedAccount != nil else {
+            purchaseAlertText = "session_err_no_account".localized
+            showPurchaseAlert = true
             return
         }
-        let appId = app.trackId
+
+        var resolvedApp = app
+        if resolvedApp.bundleId.isEmpty, resolvedApp.trackId > 0 {
+            resolvedApp = await Self.resolveDelistedApp(resolvedApp)
+            selectedApp = resolvedApp
+        }
+        let appId = resolvedApp.trackId
+        guard appId > 0 else {
+            purchaseAlertText = "api_err_app_not_found".localized
+            showPurchaseAlert = true
+            return
+        }
 
         let downloadId = UnifiedDownloadManager.shared.addDownload(
-            bundleIdentifier: app.bundleId,
-            name: app.trackName,
+            bundleIdentifier: resolvedApp.bundleId,
+            name: resolvedApp.trackName,
             version: version.versionString,
             identifier: appId,
-            iconURL: app.artworkUrl512,
+            iconURL: resolvedApp.artworkUrl512,
             versionId: version.versionId,
-            price: app.price,
-            currency: app.currency
+            price: resolvedApp.price,
+            currency: resolvedApp.currency
         )
 
         if let request = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == downloadId }) {
@@ -1655,16 +2008,10 @@ struct SearchView: SwiftUI.View {
 
     @MainActor
     private func handleDownloadApp(_ app: iTunesSearchResult) {
-        guard let account = appStore.selectedAccount else {
-            openAppStorePage(for: app)
-            return
-        }
+        loadVersionsForApp(app)
 
-        if purchasedTrackIds.contains(app.trackId) {
-            loadVersionsForApp(app)
-            return
-        }
-
+        guard let account = appStore.selectedAccount else { return }
+        if purchasedTrackIds.contains(app.trackId) { return }
         guard purchasingTrackId == nil else { return }
 
         Task {
@@ -1683,27 +2030,13 @@ struct SearchView: SwiftUI.View {
                     })
                     await MainActor.run {
                         _ = purchasedTrackIds.insert(app.trackId)
-                        purchasingTrackId = nil
-                        loadVersionsForApp(app)
                     }
                 } catch is SearchTimeoutError {
                     let owned = await quickOwnershipCheck(app, account: account)
-                    await MainActor.run {
-                        purchasingTrackId = nil
-                        if owned {
-                            _ = purchasedTrackIds.insert(app.trackId)
-                            loadVersionsForApp(app)
-                        } else {
-                            purchaseAlertText = "purchase_timeout".localized
-                            showPurchaseAlert = true
-                        }
+                    if owned {
+                        await MainActor.run { _ = purchasedTrackIds.insert(app.trackId) }
                     }
                 } catch {
-                    await MainActor.run {
-                        purchasingTrackId = nil
-                        purchaseAlertText = error.localizedDescription
-                        showPurchaseAlert = true
-                    }
                 }
                 return
             }
@@ -1713,21 +2046,158 @@ struct SearchView: SwiftUI.View {
                 account: account,
                 countryCode: account.countryCode
             )
-            switch check {
-            case .success(let owned):
-                if owned {
-                    await MainActor.run {
-                        _ = purchasedTrackIds.insert(app.trackId)
-                        loadVersionsForApp(app)
+            if case .success(true) = check {
+                await MainActor.run { _ = purchasedTrackIds.insert(app.trackId) }
+            }
+        }
+    }
+
+    var directEntrySheet: some SwiftUI.View {
+        NavigationView {
+            VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Image(systemName: "link")
+                        .foregroundColor(.secondary)
+                    TextField("bundleId / trackId", text: $directInput)
+                        .font(.body)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .onSubmit { resolveDirect() }
+                    Button {
+                        resolveDirect()
+                    } label: {
+                        Image(systemName: "arrow.forward.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(themeManager.accentColor)
                     }
-                } else {
-                    openAppStorePage(for: app)
+                    .buttonStyle(.plain)
+                    .disabled(directInput.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
-            case .failure(let error):
-                await MainActor.run {
-                    purchaseAlertText = error.localizedDescription
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+
+                HStack {
+                    Text("search_history".localized)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+
+                List {
+                    if !NameDirectory.all.isEmpty {
+                        Section(header: Text("legacy_apps_delisted".localized)) {
+                            ForEach(NameDirectory.all, id: \.id) { entry in
+                                Button {
+                                    openTrackId(Int(entry.id) ?? 0)
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "archivebox")
+                                            .foregroundColor(.secondary)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(entry.name).foregroundColor(.primary).lineLimit(1)
+                                            Text("ID \(entry.id)").font(.caption).foregroundColor(.secondary).lineLimit(1)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    if !AppDirectory.shared.allEntries().isEmpty {
+                        Section(header: Text("search_history".localized)) {
+                            ForEach(AppDirectory.shared.allEntries()) { entry in
+                                Button {
+                                    directInput = entry.bundleId
+                                    resolveDirect()
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "app.gift")
+                                            .foregroundColor(.secondary)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(entry.name).foregroundColor(.primary).lineLimit(1)
+                                            Text(entry.bundleId).font(.caption).foregroundColor(.secondary).lineLimit(1)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            }
+            .navigationTitle("legacy_apps_delisted".localized)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("close".localized) { showDirectSheet = false }
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    private func resolveDirect() {
+        let input = directInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !input.isEmpty else { return }
+        let region = appStore.selectedAccount?.countryCode
+            ?? Locale.current.region?.identifier
+            ?? "US"
+
+        if let trackId = Int(input), trackId > 0 {
+            openTrackId(trackId)
+            return
+        }
+
+        let bundleId = input
+        Task {
+            let hit = await Self.lookupAcrossRegions(bundleId: bundleId, accountRegion: region)
+            await MainActor.run {
+                if let hit {
+                    searchResult.insert(hit, at: 0)
+                } else if let entry = AppDirectory.shared.entry(forBundleId: bundleId),
+                          let result = Self.legacyResult(from: entry) {
+                    legacyResults.insert(result, at: 0)
+                } else {
+                    purchaseAlertText = "api_err_app_not_found".localized
                     showPurchaseAlert = true
                 }
+                showDirectSheet = false
+                directInput = ""
+            }
+        }
+    }
+
+    private func openTrackId(_ trackId: Int) {
+        guard trackId > 0 else { return }
+        let regions = appStore.selectedAccount?.countryCode
+            ?? Locale.current.region?.identifier
+            ?? "US"
+        Task {
+            var result = await Self.lookupAcrossRegions(trackId: trackId, accountRegion: regions)
+            if result == nil {
+                let enriched = await Self.resolveDelistedApp(Self.placeholderResult(trackId: trackId))
+                if !enriched.trackName.isEmpty { result = enriched }
+            }
+            await MainActor.run {
+                if let result {
+                    searchResult.insert(result, at: 0)
+                } else {
+                    purchaseAlertText = "api_err_app_not_found".localized
+                    showPurchaseAlert = true
+                }
+                showDirectSheet = false
+                directInput = ""
             }
         }
     }

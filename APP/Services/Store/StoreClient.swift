@@ -187,10 +187,10 @@ public class StoreClient: @unchecked Sendable {
     }
 
     private func fetchVersionsFromThirdPartyAPI(appId: String) async throws -> [StoreAppVersion]? {
-        if let v = try? await fetchVersionsFromBilin(appId: appId), !v.isEmpty {
+        if let v = try? await fetchVersionsFromAgzy(appId: appId), !v.isEmpty {
             return v
         }
-        if let v = try? await fetchVersionsFromAgzy(appId: appId), !v.isEmpty {
+        if let v = try? await fetchVersionsFromBilin(appId: appId), !v.isEmpty {
             return v
         }
         return nil
@@ -199,7 +199,7 @@ public class StoreClient: @unchecked Sendable {
     private func fetchVersionsFromBilin(appId: String) async throws -> [StoreAppVersion]? {
         let apiUrl = "https://apis.bilin.eu.org/history/\(appId)"
         guard let url = URL(string: apiUrl) else { return nil }
-        var request = URLRequest(url: url, timeoutInterval: 15.0)
+        var request = URLRequest(url: url, timeoutInterval: 8.0)
         request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }

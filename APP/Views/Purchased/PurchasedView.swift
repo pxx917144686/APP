@@ -154,6 +154,7 @@ struct PurchasedView: View {
 
         do {
             var list = try await PurchaseHistoryService.ownedApps(account: account)
+            AppDirectory.shared.record(owned: list)
             for index in list.indices {
                 if let url = PurchasedIconCache.shared.icon(for: list[index].id) {
                     list[index].iconURL = url

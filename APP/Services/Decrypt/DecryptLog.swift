@@ -20,6 +20,7 @@ enum DecryptEvent: Sendable {
     case phase(String)
     case line(String, DecryptLogLevel)
     case entry(String, Int32)
+    case total(Int)
 }
 
 final class DecryptLog: ObservableObject, @unchecked Sendable {
@@ -106,6 +107,8 @@ final class DecryptLog: ObservableObject, @unchecked Sendable {
                 self.appendOnMain(text, level: level)
             case .entry(_, let status):
                 self.recordEntryOnMain(status: status)
+            case .total(let value):
+                self.total = value
             }
         }
     }

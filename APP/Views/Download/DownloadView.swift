@@ -2,10 +2,16 @@ import SwiftUI
 import Combine
 import Foundation
 import Network
+import NIOSSL
+
+let installServerHost = "localhost.flarestore.vip"
 
 #if canImport(UIKit)
 import UIKit
 import SafariServices
+#endif
+#if canImport(AVFoundation)
+import AVFoundation
 #endif
 #if canImport(Vapor)
 import Vapor
@@ -71,17 +77,21 @@ class HTTPServerManager: ObservableObject, @unchecked Sendable {
         SimpleHTTPServer.randomPort(excluding: Set(activeServers.values.map { $0.port }))
     }
 
-    func startServer(for requestId: UUID, port: Int, ipaPath: String, appInfo: AppInfo) {
+    func startServer(for requestId: UUID, port: Int, host: String, ipaPath: String, appInfo: AppInfo) {
         stopServer(for: requestId)
-        let server = SimpleHTTPServer(port: port, ipaPath: ipaPath, appInfo: appInfo)
+        let server = SimpleHTTPServer(port: port, host: host, ipaPath: ipaPath, appInfo: appInfo)
         server.start()
         activeServers[requestId] = server
+        InstallHeartbeat.shared.start(for: 600)
     }
 
     func stopServer(for requestId: UUID) {
         if let server = activeServers[requestId] {
             server.stop()
             activeServers.removeValue(forKey: requestId)
+        }
+        if activeServers.isEmpty {
+            InstallHeartbeat.shared.stop()
         }
     }
 
@@ -90,8 +100,80 @@ class HTTPServerManager: ObservableObject, @unchecked Sendable {
             server.stop()
         }
         activeServers.removeAll()
+        InstallHeartbeat.shared.stop()
+    }
+
+    func plistData(for requestId: UUID) -> Data? {
+        activeServers[requestId]?.generatePlistData()
     }
 }
+
+#if canImport(AVFoundation)
+final class InstallHeartbeat {
+    static let shared = InstallHeartbeat()
+    private var player: AVAudioPlayer?
+    private var stopWorkItem: DispatchWorkItem?
+
+    private init() {}
+
+    func start(for seconds: TimeInterval) {
+        DispatchQueue.main.async {
+            let session = AVAudioSession.sharedInstance()
+            try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try? session.setActive(true)
+
+            if self.player == nil, let data = Self.silentWAV() {
+                self.player = try? AVAudioPlayer(data: data)
+                self.player?.numberOfLoops = -1
+                self.player?.volume = 0
+            }
+            self.player?.play()
+
+            self.stopWorkItem?.cancel()
+            let item = DispatchWorkItem { [weak self] in self?.stop() }
+            self.stopWorkItem = item
+            DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: item)
+        }
+    }
+
+    func stop() {
+        DispatchQueue.main.async {
+            self.stopWorkItem?.cancel()
+            self.stopWorkItem = nil
+            self.player?.stop()
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
+    }
+
+    private static func silentWAV() -> Data? {
+        let sampleRate: UInt32 = 8000
+        let dataSize = Int(sampleRate) * 2
+        var data = Data()
+
+        func appendUInt32(_ value: UInt32) {
+            withUnsafeBytes(of: value.littleEndian) { data.append(contentsOf: $0) }
+        }
+        func appendUInt16(_ value: UInt16) {
+            withUnsafeBytes(of: value.littleEndian) { data.append(contentsOf: $0) }
+        }
+
+        data.append(contentsOf: Array("RIFF".utf8))
+        appendUInt32(UInt32(36 + dataSize))
+        data.append(contentsOf: Array("WAVEfmt ".utf8))
+        appendUInt32(16)
+        appendUInt16(1)
+        appendUInt16(1)
+        appendUInt32(sampleRate)
+        appendUInt32(sampleRate * 2)
+        appendUInt16(2)
+        appendUInt16(16)
+        data.append(contentsOf: Array("data".utf8))
+        appendUInt32(UInt32(dataSize))
+        data.append(Data(count: dataSize))
+        return data
+    }
+}
+#endif
 
 struct ModernCard<Content: SwiftUI.View>: SwiftUI.View {
     let content: Content
@@ -228,20 +310,9 @@ struct CORSMiddleware: Middleware {
 #endif
 
 #if canImport(Vapor)
-private final class OnceGate: @unchecked Sendable {
-    private let lock = NSLock()
-    private var fired = false
-    func fire(_ body: () -> Void) {
-        lock.lock()
-        if fired { lock.unlock(); return }
-        fired = true
-        lock.unlock()
-        body()
-    }
-}
-
 class SimpleHTTPServer: NSObject, @unchecked Sendable {
     public let port: Int
+    private let host: String
     private let ipaPath: String
     private let appInfo: AppInfo
     private var app: Application?
@@ -258,8 +329,9 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         return Int.random(in: 4000...8000)
     }
 
-    init(port: Int, ipaPath: String, appInfo: AppInfo) {
+    init(port: Int, host: String, ipaPath: String, appInfo: AppInfo) {
         self.port = port
+        self.host = host
         self.ipaPath = ipaPath
         self.appInfo = appInfo
         super.init()
@@ -269,40 +341,10 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         guard !isRunning else { return }
         isRunning = true
 
-        requestLocalNetworkPermission { [weak self] granted in
-            guard let self else { return }
-            guard granted else {
-                self.isRunning = false
-                return
+        serverQueue.async { [weak self] in
+            Task { @MainActor in
+                await self?.startSimpleServer()
             }
-            self.serverQueue.async { [weak self] in
-                Task { @MainActor in
-                    await self?.startSimpleServer()
-                }
-            }
-        }
-    }
-
-    private func requestLocalNetworkPermission(completion: @escaping @Sendable (Bool) -> Void) {
-
-        let monitor = NWPathMonitor()
-        let queue = DispatchQueue(label: "NetworkPermission")
-        let gate = OnceGate()
-
-        monitor.pathUpdateHandler = { path in
-
-            let hasPermission = path.status == .satisfied || path.status == .requiresConnection
-            monitor.cancel()
-            DispatchQueue.main.async {
-                gate.fire { completion(hasPermission) }
-            }
-        }
-
-        monitor.start(queue: queue)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            monitor.cancel()
-            gate.fire { completion(true) }
         }
     }
 
@@ -313,18 +355,43 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
             app = try await Application.make(config)
 
             app?.http.server.configuration.port = port
-            app?.http.server.configuration.address = .hostname("127.0.0.1", port: port)
+            app?.http.server.configuration.hostname = "0.0.0.0"
+            app?.http.server.configuration.address = .hostname("0.0.0.0", port: port)
             app?.http.server.configuration.tcpNoDelay = true
             app?.http.server.configuration.requestDecompression = .enabled
             app?.http.server.configuration.responseCompression = .enabled
             app?.threadPool = .init(numberOfThreads: 2)
-            app?.http.server.configuration.tlsConfiguration = nil
-
             app?.middleware.use(CORSMiddleware())
+
+            guard let resourceURL = Bundle.main.resourceURL else {
+                InstallLog.shared.add("install server failed: resource directory missing")
+                isRunning = false
+                return
+            }
+            let installDirectory = resourceURL.appendingPathComponent("InstallServer", isDirectory: true)
+            let certPath = Bundle.main.path(forResource: "server", ofType: "pem")
+                ?? installDirectory.appendingPathComponent("server.pem").path
+            let keyPath = Bundle.main.path(forResource: "server", ofType: "key")
+                ?? installDirectory.appendingPathComponent("server.key").path
+            guard FileManager.default.fileExists(atPath: certPath),
+                  FileManager.default.fileExists(atPath: keyPath),
+                  let chain = try? NIOSSLCertificate.fromPEMFile(certPath),
+                  !chain.isEmpty,
+                  let privateKey = try? NIOSSLPrivateKey(file: keyPath, format: .pem)
+            else {
+                InstallLog.shared.add("install server failed: TLS certificate missing")
+                isRunning = false
+                return
+            }
+            app?.http.server.configuration.tlsConfiguration = TLSConfiguration.forServer(
+                certificateChain: chain.map { .certificate($0) },
+                privateKey: .privateKey(privateKey)
+            )
 
             setupSimpleRoutes()
 
             isRunning = true
+            InstallLog.shared.add("install server listening 0.0.0.0:\(port)")
             try await app?.execute()
             isRunning = false
 
@@ -419,7 +486,8 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 return Response(status: .internalServerError)
             }
 
-            let externalManifestURL = self.generateExternalManifestURL()
+            let localManifestURL = "https://\(installServerHost):\(self.port)/plist/\(self.appInfo.bundleIdentifier)"
+            let localInstallURL = "itms-services://?action=download-manifest&url=\(queryEncoded(localManifestURL))"
 
             let installPage = """
             <!DOCTYPE html>
@@ -577,8 +645,8 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                     };
 
                     function initializeInstallation() {
-                        manifestURL = '\(externalManifestURL)';
-                        itmsURL = 'itms-services:
+                        manifestURL = '\(localManifestURL)';
+                        itmsURL = '\(localInstallURL)';
 
                         console.log('Manifest URL:', manifestURL);
                         console.log('ITMS URL:', itmsURL);
@@ -706,20 +774,8 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
         self.plistFileName = fileName
     }
 
-    private func generateExternalManifestURL() -> String {
-
-        let localIP = "127.0.0.1"
-        let ipaURL = "http://\(localIP):\(port)/\(appInfo.bundleIdentifier).ipa"
-
-        let fullIPAURL = "\(ipaURL)?sign=1"
-
-        let proxyURL = "https://api.palera.in/genPlist?bundleid=\(queryEncoded(appInfo.bundleIdentifier))&name=\(queryEncoded(appInfo.name))&version=\(queryEncoded(appInfo.version))&fetchurl=\(queryEncoded(fullIPAURL))"
-
-        return proxyURL
-    }
-
-    private func generatePlistData() -> Data {
-        let ipaURL = "http://127.0.0.1:\(port)/\(appInfo.bundleIdentifier).ipa"
+    func generatePlistData() -> Data {
+        let ipaURL = "https://\(installServerHost):\(port)/\(appInfo.bundleIdentifier).ipa?sign=1"
 
         let plistContent: [String: Any] = [
             "items": [[
@@ -756,12 +812,12 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
     private func getDisplayImageURL() -> String {
 
-        return "http://127.0.0.1:\(port)/icon/display"
+        return "https://\(installServerHost):\(port)/icon/display"
     }
 
     private func getFullSizeImageURL() -> String {
 
-        return "http://127.0.0.1:\(port)/icon/fullsize"
+        return "https://\(installServerHost):\(port)/icon/fullsize"
     }
 
     private func getDefaultIconData() -> Data {
@@ -1264,6 +1320,7 @@ struct DownloadCardView: SwiftUI.View {
     @State private var showDetails = false
     @State private var decryptTask: Task<Void, Never>?
     @State private var fileSizeText: String?
+    @State private var decryptOutcome: DecryptConsoleOutcome = .idle
     @StateObject private var decryptLog = DecryptLog()
 
     private var progress: Double {
@@ -1292,8 +1349,34 @@ struct DownloadCardView: SwiftUI.View {
             if status == DownloadStatus.completed {
                 completedStatusView
 
-                if isDecrypting {
-                    compactDecryptProgress
+                if !installationMessage.isEmpty && !isDecrypting {
+                    installStatusView
+                }
+
+                if isDecrypting || !decryptLog.lines.isEmpty {
+                    DecryptConsoleView(
+                        log: decryptLog,
+                        outcome: decryptOutcome,
+                        appName: request.package.name,
+                        bundleIdentifier: request.package.bundleIdentifier,
+                        message: decryptMessage,
+                        decryptedURL: decryptedURL,
+                        accentColor: themeManager.accentColor,
+                        onCancel: {
+                            DecryptCoordinator.shared.cancel()
+                        },
+                        onShare: {
+                            if let url = decryptedURL {
+                                shareIPAFile(path: url.path)
+                            }
+                        }
+                    )
+                    .transition(
+                        .asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)).combined(with: .scale(scale: 0.98, anchor: .top)),
+                            removal: .opacity
+                        )
+                    )
                 } else if let decryptMessage {
                     HStack(alignment: .top, spacing: 6) {
                         Text(decryptMessage)
@@ -1437,43 +1520,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-    private var compactDecryptProgress: some SwiftUI.View {
-        VStack(alignment: .leading, spacing: 5) {
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.secondary.opacity(0.15))
-                    Capsule()
-                        .fill(LinearGradient(
-                            colors: [themeManager.accentColor,
-                                     themeManager.accentColor.opacity(0.75)],
-                            startPoint: .leading, endPoint: .trailing
-                        ))
-                        .frame(width: max(2, geo.size.width * decryptLog.fraction))
-                        .animation(.easeOut(duration: 0.3), value: decryptLog.fraction)
-                }
-            }
-            .frame(height: 4)
-
-            HStack(spacing: 6) {
-                Text(decryptLog.summary)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.primary)
-
-                Text(decryptLog.phase)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-
-                Spacer(minLength: 4)
-
-                Text(String(format: "%.1fs", decryptLog.elapsed))
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.top, 2)
-    }
-
     private var decryptGradient: [Color] {
         if isDecrypting {
             return [Color(red: 0.95, green: 0.31, blue: 0.28),
@@ -1519,10 +1565,14 @@ struct DownloadCardView: SwiftUI.View {
         guard FairPlayDecryptor.isAvailable else {
             let report = AppGroupDiagnostics.inspect()
             decryptMessage = report.headline + "\n" + report.facts
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                decryptOutcome = .failed
+            }
             decryptLog.reset(title: "NOGROUP")
             for line in report.facts.split(separator: "\n") {
                 decryptLog.append(String(line), level: .failure)
             }
+            decryptLog.finish()
             return
         }
         if DecryptCoordinator.shared.isBusy,
@@ -1531,7 +1581,10 @@ struct DownloadCardView: SwiftUI.View {
             return
         }
 
-        isDecrypting = true
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+            isDecrypting = true
+            decryptOutcome = .running
+        }
         decryptMessage = nil
         decryptLog.reset(title: "INIT")
         decryptLog.append("target  \(URL(fileURLWithPath: path).lastPathComponent)", level: .info)
@@ -1555,7 +1608,18 @@ struct DownloadCardView: SwiftUI.View {
                 if backgroundTask != UIBackgroundTaskIdentifier.invalid {
                     UIApplication.shared.endBackgroundTask(backgroundTask)
                 }
-                isDecrypting = false
+                let finalOutcome: DecryptConsoleOutcome
+                if record.status == .completed {
+                    finalOutcome = .completed
+                } else if record.message == "dc_err_cancelled".localized {
+                    finalOutcome = .cancelled
+                } else {
+                    finalOutcome = .failed
+                }
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                    isDecrypting = false
+                    decryptOutcome = finalOutcome
+                }
                 log.finish()
                 DecryptCoordinator.shared.finish(requestID: request.id)
 
@@ -1692,7 +1756,30 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
+    private var installStatusView: some SwiftUI.View {
+        HStack(alignment: .top, spacing: 6) {
+            if isInstalling {
+                ProgressView()
+                    .scaleEffect(0.6)
+                    .frame(width: 12, height: 12)
+            } else {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(.orange)
+            }
+
+            Text(installationMessage)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 4)
+        }
+        .padding(.top, 2)
+    }
+
     private func handleCardTap() {
+        if isDecrypting || !decryptLog.lines.isEmpty { return }
         if request.runtime.status == .completed, request.localFilePath != nil {
             showDetails = true
         }
@@ -1906,10 +1993,24 @@ struct DownloadCardView: SwiftUI.View {
 
         Task {
             do {
+                let ipaMetadata = readIPAInfo(at: localFilePath)
+                var bundleIdentifier = ipaMetadata?.bundleIdentifier ?? request.bundleIdentifier
+                var version = ipaMetadata?.version ?? request.version
+                var displayName = ipaMetadata?.name ?? request.name
+
+                if bundleIdentifier.isEmpty, request.package.identifier > 0 {
+                    bundleIdentifier = await delistedBundleIdentifier(trackId: request.package.identifier)
+                }
+                guard !bundleIdentifier.isEmpty else {
+                    throw PackageInstallationError.invalidIPAFile
+                }
+                if displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { displayName = bundleIdentifier }
+                if version.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { version = "1.0" }
+
                 let appInfo = AppInfo(
-                    name: request.name,
-                    version: request.version,
-                    bundleIdentifier: request.bundleIdentifier,
+                    name: displayName,
+                    version: version,
+                    bundleIdentifier: bundleIdentifier,
                     path: localFilePath,
                     localPath: localFilePath
                 )
@@ -1931,10 +2032,12 @@ struct DownloadCardView: SwiftUI.View {
                 }
 
                 let port = HTTPServerManager.shared.allocatePort()
+                let host = currentLocalIPv4() ?? "127.0.0.1"
 
                 HTTPServerManager.shared.startServer(
                     for: request.id,
                     port: port,
+                    host: host,
                     ipaPath: localFilePath,
                     appInfo: appInfo
                 )
@@ -1944,25 +2047,78 @@ struct DownloadCardView: SwiftUI.View {
                     installationMessage = "preparing_install_link".localized
                 }
 
-                let healthURL = "http://127.0.0.1:\(port)/health"
+                let installSession = URLSession(configuration: {
+                    let configuration = URLSessionConfiguration.ephemeral
+                    configuration.timeoutIntervalForRequest = 6
+                    configuration.timeoutIntervalForResource = 15
+                    configuration.connectionProxyDictionary = [:]
+                    return configuration
+                }())
+
+                let healthURL = "https://\(installServerHost):\(port)/health"
                 var serverReady = false
+                var lastProbeError: Error?
                 for _ in 1...20 {
                     try await Task.sleep(nanoseconds: 500_000_000)
-                    if let url = URL(string: healthURL) {
-                        do {
-                            let (_, response) = try await URLSession.shared.data(from: url)
-                            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                                serverReady = true
-                                break
-                            }
-                        } catch {
+                    guard let url = URL(string: healthURL) else { break }
+                    do {
+                        let (_, response) = try await installSession.data(from: url)
+                        if let httpResponse = response as? HTTPURLResponse,
+                           httpResponse.statusCode == 200 {
+                            serverReady = true
+                            break
                         }
+                    } catch {
+                        lastProbeError = error
                     }
                 }
 
                 guard serverReady else {
+                    let resolvedAddress = resolveIPv4(installServerHost)
+                    let detail = lastProbeError?.localizedDescription ?? resolvedAddress ?? "unavailable"
                     await MainActor.run {
-                        installationMessage = "install_service_timeout".localized
+                        installationMessage = "install_failed_title".localized
+                        if let resolvedAddress, resolvedAddress != "127.0.0.1" {
+                            presentInstallAlert(
+                                String(format: "install_dns_failed".localized, resolvedAddress),
+                                title: "install_dns_failed_title".localized
+                            )
+                        } else {
+                            presentInstallAlert(
+                                String(format: "install_tls_failed".localized, detail),
+                                title: "install_tls_failed_title".localized
+                            )
+                        }
+                        cleanupInstallation(request.id)
+                    }
+                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                    return
+                }
+
+                let manifestURL = "https://\(installServerHost):\(port)/plist/\(bundleIdentifier)"
+                var manifestReady = false
+                var manifestError: Error?
+                if let url = URL(string: manifestURL) {
+                    do {
+                        let (data, response) = try await installSession.data(from: url)
+                        if let httpResponse = response as? HTTPURLResponse,
+                           httpResponse.statusCode == 200,
+                           String(data: data, encoding: .utf8)?.contains("<plist") == true {
+                            manifestReady = true
+                        }
+                    } catch {
+                        manifestError = error
+                    }
+                }
+
+                guard manifestReady else {
+                    let detail = manifestError?.localizedDescription ?? "unavailable"
+                    await MainActor.run {
+                        installationMessage = "install_manifest_failed".localized
+                        presentInstallAlert(
+                            String(format: "install_manifest_failed_detail".localized, detail),
+                            title: "install_failed_title".localized
+                        )
                         cleanupInstallation(request.id)
                     }
                     UIApplication.shared.endBackgroundTask(backgroundTaskID)
@@ -1973,36 +2129,7 @@ struct DownloadCardView: SwiftUI.View {
                     installationProgress = 0.8
                     installationMessage = "opening_install_page".localized
 
-                    let localIP = "127.0.0.1"
-                    let ipaURL = "http://\(localIP):\(port)/\(request.bundleIdentifier).ipa?sign=1"
-
-                    var manifestComponents = URLComponents(string: "https://api.palera.in/genPlist")
-                    manifestComponents?.queryItems = [
-                        URLQueryItem(name: "bundleid", value: request.bundleIdentifier),
-                        URLQueryItem(name: "name", value: request.name),
-                        URLQueryItem(name: "version", value: request.version),
-                        URLQueryItem(name: "fetchurl", value: ipaURL)
-                    ]
-
-                    guard let manifestURL = manifestComponents?.url?.absoluteString else {
-                        installationMessage = "install_start_failed".localized
-                        cleanupInstallation(request.id)
-                        return
-                    }
-
-                    let actionItem = URLQueryItem(name: "action", value: "download-manifest")
-                    let urlItem = URLQueryItem(name: "url", value: manifestURL)
-
-                    var comps = URLComponents()
-                    comps.queryItems = [actionItem, urlItem]
-
-                    guard let percentEncodedQuery = comps.percentEncodedQuery else {
-                        installationMessage = "install_start_failed".localized
-                        cleanupInstallation(request.id)
-                        return
-                    }
-
-                    let itmsURLString = "itms-services://?" + percentEncodedQuery
+                    let itmsURLString = "itms-services://?action=download-manifest&url=" + queryEncoded(manifestURL)
 
                     guard let itmsURL = URL(string: itmsURLString) else {
                         installationMessage = "install_start_failed".localized
@@ -2012,6 +2139,7 @@ struct DownloadCardView: SwiftUI.View {
 
                     guard UIApplication.shared.canOpenURL(itmsURL) else {
                         installationMessage = "install_start_failed".localized
+                        presentInstallAlert("install_open_rejected".localized)
                         cleanupInstallation(request.id)
                         return
                     }
@@ -2019,17 +2147,21 @@ struct DownloadCardView: SwiftUI.View {
                     UIApplication.shared.open(itmsURL, options: [:]) { success in
                         DispatchQueue.main.async {
                             if success {
+                                installationMessage = "install_handed_off".localized
                                 isInstalling = false
                                 cleanupInstallation(request.id, keepServer: true)
                             } else {
                                 installationMessage = "install_start_failed".localized
+                                presentInstallAlert("install_open_failed".localized)
                                 cleanupInstallation(request.id)
                             }
                         }
                     }
                 }
 
-                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 90) {
+                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                }
 
             } catch {
                 await MainActor.run {
@@ -2051,14 +2183,13 @@ struct DownloadCardView: SwiftUI.View {
             await MainActor.run {
                 isInstalling = false
                 installationProgress = 0.0
-                installationMessage = ""
                 GlobalInstallationManager.shared.finishInstallation(for: requestId)
 
                 if !keepServer {
                     HTTPServerManager.shared.stopServer(for: requestId)
                 } else {
 
-                    DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 300) {
+                    DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 600) {
 
                         Task {
                             await MainActor.run {
@@ -2072,6 +2203,119 @@ struct DownloadCardView: SwiftUI.View {
     }
 }
 
+private func queryEncoded(_ value: String) -> String {
+    var allowed = CharacterSet.alphanumerics
+    allowed.insert(charactersIn: "-._~")
+    return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+}
+
+private func delistedBundleIdentifier(trackId: Int) async -> String {
+    if let url = URL(string: "https://itunes.apple.com/lookup?id=\(trackId)") {
+        if let (data, _) = try? await URLSession.shared.data(from: url),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let results = json["results"] as? [[String: Any]],
+           let bundle = results.first?["bundleId"] as? String,
+           !bundle.isEmpty {
+            return bundle
+        }
+    }
+
+    let manager = FileManager.default
+    let documents = manager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    let searchDirectories = [
+        documents.appendingPathComponent("Downloads", isDirectory: true),
+        documents
+    ]
+
+    for directory in searchDirectories {
+        let ipaFiles = (try? manager.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil
+        )) ?? []
+
+        for ipa in ipaFiles where ipa.pathExtension.lowercased() == "ipa" {
+            guard let mapped = try? Data(contentsOf: ipa, options: .alwaysMapped),
+                  let eocd = FastZipArchive.findEndOfCentralDirectory(in: mapped),
+                  let entries = try? FastZipArchive.readCentralDirectory(from: mapped, eocd: eocd)
+            else { continue }
+
+            guard let metadataEntry = entries.first(where: { $0.filename == "iTunesMetadata.plist" }),
+                  let metadataData = try? FastZipArchive.extractSingleEntry(from: mapped, entry: metadataEntry),
+                  let metadata = try? PropertyListSerialization.propertyList(
+                      from: metadataData, format: nil
+                  ) as? [String: Any],
+                  (metadata["trackId"] as? Int) == trackId ||
+                      (metadata["adamId"] as? Int) == trackId ||
+                      ((metadata["trackId"] as? String) == String(trackId))
+            else { continue }
+
+            guard let infoEntry = entries.first(where: {
+                $0.filename.hasPrefix("Payload/") && $0.filename.hasSuffix(".app/Info.plist")
+            }),
+                  let infoData = try? FastZipArchive.extractSingleEntry(from: mapped, entry: infoEntry),
+                  let info = try? PropertyListSerialization.propertyList(
+                      from: infoData, format: nil
+                  ) as? [String: Any],
+                  let bundle = info["CFBundleIdentifier"] as? String,
+                  !bundle.isEmpty
+            else { continue }
+
+            return bundle
+        }
+    }
+
+    return ""
+}
+
+private struct IPAInstallMetadata {
+    let bundleIdentifier: String
+    let version: String
+    let name: String
+}
+
+private func readIPAInfo(at path: String) -> IPAInstallMetadata? {
+    guard let data = try? Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped),
+          let eocd = FastZipArchive.findEndOfCentralDirectory(in: data),
+          let entries = try? FastZipArchive.readCentralDirectory(from: data, eocd: eocd),
+          let infoEntry = entries.first(where: {
+              $0.filename.hasPrefix("Payload/") && $0.filename.hasSuffix(".app/Info.plist")
+          }),
+          let infoData = try? FastZipArchive.extractSingleEntry(from: data, entry: infoEntry),
+          let info = try? PropertyListSerialization.propertyList(from: infoData, format: nil) as? [String: Any],
+          let bundleIdentifier = info["CFBundleIdentifier"] as? String,
+          !bundleIdentifier.isEmpty
+    else { return nil }
+
+    let version = (info["CFBundleShortVersionString"] as? String)
+        ?? (info["CFBundleVersion"] as? String)
+        ?? "1.0"
+    let name = (info["CFBundleDisplayName"] as? String)
+        ?? (info["CFBundleName"] as? String)
+        ?? bundleIdentifier
+    return IPAInstallMetadata(bundleIdentifier: bundleIdentifier, version: version, name: name)
+}
+
+private func resolveIPv4(_ host: String) -> String? {
+    var hints = addrinfo()
+    hints.ai_family = AF_INET
+    hints.ai_socktype = SOCK_STREAM
+    var info: UnsafeMutablePointer<addrinfo>?
+    guard getaddrinfo(host, nil, &hints, &info) == 0, let first = info else { return nil }
+    defer { freeaddrinfo(first) }
+
+    var pointer: UnsafeMutablePointer<addrinfo>? = first
+    while let item = pointer {
+        defer { pointer = item.pointee.ai_next }
+        guard let address = item.pointee.ai_addr else { continue }
+        var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+        if getnameinfo(address, item.pointee.ai_addrlen, &hostBuffer, socklen_t(hostBuffer.count), nil, 0, NI_NUMERICHOST) == 0 {
+            let value = String(cString: hostBuffer)
+            if !value.isEmpty { return value }
+        }
+    }
+    return nil
+}
+
 private func htmlEscaped(_ text: String) -> String {
     var result = text
     result = result.replacingOccurrences(of: "&", with: "&amp;")
@@ -2082,9 +2326,63 @@ private func htmlEscaped(_ text: String) -> String {
     return result
 }
 
-private func queryEncoded(_ value: String) -> String {
-    var allowed = CharacterSet.alphanumerics
-    allowed.insert(charactersIn: "-._~")
-    return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+func currentLocalIPv4() -> String? {
+    var ifaddrPointer: UnsafeMutablePointer<ifaddrs>?
+    guard getifaddrs(&ifaddrPointer) == 0, let first = ifaddrPointer else { return nil }
+    defer { freeifaddrs(ifaddrPointer) }
+
+    var preferred: String?
+    var fallback: String?
+    var pointer = first
+    while true {
+        let interface = pointer.pointee
+        if interface.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
+            let name = String(cString: interface.ifa_name)
+            let lowerName = name.lowercased()
+            let isVirtual = lowerName.hasPrefix("utun") || lowerName.hasPrefix("tap") ||
+                lowerName.hasPrefix("tun") || lowerName.hasPrefix("ipsec") ||
+                lowerName.hasPrefix("wg") || lowerName.hasPrefix("ppp") ||
+                lowerName.hasPrefix("awdl") || lowerName.hasPrefix("llw")
+            var address = interface.ifa_addr.pointee
+            var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            if getnameinfo(
+                &address,
+                socklen_t(interface.ifa_addr.pointee.sa_len),
+                &hostBuffer,
+                socklen_t(hostBuffer.count),
+                nil,
+                0,
+                NI_NUMERICHOST
+            ) == 0 {
+                let ip = String(cString: hostBuffer)
+                if !isVirtual && !ip.hasPrefix("127.") && !ip.hasPrefix("169.254.") {
+                    if name == "en0" {
+                        preferred = ip
+                    } else if fallback == nil {
+                        fallback = ip
+                    }
+                }
+            }
+        }
+        guard let next = interface.ifa_next else { break }
+        pointer = next
+    }
+    return preferred ?? fallback
 }
 
+#if canImport(UIKit)
+func presentInstallAlert(_ message: String, title: String = "install_failed_title".localized) {
+    guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+          let window = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first,
+          let root = window.rootViewController else { return }
+
+    var top = root
+    while let presented = top.presentedViewController {
+        top = presented
+    }
+
+    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
+    top.present(alert, animated: true)
+}
+#endif

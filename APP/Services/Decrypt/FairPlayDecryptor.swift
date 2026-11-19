@@ -116,6 +116,7 @@ enum FairPlayDecryptor {
 
         let total = countMachOs(in: appDir)
         onEvent?(.phase("DECRYPT"))
+        onEvent?(.total(total))
         onEvent?(.line("\(total) Mach-O found", .info))
 
         var failedCount: Int32 = 0
@@ -212,6 +213,7 @@ enum FairPlayDecryptor {
 
         let size = (try? manager.attributesOfItem(atPath: outURL.path)[.size] as? Int64) ?? 0
         onEvent?(.line("wrote \(outURL.lastPathComponent)  \(formatBytes(size))", .success))
+        onEvent?(.phase("DONE"))
 
         return Outcome(
             decrypted: Int(decrypted),

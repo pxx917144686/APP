@@ -62,8 +62,18 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         return downloads
     }
 
-    private func uniqueDestinationURL(bundleId: String, version: String) -> URL {
-        let baseName = "\(bundleId)_\(version)"
+    private func uniqueDestinationURL(bundleId: String, version: String, fallbackName: String = "") -> URL {
+        let sanitizedName = fallbackName
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: ":", with: "_")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let base: String
+        if bundleId.isEmpty {
+            base = sanitizedName.isEmpty ? "App" : sanitizedName
+        } else {
+            base = bundleId
+        }
+        let baseName = "\(base)_\(version)"
         let baseURL = downloadsDirectory.appendingPathComponent(baseName).appendingPathExtension("ipa")
 
         return baseURL
@@ -253,7 +263,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     ) -> UUID {
 
         if let existing = downloadRequests.first(where: {
-            $0.bundleIdentifier == bundleIdentifier && $0.version == version
+            $0.bundleIdentifier == bundleIdentifier
+                && $0.version == version
+                && (bundleIdentifier.isEmpty ? $0.name == name : true)
         }) {
             return existing.id
         }
@@ -436,7 +448,11 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     ) {
         let bundleId = request.package.bundleIdentifier
         let version = request.version
-        let destinationURL = uniqueDestinationURL(bundleId: bundleId, version: version)
+        let destinationURL = uniqueDestinationURL(
+            bundleId: bundleId,
+            version: version,
+            fallbackName: request.package.name
+        )
 
         reservedDestinationPaths.insert(destinationURL.path)
         requestDestinationPaths[request.id] = destinationURL.path

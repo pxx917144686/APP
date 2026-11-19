@@ -303,6 +303,35 @@ class iTunesClient: @unchecked Sendable {
         return iTunesResponse.resultCount > 0 ? iTunesResponse.results.first : nil
     }
 
+    func lookup(
+        trackId: Int,
+        countryCode: String = "",
+        deviceFamily: DeviceFamily = .phone
+    ) async throws -> iTunesSearchResult? {
+        var components = URLComponents(string: "\(baseURL)/lookup")!
+        components.queryItems = [
+            URLQueryItem(name: "id", value: String(trackId)),
+            URLQueryItem(name: "country", value: countryCode.lowercased()),
+            URLQueryItem(name: "media", value: "software"),
+            URLQueryItem(name: "entity", value: deviceFamily.softwareType),
+            URLQueryItem(name: "limit", value: "1")
+        ]
+        guard let url = components.url else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("iTunes/12.12.0 (Macintosh; OS X 10.15.7) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        let decoder = JSONDecoder()
+        let iTunesResponse = try decoder.decode(iTunesResponse.self, from: data)
+        return iTunesResponse.resultCount > 0 ? iTunesResponse.results.first : nil
+    }
+
     enum ReviewSort: String { case mostRecent = "mostRecent", mostHelpful = "mostHelpful" }
     struct AppReview: Codable, Identifiable, Hashable {
         let id: String

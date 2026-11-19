@@ -591,7 +591,6 @@
 "status_owned" = "Owned";
 "status_not_owned" = "Not Owned";
 "rating_count_format" = "%@ ratings";
-"legacy_apps_delisted" = "Legacy Apps (Delisted)";
 "versions_login_required" = "Sign in to load version information";
 "versions_unavailable" = "Unable to load versions. Check your network connection.";
 "versions_unavailable_retry" = "Unable to load version history. Please try again.";
@@ -820,3 +819,40 @@
 "tab_order_hint" = "Drag the handles to reorder.";
 "tab_order_reset" = "Reset to Default";
 "tab_order_search_hint" = "Fixed on the right in floating style";
+"delisted_apps_short" = "Delisted";
+"legacy_apps_delisted" = "Delisted Apps";
+"install_ca_needed" = "Trust the install certificate first";
+"install_ca_steps" = "1. Open https://localhost:%ld/ca.mobileconfig in Safari
+2. Settings → Downloaded Profile → Install
+3. Settings → General → About → Certificate Trust Settings → enable full trust
+
+Then retry the installation.";
+"install_failed_title" = "Installation failed";
+"install_dns_failed_title" = "DNS interception detected";
+"install_dns_failed" = "localhost.flarestore.vip does not resolve to 127.0.0.1 (currently %@). Turn off VPN, proxy or DNS filtering and try again.";
+"install_tls_failed_title" = "Installation service unavailable";
+"install_tls_failed" = "Could not connect to the local HTTPS service: %@. Check the system time and network proxy, then retry.";
+"install_manifest_failed" = "Installation service unavailable";
+"install_manifest_failed_detail" = "The install manifest could not be loaded: %@";
+"install_handed_off" = "Handed to iOS. Check the Home Screen.";
+"install_open_rejected" = "iOS refused to open the install link.";
+"install_open_failed" = "iOS could not open the install link.";
+"dc_console_title" = "Decrypt Console";
+"dc_status_running" = "Running";
+"dc_status_completed" = "Completed";
+"dc_status_cancelled" = "Cancelled";
+"dc_stat_decrypted" = "Decrypted";
+"dc_stat_plain" = "Plain";
+"dc_stat_total" = "Total";
+"dc_stat_elapsed" = "Elapsed";
+"dc_console_log" = "Live Log";
+"dc_console_waiting" = "Waiting for engine output…";
+"dc_expand_log" = "Expand log";
+"dc_collapse_log" = "Collapse log";
+"dc_phase_prepare" = "Prepare";
+"dc_phase_extract" = "Extract";
+"dc_phase_sinf" = "SINF";
+"dc_phase_decrypt" = "Decrypt";
+"dc_phase_pack" = "Pack";
+"dc_phase_done" = "Done";
+"dc_scanning" = "Scanning";

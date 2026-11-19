@@ -591,7 +591,6 @@
 "status_owned" = "已获取";
 "status_not_owned" = "未获取";
 "rating_count_format" = "%@ 个评分";
-"legacy_apps_delisted" = "历史应用（已下架）";
 "versions_login_required" = "未登录账户，无法获取版本信息";
 "versions_unavailable" = "无法获取版本信息，请检查网络";
 "versions_unavailable_retry" = "暂时无法获取历史版本，请重试";
@@ -820,3 +819,40 @@
 "tab_order_hint" = "拖动右侧把手调整顺序。";
 "tab_order_reset" = "恢复默认顺序";
 "tab_order_search_hint" = "悬浮样式下固定在右侧";
+"delisted_apps_short" = "下架应用";
+"legacy_apps_delisted" = "下架应用";
+"install_ca_needed" = "需要先信任安装证书";
+"install_ca_steps" = "1. Safari 打开 https://localhost:%ld/ca.mobileconfig
+2. 设置 → 已下载的描述文件 → 安装
+3. 设置 → 通用 → 关于本机 → 证书信任设置 → 启用完全信任
+
+完成后回到 app 重新安装。";
+"install_failed_title" = "安装失败";
+"install_dns_failed_title" = "域名解析被拦截";
+"install_dns_failed" = "localhost.flarestore.vip 没有解析到 127.0.0.1（当前 %@）。请关闭 VPN、代理或 DNS 过滤后重试。";
+"install_tls_failed_title" = "安装服务不可用";
+"install_tls_failed" = "无法连接本地 HTTPS 安装服务：%@。请检查系统时间和网络代理后重试。";
+"install_manifest_failed" = "安装服务不可用";
+"install_manifest_failed_detail" = "安装清单加载失败：%@";
+"install_handed_off" = "已交给系统安装，请查看桌面";
+"install_open_rejected" = "系统拒绝打开安装链接";
+"install_open_failed" = "系统未能打开安装链接";
+"dc_console_title" = "脱壳控制台";
+"dc_status_running" = "运行中";
+"dc_status_completed" = "已完成";
+"dc_status_cancelled" = "已取消";
+"dc_stat_decrypted" = "已解密";
+"dc_stat_plain" = "明文";
+"dc_stat_total" = "总数";
+"dc_stat_elapsed" = "耗时";
+"dc_console_log" = "实时日志";
+"dc_console_waiting" = "等待脱壳引擎输出…";
+"dc_expand_log" = "展开日志";
+"dc_collapse_log" = "收起日志";
+"dc_phase_prepare" = "准备";
+"dc_phase_extract" = "解包";
+"dc_phase_sinf" = "SINF";
+"dc_phase_decrypt" = "解密";
+"dc_phase_pack" = "打包";
+"dc_phase_done" = "完成";
+"dc_scanning" = "扫描中";
