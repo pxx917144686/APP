@@ -63,9 +63,20 @@ enum FairPlayDecryptor {
     ) throws -> Outcome {
         guard let groupRoot = containerURL() else { throw DecryptError.noAppGroup }
 
+        let logHandle = makeDecryptLogHandle()
+        defer { try? logHandle?.close() }
+        let emit: @Sendable (DecryptEvent) -> Void = { event in
+            appendDecryptLog(logHandle, event)
+            onEvent?(event)
+        }
+
         let manager = FileManager.default
         let started = Date()
         let stem = ipaURL.deletingPathExtension().lastPathComponent
+        let removedStale = purgeWorkDirectories(in: groupRoot)
+        if removedStale > 0 {
+            emit(.line("purged \(removedStale) stale work dir(s)", .warning))
+        }
         let workRoot = groupRoot.appendingPathComponent("fpwork-\(UUID().uuidString)", isDirectory: true)
         defer { try? manager.removeItem(at: workRoot) }
         try manager.createDirectory(at: workRoot, withIntermediateDirectories: true)
@@ -76,13 +87,13 @@ enum FairPlayDecryptor {
             .volumeAvailableCapacityForImportantUsage {
             let needed = sourceSize * 3
             if capacity < needed {
-                onEvent?(.line("not enough space: \(capacity) < \(needed)", .failure))
+                emit(.line("not enough space: \(capacity) < \(needed)", .failure))
                 throw DecryptError.notEnoughSpace(capacity, needed)
             }
         }
 
-        onEvent?(.phase("EXTRACT"))
-        onEvent?(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
+        emit(.phase("EXTRACT"))
+        emit(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
 
         var errBuf = [CChar](repeating: 0, count: 1024)
         let unpackStatus = ipaURL.path.withCString { src in
@@ -92,45 +103,47 @@ enum FairPlayDecryptor {
         }
         guard unpackStatus == 0 else {
             let detail = String(cString: errBuf)
-            onEvent?(.line("unpack failed: \(detail)", .failure))
+            emit(.line("unpack failed: \(detail)", .failure))
             throw DecryptError.badArchive(detail)
         }
 
         if cancelToken?.isCancelled == true {
-            onEvent?(.line("cancelled", .warning))
+            emit(.line("cancelled", .warning))
             throw DecryptError.cancelled
         }
 
         let payloadRoot = workRoot.appendingPathComponent("Payload", isDirectory: true)
         let entries = (try? manager.contentsOfDirectory(atPath: payloadRoot.path)) ?? []
         guard let bundleName = entries.first(where: { $0.hasSuffix(".app") }) else {
-            onEvent?(.line("no Payload/*.app", .failure))
+            emit(.line("no Payload/*.app", .failure))
             throw DecryptError.noPayload
         }
         let appDir = payloadRoot.appendingPathComponent(bundleName, isDirectory: true)
-        onEvent?(.line("payload  \(bundleName)", .info))
+        emit(.line("payload  \(bundleName)", .info))
 
-        onEvent?(.phase("SINF"))
+        emit(.phase("SINF"))
         let replicated = replicateSinf(appDir: appDir)
-        onEvent?(.line("replicated to \(replicated) paths", replicated > 0 ? .info : .warning))
+        emit(.line("replicated to \(replicated) paths", replicated > 0 ? .info : .warning))
 
-        let total = countMachOs(in: appDir)
-        onEvent?(.phase("DECRYPT"))
-        onEvent?(.total(total))
-        onEvent?(.line("\(total) Mach-O found", .info))
+        var totalBytes: Int64 = 0
+        let total = Int(appDir.path.withCString { fp_count_targets($0, &totalBytes) })
+        emit(.phase("DECRYPT"))
+        emit(.total(total))
+        emit(.totalBytes(totalBytes))
+        emit(.line("\(total) Mach-O found  \(formatBytes(totalBytes))", .info))
 
         var failedCount: Int32 = 0
         var skippedCount: Int32 = 0
-        let box = EventBox(onEvent, cancelToken: cancelToken)
+        let box = EventBox(emit, cancelToken: cancelToken)
 
         let decrypted = withExtendedLifetime(box) { () -> Int32 in
             appDir.path.withCString { dir in
                 fp_decrypt_tree(
                     dir,
-                    { ctx, rel, status in
+                    { ctx, rel, status, size in
                         guard let ctx, let rel else { return }
                         let box = Unmanaged<EventBox>.fromOpaque(ctx).takeUnretainedValue()
-                        box.handler?(.entry(String(cString: rel), status))
+                        box.handler?(.entry(String(cString: rel), status, Int64(size)))
                     },
                     { ctx, line in
                         guard let ctx, let line else { return }
@@ -156,8 +169,8 @@ enum FairPlayDecryptor {
         try? manager.createDirectory(at: outDir, withIntermediateDirectories: true)
 
         if decrypted == 0 && failedCount == 0 {
-            onEvent?(.phase("DONE"))
-            onEvent?(.line("package is not encrypted, copied as-is", .warning))
+            emit(.phase("DONE"))
+            emit(.line("package is not encrypted, copied as-is", .warning))
             let copyURL = outDir.appendingPathComponent(ipaURL.lastPathComponent)
             try? manager.removeItem(at: copyURL)
             try manager.copyItem(at: ipaURL, to: copyURL)
@@ -171,22 +184,22 @@ enum FairPlayDecryptor {
         }
 
         if decrypted == -2 {
-            onEvent?(.line("cancelled", .warning))
+            emit(.line("cancelled", .warning))
             throw DecryptError.cancelled
         }
 
         guard decrypted >= 0 else {
             let detail = String(cString: errBuf)
-            onEvent?(.line("walk failed: \(detail)", .failure))
+            emit(.line("walk failed: \(detail)", .failure))
             throw DecryptError.badArchive(detail.isEmpty ? "traversal failed" : detail)
         }
 
         guard decrypted > 0 else {
-            onEvent?(.line("main binary rejected by FairPlay", .failure))
+            emit(.line("main binary rejected by FairPlay", .failure))
             throw DecryptError.notDecryptable
         }
 
-        onEvent?(.phase("PACK"))
+        emit(.phase("PACK"))
         let suffix = failedCount > 0 ? "-PARTIAL" : "-decrypted"
         let outURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa")
         let tempURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa.tmp")
@@ -200,7 +213,7 @@ enum FairPlayDecryptor {
         guard packStatus == 0 else {
             let detail = String(cString: errBuf)
             try? manager.removeItem(at: tempURL)
-            onEvent?(.line("pack failed: \(detail)", .failure))
+            emit(.line("pack failed: \(detail)", .failure))
             throw DecryptError.zipFailed(detail)
         }
         try? manager.removeItem(at: outURL)
@@ -212,8 +225,8 @@ enum FairPlayDecryptor {
         }
 
         let size = (try? manager.attributesOfItem(atPath: outURL.path)[.size] as? Int64) ?? 0
-        onEvent?(.line("wrote \(outURL.lastPathComponent)  \(formatBytes(size))", .success))
-        onEvent?(.phase("DONE"))
+        emit(.line("wrote \(outURL.lastPathComponent)  \(formatBytes(size))", .success))
+        emit(.phase("DONE"))
 
         return Outcome(
             decrypted: Int(decrypted),
@@ -240,6 +253,56 @@ enum FairPlayDecryptor {
         formatter.countStyle = .file
         formatter.allowedUnits = [.useMB, .useKB, .useGB]
         return formatter.string(fromByteCount: value)
+    }
+
+    private static func makeDecryptLogHandle() -> FileHandle? {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let folder = documents.appendingPathComponent("Decrypted", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = folder.appendingPathComponent("last-decrypt.log")
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+        return try? FileHandle(forWritingTo: url)
+    }
+
+    private static func appendDecryptLog(_ handle: FileHandle?, _ event: DecryptEvent) {
+        guard let handle else { return }
+        let line: String
+        switch event {
+        case .phase(let value):
+            line = "== \(value)"
+        case .line(let text, _):
+            line = text
+        case .entry(let relativePath, let status, let size):
+            line = "[\(status)] \(relativePath)  \(size) bytes"
+        case .total(let value):
+            line = "targets: \(value)"
+        case .totalBytes(let value):
+            line = "bytes: \(value)"
+        }
+        guard let data = (line + "\n").data(using: .utf8) else { return }
+        try? handle.write(contentsOf: data)
+    }
+
+    @discardableResult
+    private static func purgeWorkDirectories(in root: URL) -> Int {
+        let manager = FileManager.default
+        guard let entries = try? manager.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey, .contentModificationDateKey],
+            options: [.skipsHiddenFiles]
+        ) else { return 0 }
+
+        let cutoff = Date().addingTimeInterval(-3600)
+        var removed = 0
+        for entry in entries where entry.lastPathComponent.hasPrefix("fpwork-") {
+            let modified = (try? entry.resourceValues(forKeys: [.contentModificationDateKey]))?
+                .contentModificationDate
+            if let modified, modified > cutoff { continue }
+            if (try? manager.removeItem(at: entry)) != nil {
+                removed += 1
+            }
+        }
+        return removed
     }
 
     @discardableResult
@@ -269,30 +332,5 @@ enum FairPlayDecryptor {
             }
         }
         return copied
-    }
-
-    private static func countMachOs(in appDir: URL) -> Int {
-        let manager = FileManager.default
-        guard let enumerator = manager.enumerator(
-            at: appDir,
-            includingPropertiesForKeys: [.isRegularFileKey],
-            options: [.skipsHiddenFiles]
-        ) else { return 0 }
-
-        var count = 0
-        for case let url as URL in enumerator {
-            guard (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else { continue }
-            guard let handle = try? FileHandle(forReadingFrom: url),
-                  let head = try? handle.read(upToCount: 4) else { continue }
-            try? handle.close()
-            guard head.count == 4 else { continue }
-            let le = head.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }
-            let be = le.byteSwapped
-            if be == 0xFEEDFACF || be == 0xFEEDFACE || be == 0xCAFEBABE
-                || le == 0xFEEDFACF || le == 0xFEEDFACE {
-                count += 1
-            }
-        }
-        return count
     }
 }

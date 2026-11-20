@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 static void fp_quiet_log(void *ctx, const char *msg) {
@@ -48,6 +49,43 @@ static void tree_log(void *ctx, const char *msg) {
     if (c && c->line_cb && msg) c->line_cb(c->user, msg);
 }
 
+static bool tree_cancel(void *ctx) {
+    fp_tree_ctx_t *c = (fp_tree_ctx_t *)ctx;
+    if (c && c->cancel_cb) return c->cancel_cb(c->user);
+    return false;
+}
+
+static bool skip_subtree(FTS *fts, FTSENT *entry) {
+    if (entry->fts_info != FTS_D) return false;
+    if (entry->fts_level == 1 && strcmp(entry->fts_name, "Watch") == 0) {
+        fts_set(fts, entry, FTS_SKIP);
+    }
+    return true;
+}
+
+int fp_count_targets(const char *appDir, int64_t *bytes) {
+    if (bytes) *bytes = 0;
+    if (!appDir) return 0;
+
+    char *paths[2] = { (char *)appDir, NULL };
+    FTS *fts = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+    if (!fts) return 0;
+
+    int count = 0;
+    int64_t total = 0;
+    FTSENT *entry;
+    while ((entry = fts_read(fts)) != NULL) {
+        if (skip_subtree(fts, entry)) continue;
+        if (entry->fts_info != FTS_F) continue;
+        if (!fp_is_macho(entry->fts_path)) continue;
+        count++;
+        if (entry->fts_statp) total += (int64_t)entry->fts_statp->st_size;
+    }
+    fts_close(fts);
+    if (bytes) *bytes = total;
+    return count;
+}
+
 int fp_decrypt_tree(const char *appDir,
                     fp_progress_cb cb,
                     fp_line_cb line,
@@ -79,11 +117,14 @@ int fp_decrypt_tree(const char *appDir,
 
     while ((entry = fts_read(fts)) != NULL) {
         if (shouldCancel && shouldCancel(ctx)) { done = -2; break; }
+        if (skip_subtree(fts, entry)) continue;
         if (entry->fts_info != FTS_F) continue;
         if (!fp_is_macho(entry->fts_path)) continue;
 
         const char *rel = entry->fts_path + baseLen;
         while (*rel == '/') rel++;
+
+        int64_t size = entry->fts_statp ? (int64_t)entry->fts_statp->st_size : 0;
 
         if (line) line(ctx, rel);
 
@@ -91,19 +132,23 @@ int fp_decrypt_tree(const char *appDir,
         int n = snprintf(tmp, sizeof tmp, "%s.fpdec", entry->fts_path);
         if (n <= 0 || (size_t)n >= sizeof tmp) {
             fail++;
-            if (cb) cb(ctx, rel, -1);
+            if (cb) cb(ctx, rel, -1, size);
             continue;
         }
 
-        int r = fp_decrypt_file(entry->fts_path, tmp, tree_log, &tree);
+        int r = fp_decrypt_file(entry->fts_path, tmp, tree_log, tree_cancel, &tree);
         if (r == 0) {
             if (rename(tmp, entry->fts_path) == 0) done++;
-            else { unlink(tmp); fail++; if (cb) cb(ctx, rel, -1); continue; }
-            if (cb) cb(ctx, rel, 0);
+            else { unlink(tmp); fail++; if (cb) cb(ctx, rel, -1, size); continue; }
+            if (cb) cb(ctx, rel, 0, size);
+        } else if (r == -2) {
+            unlink(tmp);
+            done = -2;
+            break;
         } else {
             unlink(tmp);
-            if (r == 1) { skip++; if (cb) cb(ctx, rel, 1); }
-            else { fail++; if (cb) cb(ctx, rel, -1); }
+            if (r == 1) { skip++; if (cb) cb(ctx, rel, 1, size); }
+            else { fail++; if (cb) cb(ctx, rel, -1, size); }
         }
     }
 

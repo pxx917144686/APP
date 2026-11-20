@@ -52,14 +52,14 @@
 
 /* Begin PBXFileReference section */
 		851FD95F2E578774002136BA /* APP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APP.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1D100000000000000000001 /* APP/InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "APP/InAppPurchase.dylib"; sourceTree = SOURCE_ROOT; };
+		A1D100000000000000000001 /* APP/InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = APP/InAppPurchase.dylib; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		A1C100000000000000000001 /* Exceptions for "APP" folder in "APP" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"InAppPurchase.dylib",
+				InAppPurchase.dylib,
 				Info.plist,
 			);
 			target = 851FD95E2E578774002136BA /* APP */;
@@ -383,9 +383,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = APP/Resources/APP.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TWLNU7NXWY;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -415,7 +415,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.7.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -444,9 +444,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = APP/Resources/APP.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TWLNU7NXWY;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -476,7 +476,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.1;
+				MARKETING_VERSION = 2.7.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";

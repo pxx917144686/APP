@@ -266,7 +266,7 @@ int zip_create_from_dir(const char *src_dir, const char *zip_path, char *err, si
         write_local(f, w);
         uint64_t data_start = (uint64_t)ftello(f);
         z_stream zs; memset(&zs, 0, sizeof zs);
-        deflateInit2(&zs, 6, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
+        deflateInit2(&zs, 1, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
         uLong c = crc32(0, Z_NULL, 0);
         ssize_t r; int flush = Z_NO_FLUSH;
         do {

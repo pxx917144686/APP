@@ -143,6 +143,12 @@ struct SignView: SwiftUI.View {
             filtered["com.apple.developer.kernel.increased-memory-limit"] = true
         }
 
+        for key in ["com.apple.developer.icloud-container-identifiers",
+                    "com.apple.developer.icloud-container-development-container-identifiers",
+                    "com.apple.developer.ubiquity-container-identifiers"] where (filtered[key] as? [Any])?.isEmpty == true {
+            filtered.removeValue(forKey: key)
+        }
+
         if filtered.isEmpty {
             if entitlementsMode == .custom {
                 return try? PropertyListSerialization.data(fromPropertyList: [String: Any](), format: .xml, options: 0)
@@ -195,6 +201,15 @@ struct SignView: SwiftUI.View {
                !profile.teamID.isEmpty,
                certificate.teamID != profile.teamID {
                 issues.append(SigningIssue(text: "sign_team_mismatch_warning".localized, isError: false))
+            }
+            let needsICloud = selectedIPA?.requiredEntitlementKeys.contains {
+                $0.hasPrefix("com.apple.developer.icloud") || $0.hasPrefix("com.apple.developer.ubiquity")
+            } ?? false
+            if needsICloud,
+               let data = profile.entitlementsData,
+               let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+               (dict["com.apple.developer.icloud-container-identifiers"] as? [Any])?.isEmpty != false {
+                issues.append(SigningIssue(text: "sign_icloud_container_missing_warning".localized, isError: false))
             }
             if !uncoveredExtensionTargets.isEmpty {
                 let names = uncoveredExtensionTargets.map(\.displayName).joined(separator: ", ")

@@ -18,6 +18,7 @@ struct DecryptConsoleView: SwiftUI.View {
     let accentColor: Color
     let onCancel: () -> Void
     let onShare: () -> Void
+    var onCollapse: () -> Void = {}
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @State private var pulse = false
@@ -293,6 +294,16 @@ struct DecryptConsoleView: SwiftUI.View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(log.isExpanded ? "dc_collapse_log".localized : "dc_expand_log".localized)
+
+                Button(action: onCollapse) {
+                    Image(systemName: "rectangle.compress.vertical")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .frame(width: 18, height: 18)
+                        .background(Circle().fill(.white.opacity(0.06)))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("dc_collapse_log".localized)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 7)

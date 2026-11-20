@@ -43,5 +43,6 @@ int  fp_parse(const char *path, fp_slice_t *slices, int max, int *count, char *e
 int  fp_attempt(const char *path, const fp_slice_t *s, int mode, bool addsigs, uint8_t *out, fp_attempt_t *res);
 void fp_attempt_describe(const fp_attempt_t *a, char *buf, size_t len);
 int  fp_probe_file(const char *path, const int *modes, int nmodes, fp_log_t log, void *ctx);
-int  fp_decrypt_file(const char *in_path, const char *out_path, fp_log_t log, void *ctx);
+int  fp_decrypt_file(const char *in_path, const char *out_path, fp_log_t log,
+                     bool (*should_cancel)(void *), void *ctx);
 bool fp_is_macho(const char *path);

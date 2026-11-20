@@ -845,6 +845,20 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 }
 #endif
 
+enum DownloadSheet: Identifiable {
+    case details(DownloadRequest)
+    case decryptedFiles
+
+    var id: String {
+        switch self {
+        case .details(let request):
+            return "details-\(request.id.uuidString)"
+        case .decryptedFiles:
+            return "decrypted-files"
+        }
+    }
+}
+
 struct DownloadView: SwiftUI.View {
     @StateObject private var vm: UnifiedDownloadManager = UnifiedDownloadManager.shared
     @State private var animateCards = true
@@ -852,10 +866,11 @@ struct DownloadView: SwiftUI.View {
     @State private var safariURL: URL? = nil
     @State private var showThemeSelector = false
     @StateObject private var scrollTracker = ScrollVelocityTracker()
-    @State private var showDecryptedFiles = false
     @State private var decryptedCount = 0
-    @State private var showDeleteConfirm = false
+    @State private var activeSheet: DownloadSheet?
+    @State private var pendingShare: URL?
     @State private var pendingDelete: DownloadRequest?
+    @State private var expandedRequestIDs: Set<UUID> = []
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var themeManager: ThemeManager
@@ -913,15 +928,134 @@ struct DownloadView: SwiftUI.View {
         .overlay(alignment: .bottomTrailing) {
             decryptedFilesButton
         }
-        .sheet(isPresented: $showDecryptedFiles, onDismiss: { refreshDecryptedCount() }) {
+        .sheet(item: $activeSheet, onDismiss: { handleSheetDismissed() }) { sheet in
+            sheetContent(sheet)
+        }
+        .confirmationDialog(
+            "delete".localized,
+            isPresented: Binding(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDelete
+        ) { request in
+            Button("delete_all".localized, role: .destructive) {
+                deleteDownload(request)
+                pendingDelete = nil
+            }
+            Button("cancel".localized, role: .cancel) {
+                pendingDelete = nil
+            }
+        } message: { _ in
+            Text("delete_decrypted_hint".localized)
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ sheet: DownloadSheet) -> some SwiftUI.View {
+        switch sheet {
+        case .details(let request):
+            if let path = request.localFilePath {
+                IPADetailsView(
+                    ipaURL: URL(fileURLWithPath: path),
+                    appName: request.package.name
+                )
+                .environmentObject(themeManager)
+            }
+        case .decryptedFiles:
             DecryptedFilesView()
                 .environmentObject(themeManager)
         }
     }
 
+    private func handleSheetDismissed() {
+        refreshDecryptedCount()
+
+        guard let url = pendingShare else { return }
+        pendingShare = nil
+        showThemeSelector = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            Self.presentShareSheet(for: url)
+        }
+    }
+
+    private func presentShare(_ url: URL) {
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+
+        showThemeSelector = false
+
+        if activeSheet != nil {
+            pendingShare = url
+            activeSheet = nil
+            return
+        }
+
+        guard pendingDelete == nil else { return }
+
+        Self.presentShareSheet(for: url)
+    }
+
+    private func openDetails(for request: DownloadRequest) {
+        guard request.localFilePath != nil else { return }
+        activeSheet = .details(request)
+    }
+
+    private func requestDelete(_ request: DownloadRequest) {
+        if Self.decryptedOutputURLs(for: request).isEmpty {
+            deleteDownload(request)
+        } else {
+            pendingDelete = request
+        }
+    }
+
+    private static func presentShareSheet(for url: URL) {
+        #if canImport(UIKit)
+        guard let presenter = topMostViewController() else { return }
+
+        let controller = UIActivityViewController(
+            activityItems: [url],
+            applicationActivities: nil
+        )
+        controller.setValue("share_ipa".localized, forKey: "subject")
+
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = presenter.view
+            popover.sourceRect = CGRect(
+                x: presenter.view.bounds.midX,
+                y: presenter.view.bounds.midY,
+                width: 0,
+                height: 0
+            )
+            popover.permittedArrowDirections = []
+        }
+
+        presenter.present(controller, animated: true)
+        #endif
+    }
+
+    private static func topMostViewController() -> UIViewController? {
+        #if canImport(UIKit)
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first,
+              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+                ?? scene.windows.first?.rootViewController else {
+            return nil
+        }
+
+        var current = root
+        while let presented = current.presentedViewController, !presented.isBeingDismissed {
+            current = presented
+        }
+        return current
+        #else
+        return nil
+        #endif
+    }
+
     private var decryptedFilesButton: some SwiftUI.View {
         Button {
-            showDecryptedFiles = true
+            activeSheet = .decryptedFiles
         } label: {
             ZStack(alignment: .topTrailing) {
                 Image("XcodeIcon")
@@ -981,7 +1115,10 @@ struct DownloadView: SwiftUI.View {
                     ForEach(Array(vm.sortedDownloadRequests.enumerated()), id: \.element.id) { index, request in
                         DownloadCardView(
                             request: request,
-                            isPreview: scrollTracker.isFast
+                            isPreview: scrollTracker.isFast,
+                            expandedRequestIDs: $expandedRequestIDs,
+                            onOpenDetails: { openDetails(for: request) },
+                            onShare: { presentShare($0) }
                         )
                         .scaleEffect(animateCards ? 1 : 0.9)
                         .opacity(animateCards ? 1 : 0)
@@ -990,48 +1127,28 @@ struct DownloadView: SwiftUI.View {
                         .id(request.id)
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            if request.runtime.status == .completed,
-                               let localFilePath = request.localFilePath,
-                               FileManager.default.fileExists(atPath: localFilePath) {
-                                Button {
-                                    shareIPAFile(path: localFilePath, name: request.package.name)
-                                } label: {
-                                    Label("share".localized, systemImage: "square.and.arrow.up")
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if !expandedRequestIDs.contains(request.id) {
+                                if request.runtime.status == .completed,
+                                   let localFilePath = request.localFilePath,
+                                   FileManager.default.fileExists(atPath: localFilePath) {
+                                    Button {
+                                        presentShare(URL(fileURLWithPath: localFilePath))
+                                    } label: {
+                                        Label("share".localized, systemImage: "square.and.arrow.up")
+                                    }
+                                    .tint(.blue)
                                 }
-                                .tint(.blue)
-                            }
 
-                            Button(role: .destructive) {
-                                if Self.decryptedOutputURLs(for: request).isEmpty {
-                                    deleteDownload(request)
-                                } else {
-                                    pendingDelete = request
-                                    showDeleteConfirm = true
+                                Button(role: .destructive) {
+                                    requestDelete(request)
+                                } label: {
+                                    Label("delete".localized, systemImage: "trash")
                                 }
-                            } label: {
-                                Label("delete".localized, systemImage: "trash")
                             }
                         }
                     }
                 }
-            }
-            .confirmationDialog(
-                "delete".localized,
-                isPresented: $showDeleteConfirm,
-                titleVisibility: .visible
-            ) {
-                Button("delete_all".localized, role: .destructive) {
-                    if let pendingDelete {
-                        deleteDownload(pendingDelete)
-                    }
-                    pendingDelete = nil
-                }
-                Button("cancel".localized, role: .cancel) {
-                    pendingDelete = nil
-                }
-            } message: {
-                Text("delete_decrypted_hint".localized)
             }
             .background(
                 GeometryReader { geometry in
@@ -1050,58 +1167,6 @@ struct DownloadView: SwiftUI.View {
         .refreshable {
             vm.syncDownloadStatus()
         }
-    }
-
-    private func shareIPAFile(path: String, name: String) {
-
-        guard FileManager.default.fileExists(atPath: path) else {
-            return
-        }
-
-        let fileURL = URL(fileURLWithPath: path)
-
-        #if canImport(UIKit)
-        guard let topViewController = getTopViewController() else {
-            return
-        }
-
-        let activityViewController = UIActivityViewController(
-            activityItems: [fileURL],
-            applicationActivities: nil
-        )
-
-        activityViewController.title = name
-
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            activityViewController.popoverPresentationController?.sourceView = topViewController.view
-            activityViewController.popoverPresentationController?.sourceRect = CGRect(
-                x: topViewController.view.bounds.midX,
-                y: topViewController.view.bounds.midY,
-                width: 0,
-                height: 0
-            )
-            activityViewController.popoverPresentationController?.permittedArrowDirections = []
-        }
-
-        topViewController.present(activityViewController, animated: true)
-        #endif
-    }
-
-    private func getTopViewController() -> UIViewController? {
-        #if canImport(UIKit)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) else {
-            return nil
-        }
-
-        var topController = keyWindow.rootViewController
-        while let presentedViewController = topController?.presentedViewController {
-            topController = presentedViewController
-        }
-        return topController
-        #else
-        return nil
-        #endif
     }
 
     private var emptyStateView: some SwiftUI.View {
@@ -1172,6 +1237,12 @@ struct DownloadView: SwiftUI.View {
     }
 
     private func deleteDownload(_ request: DownloadRequest) {
+        expandedRequestIDs.remove(request.id)
+
+        if case .details(let current)? = activeSheet, current.id == request.id {
+            activeSheet = nil
+        }
+
         UnifiedDownloadManager.shared.deleteDownload(request: request)
         UnifiedDownloadManager.shared.saveDownloadTasks()
 
@@ -1301,6 +1372,9 @@ struct DownloadCardView: SwiftUI.View {
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject var themeManager: ThemeManager
     var isPreview: Bool = false
+    @Binding var expandedRequestIDs: Set<UUID>
+    var onOpenDetails: () -> Void = {}
+    var onShare: (URL) -> Void = { _ in }
 
     @State private var isInstalling = false
     @State private var installationProgress: Double = 0.0
@@ -1309,10 +1383,10 @@ struct DownloadCardView: SwiftUI.View {
     @State private var isDecrypting = false
     @State private var decryptMessage: String?
     @State private var decryptedURL: URL?
-    @State private var showDetails = false
     @State private var decryptTask: Task<Void, Never>?
     @State private var fileSizeText: String?
     @State private var decryptOutcome: DecryptConsoleOutcome = .idle
+    @State private var isConsoleCollapsed = false
     @StateObject private var decryptLog = DecryptLog()
 
     private var progress: Double {
@@ -1321,6 +1395,14 @@ struct DownloadCardView: SwiftUI.View {
 
     private var status: DownloadStatus {
         request.runtime.status
+    }
+
+    private var showsConsole: Bool {
+        isDecrypting || !decryptLog.lines.isEmpty
+    }
+
+    private var isRowExpanded: Bool {
+        showsConsole && !isConsoleCollapsed
     }
 
     var body: some SwiftUI.View {
@@ -1348,30 +1430,40 @@ struct DownloadCardView: SwiftUI.View {
                     installStatusView
                 }
 
-                if isDecrypting || !decryptLog.lines.isEmpty {
-                    DecryptConsoleView(
-                        log: decryptLog,
-                        outcome: decryptOutcome,
-                        appName: request.package.name,
-                        bundleIdentifier: request.package.bundleIdentifier,
-                        message: decryptMessage,
-                        decryptedURL: decryptedURL,
-                        accentColor: themeManager.accentColor,
-                        onCancel: {
-                            DecryptCoordinator.shared.cancel()
-                        },
-                        onShare: {
-                            if let url = decryptedURL {
-                                shareIPAFile(path: url.path)
+                if showsConsole {
+                    if isConsoleCollapsed {
+                        collapsedConsoleBar
+                            .transition(.opacity)
+                    } else {
+                        DecryptConsoleView(
+                            log: decryptLog,
+                            outcome: decryptOutcome,
+                            appName: request.package.name,
+                            bundleIdentifier: request.package.bundleIdentifier,
+                            message: decryptMessage,
+                            decryptedURL: decryptedURL,
+                            accentColor: themeManager.accentColor,
+                            onCancel: {
+                                DecryptCoordinator.shared.cancel()
+                            },
+                            onShare: {
+                                if let url = decryptedURL {
+                                    onShare(url)
+                                }
+                            },
+                            onCollapse: {
+                                withAnimation(.spring(response: 0.42, dampingFraction: 0.88)) {
+                                    isConsoleCollapsed = true
+                                }
                             }
-                        }
-                    )
-                    .transition(
-                        .asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .top)).combined(with: .scale(scale: 0.98, anchor: .top)),
-                            removal: .opacity
                         )
-                    )
+                        .transition(
+                            .asymmetric(
+                                insertion: .opacity.combined(with: .move(edge: .top)).combined(with: .scale(scale: 0.98, anchor: .top)),
+                                removal: .opacity
+                            )
+                        )
+                    }
                 } else if let decryptMessage {
                     HStack(alignment: .top, spacing: 6) {
                         Text(decryptMessage)
@@ -1383,7 +1475,7 @@ struct DownloadCardView: SwiftUI.View {
 
                         if let url = decryptedURL {
                             Button {
-                                shareIPAFile(path: url.path)
+                                onShare(url)
                             } label: {
                                 Image(systemName: "square.and.arrow.up")
                                     .font(.system(size: 13, weight: .medium))
@@ -1408,33 +1500,80 @@ struct DownloadCardView: SwiftUI.View {
                     y: 2
                 )
         )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            handleCardTap()
-        }
         .onAppear {
             loadExistingDecrypted()
             fileSizeText = request.localFilePath.flatMap { getFileSize(path: $0) }
+            syncExpansionState()
         }
         .onChange(of: request.localFilePath) { _, _ in
             fileSizeText = request.localFilePath.flatMap { getFileSize(path: $0) }
+        }
+        .onChange(of: isRowExpanded) { _, _ in
+            syncExpansionState()
         }
         .onDisappear {
             decryptTask?.cancel()
             if DecryptCoordinator.shared.activeRequestID == request.id {
                 DecryptCoordinator.shared.cancel()
             }
-        }
-        .sheet(isPresented: $showDetails) {
-            if let path = request.localFilePath {
-                IPADetailsView(
-                    ipaURL: URL(fileURLWithPath: path),
-                    appName: request.package.name
-                )
-                .environmentObject(themeManager)
-            }
+            expandedRequestIDs.remove(request.id)
         }
         .id(request.id)
+    }
+
+    private func syncExpansionState() {
+        if isRowExpanded {
+            expandedRequestIDs.insert(request.id)
+        } else {
+            expandedRequestIDs.remove(request.id)
+        }
+    }
+
+    private var collapsedConsoleBar: some SwiftUI.View {
+        Button {
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.88)) {
+                isConsoleCollapsed = false
+            }
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: decryptOutcome == .completed ? "checkmark.shield.fill" : "lock.open.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(decryptOutcome == .completed ? Color.green : themeManager.accentColor)
+
+                Text("dc_console_title".localized)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                Text(collapsedConsoleStatus)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.secondary)
+
+                Spacer(minLength: 4)
+
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.primary.opacity(colorScheme == .dark ? 0.07 : 0.05))
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("dc_expand_log".localized)
+    }
+
+    private var collapsedConsoleStatus: String {
+        switch decryptOutcome {
+        case .idle: return "dc_phase_prepare".localized
+        case .running: return "dc_status_running".localized
+        case .completed: return "dc_status_completed".localized
+        case .failed: return "dc_status_failed".localized
+        case .cancelled: return "dc_status_cancelled".localized
+        }
     }
 
     private var shouldShowProgress: Bool {
@@ -1450,6 +1589,10 @@ struct DownloadCardView: SwiftUI.View {
             appInfoView
             Spacer(minLength: 6)
             actionButtonView
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            handleCardTap()
         }
     }
 
@@ -1577,6 +1720,7 @@ struct DownloadCardView: SwiftUI.View {
         }
 
         withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+            isConsoleCollapsed = false
             isDecrypting = true
             decryptOutcome = .running
         }
@@ -1622,9 +1766,9 @@ struct DownloadCardView: SwiftUI.View {
                     decryptedURL = URL(fileURLWithPath: output)
                     decryptMessage = record.message
                     NotificationCenter.default.post(name: NSNotification.Name("DecryptedFilesChanged"), object: nil)
-                    let outputPath = output
+                    let outputURL = URL(fileURLWithPath: output)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        shareIPAFile(path: outputPath)
+                        onShare(outputURL)
                     }
                 } else {
                     decryptMessage = record.message ?? "dc_status_failed".localized
@@ -1737,7 +1881,7 @@ struct DownloadCardView: SwiftUI.View {
                 Spacer(minLength: 4)
 
                 Button {
-                    showDetails = true
+                    onOpenDetails()
                 } label: {
                     Image(systemName: "info.circle.fill")
                         .font(.system(size: 14))
@@ -1774,57 +1918,10 @@ struct DownloadCardView: SwiftUI.View {
     }
 
     private func handleCardTap() {
-        if isDecrypting || !decryptLog.lines.isEmpty { return }
+        if isRowExpanded { return }
         if request.runtime.status == .completed, request.localFilePath != nil {
-            showDetails = true
+            onOpenDetails()
         }
-    }
-
-    private func shareIPAFile(path: String) {
-        guard FileManager.default.fileExists(atPath: path) else {
-            return
-        }
-
-        let fileURL = URL(fileURLWithPath: path)
-
-        #if os(iOS)
-
-        let activityViewController = UIActivityViewController(
-            activityItems: [fileURL],
-            applicationActivities: nil
-        )
-
-        activityViewController.setValue("share_ipa".localized, forKey: "subject")
-
-        if let presenter = topPresentingViewController() {
-
-            if let popover = activityViewController.popoverPresentationController {
-                popover.sourceView = presenter.view
-                popover.sourceRect = CGRect(x: presenter.view.bounds.midX,
-                                          y: presenter.view.bounds.midY,
-                                          width: 0, height: 0)
-                popover.permittedArrowDirections = []
-            }
-
-            presenter.present(activityViewController, animated: true) {
-            }
-        }
-        #else
-        #endif
-    }
-
-    private func topPresentingViewController() -> UIViewController? {
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first,
-              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-                ?? scene.windows.first?.rootViewController else {
-            return nil
-        }
-        var current = root
-        while let presented = current.presentedViewController, !presented.isBeingDismissed {
-            current = presented
-        }
-        return current
     }
 
     private var statusIndicator: some SwiftUI.View {

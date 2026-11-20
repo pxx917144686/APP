@@ -27,7 +27,14 @@ security create-keychain -p tmppass123 "$WORK/sign.keychain" 2>/dev/null || true
 security set-keychain-settings -t 3600 -u "$WORK/sign.keychain"
 if ! security import "$P12" -k "$WORK/sign.keychain" -P "$PASS" -T /usr/bin/codesign 2>/dev/null; then
   echo "    原生导入失败，尝试 OpenSSL 转换 legacy 格式..."
-  OPENSSL=$(command -v openssl)
+  OPENSSL=""
+  for CAND in "$OPENSSL_BIN" /opt/homebrew/opt/openssl@3/bin/openssl /usr/local/opt/openssl@3/bin/openssl /opt/homebrew/bin/openssl /usr/local/bin/openssl "$(command -v openssl 2>/dev/null)"; do
+    [ -n "$CAND" ] && [ -x "$CAND" ] || continue
+    if "$CAND" pkcs12 -in "$P12" -passin "pass:$PASS" -nokeys -clcerts -out /dev/null 2>/dev/null; then
+      OPENSSL="$CAND"; break
+    fi
+  done
+  [ -n "$OPENSSL" ] || { echo "!! 没有能解析该 p12 的 OpenSSL（需 OpenSSL 3.x，系统自带 LibreSSL 不支持此加密格式）"; exit 1; }
   "$OPENSSL" pkcs12 -in "$P12" -passin "pass:$PASS" -nodes -out "$WORK/keycert.pem" || {
     echo "!! 密码错误或证书损坏"; exit 1; }
   "$OPENSSL" pkcs12 -export -in "$WORK/keycert.pem" -out "$WORK/legacy.p12" \

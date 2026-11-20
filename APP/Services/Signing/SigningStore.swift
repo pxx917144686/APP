@@ -135,16 +135,33 @@ final class SigningStore: ObservableObject {
 
     private init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let applicationSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         rootURL = documents.appendingPathComponent("Signing", isDirectory: true)
         certificatesDirectory = rootURL.appendingPathComponent("Certificates", isDirectory: true)
         profilesDirectory = rootURL.appendingPathComponent("Profiles", isDirectory: true)
-        secretsDirectory = rootURL.appendingPathComponent("Secrets", isDirectory: true)
+        secretsDirectory = applicationSupport
+            .appendingPathComponent("Signing", isDirectory: true)
+            .appendingPathComponent("Secrets", isDirectory: true)
         importedIPADirectory = rootURL.appendingPathComponent("IPAs", isDirectory: true)
         injectionDirectory = rootURL.appendingPathComponent("Injections", isDirectory: true)
         signedOutputDirectory = rootURL.appendingPathComponent("Signed", isDirectory: true)
 
         for directory in [rootURL, certificatesDirectory, profilesDirectory, secretsDirectory, importedIPADirectory, injectionDirectory, signedOutputDirectory] {
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        let legacySecrets = documents.appendingPathComponent("Signing/Secrets", isDirectory: true)
+        if let items = try? FileManager.default.contentsOfDirectory(at: legacySecrets, includingPropertiesForKeys: nil) {
+            for item in items {
+                let target = secretsDirectory.appendingPathComponent(item.lastPathComponent)
+                if FileManager.default.fileExists(atPath: target.path) {
+                    try? FileManager.default.removeItem(at: item)
+                } else {
+                    try? FileManager.default.moveItem(at: item, to: target)
+                }
+                try? FileManager.default.setAttributes([FileAttributeKey(rawValue: "NSFileProtection"): FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: target.path)
+            }
+            try? FileManager.default.removeItem(at: legacySecrets)
         }
 
         load()
@@ -213,6 +230,7 @@ final class SigningStore: ObservableObject {
         if !SigningKeychain.set(password, account: id.uuidString) {
             let fallback = secretsDirectory.appendingPathComponent("\(id.uuidString).txt")
             try? password.write(to: fallback, atomically: true, encoding: .utf8)
+            try? FileManager.default.setAttributes([FileAttributeKey(rawValue: "NSFileProtection"): FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: fallback.path)
         }
         certificates.append(certificate)
         selectedCertificateID = id
