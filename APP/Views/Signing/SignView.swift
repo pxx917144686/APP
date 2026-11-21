@@ -12,6 +12,7 @@ struct SignView: SwiftUI.View {
     @StateObject private var downloads = UnifiedDownloadManager.shared
     @ObservedObject private var historyStore = SigningHistoryStore.shared
 
+    @ObservedObject private var handoff = SigningHandoff.shared
     @State private var selectedIPA: SigningIPAInfo?
     @State private var bundleID = ""
     @State private var displayName = ""
@@ -318,10 +319,12 @@ struct SignView: SwiftUI.View {
         .fileImporter(isPresented: $showProfileImporter, allowedContentTypes: [profileType], allowsMultipleSelection: false) { result in
             handleProfileImport(result)
         }
+        .onAppear { consumeSigningHandoff() }
+        .onChange(of: handoff.pendingIPA) { _, _ in consumeSigningHandoff() }
         .sheet(isPresented: $showIPAImporter) {
-            DocumentPicker(types: [.item]) { url in
+            DocumentPicker(types: [.item]) { urls in
                 showIPAImporter = false
-                handlePickedIPA(url)
+                if let url = urls.first { handlePickedIPA(url) }
             }
         }
         .fileImporter(isPresented: $showDylibImporter, allowedContentTypes: [dylibType], allowsMultipleSelection: true) { result in
@@ -2596,6 +2599,12 @@ struct SignView: SwiftUI.View {
                 }
             }
         }
+    }
+
+    private func consumeSigningHandoff() {
+        guard let url = handoff.pendingIPA else { return }
+        handoff.pendingIPA = nil
+        handlePickedIPA(url)
     }
 
     private var availableTargets: [SigningTarget] {

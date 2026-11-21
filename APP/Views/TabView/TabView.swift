@@ -4,6 +4,7 @@ import UIKit
 enum TabEnum: String, CaseIterable, Hashable {
     case settings
     case downloads
+    case decrypt
     case purchased
     case sign
     case search
@@ -12,6 +13,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "tab_settings".localized
         case .downloads:  return "tab_downloads".localized
+        case .decrypt:    return "tab_decrypt".localized
         case .purchased:  return "tab_purchased".localized
         case .sign:       return "tab_sign".localized
         case .search:     return "tab_search".localized
@@ -22,6 +24,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
+        case .decrypt:    return "lock.open.fill"
         case .purchased:  return "bag.fill"
         case .sign:       return "signature"
         case .search:     return "magnifyingglass.circle.fill"
@@ -38,6 +41,13 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .downloads:
             NavigationView {
                 DownloadView()
+                    .environmentObject(themeManager)
+                    .environmentObject(tabBarStyleManager)
+            }
+            .navigationViewStyle(.stack)
+        case .decrypt:
+            NavigationView {
+                DecryptView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
@@ -73,6 +83,7 @@ struct TabbarView: View {
         return .settings
     }()
     @ObservedObject private var tabOrder = TabOrderStore.shared
+    @ObservedObject private var router = TabRouter.shared
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var tabBarStyleManager: TabBarStyleManager
 
@@ -103,6 +114,13 @@ struct TabbarView: View {
         }
         .onChange(of: selectedTab) { _, newValue in
             AnalyticsManager.shared.trackScreen(newValue.rawValue)
+        }
+        .onChange(of: router.requested) { _, newValue in
+            guard let newValue else { return }
+            router.requested = nil
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+                selectedTab = newValue
+            }
         }
         .onChange(of: themeManager.accentColor) { _, _ in
             updateTabBarAppearance()

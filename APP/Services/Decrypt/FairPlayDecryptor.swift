@@ -12,7 +12,13 @@ enum FairPlayDecryptor {
                 return url
             }
         }
-        return nil
+
+        guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let fallback = caches.appendingPathComponent("FairPlayedWork", isDirectory: true)
+        try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
+        return fallback
     }
 
     static var isAvailable: Bool { containerURL() != nil }
@@ -93,6 +99,7 @@ enum FairPlayDecryptor {
         }
 
         emit(.phase("EXTRACT"))
+        emit(.line("root    \(groupRoot.path)", .info))
         emit(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
 
         var errBuf = [CChar](repeating: 0, count: 1024)

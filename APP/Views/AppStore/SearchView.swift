@@ -1509,6 +1509,21 @@ struct SearchView: SwiftUI.View {
                         }
 
                         merged.normalizeVersionOrder()
+
+                        if merged.count < hist.count {
+                            let known = Set(merged.map { $0.versionString })
+                            for info in hist where !known.contains(info.version) {
+                                merged.append(StoreAppVersion(
+                                    versionString: info.version,
+                                    versionId: "",
+                                    isCurrent: false,
+                                    releaseDate: info.releaseDate,
+                                    releaseNotes: info.releaseNotes
+                                ))
+                            }
+                            merged.normalizeVersionOrder()
+                        }
+
                         self.availableVersions = merged
                         self.versionHistory = hist.sorted { $0.releaseDate > $1.releaseDate }
                         self.versionError = nil
@@ -1566,13 +1581,14 @@ struct SearchView: SwiftUI.View {
 
                     fallbackVersions.normalizeVersionOrder()
                     let resolved = fallbackVersions
+                    let keepLoading = resolved.count <= 1 && allowRetry
                     await MainActor.run {
                         guard self.selectedApp?.trackId == trackId else { return }
                         self.selectedApp = resolvedApp
                         self.availableVersions = resolved
                         self.versionError = nil
-                        self.isLoadingVersions = false
-                        if fromPro {
+                        self.isLoadingVersions = keepLoading
+                        if fromPro, resolved.count > 1 {
                             VersionListCache.shared.set(resolved, for: trackId)
                         }
                     }
@@ -1596,7 +1612,7 @@ struct SearchView: SwiftUI.View {
                             isCurrent: true
                         )]
                         self.versionError = nil
-                        self.isLoadingVersions = false
+                        self.isLoadingVersions = allowRetry
                     } else if allowRetry {
                         self.isLoadingVersions = true
                     } else {
