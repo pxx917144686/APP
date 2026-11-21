@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "L'accès à la caméra est nécessaire pour scanner des codes QR afin de télécharger des apps.";
+"NSFaceIDUsageDescription" = "Utilisé pour déverrouiller les enregistrements de signature masqués et le coffre de signature.";
+"NSLocalNetworkUsageDescription" = "L'accès au réseau local est nécessaire pour lancer un serveur temporaire afin d'installer les apps téléchargées.";

@@ -1,0 +1,27 @@
+{
+	"bundle_executable": "APP",
+	"bundle_id": "app.bamboo3965.leo5976",
+	"bundle_version": "1.0.0",
+	"changed": [
+		"InAppPurchase.dylib",
+		"Frameworks/libswiftCompatibilitySpan.dylib",
+		"Frameworks/OpenSSL.framework/_CodeSignature/CodeResources",
+		"Frameworks/OpenSSL.framework/OpenSSL"
+	],
+	"files": [ "InAppPurchase.dylib", "Frameworks/libswiftCompatibilitySpan.dylib" ],
+	"folders": [
+		{
+			"bundle_executable": "OpenSSL",
+			"bundle_id": "com.github.krzyzanowskim.OpenSSL",
+			"bundle_version": "1",
+			"path": "Frameworks/OpenSSL.framework",
+			"sha1": "ahv7+vyMQ9uJQWPnyUzZj049q/c=",
+			"sha256": "Ac1csjhVaweEiLTQKP/G9LNSnpCGgI6D9clFrg/fDew="
+		}
+	],
+	"name": "SmokeTest",
+	"path": "/",
+	"root": "/Users/pxx917144686/Documents/案例/APP/build/Payload/APP.app",
+	"sha1": "HaHozCYtcINlEgPQpBphNmoMV5M=",
+	"sha256": "4GmoYVL+65eLisPQY7Xnc/1jfD8zMxrdeuPOX0gkWMw="
+}

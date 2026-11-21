@@ -17,12 +17,15 @@ struct AccountView: View {
 
                 Section {
                     if let account = appStore.selectedAccount {
-                        accountHeaderCard(account: account)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                            .onTapGesture {
-                                selectedAccountForDetail = account
-                            }
+                        Button {
+                            selectedAccountForDetail = account
+                        } label: {
+                            accountHeaderCard(account: account)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                        .accessibilityHint("detail_action".localized)
                     } else {
                         emptyAccountCard
                             .listRowBackground(Color.clear)

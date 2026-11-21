@@ -46,6 +46,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
     private var downloadQueue: [DownloadRequest] = []
     private var reservedDestinationPaths: Set<String> = []
+    private var persistSequence = 0
     private var requestDestinationPaths: [UUID: String] = [:]
 
     private var documentsDirectory: URL {
@@ -164,9 +165,11 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             },
             completion: { result in
                 Task { @MainActor in
-                    guard request.runtime.status != .completed,
-                          request.runtime.status != .failed else {
+                    switch request.runtime.status {
+                    case .completed, .failed, .cancelled, .paused:
                         return
+                    default:
+                        break
                     }
 
                     switch result {
@@ -297,6 +300,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func deleteDownload(request: DownloadRequest) {
+        downloadManager.purgeDownloadArtifacts(downloadId: request.id.uuidString)
         if let index = downloadRequests.firstIndex(where: { $0.id == request.id }) {
             downloadRequests.remove(at: index)
         }
@@ -332,6 +336,11 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             return
         }
 
+        let wasPaused = request.runtime.status == DownloadStatus.paused
+        let savedProgress = request.runtime.progress
+        let savedCompletedBytes = request.runtime.completedBytes
+        let savedTotalBytes = request.runtime.totalBytes
+
         activeDownloads.insert(request.id)
         request.runtime.status = DownloadStatus.downloading
         request.runtime.error = nil
@@ -343,8 +352,15 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         Task {
             let downloadId = request.id.uuidString
             let hasBackgroundTask = await self.downloadManager.hasBackgroundTask(for: downloadId)
-            if hasBackgroundTask || self.downloadManager.hasActiveDownload(for: downloadId) {
+            let hasSuspendedTasks = self.downloadManager.hasSuspendedTasks(for: downloadId)
+            if hasBackgroundTask || hasSuspendedTasks || self.downloadManager.hasActiveDownload(for: downloadId) {
                 await MainActor.run {
+                    if hasSuspendedTasks || wasPaused {
+                        self.downloadManager.resumeDownload(downloadId: downloadId)
+                        request.runtime.progress = savedProgress
+                        request.runtime.completedBytes = savedCompletedBytes
+                        request.runtime.totalBytes = savedTotalBytes
+                    }
                     self.restoreSingleDownloadHandler(for: request)
                 }
                 return
@@ -393,6 +409,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 return
             }
 
+            if request.runtime.status == DownloadStatus.cancelled || request.runtime.status == DownloadStatus.paused {
+                _ = await MainActor.run { self.activeDownloads.remove(request.id) }
+                self.processNextInQueue()
+                return
+            }
+
             let purchaseResult = await purchaseManager.purchaseAppIfNeeded(
                 appIdentifier: String(request.package.identifier),
                 account: storeAccount,
@@ -401,10 +423,20 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             )
 
             switch purchaseResult {
-            case .success:
+            case .success(let purchase):
+                let ownershipSongList = purchase.downloadSongList ?? []
+                var prefetchedSongList: [[String: Any]]? = nil
                 let effectiveVersionId: String?
                 if let v = request.versionId, !v.isEmpty {
                     effectiveVersionId = v
+                    if let first = ownershipSongList.first,
+                       let ownedVersionId = Self.songVersionId(fromRawMetadata: first["metadata"]),
+                       ownedVersionId == v {
+                        prefetchedSongList = ownershipSongList
+                    }
+                } else if let first = ownershipSongList.first {
+                    prefetchedSongList = ownershipSongList
+                    effectiveVersionId = Self.songVersionId(fromRawMetadata: first["metadata"])
                 } else {
                     do {
                         let dlResp = try await StoreRequest.shared.download(
@@ -414,11 +446,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         )
                         if let firstSong = dlResp.songList.first {
                             let latestId = firstSong.metadata.softwareVersionExternalIdentifier
-                            if !latestId.isEmpty {
-                                effectiveVersionId = latestId
-                            } else {
-                                effectiveVersionId = nil
-                            }
+                            effectiveVersionId = latestId.isEmpty ? nil : latestId
                         } else {
                             effectiveVersionId = nil
                         }
@@ -431,9 +459,16 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.versionId = effectiveVersionId
                 }
 
+                if request.runtime.status == DownloadStatus.cancelled || request.runtime.status == DownloadStatus.paused {
+                    _ = await MainActor.run { self.activeDownloads.remove(request.id) }
+                    self.processNextInQueue()
+                    return
+                }
+
                 proceedWithDownload(
                     for: request,
-                    storeAccount: storeAccount
+                    storeAccount: storeAccount,
+                    prefetchedSongList: prefetchedSongList
                 )
             case .failure(let error):
                 await MainActor.run {
@@ -446,9 +481,19 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         }
     }
 
+    private static func songVersionId(fromRawMetadata metadata: Any?) -> String? {
+        guard let metadataDict = metadata as? [String: Any] else { return nil }
+        let raw = metadataDict["softwareVersionExternalIdentifier"]
+        if let n = raw as? Int { return String(n) }
+        if let n = raw as? Int64 { return String(n) }
+        if let s = raw as? String, !s.isEmpty { return s }
+        return nil
+    }
+
     private func proceedWithDownload(
         for request: DownloadRequest,
-        storeAccount: Account
+        storeAccount: Account,
+        prefetchedSongList: [[String: Any]]? = nil
     ) {
         let bundleId = request.package.bundleIdentifier
         let version = request.version
@@ -467,6 +512,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             destinationURL: destinationURL,
             appVersion: request.versionId,
             downloadId: request.id.uuidString,
+            prefetchedSongList: prefetchedSongList,
             progressHandler: { downloadProgress in
                 Task { @MainActor in
 
@@ -747,7 +793,12 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
 
 extension UnifiedDownloadManager {
 
+    nonisolated private static let persistenceQueue = DispatchQueue(label: "download.persistence", qos: .utility)
+    nonisolated(unsafe) private static var lastPersistedSequence = 0
+
     func saveDownloadTasks() {
+        persistSequence += 1
+        let sequence = persistSequence
 
         let saveData = DownloadTasksSaveData(
             downloadRequests: downloadRequests.map { request in
@@ -774,14 +825,18 @@ extension UnifiedDownloadManager {
             queueOrder: downloadQueue.map { $0.id }
         )
 
-        if DownloadStore.shared.isAvailable {
-            DownloadStore.shared.save(saveData)
-        } else {
-            Self.saveLegacy(saveData)
+        Self.persistenceQueue.async {
+            guard sequence > Self.lastPersistedSequence else { return }
+            Self.lastPersistedSequence = sequence
+            if DownloadStore.shared.isAvailable {
+                DownloadStore.shared.save(saveData)
+            } else {
+                Self.saveLegacy(saveData)
+            }
         }
     }
 
-    private static func saveLegacy(_ saveData: DownloadTasksSaveData) {
+    nonisolated private static func saveLegacy(_ saveData: DownloadTasksSaveData) {
         guard let data = try? JSONEncoder().encode(saveData) else { return }
         let url = tasksFileURL
         let manager = FileManager.default
@@ -1001,8 +1056,8 @@ extension UnifiedDownloadManager {
             }
         }
 
-        activeDownloads = newActive
-        waitingDownloads = newWaiting
+        activeDownloads = newActive.union(activeDownloads)
+        waitingDownloads = newWaiting.union(waitingDownloads)
 
         if let queueOrder = saveData.queueOrder {
             downloadQueue = queueOrder.compactMap { requestId in
@@ -1023,7 +1078,9 @@ extension UnifiedDownloadManager {
             for request in downloadRequests {
                 let hasActiveTask = activeIds.contains(request.id.uuidString)
 
-                if request.runtime.status == .downloading && !hasActiveTask {
+                // 仅对孤儿状态（App 重启后恢复的 .downloading 且本会话未启动）判暂停；
+                // 本会话已启动、正走前置链路（购买/版本解析/取地址）的下载不受对账影响
+                if request.runtime.status == .downloading && !hasActiveTask && !activeDownloads.contains(request.id) {
                     request.runtime.status = .paused
                     activeDownloads.remove(request.id)
                 } else if request.runtime.status == .paused && hasActiveTask {

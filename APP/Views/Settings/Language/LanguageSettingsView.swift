@@ -63,8 +63,10 @@ struct LanguageSettingsView: View {
                 Spacer()
 
                 if selectedLanguage == language {
-                    Text("✅")
-                        .font(.system(size: 20))
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(themeManager.accentColor)
+                        .transition(.scale(scale: 0.4).combined(with: .opacity))
                 }
             }
             .contentShape(Rectangle())

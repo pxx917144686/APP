@@ -170,7 +170,7 @@ enum FairPlayDecryptor {
 
         if decrypted == 0 && failedCount == 0 {
             emit(.phase("DONE"))
-            emit(.line("package is not encrypted, copied as-is", .warning))
+            emit(.line(skippedCount == 0 ? "no Mach-O binaries found in package" : "package is not encrypted, copied as-is", .warning))
             let copyURL = outDir.appendingPathComponent(ipaURL.lastPathComponent)
             try? manager.removeItem(at: copyURL)
             try manager.copyItem(at: ipaURL, to: copyURL)
@@ -202,7 +202,7 @@ enum FairPlayDecryptor {
         emit(.phase("PACK"))
         let suffix = failedCount > 0 ? "-PARTIAL" : "-decrypted"
         let outURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa")
-        let tempURL = outDir.appendingPathComponent("\(stem)\(suffix).ipa.tmp")
+        let tempURL = outDir.appendingPathComponent("\(stem)\(suffix)-\(UUID().uuidString).ipa.tmp")
         try? manager.removeItem(at: tempURL)
 
         let packStatus = workRoot.path.withCString { src in

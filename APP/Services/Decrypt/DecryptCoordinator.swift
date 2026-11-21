@@ -26,6 +26,7 @@ final class DecryptCoordinator: ObservableObject {
     var isBusy: Bool { activeRequestID != nil }
 
     func begin(requestID: UUID) -> DecryptCancelToken {
+        if activeRequestID == requestID { return cancelToken }
         cancelToken = DecryptCancelToken()
         activeRequestID = requestID
         return cancelToken

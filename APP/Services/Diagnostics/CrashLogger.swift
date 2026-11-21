@@ -6,8 +6,12 @@ private func crashLogWriteSignal(_ sig: Int32) {
     if let path = crashLogSignalPath {
         let fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0o644)
         if fd >= 0 {
-            let message = "\n=== FATAL SIGNAL \(sig) ===\n"
-            message.withCString { _ = Darwin.write(fd, $0, strlen($0)) }
+            let prefix = "\n=== FATAL SIGNAL "
+            _ = prefix.withCString { p in Darwin.write(fd, p, strlen(p)) }
+            let number = String(sig)
+            _ = number.withCString { p in Darwin.write(fd, p, strlen(p)) }
+            let suffix = " ===\n"
+            _ = suffix.withCString { p in Darwin.write(fd, p, strlen(p)) }
 
             var frames = [UnsafeMutableRawPointer?](repeating: nil, count: 64)
             let count = backtrace(&frames, 32)

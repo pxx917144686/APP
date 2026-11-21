@@ -36,6 +36,7 @@ final class SAPSigner: NSObject, ObservableObject, WKNavigationDelegate, WKScrip
             NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
             .sink { [weak self] _ in
                 Task { @MainActor in
+                    guard self?.operationID == nil else { return }
                     self?.discardIdleRuntime()
                     await self?.server.reset()
                 }

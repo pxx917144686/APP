@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Cần truy cập máy ảnh để quét mã QR nhằm tải ứng dụng.";
+"NSFaceIDUsageDescription" = "Dùng để mở khóa bản ghi ký ẩn và kho ký.";
+"NSLocalNetworkUsageDescription" = "Cần truy cập mạng cục bộ để chạy máy chủ tạm thời cài đặt ứng dụng đã tải.";

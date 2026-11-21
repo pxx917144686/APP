@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Kameraadgang er nødvendig for at scanne QR-koder for at downloade apps.";
+"NSFaceIDUsageDescription" = "Bruges til at låse skjulte signeringsposter og signeringsboksen op.";
+"NSLocalNetworkUsageDescription" = "Lokal netværksadgang er nødvendig for at køre en midlertidig server til installation af downloadede apps.";

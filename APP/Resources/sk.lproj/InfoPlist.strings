@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Prístup ku kamere je potrebný na skenovanie QR kódov na sťahovanie aplikácií.";
+"NSFaceIDUsageDescription" = "Slúži na odomknutie skrytých záznamov podpisov a trezoru podpisov.";
+"NSLocalNetworkUsageDescription" = "Prístup k miestnej sieti je potrebný na spustenie dočasného servera na inštaláciu stiahnutých aplikácií.";

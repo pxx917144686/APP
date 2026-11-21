@@ -127,6 +127,7 @@ struct ArtworkView: View {
         loadTask = Task {
             let image = await ImageLoader.shared.loadImage(from: url)
             await MainActor.run {
+                guard !Task.isCancelled else { return }
                 isLoading = false
                 if let image = image {
                     loadedImage = image

@@ -153,7 +153,7 @@ extension AppIconView {
 								Spacer()
 								Image(systemName: "checkmark.circle.fill")
 									.font(.system(size: 24, weight: .bold))
-									.foregroundColor(.blue)
+									.foregroundColor(.accentColor)
 									.background(Color.white.clipShape(Circle()))
 									.padding(.trailing, 2)
 									.padding(.bottom, 2)

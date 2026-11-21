@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Akses kamera diperlukan untuk mengimbas kod QR bagi memuat turun apl.";
+"NSFaceIDUsageDescription" = "Digunakan untuk membuka rekod tandatangan tersembunyi dan peti besi tandatangan.";
+"NSLocalNetworkUsageDescription" = "Akses rangkaian tempatan diperlukan untuk menjalankan pelayan sementara bagi memasang apl yang dimuat turun.";

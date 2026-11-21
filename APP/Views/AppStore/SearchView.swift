@@ -20,8 +20,7 @@ struct UIKitTextField: UIViewRepresentable {
         textField.placeholder = placeholder
         textField.font = .systemFont(ofSize: 17)
         textField.textColor = .label
-        textField.tintColor = .systemBlue
-        textField.clearButtonMode = .whileEditing
+        textField.clearButtonMode = .never
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
         textField.spellCheckingType = .no
@@ -314,6 +313,7 @@ struct SearchView: SwiftUI.View {
                             scrollTracker.update(offset: value)
                         }
                     }
+                    .scrollDismissesKeyboard(.immediately)
                     .coordinateSpace(name: "scroll")
                     .refreshable {
                         if !searchKey.isEmpty {
@@ -431,6 +431,7 @@ struct SearchView: SwiftUI.View {
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
                     }
+                    .accessibilityLabel("clear".localized)
                 }
             }
             .padding(.horizontal, 12)
@@ -1224,6 +1225,7 @@ struct SearchView: SwiftUI.View {
             let curatedIds = Set(curatedHits.map(\.trackId))
             let merged = curatedHits + cachedResult.filter { !curatedIds.contains($0.trackId) }
             await MainActor.run {
+                guard term == searchKey.trimmingCharacters(in: .whitespacesAndNewlines) else { return }
                 withAnimation(.spring()) {
                     searchResult = merged
                     searching = false

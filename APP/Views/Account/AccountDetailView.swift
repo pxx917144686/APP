@@ -72,6 +72,7 @@ struct AccountDetailView: View {
                                 .font(.system(size: 14))
                         }
                         .padding(.leading, 4)
+                        .accessibilityLabel(isPasswordVisible ? "hide_password".localized : "show_password".localized)
                     }
                 }
             } header: {

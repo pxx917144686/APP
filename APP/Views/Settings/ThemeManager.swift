@@ -81,7 +81,6 @@ class ThemeManager: ObservableObject, @unchecked Sendable {
 
         _selectedTheme = Published(initialValue: initialTheme)
 
-        lastAppliedAccentHex = UserDefaults.standard.string(forKey: "APP.userTintColor")
         updateAccentColor()
 
         notificationObserver = NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in

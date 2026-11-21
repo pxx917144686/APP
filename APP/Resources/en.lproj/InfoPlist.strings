@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Camera access is needed to scan QR codes for downloading apps.";
+"NSFaceIDUsageDescription" = "Used to unlock hidden signing records and the signing vault.";
+"NSLocalNetworkUsageDescription" = "Local network access is needed to run a temporary server for installing downloaded apps.";

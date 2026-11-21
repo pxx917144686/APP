@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Uygulama indirmek için QR kod taramak üzere kamera erişimi gereklidir.";
+"NSFaceIDUsageDescription" = "Gizli imza kayıtlarını ve imza kasasının kilidini açmak için kullanılır.";
+"NSLocalNetworkUsageDescription" = "İndirilen uygulamaları yüklemek için geçici sunucu başlatmak üzere yerel ağ erişimi gereklidir.";

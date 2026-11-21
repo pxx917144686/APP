@@ -108,7 +108,9 @@ final class LoopbackServer: @unchecked Sendable {
                 let old = self.listener
                 self.listener = nil
                 self.lock.lock(); self.readyURL = nil; self.lock.unlock()
+                self.finishStart(.failure(ToolError.message("loop_err_install_interrupted".localized)))
                 old?.newConnectionHandler = nil
+                old?.stateUpdateHandler = nil
                 old?.cancel()
                 continuation.resume()
             }
@@ -387,7 +389,13 @@ final class LoopbackServer: @unchecked Sendable {
             let mime = ["html": "text/html; charset=utf-8", "js": "text/javascript", "wasm": "application/wasm", "ipa": "application/octet-stream", "plist": "application/xml", "png": "image/png"][url.pathExtension] ?? "application/octet-stream"
             let header = responseHeader(status: selected == nil ? 200 : 206, length: length, contentType: mime, extra: extra)
             let file = try FileHandle(forReadingFrom: url)
-            try file.seek(toOffset: selected?.start ?? 0)
+            do {
+                try file.seek(toOffset: selected?.start ?? 0)
+            } catch {
+                try? file.close()
+                reply(connection, status: 404)
+                return
+            }
             if package && !head { InstallLog.shared.packageRequested(size: size, from: selected?.start ?? 0) }
             connection.send(content: header, completion: .contentProcessed { error in
                 if error != nil || head { try? file.close(); connection.cancel(); return }

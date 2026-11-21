@@ -208,7 +208,8 @@ int fp_parse(const char *path, fp_slice_t *slices, int max, int *count, char *er
     int rc = 0;
     if (magic == FAT_CIGAM || magic == FAT_CIGAM_64) {
         bool is64 = magic == FAT_CIGAM_64;
-        struct fat_header fh; pread_full(fd, &fh, sizeof fh, 0);
+        struct fat_header fh;
+        if (!pread_full(fd, &fh, sizeof fh, 0)) { close(fd); snprintf(err, errlen, "short read"); return -1; }
         uint32_t n = OSSwapBigToHostInt32(fh.nfat_arch);
         uint64_t p = sizeof fh;
         for (uint32_t i = 0; i < n && *count < max; i++) {
@@ -272,8 +273,15 @@ int fp_attempt(const char *path, const fp_slice_t *s, int mode, bool addsigs, ui
     if (fd < 0) { res->mmap_errno = errno; return -1; }
 
     if (addsigs && s->cs_size) {
-        fsignatures_t fs = { .fs_file_start = (off_t)s->slice_off, .fs_blob_start = (void *)(uintptr_t)s->cs_off, .fs_blob_size = s->cs_size };
-        if (fcntl(fd, F_ADDFILESIGS_RETURN, &fs) == -1) res->sig_errno = errno;
+        size_t sig_len = (size_t)s->cs_size;
+        void *sig = mmap(NULL, sig_len, PROT_READ, MAP_PRIVATE, fd, (off_t)(s->slice_off + s->cs_off));
+        if (sig != MAP_FAILED) {
+            fsignatures_t fs = { .fs_file_start = (off_t)s->slice_off, .fs_blob_start = sig, .fs_blob_size = s->cs_size };
+            if (fcntl(fd, F_ADDFILESIGS_RETURN, &fs) == -1) res->sig_errno = errno;
+            munmap(sig, sig_len);
+        } else {
+            res->sig_errno = errno;
+        }
     }
 
     uint64_t map_len = ((uint64_t)s->cryptoff + s->cryptsize + pg - 1) & ~(pg - 1);
@@ -464,7 +472,13 @@ int fp_decrypt_file(const char *in_path, const char *out_path, fp_log_t log,
             !pwrite_full(out, &zero, 4, (off_t)(s->enc_lc_off + offsetof(struct encryption_info_command, cryptid)))) {
             logf_(log, ctx, "  write failed: %s", strerror(errno)); rc = -1;
         }
-        if (dec_mapped) munmap(dec, s->cryptsize); else free(dec);
+        if (dec_mapped) {
+            if (rc == 0 && msync(dec, s->cryptsize, MS_SYNC) != 0) {
+                logf_(log, ctx, "  msync failed: %s", strerror(errno));
+                rc = -1;
+            }
+            munmap(dec, s->cryptsize);
+        } else free(dec);
     }
     if (rc == 0 && fsync(out) != 0) { logf_(log, ctx, "  sync failed: %s", strerror(errno)); rc = -1; }
     close(out);

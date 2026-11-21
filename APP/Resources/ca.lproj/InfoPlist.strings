@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Cal accés a la càmera per escanejar codis QR i descarregar apps.";
+"NSFaceIDUsageDescription" = "S'usa per desbloquejar els registres de signatura ocults i la caixa forta de signatures.";
+"NSLocalNetworkUsageDescription" = "Cal accés a la xarxa local per iniciar un servidor temporal i instal·lar les apps descarregades.";

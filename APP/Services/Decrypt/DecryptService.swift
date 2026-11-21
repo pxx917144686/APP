@@ -16,11 +16,13 @@ enum MachOScanner {
     private static let lcEncryptionInfo: UInt32 = 0x21
     private static let lcEncryptionInfo64: UInt32 = 0x2C
 
+    private static let magicFat64: UInt32 = 0xBEBAFECA
+
     static func looksLikeMachO(_ header: Data) -> Bool {
         guard header.count >= 4 else { return false }
         let be = header.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.byteSwapped
         let le = header.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }
-        return be == magic64 || be == magic32 || be == magicFat || le == magic64 || le == magic32
+        return be == magic64 || be == magic32 || be == magicFat || be == magicFat64 || le == magic64 || le == magic32
     }
 
     static func scan(fileURL: URL) -> [MachOEncryptionInfo] {
@@ -29,7 +31,7 @@ enum MachOScanner {
         guard let header = try? handle.read(upToCount: 8), header.count >= 8 else { return [] }
 
         let bigEndian = header.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.byteSwapped
-        if bigEndian == magicFat {
+        if bigEndian == magicFat || bigEndian == magicFat64 {
             return scanFat(handle: handle)
         }
         let littleEndian = header.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }
@@ -58,7 +60,14 @@ enum MachOScanner {
 
         var results: [MachOEncryptionInfo] = []
         for offset in offsets {
-            if let info = parseThin(handle: handle, offset: offset, is64: true) {
+            var is64Slice = true
+            if (try? handle.seek(toOffset: offset)) != nil,
+               let magicData = try? handle.read(upToCount: 4), magicData.count == 4 {
+                let magic = magicData.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.byteSwapped
+                guard magic == magic64 || magic == magic32 else { continue }
+                is64Slice = (magic == magic64)
+            }
+            if let info = parseThin(handle: handle, offset: offset, is64: is64Slice) {
                 results.append(info)
             }
         }

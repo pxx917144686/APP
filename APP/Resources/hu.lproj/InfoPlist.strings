@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Kamera-hozzáférés szükséges az alkalmazások letöltéséhez QR-kódok beolvasásához.";
+"NSFaceIDUsageDescription" = "Rejtett aláírási bejegyzések és az aláírás-széf feloldására szolgál.";
+"NSLocalNetworkUsageDescription" = "Helyi hálózati hozzáférés szükséges ideiglenes kiszolgáló futtatásához a letöltött alkalmazások telepítéséhez.";

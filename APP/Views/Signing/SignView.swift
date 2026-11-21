@@ -630,6 +630,7 @@ struct SignView: SwiftUI.View {
                         .foregroundStyle(accent)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("detail_action".localized)
 
                 Button {
                     showEntitlements = true
@@ -639,6 +640,7 @@ struct SignView: SwiftUI.View {
                         .foregroundStyle(accent)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("sign_entitlements_title".localized)
 
                 Menu {
                     identityMenu
@@ -1448,6 +1450,7 @@ struct SignView: SwiftUI.View {
                     .background(Circle().fill(Color.red.opacity(0.08)))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("delete".localized)
         }
         .padding(9)
         .background(

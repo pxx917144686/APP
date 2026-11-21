@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Kameran käyttöä tarvitaan QR-koodien skannaamiseen sovellusten lataamiseksi.";
+"NSFaceIDUsageDescription" = "Käytetään piilotettujen allekirjoitustietueiden ja allekirjoitusholvin avaamiseen.";
+"NSLocalNetworkUsageDescription" = "Paikallisverkon käyttöä tarvitaan väliaikaisen palvelimen käynnistämiseen ladattujen sovellusten asentamiseksi.";

@@ -28,16 +28,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         }
     }
 
-    var emojiIcon: String {
-        switch self {
-        case .settings:  return "⚙️"
-        case .downloads:  return "📥"
-        case .purchased:  return "🛍️"
-        case .sign:       return "✍️"
-        case .search:     return "🔍"
-        }
-    }
-
     @ViewBuilder
     static func view(for tab: TabEnum, themeManager: ThemeManager, tabBarStyleManager: TabBarStyleManager) -> some View {
         switch tab {
@@ -71,12 +61,6 @@ enum TabEnum: String, CaseIterable, Hashable {
                 .environmentObject(themeManager)
                 .environmentObject(tabBarStyleManager)
         }
-    }
-
-    @ViewBuilder
-    static func tabIcon(for tab: TabEnum, size: CGFloat = 24) -> some View {
-        Text(tab.emojiIcon)
-            .font(.system(size: size))
     }
 }
 
@@ -159,11 +143,9 @@ struct TabbarView: View {
                 TabView(selection: $selectedTab) {
                     ForEach(tabOrder.order, id: \.self) { tab in
                         TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                            .padding(.bottom, geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
                             .tag(tab)
                     }
-                }
-                .safeAreaInset(edge: .bottom) {
-                    Color.clear.frame(height: geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
                 }
 
                 floatingTabBarContent
@@ -221,8 +203,9 @@ struct TabbarView: View {
                             .fill(.ultraThinMaterial)
                     }
 
-                    Text(TabEnum.search.emojiIcon)
-                        .font(.system(size: 28))
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: tabHeight * 0.42, weight: .semibold))
+                        .foregroundStyle(selectedTab == .search ? Color.white : Color.primary.opacity(0.7))
                 }
                 .frame(width: tabHeight, height: tabHeight)
                 .overlay(
@@ -245,8 +228,9 @@ struct TabbarView: View {
             impactMed.impactOccurred()
         }) {
             VStack(spacing: 4) {
-                Text(tab.emojiIcon)
-                    .font(.system(size: min(24, height * 0.45)))
+                Image(systemName: tab.icon)
+                    .font(.system(size: min(22, height * 0.42), weight: selectedTab == tab ? .semibold : .regular))
+                    .foregroundStyle(selectedTab == tab ? themeManager.accentColor : .secondary.opacity(0.7))
 
                 Text(tab.title)
                     .font(.system(size: min(11, height * 0.2), weight: selectedTab == tab ? .semibold : .regular))

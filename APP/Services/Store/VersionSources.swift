@@ -31,7 +31,8 @@ enum IPadnVersionSources {
             var merged: [(String, String, Date?)] = []
             var seen = Set<String>()
             for await list in group {
-                for (version, versionId, date) in list where seen.insert(versionId).inserted {
+                for (version, versionId, date) in list
+                where seen.insert("\(version)|\(versionId)").inserted {
                     merged.append((version, versionId, date))
                 }
             }

@@ -1,0 +1,963 @@
+import Foundation
+
+final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
+    static let shared = SegmentedIPADownloader()
+
+    static let maxSegments = 6
+    static let minSegmentSize: Int64 = 32 * 1024 * 1024
+    static let maxSegmentRetries = 2
+    static var stallTimeout: TimeInterval = 45
+    static private let stallCheckInterval: TimeInterval = 5
+
+    typealias ProgressHandler = @Sendable (Int64, Int64) -> Void
+    typealias FinishHandler = @Sendable (Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>) -> Void
+
+    enum Outcome {
+        case success(tempFileURL: URL, totalBytes: Int64)
+        case failure(DownloadError)
+    }
+
+    private struct Segment {
+        let index: Int
+        var start: Int64
+        var end: Int64 
+        var received: Int64 = 0
+        var retries: Int = 0
+        var finished: Bool = false
+        var pendingFailure: Error?
+        var session: URLSession?
+        var activeTask: URLSessionDataTask?
+        var fileHandle: FileHandle?
+    }
+
+
+    private struct ResumeSegment: Codable {
+        var start: Int64
+        var end: Int64
+        var received: Int64
+    }
+
+    private struct ResumeState: Codable {
+        var version: Int
+        var url: String
+        var totalSize: Int64
+        var segments: [ResumeSegment]
+    }
+
+    private enum FinishCleanup {
+        case keepAll
+        case deleteResumeOnly
+    }
+
+    private struct State {
+        var url: URL
+        var tempFileURL: URL
+        var totalSize: Int64 
+        var rangeSupported: Bool
+        var allowFullResponse: Bool 
+        var segments: [Segment]
+        let handler: DownloadHandler
+        var userCancelled = false
+        var paused = false
+        var finished = false
+        var lastDataAt = Date()
+        var stallTimer: DispatchSourceTimer?
+        var lastProgressAt: Date?
+        var onProgress: ProgressHandler
+        var onFinish: FinishHandler
+    }
+
+    private let lock = NSLock()
+    private var states: [String: State] = [:]
+    private var foregroundObserver: NSObjectProtocol?
+    private let foregroundQueue = OperationQueue()
+
+    override init() {
+        super.init()
+        // 回前台时重置停滞基线：后台挂起期间任务冻结、无数据是正常现象，
+        // 不能把后台时长计入看门狗的停滞判定（否则回前台瞬间误报超时）。
+        // 用通知名字符串注册，避免引入 UIKit 依赖（回归工具需在 macOS 编译本文件）。
+        foregroundObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("UIApplicationWillEnterForegroundNotification"),
+            object: nil,
+            queue: foregroundQueue
+        ) { [weak self] _ in
+            self?.resetStallBaseline()
+        }
+    }
+
+    deinit {
+        if let foregroundObserver {
+            NotificationCenter.default.removeObserver(foregroundObserver)
+        }
+    }
+
+    private func resetStallBaseline() {
+        locked {
+            for key in Array(states.keys) {
+                states[key]?.lastDataAt = Date()
+            }
+        }
+    }
+
+    private func locked<T>(_ body: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return body()
+    }
+
+
+    func start(
+        downloadId: String,
+        url: URL,
+        tempFileURL: URL,
+        onProgress: @escaping ProgressHandler,
+        onFinish: @escaping FinishHandler
+    ) async {
+        if locked({
+            if let existing = states[downloadId], !existing.finished {
+                states[downloadId]?.onProgress = onProgress
+                states[downloadId]?.onFinish = onFinish
+                return true
+            }
+            return false
+        }) {
+            return
+        }
+
+        let handler = DownloadHandler(downloadId: downloadId, owner: self)
+        let placeholder = State(
+            url: url,
+            tempFileURL: tempFileURL,
+            totalSize: 0,
+            rangeSupported: false,
+            allowFullResponse: true,
+            segments: [],
+            handler: handler,
+            onProgress: onProgress,
+            onFinish: onFinish
+        )
+        locked { states[downloadId] = placeholder }
+
+        let probeResponse = await HeaderProbe().probe(
+            url: url,
+            headers: [
+                "Accept-Encoding": "identity",
+                "Accept": "*/*",
+                "Range": "bytes=0-0"
+            ]
+        )
+
+        var totalSize: Int64 = 0
+        var rangeSupported = false
+        if let http = probeResponse {
+            if http.statusCode == 206, let contentRange = http.value(forHTTPHeaderField: "Content-Range"),
+               let parsed = Self.parseTotalSize(from: contentRange), parsed > 0 {
+                rangeSupported = true
+                totalSize = parsed
+            } else if http.statusCode == 200, http.expectedContentLength > 0 {
+                rangeSupported = false
+                totalSize = Int64(http.expectedContentLength)
+            }
+        }
+
+        var resumeSegments: [ResumeSegment]? = nil
+        if rangeSupported {
+            resumeSegments = Self.loadResumeState(tempFileURL: tempFileURL, url: url, probeTotalSize: totalSize)
+        }
+        let isResume = resumeSegments != nil
+
+        var cancelledDuringProbe = false
+        var setupFailed = false
+        var segments: [Segment] = []
+
+        locked {
+            guard var state = states[downloadId], !state.finished else {
+                cancelledDuringProbe = true
+                return
+            }
+            if state.userCancelled {
+                cancelledDuringProbe = true
+                state.finished = true
+                states.removeValue(forKey: downloadId)
+                return
+            }
+            guard let prepared = Self.prepareSegments(
+                tempFileURL: tempFileURL,
+                totalSize: totalSize,
+                rangeSupported: rangeSupported,
+                resumeSegments: resumeSegments
+            ) else {
+                setupFailed = true
+                state.finished = true
+                states.removeValue(forKey: downloadId)
+                return
+            }
+            segments = prepared
+            state.segments = prepared
+            state.totalSize = totalSize
+            state.rangeSupported = rangeSupported
+            state.allowFullResponse = !rangeSupported
+            states[downloadId] = state
+        }
+
+        if cancelledDuringProbe {
+            onFinish(.failure(.unknownError("download_cancelled".localized)))
+            return
+        }
+        if setupFailed {
+            onFinish(.failure(.fileSystemError("dl_err_file_system".localized)))
+            return
+        }
+
+        if segments.allSatisfy({ $0.finished }) {
+            NSLog("[SegmentedDownloader] \(downloadId) resume: all segments complete, finalize directly")
+            emitFinish(downloadId: downloadId, outcome: Self.finalOutcome(tempFileURL: tempFileURL, totalSize: totalSize, segments: segments), cleanup: .deleteResumeOnly)
+            return
+        }
+
+        // 探测期间用户已按暂停 → 延迟发起各段，等 resume 再真正启动
+        var deferredByPause = false
+        locked {
+            if let state = states[downloadId], !state.finished, !state.userCancelled, state.paused {
+                deferredByPause = true
+            }
+        }
+        if deferredByPause {
+            NSLog("[SegmentedDownloader] \(downloadId) paused during probe, defer segment launch")
+            return
+        }
+
+        for index in segments.indices where !segments[index].finished {
+            launchSegment(downloadId: downloadId, index: index)
+        }
+        startStallWatchdog(downloadId: downloadId)
+        if isResume {
+            let resumedBytes = segments.reduce(0) { $0 + $1.received }
+            onProgress(resumedBytes, totalSize)
+        }
+        NSLog("[SegmentedDownloader] \(downloadId) start, size=\(totalSize), range=\(rangeSupported), segments=\(segments.count), resume=\(isResume), resumedBytes=\(segments.reduce(0) { $0 + $1.received })")
+    }
+
+
+    func discard(downloadId: String) {
+        let tasks: [URLSessionTask]? = locked {
+            guard var state = states[downloadId] else { return nil }
+            state.userCancelled = true
+            state.finished = true
+            state.stallTimer?.cancel()
+            state.stallTimer = nil
+            let tasks = state.segments.compactMap { $0.activeTask }
+            for index in state.segments.indices {
+                try? state.segments[index].fileHandle?.close()
+                state.segments[index].fileHandle = nil
+                state.segments[index].activeTask = nil
+                state.segments[index].session?.invalidateAndCancel()
+                state.segments[index].session = nil
+            }
+            states.removeValue(forKey: downloadId)
+            return tasks
+        }
+        tasks?.forEach { $0.cancel() }
+    }
+
+    func pause(downloadId: String) {
+        let tasks: [URLSessionTask]? = locked {
+            guard var state = states[downloadId], !state.finished, !state.paused else { return nil }
+            state.paused = true
+            // 暂停期间无数据流动，停掉看门狗定时器（避免每 5s 的空转唤醒）；resume 时重启
+            state.stallTimer?.cancel()
+            state.stallTimer = nil
+            let tasks = state.segments.compactMap { $0.activeTask }
+            states[downloadId] = state
+            return tasks
+        }
+        tasks?.forEach { $0.suspend() }
+    }
+
+    func isPaused(downloadId: String) -> Bool {
+        locked { states[downloadId]?.paused == true }
+    }
+
+    func resume(downloadId: String) {
+        var launchIndices: [Int] = []
+        var resumedBytes: Int64 = 0
+        var totalSize: Int64 = 0
+        var onProgress: ProgressHandler?
+        let tasks: [URLSessionTask]? = locked {
+            guard var state = states[downloadId], !state.finished, state.paused else { return nil }
+            state.paused = false
+            let tasks = state.segments.compactMap { $0.activeTask }
+            // 没有任何运行中任务但有未完成段（探测期暂停延迟发起 / 竞态滞留）→ 重新发起
+            if tasks.isEmpty, !state.segments.isEmpty,
+               state.segments.contains(where: { !$0.finished }) {
+                for index in state.segments.indices where !state.segments[index].finished {
+                    launchIndices.append(index)
+                }
+            }
+            resumedBytes = state.segments.reduce(0) { $0 + $1.received }
+            totalSize = state.totalSize
+            onProgress = state.onProgress
+            state.lastDataAt = Date()
+            states[downloadId] = state
+            return tasks
+        }
+        tasks?.forEach { $0.resume() }
+        for index in launchIndices {
+            launchSegment(downloadId: downloadId, index: index)
+        }
+        // 暂停期间看门狗已被停掉，恢复时统一重启（内部会重置停滞基线）
+        startStallWatchdog(downloadId: downloadId)
+        if !launchIndices.isEmpty, let onProgress {
+            onProgress(resumedBytes, totalSize)
+        }
+    }
+
+    func cancel(downloadId: String) {
+        var immediateFinish = false
+        let tasks: [URLSessionTask]? = locked {
+            guard var state = states[downloadId], !state.finished else { return nil }
+            state.userCancelled = true
+            let tasks = state.segments.compactMap { $0.activeTask }
+            if tasks.isEmpty, !state.segments.isEmpty {
+                // 探测/延迟启动阶段：没有可取消的任务，直接结束（否则完成回调永不触发、状态泄漏）
+                state.finished = true
+                for index in state.segments.indices {
+                    try? state.segments[index].fileHandle?.close()
+                    state.segments[index].fileHandle = nil
+                    state.segments[index].activeTask = nil
+                    state.segments[index].session?.invalidateAndCancel()
+                    state.segments[index].session = nil
+                }
+                immediateFinish = true
+            }
+            states[downloadId] = state
+            return tasks
+        }
+        tasks?.forEach { $0.cancel() }
+        if immediateFinish {
+            emitFinish(downloadId: downloadId, outcome: .failure(.unknownError("download_cancelled".localized)), cleanup: .keepAll)
+        }
+    }
+
+
+    private func launchSegment(downloadId: String, index: Int) {
+        let captured: (url: URL, start: Int64, end: Int64, rangeSupported: Bool, session: URLSession?, handler: DownloadHandler)? = locked {
+            guard let state = states[downloadId], !state.finished, index < state.segments.count else { return nil }
+            let segment = state.segments[index]
+            let resumeStart = segment.start + segment.received
+            return (state.url, resumeStart, segment.end, state.rangeSupported, segment.session, state.handler)
+        }
+        guard let captured else { return }
+
+        let session = captured.session ?? URLSession(
+            configuration: Self.makeSessionConfiguration(),
+            delegate: captured.handler,
+            delegateQueue: nil
+        )
+        let request = Self.makeRequest(
+            url: captured.url,
+            start: captured.start,
+            end: captured.end,
+            rangeSupported: captured.rangeSupported
+        )
+        let task = session.dataTask(with: request)
+        task.taskDescription = "\(downloadId)#\(index)"
+
+        // 落库时校验状态：期间被暂停/取消/结束则不启动新任务（避免 paused 与运行中任务错位）
+        var shouldLaunch = false
+        locked {
+            if var state = states[downloadId], index < state.segments.count,
+               !state.finished, !state.userCancelled, !state.paused {
+                state.segments[index].session = session
+                state.segments[index].activeTask = task
+                states[downloadId] = state
+                shouldLaunch = true
+            }
+        }
+        if shouldLaunch {
+            task.resume()
+        } else {
+            task.cancel()
+            if captured.session == nil {
+                session.finishTasksAndInvalidate()
+            }
+        }
+    }
+
+
+    fileprivate func handleSegmentResponse(
+        downloadId: String,
+        index: Int,
+        response: URLResponse,
+        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
+    ) {
+        guard let http = response as? HTTPURLResponse else {
+            completionHandler(.cancel)
+            return
+        }
+
+        var disposition: URLSession.ResponseDisposition = .cancel
+        var failure: Error?
+        var expectedStart: Int64 = 0
+        let hasState: Bool = locked {
+            guard var state = states[downloadId], !state.finished, index < state.segments.count else { return false }
+            let okStatus = (200...299).contains(http.statusCode)
+            let acceptable = okStatus && (state.allowFullResponse || http.statusCode == 206)
+            if acceptable {
+                disposition = .allow
+                expectedStart = state.segments[index].start + state.segments[index].received
+                if !state.allowFullResponse, let contentRange = http.value(forHTTPHeaderField: "Content-Range"),
+                   let actualStart = Self.parseRangeStart(from: contentRange), actualStart != expectedStart {
+                    disposition = .cancel
+                    failure = NSError(
+                        domain: "DownloadManager",
+                        code: -6,
+                        userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (Content-Range \(actualStart) != \(expectedStart))"]
+                    )
+                }
+            } else {
+                failure = NSError(
+                    domain: "DownloadManager",
+                    code: http.statusCode,
+                    userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (HTTP \(http.statusCode))"]
+                )
+            }
+            if let failure {
+                state.segments[index].pendingFailure = failure
+                states[downloadId] = state
+            }
+            return true
+        }
+
+        completionHandler(disposition)
+        if hasState, let failure {
+            processSegmentFailure(downloadId: downloadId, index: index, error: failure)
+        }
+    }
+
+    fileprivate func handleSegmentData(downloadId: String, index: Int, data: Data) {
+        var shouldReport = false
+        var totalReceived: Int64 = 0
+        var totalSize: Int64 = 0
+        var onProgress: ProgressHandler?
+
+        locked {
+            guard var state = states[downloadId], !state.finished, index < state.segments.count else { return }
+            if let fileHandle = state.segments[index].fileHandle {
+                do {
+                    try fileHandle.write(contentsOf: data)
+                    state.segments[index].received += Int64(data.count)
+                } catch {
+                    state.segments[index].pendingFailure = NSError(
+                        domain: "DownloadManager",
+                        code: -7,
+                        userInfo: [NSLocalizedDescriptionKey: "dl_err_file_system".localized]
+                    )
+                    states[downloadId] = state
+                    state.segments[index].activeTask?.cancel()
+                    return
+                }
+            }
+            totalReceived = state.segments.reduce(0) { $0 + $1.received }
+            totalSize = state.totalSize
+
+            let now = Date()
+            state.lastDataAt = now
+            let last = state.lastProgressAt ?? .distantPast
+            let done = totalSize > 0 && totalReceived >= totalSize
+            if now.timeIntervalSince(last) >= 0.1 || done {
+                state.lastProgressAt = now
+                shouldReport = true
+                if state.rangeSupported {
+                    Self.writeResumeState(tempFileURL: state.tempFileURL, url: state.url, totalSize: state.totalSize, segments: state.segments)
+                }
+            }
+            onProgress = state.onProgress
+            states[downloadId] = state
+        }
+
+        if shouldReport, let onProgress {
+            onProgress(totalReceived, totalSize)
+        }
+    }
+
+    fileprivate func handleSegmentCompletion(downloadId: String, index: Int, error: Error?) {
+        var action: SegmentAction = .none
+
+        locked {
+            guard var state = states[downloadId], !state.finished, index < state.segments.count else { return }
+
+            if state.userCancelled {
+                action = .finish(.failure(.unknownError("download_cancelled".localized)), cleanup: .keepAll)
+                cleanupState(&state, cancelledRemainder: true)
+                states[downloadId] = state
+                return
+            }
+
+            let nsError = error as NSError?
+            if error != nil, nsError?.code == NSURLErrorCancelled {
+                // 任务已终结，清空引用（cancel/对账以 activeTask 判定存活，滞留旧引用会误判）
+                state.segments[index].activeTask = nil
+                if let pending = state.segments[index].pendingFailure {
+                    state.segments[index].pendingFailure = nil
+                    states[downloadId] = state
+                    action = .retry(index: index, error: pending)
+                } else {
+                    states[downloadId] = state
+                    action = .retry(index: index, error: error!)
+                }
+                return
+            }
+
+            if let error {
+                state.segments[index].activeTask = nil
+                states[downloadId] = state
+                action = .retry(index: index, error: error)
+                return
+            }
+
+            let segment = state.segments[index]
+            let segmentLength = segment.end < 0 ? segment.received : segment.end - segment.start + 1
+            if segment.received == segmentLength {
+                state.segments[index].finished = true
+                state.segments[index].activeTask = nil
+                try? state.segments[index].fileHandle?.close()
+                state.segments[index].fileHandle = nil
+
+                if state.segments.allSatisfy({ $0.finished }) {
+                    action = .finish(
+                        Self.finalOutcome(tempFileURL: state.tempFileURL, totalSize: state.totalSize, segments: state.segments),
+                        cleanup: .deleteResumeOnly
+                    )
+                    cleanupState(&state, cancelledRemainder: false)
+                    states[downloadId] = state
+                } else {
+                    states[downloadId] = state
+                }
+            } else {
+                states[downloadId] = state
+                action = .retry(
+                    index: index,
+                    error: NSError(
+                        domain: "DownloadManager",
+                        code: -5,
+                        userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (short read \(segment.received)/\(segmentLength))"]
+                    )
+                )
+            }
+        }
+
+        switch action {
+        case .none:
+            break
+        case .retry(let index, let error):
+            processSegmentFailure(downloadId: downloadId, index: index, error: error)
+        case .finish(let outcome, let cleanup):
+            emitFinish(downloadId: downloadId, outcome: outcome, cleanup: cleanup)
+        }
+    }
+
+    private enum SegmentAction {
+        case none
+        case retry(index: Int, error: Error)
+        case finish(Outcome, cleanup: FinishCleanup)
+    }
+
+    private func processSegmentFailure(downloadId: String, index: Int, error: Error) {
+        var action: SegmentAction = .none
+
+        locked {
+            guard var state = states[downloadId], !state.finished, index < state.segments.count else { return }
+            state.segments[index].retries += 1
+            NSLog("[SegmentedDownloader] \(downloadId) segment \(index) failed (\(error.localizedDescription)), retry \(state.segments[index].retries)/\(Self.maxSegmentRetries)")
+
+            if state.segments[index].retries > Self.maxSegmentRetries {
+                action = .finish(.failure(Self.mapNetworkError(error)), cleanup: .keepAll)
+                cleanupState(&state, cancelledRemainder: true)
+                states[downloadId] = state
+            } else {
+                states[downloadId] = state
+                action = .retry(index: index, error: error)
+            }
+        }
+
+        switch action {
+        case .none:
+            break
+        case .retry:
+            launchSegment(downloadId: downloadId, index: index)
+        case .finish(let outcome, let cleanup):
+            emitFinish(downloadId: downloadId, outcome: outcome, cleanup: cleanup)
+        }
+    }
+
+    private func emitFinish(downloadId: String, outcome: Outcome, cleanup: FinishCleanup) {
+        let captured: (onProgress: ProgressHandler, onFinish: FinishHandler, received: Int64, total: Int64, tempFileURL: URL)? = locked {
+            guard let state = states[downloadId] else { return nil }
+            states.removeValue(forKey: downloadId)
+            let received = state.segments.reduce(0) { $0 + $1.received }
+            return (state.onProgress, state.onFinish, received, state.totalSize, state.tempFileURL)
+        }
+        guard let captured else { return }
+
+        let ownsFiles = locked { states[downloadId] == nil }
+        if ownsFiles {
+            switch cleanup {
+            case .keepAll:
+                break
+            case .deleteResumeOnly:
+                try? FileManager.default.removeItem(at: Self.resumeFilePath(for: captured.tempFileURL))
+            }
+        }
+
+        let result: Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>
+        switch outcome {
+        case .success(let tempFileURL, let totalBytes):
+            result = .success((tempFileURL, totalBytes))
+        case .failure(let error):
+            result = .failure(error)
+        }
+
+        let progress = captured.onProgress
+        let finish = captured.onFinish
+        DispatchQueue.global(qos: .userInitiated).async {
+            progress(captured.received, captured.total)
+            finish(result)
+        }
+    }
+
+    // MARK: - 传输停滞看门狗
+
+    /// 各段启动后开启：传输中所有段持续 stallTimeout 无数据则判定失败（保留断点，可重试续传）。
+    /// 兜底 waitsForConnectivity 带来的"失效 URL 静默等待最长 2 小时"问题。
+    private func startStallWatchdog(downloadId: String) {
+        locked {
+            guard var state = states[downloadId], !state.finished else { return }
+            state.lastDataAt = Date()
+            if state.stallTimer != nil {
+                states[downloadId] = state
+                return
+            }
+            let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
+            timer.schedule(deadline: .now() + Self.stallCheckInterval,
+                           repeating: Self.stallCheckInterval)
+            timer.setEventHandler { [weak self] in
+                self?.checkStall(downloadId: downloadId)
+            }
+            state.stallTimer = timer
+            states[downloadId] = state
+            timer.resume()
+        }
+    }
+
+    private func checkStall(downloadId: String) {
+        var outcome: Outcome?
+        locked {
+            guard var state = states[downloadId], !state.finished, !state.userCancelled, !state.paused else { return }
+            guard Date().timeIntervalSince(state.lastDataAt) > Self.stallTimeout else { return }
+            NSLog("[SegmentedDownloader] \(downloadId) stall detected (> \(Self.stallTimeout)s without data), failing with resume points kept")
+            outcome = .failure(Self.mapNetworkError(NSError(
+                domain: NSURLErrorDomain,
+                code: NSURLErrorTimedOut,
+                userInfo: [NSLocalizedDescriptionKey: "dl_err_timeout".localized]
+            )))
+            cleanupState(&state, cancelledRemainder: true)
+            states[downloadId] = state
+        }
+        if let outcome {
+            emitFinish(downloadId: downloadId, outcome: outcome, cleanup: .keepAll)
+        }
+    }
+
+    private func cleanupState(_ state: inout State, cancelledRemainder: Bool) {
+        state.finished = true
+        state.stallTimer?.cancel()
+        state.stallTimer = nil
+        for index in state.segments.indices {
+            if cancelledRemainder, !state.segments[index].finished {
+                state.segments[index].activeTask?.cancel()
+            }
+            try? state.segments[index].fileHandle?.close()
+            state.segments[index].fileHandle = nil
+            state.segments[index].activeTask = nil
+            if cancelledRemainder {
+                state.segments[index].session?.invalidateAndCancel()
+            } else {
+                state.segments[index].session?.finishTasksAndInvalidate()
+            }
+            state.segments[index].session = nil
+        }
+    }
+
+
+    private static func makeSessionConfiguration() -> URLSessionConfiguration {
+        let config = URLSessionConfiguration.ephemeral
+        config.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0,
+            "HTTPProxy": "",
+            "HTTPSProxy": "",
+            "SOCKSProxy": ""
+        ]
+        config.timeoutIntervalForRequest = 60
+        config.timeoutIntervalForResource = 7200
+        config.allowsCellularAccess = true
+        config.waitsForConnectivity = true
+        config.tlsMinimumSupportedProtocolVersion = .TLSv12
+        config.tlsMaximumSupportedProtocolVersion = .TLSv13
+        config.networkServiceType = .default
+        config.httpCookieStorage = HTTPCookieStorage.shared
+        return config
+    }
+
+    private static func makeRequest(url: URL, start: Int64, end: Int64, rangeSupported: Bool) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
+        request.setValue("*/*", forHTTPHeaderField: "Accept")
+        if rangeSupported {
+            let endValue = end < 0 ? "" : String(end)
+            request.setValue("bytes=\(start)-\(endValue)", forHTTPHeaderField: "Range")
+        }
+        return request
+    }
+
+    private static func prepareSegments(tempFileURL: URL, totalSize: Int64, rangeSupported: Bool, resumeSegments: [ResumeSegment]?) -> [Segment]? {
+        let fileManager = FileManager.default
+        let isResume = rangeSupported && totalSize > 0 && resumeSegments != nil
+        if !isResume {
+            try? fileManager.removeItem(at: tempFileURL)
+            try? fileManager.removeItem(at: resumeFilePath(for: tempFileURL))
+            guard fileManager.createFile(atPath: tempFileURL.path, contents: nil, attributes: nil),
+                  let root = try? FileHandle(forWritingTo: tempFileURL) else {
+                return nil
+            }
+            if totalSize > 0 {
+                try? root.truncate(atOffset: UInt64(totalSize))
+            }
+            try? root.close()
+        }
+
+        var segments: [Segment] = []
+        if rangeSupported, totalSize > 0 {
+            let count = max(1, min(maxSegments, Int((totalSize + minSegmentSize - 1) / minSegmentSize)))
+            let base = totalSize / Int64(count)
+            let remainder = totalSize % Int64(count)
+            var offset: Int64 = 0
+            for index in 0..<count {
+                let length = base + (Int64(index) < remainder ? 1 : 0)
+                let start = offset
+                let end = offset + length - 1
+                offset = end + 1
+                var segment = Segment(index: index, start: start, end: end)
+                if let resumeSegments, index < resumeSegments.count,
+                   resumeSegments[index].start == start, resumeSegments[index].end == end {
+                    segment.received = resumeSegments[index].received
+                    if segment.received == length {
+                        segment.finished = true
+                    }
+                }
+                guard let handle = try? FileHandle(forWritingTo: tempFileURL) else { return nil }
+                if segment.finished {
+                    try? handle.close()
+                } else {
+                    handle.seek(toFileOffset: UInt64(start + segment.received))
+                    segment.fileHandle = handle
+                }
+                segments.append(segment)
+            }
+        } else {
+            var segment = Segment(index: 0, start: 0, end: totalSize > 0 ? totalSize - 1 : -1)
+            guard let handle = try? FileHandle(forWritingTo: tempFileURL) else { return nil }
+            if totalSize > 0 {
+                handle.seek(toFileOffset: 0)
+            } else {
+                handle.seekToEndOfFile()
+            }
+            segment.fileHandle = handle
+            segments.append(segment)
+        }
+        return segments
+    }
+
+    private static func finalOutcome(tempFileURL: URL, totalSize: Int64, segments: [Segment]) -> Outcome {
+        if totalSize > 0 {
+            let attributes = try? FileManager.default.attributesOfItem(atPath: tempFileURL.path)
+            let actual = (attributes?[.size] as? NSNumber)?.int64Value ?? 0
+            if actual != totalSize {
+                return .failure(.networkError(NSError(
+                    domain: "DownloadManager",
+                    code: -3,
+                    userInfo: [NSLocalizedDescriptionKey: "dl_err_size_mismatch".localized(actual, totalSize)]
+                )))
+            }
+            return .success(tempFileURL: tempFileURL, totalBytes: totalSize)
+        }
+        let received = segments.reduce(0) { $0 + $1.received }
+        guard received > 0 else {
+            return .failure(.fileSystemError("dl_err_empty_data".localized))
+        }
+        return .success(tempFileURL: tempFileURL, totalBytes: received)
+    }
+
+
+    private static func resumeFilePath(for tempFileURL: URL) -> URL {
+        URL(fileURLWithPath: tempFileURL.path + ".segresume")
+    }
+
+    private static func loadResumeState(tempFileURL: URL, url: URL, probeTotalSize: Int64) -> [ResumeSegment]? {
+        guard probeTotalSize > 0 else { return nil }
+        guard let data = try? Data(contentsOf: resumeFilePath(for: tempFileURL)),
+              let state = try? JSONDecoder().decode(ResumeState.self, from: data) else {
+            return nil
+        }
+        guard state.version == 1,
+              state.url == url.absoluteString,
+              state.totalSize == probeTotalSize,
+              !state.segments.isEmpty else {
+            return nil
+        }
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: tempFileURL.path),
+              (attributes[.size] as? NSNumber)?.int64Value == state.totalSize else {
+            return nil
+        }
+        for segment in state.segments {
+            let length = segment.end - segment.start + 1
+            guard segment.start >= 0, segment.end >= segment.start,
+                  segment.received >= 0, segment.received <= length else {
+                return nil
+            }
+        }
+        let totalReceived = state.segments.reduce(0) { $0 + $1.received }
+        guard totalReceived <= state.totalSize else { return nil }
+        return state.segments
+    }
+
+    private static func writeResumeState(tempFileURL: URL, url: URL, totalSize: Int64, segments: [Segment]) {
+        guard totalSize > 0 else { return }
+        let state = ResumeState(
+            version: 1,
+            url: url.absoluteString,
+            totalSize: totalSize,
+            segments: segments.map { ResumeSegment(start: $0.start, end: $0.end, received: $0.received) }
+        )
+        guard let data = try? JSONEncoder().encode(state) else { return }
+        try? data.write(to: resumeFilePath(for: tempFileURL), options: .atomic)
+    }
+
+    private static func mapNetworkError(_ error: Error) -> DownloadError {
+        let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain else {
+            return .networkError(error)
+        }
+        switch nsError.code {
+        case NSURLErrorNotConnectedToInternet:
+            return .networkError(NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "dl_err_offline".localized]))
+        case NSURLErrorTimedOut:
+            return .networkError(NSError(domain: "DownloadManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "dl_err_timeout".localized]))
+        case NSURLErrorCancelled:
+            return .unknownError("download_cancelled".localized)
+        default:
+            return .networkError(NSError(domain: "DownloadManager", code: nsError.code, userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (NSURLError \(nsError.code))"]))
+        }
+    }
+
+    private static func parseTotalSize(from contentRange: String) -> Int64? {
+        guard let slashIndex = contentRange.lastIndex(of: "/") else { return nil }
+        let totalPart = contentRange[contentRange.index(after: slashIndex)...].trimmingCharacters(in: .whitespaces)
+        guard totalPart != "*" else { return nil }
+        return Int64(totalPart)
+    }
+
+    private static func parseRangeStart(from contentRange: String) -> Int64? {
+        guard let dashIndex = contentRange.firstIndex(of: "-") else { return nil }
+        let prefix = contentRange[contentRange.startIndex..<dashIndex]
+        guard let spaceIndex = prefix.lastIndex(of: " ") else { return nil }
+        return Int64(prefix[prefix.index(after: spaceIndex)...].trimmingCharacters(in: .whitespaces))
+    }
+}
+
+
+private final class DownloadHandler: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+    let downloadId: String
+    private weak var owner: SegmentedIPADownloader?
+
+    init(downloadId: String, owner: SegmentedIPADownloader) {
+        self.downloadId = downloadId
+        self.owner = owner
+        super.init()
+    }
+
+    private func segmentIndex(for task: URLSessionTask) -> Int? {
+        guard let description = task.taskDescription else { return nil }
+        guard let hashIndex = description.lastIndex(of: "#") else { return nil }
+        return Int(description[description.index(after: hashIndex)...])
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        guard let owner, let index = segmentIndex(for: dataTask) else {
+            completionHandler(.cancel)
+            return
+        }
+        owner.handleSegmentResponse(downloadId: downloadId, index: index, response: response, completionHandler: completionHandler)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        guard let owner, let index = segmentIndex(for: dataTask) else { return }
+        owner.handleSegmentData(downloadId: downloadId, index: index, data: data)
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard let owner, let index = segmentIndex(for: task) else { return }
+        owner.handleSegmentCompletion(downloadId: downloadId, index: index, error: error)
+    }
+}
+
+
+private final class HeaderProbe: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<HTTPURLResponse?, Never>?
+
+    func probe(url: URL, headers: [String: String]) async -> HTTPURLResponse? {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        config.connectionProxyDictionary = [
+            "HTTPEnable": 0,
+            "HTTPSEnable": 0,
+            "SOCKSEnable": 0
+        ]
+        let session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        defer { session.finishTasksAndInvalidate() }
+
+        var request = URLRequest(url: url)
+        headers.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+
+        return await withCheckedContinuation { continuation in
+            lock.lock()
+            self.continuation = continuation
+            lock.unlock()
+            session.dataTask(with: request).resume()
+        }
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        completionHandler(.cancel)
+        lock.lock()
+        let continuation = self.continuation
+        self.continuation = nil
+        lock.unlock()
+        NSLog("[SegmentedDownloader] probe response status=\((response as? HTTPURLResponse)?.statusCode ?? -1) cl=\(response.expectedContentLength)")
+        continuation?.resume(returning: response as? HTTPURLResponse)
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        NSLog("[SegmentedDownloader] probe completed with error=\(String(describing: error))")
+        lock.lock()
+        let continuation = self.continuation
+        self.continuation = nil
+        lock.unlock()
+        continuation?.resume(returning: nil)
+    }
+}

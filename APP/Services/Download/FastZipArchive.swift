@@ -148,7 +148,7 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
                 return false
             }
 
-            originalTail = try source.read(upToCount: Int(totalSize) - centralDirOffset) ?? Data()
+            originalTail = centralDirData + (try source.read(upToCount: Int(totalSize) - centralDirOffset - centralDirSize) ?? Data())
 
             let centralDirEOCD = Self.EndOfCentralDirectory(
                 signature: tailEOCD.signature,

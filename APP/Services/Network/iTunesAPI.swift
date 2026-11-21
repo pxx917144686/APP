@@ -616,8 +616,10 @@ class iTunesClient: @unchecked Sendable {
     struct SuggestTerm: Codable, Identifiable, Hashable { let term: String; var id: String { term } }
 
     func suggest(term: String) async throws -> [SuggestTerm] {
-        guard let encoded = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return [] }
-        let url = URL(string: "https://search.itunes.apple.com/WebObjects/MZSearchHints.woa/wa/hints?clientApplication=Software&term=\(encoded)")!
+        var components = URLComponents(string: "https://search.itunes.apple.com/WebObjects/MZSearchHints.woa/wa/hints")
+        components?.queryItems = [URLQueryItem(name: "clientApplication", value: "Software"),
+                                  URLQueryItem(name: "term", value: term)]
+        guard let url = components?.url else { return [] }
         let (data, response) = try await session.data(from: url)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw SearchError.invalidResponse }
         let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)

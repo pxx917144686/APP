@@ -62,7 +62,7 @@ struct ShelfView<Item: Identifiable, Content: View>: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 13, weight: .medium))
                     }
-                    .foregroundColor(.blue)
+                    .foregroundColor(.accentColor)
                 }
             }
         }

@@ -22,7 +22,7 @@ struct SigningDeviceUDIDSheet: View {
     }
 
     private var status: (text: String, color: Color, icon: String) {
-        guard let profile else {
+        guard profile != nil else {
             return ("sign_device_no_profile".localized, .secondary, "doc")
         }
         if allDevices {

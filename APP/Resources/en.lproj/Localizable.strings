@@ -1,4 +1,4 @@
-﻿"tab_settings" = "Settings";
+"tab_settings" = "Settings";
 "tab_downloads" = "Downloads";
 "tab_search" = "Search";
 
@@ -107,6 +107,8 @@
 "download_title" = "Downloads";
 "downloading" = "Downloading";
 "download_paused" = "Paused";
+"download_pause" = "Pause";
+"download_resume" = "Resume";
 "download_completed" = "Completed";
 "download_failed" = "Download Failed";
 "download_cancelled" = "Cancelled";
@@ -255,6 +257,10 @@
 "install_success_desc" = "Check your home screen, the app is installing...";
 "install_contact_author" = "Contact developer pxx917144686 if you encounter issues";
 "install_start_failed" = "Installation Failed to Start";
+"install_auto_started" = "✅ Installer launched...";
+"install_manual_triggering" = "Manual installation triggered...";
+"install_manual_started" = "✅ Manual installation launched";
+"install_manual_failed" = "❌ Manual installation failed: ";
 "retry_install" = "Retry Installation";
 "view_source_code" = "👉 View Source Code";
 "file_size_x" = "File Size: %@";
@@ -335,6 +341,8 @@
 "dl_err_file_operation" = "File operation failed. Make sure there is enough free space.";
 "dl_err_unknown_during" = "An unknown error occurred during the download.";
 "dl_err_empty_data" = "Downloaded data is empty or the temporary file is missing.";
+"dl_err_size_mismatch" = "Incomplete download (received %@ of %@ bytes).";
+"dl_err_checksum_failed" = "Downloaded file failed checksum verification.";
 "dl_err_write_failed" = "Failed to write the file: %@";
 "dl_err_invalid_url_generic" = "Invalid URL: %@";
 "dl_err_license_error" = "License error: %@";
@@ -454,6 +462,24 @@
 "store_err_switch_region" = "You need to switch to the correct storefront region.";
 "store_err_rate_limited" = "Too many requests. Please try again later.";
 "store_err_not_purchased" = "You have not purchased this app.";
+"store_err_network" = "Network error: %@";
+"store_err_invalid_response" = "Invalid response from server";
+"store_err_auth_failed" = "Authentication failed";
+"store_err_auth_failed_details" = "Authentication failed (%@)";
+"store_err_account_not_found" = "Account not found";
+"store_err_invalid_credentials" = "Invalid credentials";
+"store_err_invalid_credentials_details" = "Invalid credentials (%@)";
+"store_err_server" = "Server error: %@";
+"store_err_server_details" = "Server error %@: %@";
+"store_err_unknown" = "Unknown error: %@";
+"store_err_generic" = "Generic error occurred";
+"store_err_invalid_item" = "Invalid item";
+"store_err_invalid_license" = "Invalid license";
+"store_err_code_required" = "Verification code required";
+"store_err_locked_account" = "Account is locked";
+"store_err_locked_account_details" = "Account is locked (%@)";
+"store_err_keychain" = "Keychain error %@: %@";
+"store_err_unknown_generic" = "Unknown error occurred";
 "auth_err_signin_failed" = "Apple sign-in failed";
 "auth_err_signin_unavailable" = "Apple cannot complete sign-in right now. Please try again.";
 "auth_err_signin_no_info" = "Apple did not return sign-in information. Check your account and try again.";
@@ -519,6 +545,7 @@
 "install_failed_title" = "Installation failed";
 "install_dns_failed_title" = "DNS interception detected";
 "install_dns_failed" = "localhost.flarestore.vip does not resolve to 127.0.0.1 (currently %@). Turn off VPN, proxy or DNS filtering and try again.";
+"install_bg_expired" = "Installation was interrupted because the app went to the background too long.";
 "install_tls_failed_title" = "Installation service unavailable";
 "install_tls_failed" = "Could not connect to the local HTTPS service: %@. Check the system time and network proxy, then retry.";
 "install_manifest_failed" = "Installation service unavailable";

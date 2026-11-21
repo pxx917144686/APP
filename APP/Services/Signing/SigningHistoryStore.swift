@@ -85,7 +85,10 @@ final class SigningHistoryStore: ObservableObject {
         profileID: UUID? = nil
     ) -> SigningHistoryRecord {
         if let index = records.firstIndex(where: { $0.outputName == outputName }) {
-            records.remove(at: index)
+            let stale = records.remove(at: index)
+            if let source = retainedSourceURL(for: stale) {
+                try? FileManager.default.removeItem(at: source)
+            }
         }
         let record = SigningHistoryRecord(
             id: UUID(),

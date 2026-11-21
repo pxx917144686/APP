@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Accesul la cameră este necesar pentru scanarea codurilor QR pentru descărcarea aplicațiilor.";
+"NSFaceIDUsageDescription" = "Folosit pentru deblocarea înregistrărilor de semnare ascunse și a seifului de semnare.";
+"NSLocalNetworkUsageDescription" = "Accesul la rețeaua locală este necesar pentru pornirea unui server temporar pentru instalarea aplicațiilor descărcate.";

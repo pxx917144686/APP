@@ -13,15 +13,32 @@ class PurchaseManager: @unchecked Sendable {
         countryCode: String = "",
         isFree: Bool = false
     ) async -> Result<Bool, PurchaseError> {
+        let result = await checkAppOwnershipDetailed(
+            appIdentifier: appIdentifier,
+            account: account,
+            countryCode: countryCode,
+            isFree: isFree
+        )
+        return result.map { $0.owned }
+    }
+
+    func checkAppOwnershipDetailed(
+        appIdentifier: String,
+        account: Account,
+        countryCode: String = "",
+        isFree: Bool = false
+    ) async -> Result<(owned: Bool, songList: [[String: Any]]?), PurchaseError> {
         do {
             let trackId = try await resolveTrackId(appIdentifier: appIdentifier, countryCode: countryCode)
 
             do {
-                let downloadResponse = try await StoreRequest.shared.download(
+                let downloadResult = try await StoreRequest.shared.downloadWithRawSongList(
                     appIdentifier: trackId,
                     account: account
                 )
-                return .success(!downloadResponse.songList.isEmpty)
+                let owned = !downloadResult.response.songList.isEmpty
+                return .success((owned: owned,
+                                 songList: owned ? downloadResult.rawSongList : nil))
             } catch let storeError as StoreError {
                 switch storeError {
                 case .licenseExpired:
@@ -30,17 +47,17 @@ class PurchaseManager: @unchecked Sendable {
                             appIdentifier: trackId,
                             account: account
                         )
-                        return .success(!redownloadResponse.songList.isEmpty)
+                        return .success((owned: !redownloadResponse.songList.isEmpty, songList: nil))
                     } catch {
-                        return handleOwnershipError(error, isFree: isFree)
+                        return handleOwnershipError(error, isFree: isFree).map { (owned: $0, songList: nil) }
                     }
             case .notOwned, .invalidLicense:
-                return handleOwnershipError(storeError, isFree: isFree)
+                return handleOwnershipError(storeError, isFree: isFree).map { (owned: $0, songList: nil) }
                 default:
-                    return handleOwnershipError(storeError, isFree: isFree)
+                    return handleOwnershipError(storeError, isFree: isFree).map { (owned: $0, songList: nil) }
                 }
             } catch {
-                return handleOwnershipError(error, isFree: isFree)
+                return handleOwnershipError(error, isFree: isFree).map { (owned: $0, songList: nil) }
             }
         } catch {
             return .failure(.appNotFound(error.localizedDescription))
@@ -99,16 +116,16 @@ class PurchaseManager: @unchecked Sendable {
             if case .success = purchaseRes {
                 return purchaseRes
             }
-            let ownershipFallback = await checkAppOwnership(
+            let ownershipFallback = await checkAppOwnershipDetailed(
                 appIdentifier: appIdentifier,
                 account: account,
                 countryCode: countryCode,
                 isFree: true
             )
             switch ownershipFallback {
-            case .success(let owned):
-                if owned {
-                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "purchase_ok_existing_license".localized, licenseInfo: nil))
+            case .success(let fallback):
+                if fallback.owned {
+                    return .success(PurchaseResult(trackId: appIdentifier, success: true, message: "purchase_ok_existing_license".localized, licenseInfo: nil, downloadSongList: fallback.songList))
                 }
                 if case .failure(let pe) = purchaseRes {
                     switch pe {
@@ -136,20 +153,21 @@ class PurchaseManager: @unchecked Sendable {
             }
         }
 
-        let ownershipResult = await checkAppOwnership(
+        let ownershipResult = await checkAppOwnershipDetailed(
             appIdentifier: appIdentifier,
             account: account,
             countryCode: countryCode,
             isFree: false
         )
         switch ownershipResult {
-        case .success(let isOwned):
-            if isOwned {
+        case .success(let ownership):
+            if ownership.owned {
                 let result = PurchaseResult(
                     trackId: appIdentifier,
                     success: true,
                     message: "purchase_ok_already_owned".localized,
-                    licenseInfo: nil
+                    licenseInfo: nil,
+                    downloadSongList: ownership.songList
                 )
                 return .success(result)
             } else {
@@ -272,6 +290,7 @@ struct PurchaseResult {
     let success: Bool
     let message: String
     let licenseInfo: LicenseInfo?
+    var downloadSongList: [[String: Any]]? = nil
 }
 
 struct LicenseInfo {

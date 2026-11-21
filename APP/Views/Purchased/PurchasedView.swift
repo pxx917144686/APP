@@ -53,6 +53,7 @@ struct PurchasedView: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("clear".localized)
             }
         }
         .padding(.horizontal, 12)
@@ -93,6 +94,7 @@ struct PurchasedView: View {
                         row(app)
                     }
                     .listStyle(.plain)
+                    .scrollDismissesKeyboard(.immediately)
                     .refreshable { await load(account, force: true) }
                 }
             }
@@ -124,6 +126,7 @@ struct PurchasedView: View {
                     .frame(width: 64)
             } else {
                 Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     download(app)
                 } label: {
                     Text("download".localized)
@@ -134,6 +137,7 @@ struct PurchasedView: View {
                         .background(Capsule().fill(Color.accentColor))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("download".localized)
             }
         }
         .contentShape(Rectangle())

@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "需要存取相機以掃描 QR Code 下載應用。";
+"NSFaceIDUsageDescription" = "用於解鎖隱藏的簽名記錄與簽名庫。";
+"NSLocalNetworkUsageDescription" = "需要存取本地網路以啟動臨時伺服器，用於安裝已下載的應用程式。";

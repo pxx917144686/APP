@@ -217,7 +217,13 @@ class AuthenticationManager: @unchecked Sendable {
             hsc: account.hsc, adsid: account.adsid, idmsToken: account.idmsToken,
             kbsync: account.kbsync
         )
-        try? saveAccountToKeychain(updated)
+        var accounts = loadAllAccountsFromKeychain()
+        if let index = accounts.firstIndex(where: { $0.email == updated.email }) {
+            accounts[index] = updated
+        } else {
+            accounts.append(updated)
+        }
+        try? saveAllAccountsToKeychain(accounts)
         return updated
     }
 
@@ -225,7 +231,8 @@ class AuthenticationManager: @unchecked Sendable {
         guard let cookies = HTTPCookieStorage.shared.cookies else { return [] }
         return cookies.compactMap {
             ($0.domain.contains("apple.com") || $0.domain.contains("itunes.apple.com"))
-                ? $0.description : nil
+                ? "\($0.name)=\($0.value); domain=\($0.domain); path=\($0.path)\($0.isSecure ? "; secure" : "")"
+                : nil
         }
     }
 
@@ -233,8 +240,9 @@ class AuthenticationManager: @unchecked Sendable {
         for cookieString in cookies {
             var cookieDict: [HTTPCookiePropertyKey: Any] = [:]
             for component in cookieString.components(separatedBy: ";") {
-                let parts = component.components(separatedBy: "=").map { $0.trimmingCharacters(in: .whitespaces) }
-                guard parts.count == 2 else { continue }
+                let parts = component.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                guard parts.count == 2, !parts[1].isEmpty || component.lowercased().contains("=") else { continue }
                 switch parts[0].lowercased() {
                 case "domain": cookieDict[.domain] = parts[1]
                 case "path": cookieDict[.path] = parts[1]

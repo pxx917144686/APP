@@ -31,7 +31,14 @@ enum SigningOTAInstaller {
             }
         }
         InstallKeepAlive.shared.start()
-        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "signing.ota.install") { }
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "signing.ota.install") {
+            DispatchQueue.main.async {
+                guard backgroundTask != .invalid else { return }
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+                stop()
+            }
+        }
 
         do {
             guard let healthURL = URL(string: "\(server.installBaseURL)/health") else {
@@ -59,6 +66,18 @@ enum SigningOTAInstaller {
 
             guard let itmsURL = URL(string: server.itmsServicesURL),
                   UIApplication.shared.canOpenURL(itmsURL) else {
+                server.onIPADelivered = {
+                    Task { @MainActor in
+                        onPhase?(.delivered)
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        stop()
+                    }
+                }
+                cleanupTask = Task {
+                    try? await Task.sleep(nanoseconds: 30 * 60 * 1_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    stop()
+                }
                 openInstallPage(server: server)
                 return
             }
@@ -71,6 +90,18 @@ enum SigningOTAInstaller {
             print("[SignInstall] itms-services opened: \(opened)")
             if !opened {
                 onPhase?(.awaitingSystem)
+                server.onIPADelivered = {
+                    Task { @MainActor in
+                        onPhase?(.delivered)
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        stop()
+                    }
+                }
+                cleanupTask = Task {
+                    try? await Task.sleep(nanoseconds: 30 * 60 * 1_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    stop()
+                }
                 openInstallPage(server: server)
                 return
             }

@@ -196,10 +196,8 @@ final class SigningStore: ObservableObject {
         let metadata: SigningParser.CertificateMetadata
         do {
             metadata = try SigningParser.certificate(data: data, password: password)
-        } catch SigningStoreError.badPassword {
-            throw SigningStoreError.badPassword
         } catch {
-            metadata = SigningParser.CertificateMetadata(commonName: "", teamID: "", expiresAt: nil)
+            throw error
         }
         let fallbackName = (originalFileName as NSString).deletingPathExtension
         let resolvedCommonName = metadata.commonName.isEmpty ? fallbackName : metadata.commonName
@@ -524,17 +522,17 @@ enum SigningParser {
             if status == errSecAuthFailed {
                 throw SigningStoreError.badPassword
             }
-            return CertificateMetadata(commonName: "", teamID: "", expiresAt: nil)
+            throw SigningStoreError.invalidCertificate
         }
         guard let list = items as? [[String: Any]],
               let identityValue = list.first?[kSecImportItemIdentity as String] else {
-            return CertificateMetadata(commonName: "", teamID: "", expiresAt: nil)
+            throw SigningStoreError.invalidCertificate
         }
         let identity = identityValue as! SecIdentity
         var certificate: SecCertificate?
         guard SecIdentityCopyCertificate(identity, &certificate) == errSecSuccess,
               let certificate else {
-            return CertificateMetadata(commonName: "", teamID: "", expiresAt: nil)
+            throw SigningStoreError.invalidCertificate
         }
 
         let der = SecCertificateCopyData(certificate) as Data

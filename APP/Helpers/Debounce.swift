@@ -35,6 +35,7 @@ final class Throttle: ObservableObject {
     private var lastExecution: Date = .distantPast
     private var pendingAction: (() -> Void)?
     private var isScheduled = false
+    private var scheduledTask: Task<Void, Never>?
 
     init(interval: TimeInterval = 0.1) {
         self.interval = interval
@@ -52,7 +53,7 @@ final class Throttle: ObservableObject {
             if !isScheduled {
                 isScheduled = true
                 let remaining = interval - timeSinceLastExecution
-                Task {
+                scheduledTask = Task {
                     try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
                     guard !Task.isCancelled else { return }
                     self.lastExecution = Date()
@@ -65,6 +66,8 @@ final class Throttle: ObservableObject {
     }
 
     func cancel() {
+        scheduledTask?.cancel()
+        scheduledTask = nil
         pendingAction = nil
         isScheduled = false
     }

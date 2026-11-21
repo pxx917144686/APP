@@ -132,10 +132,10 @@ public enum Apple: @unchecked Sendable {
                 }
             }
         }
-        var seen: Set<Int> = []
+        var seen: Set<String> = []
         var uniq: [[String: Any]] = []
         for d in allCandidateDicts {
-            let h = d.keys.sorted().hashValue ^ d.values.count.hashValue
+            let h = d.map { String($0.key) + "=" + String(describing: $0.value) }.sorted().joined()
             if !seen.contains(h) { seen.insert(h); uniq.append(d) }
         }
 

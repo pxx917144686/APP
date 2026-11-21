@@ -394,17 +394,19 @@ extension SettingsView {
                                         lineWidth: 2.5
                                     )
                             )
-                            .overlay(
-                                isSelected ?
-                                Text("✓")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .background(
-                                        Circle()
-                                            .fill(Color.primary.opacity(0.3))
-                                            .frame(width: 18, height: 18)
-                                    ) : nil
-                            )
+                            .overlay {
+                                if isSelected {
+                                    Circle()
+                                        .fill(.black.opacity(0.25))
+                                        .frame(width: 18, height: 18)
+                                        .overlay(
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 9, weight: .bold))
+                                                .foregroundStyle(.white)
+                                        )
+                                        .transition(.scale(scale: 0.4).combined(with: .opacity))
+                                }
+                            }
                             .onTapGesture {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     selectedColor = color
@@ -483,8 +485,9 @@ extension SettingsView {
                     HStack(spacing: 0) {
                         ForEach(TabEnum.allCases, id: \.self) { tab in
                             VStack(spacing: 3) {
-                                Text(tab.emojiIcon)
-                                    .font(.system(size: 15))
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
                                 Text(tab.title)
                                     .font(.system(size: 7.5, weight: .regular))
                                     .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
@@ -505,8 +508,9 @@ extension SettingsView {
                         HStack(spacing: 0) {
                             ForEach([TabEnum.settings, .downloads, .purchased, .sign], id: \.self) { tab in
                                 VStack(spacing: 1) {
-                                    Text(tab.emojiIcon)
-                                        .font(.system(size: 11))
+                                    Image(systemName: tab.icon)
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
                                     Text(tab.title)
                                         .font(.system(size: 6, weight: .regular))
                                         .foregroundStyle(tab == .settings ? themeManager.accentColor : .secondary.opacity(0.6))
@@ -528,8 +532,9 @@ extension SettingsView {
                             .fill(themeManager.accentColor)
                             .frame(width: 28, height: 28)
                             .overlay(
-                                Text(TabEnum.search.emojiIcon)
-                                    .font(.system(size: 12))
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.white)
                             )
                             .shadow(color: Color.black.opacity(0.15), radius: 5, x: 0, y: 2)
                     }

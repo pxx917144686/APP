@@ -140,20 +140,48 @@ private final class ZsignErrorBox: @unchecked Sendable {
     }
 }
 
+final class SigningCancelFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return cancelled
+    }
+
+    func cancel() {
+        lock.lock(); cancelled = true; lock.unlock()
+    }
+
+    func throwIfCancelled() throws {
+        if isCancelled { throw SigningEngineError.cancelled }
+    }
+}
+
 enum SigningEngine {
+    private static let engineMutex = NSLock()
+
     static func sign(
         _ task: SigningIPTask,
         onUpdate: @escaping @Sendable (SigningUpdate) -> Void
     ) async throws -> URL {
-        try await Task.detached(priority: .userInitiated) {
-            try signSync(task, onUpdate: onUpdate)
-        }.value
+        let cancelFlag = SigningCancelFlag()
+        return try await withTaskCancellationHandler {
+            try await Task.detached(priority: .userInitiated) {
+                try signSync(task, cancelFlag: cancelFlag, onUpdate: onUpdate)
+            }.value
+        } onCancel: {
+            cancelFlag.cancel()
+        }
     }
 
     private static func signSync(
         _ task: SigningIPTask,
+        cancelFlag: SigningCancelFlag,
         onUpdate: @escaping @Sendable (SigningUpdate) -> Void
     ) throws -> URL {
+        engineMutex.lock()
+        defer { engineMutex.unlock() }
         let fileManager = FileManager.default
         for url in [task.ipa.url, task.certificateURL, task.profileURL] where !fileManager.fileExists(atPath: url.path) {
             throw SigningEngineError.missingInput(url.lastPathComponent)
@@ -169,7 +197,7 @@ enum SigningEngine {
         onUpdate(SigningUpdate(phase: .preparing, progress: 0.04, text: "prepare  \(task.ipa.fileName)", level: .phase))
         onUpdate(SigningUpdate(progress: 0.08, text: "workdir  \(workRoot.lastPathComponent)", level: .detail))
 
-        try Task.checkCancellation()
+        try cancelFlag.throwIfCancelled()
         onUpdate(SigningUpdate(phase: .unpacking, progress: 0.14, text: "unpack  \(task.ipa.sizeText)", level: .phase))
         try unpack(task.ipa.url, to: workRoot)
         onUpdate(SigningUpdate(progress: 0.28, text: "unpacked  Payload + metadata", level: .success))
@@ -198,7 +226,10 @@ enum SigningEngine {
             removeWatchAppBundle(from: appURL, onUpdate: onUpdate)
         }
 
-        embedNestedProvisioningProfiles(in: appURL, task: task, onUpdate: onUpdate)
+        let targetCredentials = Self.normalizedTargetCredentials(task.targetCredentials)
+        if !task.removeProvision {
+            embedNestedProvisioningProfiles(in: appURL, credentials: targetCredentials, task: task, onUpdate: onUpdate)
+        }
 
         var entitlementsPath = ""
         if let entitlementsPlist = task.entitlementsPlist {
@@ -209,11 +240,11 @@ enum SigningEngine {
         }
 
         if !task.injections.isEmpty {
-            try applyInjections(task.injections, to: appURL, onUpdate: onUpdate)
+            try applyInjections(task.injections, to: appURL, removeTargetPaths: task.removeTargetPaths, onUpdate: onUpdate)
         }
 
         var independentlySignedPaths: [String] = []
-        for credentials in task.targetCredentials {
+        for credentials in targetCredentials {
             let targetURL = appURL.appendingPathComponent(credentials.bundlePath, isDirectory: true)
             guard fileManager.fileExists(atPath: targetURL.path) else { continue }
             var targetEntitlementsPath = ""
@@ -230,7 +261,8 @@ enum SigningEngine {
                 certificateURL: task.certificateURL,
                 password: task.password,
                 entitlementsPath: targetEntitlementsPath,
-                targetLabel: credentials.bundlePath
+                targetLabel: credentials.bundlePath,
+                removeProvision: task.removeProvision
             )
             independentlySignedPaths.append(credentials.bundlePath)
             onUpdate(SigningUpdate(progress: 0.40, text: "target signed  \(credentials.bundlePath)", level: .success))
@@ -239,10 +271,10 @@ enum SigningEngine {
         Zsign.setSkipSignPaths(independentlySignedPaths)
         defer { Zsign.setSkipSignPaths([]) }
 
-        try Task.checkCancellation()
+        try cancelFlag.throwIfCancelled()
         onUpdate(SigningUpdate(phase: .signing, progress: 0.42, text: "sign  Zsign + \(task.certificate.commonName)", level: .phase))
-        try runZsign(task: task, appPath: appURL.path, entitlementsPath: entitlementsPath, onUpdate: onUpdate)
-        if Task.isCancelled { throw SigningEngineError.cancelled }
+        try runZsign(task: task, cancelFlag: cancelFlag, appPath: appURL.path, entitlementsPath: entitlementsPath, onUpdate: onUpdate)
+        try cancelFlag.throwIfCancelled()
         onUpdate(SigningUpdate(progress: 0.74, text: "signed  \(task.bundleIdentifier)", level: .success))
 
         onUpdate(SigningUpdate(phase: .packing, progress: 0.82, text: "pack  IPA", level: .phase))
@@ -254,7 +286,7 @@ enum SigningEngine {
         let stem = task.ipa.url.deletingPathExtension().lastPathComponent
         var outputURL = task.outputDirectory.appendingPathComponent("\(stem)-signed.ipa")
         if fileManager.fileExists(atPath: outputURL.path) {
-            outputURL = task.outputDirectory.appendingPathComponent("\(stem)-signed-\(Int(Date().timeIntervalSince1970)).ipa")
+            outputURL = task.outputDirectory.appendingPathComponent("\(stem)-signed-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8)).ipa")
         }
         try? fileManager.removeItem(at: outputURL)
         try fileManager.moveItem(at: outputTemp, to: outputURL)
@@ -279,6 +311,7 @@ enum SigningEngine {
 
     private static func embedNestedProvisioningProfiles(
         in appURL: URL,
+        credentials: [SigningTargetCredentials],
         task: SigningIPTask,
         onUpdate: @escaping @Sendable (SigningUpdate) -> Void
     ) {
@@ -287,7 +320,7 @@ enum SigningEngine {
         let rootPrefix = root.path + "/"
         var embedded = 0
 
-        for credentials in task.targetCredentials {
+        for credentials in credentials {
             let target = appURL.appendingPathComponent(credentials.bundlePath).standardizedFileURL
             guard target.path.hasPrefix(rootPrefix),
                   target.pathExtension.lowercased() == "appex",
@@ -307,10 +340,16 @@ enum SigningEngine {
             guard (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else { continue }
             guard url.pathExtension.lowercased() == "appex" else { continue }
             let relative = String(url.standardizedFileURL.path.dropFirst(rootPrefix.count))
-            if task.targetCredentials.contains(where: { $0.bundlePath == relative }) {
+            if credentials.contains(where: { $0.bundlePath == relative }) {
                 continue
             }
             guard !task.removeTargetPaths.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) else { continue }
+            if let containing = credentials.last(where: { relative.hasPrefix($0.bundlePath + "/") }) {
+                write(profile: containing.profileURL, into: url, fileManager: fileManager)
+                embedded += 1
+                onUpdate(SigningUpdate(progress: 0.335, text: "profile  \(relative) / \(containing.profile.displayName)", level: .info))
+                continue
+            }
             write(profile: task.profileURL, into: url, fileManager: fileManager)
             embedded += 1
             onUpdate(SigningUpdate(progress: 0.335, text: "profile  \(relative) / main", level: .info))
@@ -319,6 +358,20 @@ enum SigningEngine {
         if embedded > 0 {
             onUpdate(SigningUpdate(progress: 0.336, text: "embedded.mobileprovision  \(embedded) appex", level: .success))
         }
+    }
+
+    private static func normalizedTargetCredentials(_ credentials: [SigningTargetCredentials]) -> [SigningTargetCredentials] {
+        let sorted = credentials.sorted {
+            $0.bundlePath.components(separatedBy: "/").count
+                < $1.bundlePath.components(separatedBy: "/").count
+        }
+        var result: [SigningTargetCredentials] = []
+        for credential in sorted {
+            if !result.contains(where: { credential.bundlePath.hasPrefix($0.bundlePath + "/") }) {
+                result.append(credential)
+            }
+        }
+        return result
     }
 
     private static func write(profile profileURL: URL, into bundleURL: URL, fileManager: FileManager) {
@@ -362,6 +415,7 @@ enum SigningEngine {
     private static func applyInjections(
         _ injections: [SigningInjection],
         to appURL: URL,
+        removeTargetPaths: [String],
         onUpdate: @escaping @Sendable (SigningUpdate) -> Void
     ) throws {
         let fileManager = FileManager.default
@@ -371,6 +425,11 @@ enum SigningEngine {
             for targetID in targetIDs {
                 let targetBundle = targetID == "." ? appURL : appURL.appendingPathComponent(targetID, isDirectory: true)
                 guard fileManager.fileExists(atPath: targetBundle.path) else {
+                    let explicitlyRemoved = removeTargetPaths.contains { $0 == targetID || targetID.hasPrefix($0 + "/") }
+                    if explicitlyRemoved {
+                        onUpdate(SigningUpdate(progress: 0.36, text: "inject skip  \(injection.name) · \(targetID) (target removed)", level: .warning))
+                        continue
+                    }
                     throw SigningEngineError.injectionFailed("\(injection.name) · \(targetID)")
                 }
 
@@ -424,7 +483,8 @@ enum SigningEngine {
         certificateURL: URL,
         password: String,
         entitlementsPath: String,
-        targetLabel: String
+        targetLabel: String,
+        removeProvision: Bool = false
     ) throws {
         let box = ZsignErrorBox()
         let semaphore = DispatchSemaphore(value: 0)
@@ -439,10 +499,9 @@ enum SigningEngine {
                 customName: "",
                 customVersion: "",
                 adhoc: false,
-                removeProvision: true,
+                removeProvision: !removeProvision,
                 completion: { _, error in
                     box.set(error)
-                    semaphore.signal()
                 }
             )
             if !ok {
@@ -458,10 +517,12 @@ enum SigningEngine {
 
     private static func runZsign(
         task: SigningIPTask,
+        cancelFlag: SigningCancelFlag,
         appPath: String,
         entitlementsPath: String,
         onUpdate: @escaping @Sendable (SigningUpdate) -> Void
     ) throws {
+        try cancelFlag.throwIfCancelled()
         let box = ZsignErrorBox()
         let semaphore = DispatchSemaphore(value: 0)
         let zsignEmbedsProfile = !task.removeProvision
@@ -479,7 +540,6 @@ enum SigningEngine {
                 removeProvision: zsignEmbedsProfile,
                 completion: { _, error in
                     box.set(error)
-                    semaphore.signal()
                 }
             )
             if !ok {
@@ -603,7 +663,7 @@ final class SigningSession: ObservableObject {
         if let startedAt {
             elapsed = Date().timeIntervalSince(startedAt)
         }
-        if let output {
+        if let output, !cancelled {
             phase = .completed
             progress = 1
             outcome = .completed
@@ -737,7 +797,8 @@ struct SigningIPAInfo: Identifiable, Sendable {
         guard let eocd = FastZipArchive.findEndOfCentralDirectory(in: data),
               let entries = try? FastZipArchive.readCentralDirectory(from: data, eocd: eocd),
               let infoEntry = entries.first(where: {
-                  $0.filename.hasPrefix("Payload/") && $0.filename.hasSuffix(".app/Info.plist")
+                  let parts = $0.filename.split(separator: "/").map(String.init)
+                  return parts.count == 3 && parts[0] == "Payload" && parts[1].hasSuffix(".app") && parts[2] == "Info.plist"
               }),
               let infoData = try? FastZipArchive.extractSingleEntry(from: data, entry: infoEntry),
               let plist = try? PropertyListSerialization.propertyList(from: infoData, format: nil) as? [String: Any],
@@ -827,7 +888,14 @@ enum SigningInstaller {
         onPhase?(.preparing)
         let info = try SigningIPAInfo.read(url: ipaURL)
         let requestID = UUID()
-        let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "signing.install") { }
+        var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "signing.install") {
+            DispatchQueue.main.async {
+                guard backgroundTask != .invalid else { return }
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+            }
+        }
         InstallKeepAlive.shared.start()
         let port = HTTPServerManager.shared.allocatePort()
         let host = currentLocalIPv4() ?? "127.0.0.1"
@@ -855,7 +923,7 @@ enum SigningInstaller {
         let healthURLString = "https://\(installServerHost):\(port)/health"
         var healthy = false
         for _ in 1...20 {
-            try await Task.sleep(nanoseconds: 500_000_000)
+            try? await Task.sleep(nanoseconds: 500_000_000)
             guard let url = URL(string: healthURLString) else { break }
             if let (_, response) = try? await session.data(from: url),
                (response as? HTTPURLResponse)?.statusCode == 200 {

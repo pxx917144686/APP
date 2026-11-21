@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Cameratoegang is nodig om QR-codes te scannen om apps te downloaden.";
+"NSFaceIDUsageDescription" = "Wordt gebruikt om verborgen ondertekeningsrecords en de ondertekeningskluis te ontgrendelen.";
+"NSLocalNetworkUsageDescription" = "Lokale netwerktoegang is nodig om een tijdelijke server te draaien voor het installeren van gedownloade apps.";

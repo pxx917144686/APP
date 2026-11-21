@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "アプリの QR コードをスキャンしてダウンロードするために、カメラへのアクセスが必要です。";
+"NSFaceIDUsageDescription" = "非表示の署名レコードと署名 Vault のロックを解除するために使用します。";
+"NSLocalNetworkUsageDescription" = "ダウンロードしたアプリをインストールするための一時サーバーを起動するのに、ローカルネットワークへのアクセスが必要です。";

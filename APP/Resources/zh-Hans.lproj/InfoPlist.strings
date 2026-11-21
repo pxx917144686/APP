@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "需要访问相机以扫描二维码下载应用。";
+"NSFaceIDUsageDescription" = "用于解锁隐藏的签名记录和签名库。";
+"NSLocalNetworkUsageDescription" = "需要访问本地网络以启动临时服务器，用于安装下载的应用程序。";

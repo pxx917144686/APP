@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "L'accesso alla fotocamera è necessario per scansionare codici QR e scaricare app.";
+"NSFaceIDUsageDescription" = "Usato per sbloccare i registri di firma nascosti e la cassaforte delle firme.";
+"NSLocalNetworkUsageDescription" = "L'accesso alla rete locale è necessario per avviare un server temporaneo e installare le app scaricate.";

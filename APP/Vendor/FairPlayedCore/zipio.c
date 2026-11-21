@@ -116,7 +116,8 @@ int zip_extract_all(const char *zip_path, const char *dest_dir, char *err, size_
         if (!name_is_safe(name)) { snprintf(err, errlen, "unsafe entry name: %s", name); rc = -1; break; }
         if (strncmp(name, "__MACOSX/", 9) == 0) continue;
         char out[8192];
-        snprintf(out, sizeof out, "%s/%s", dest_dir, name);
+        int out_len = snprintf(out, sizeof out, "%s/%s", dest_dir, name);
+        if (out_len < 0 || out_len >= (int)sizeof out) { snprintf(err, errlen, "path too long: %s", name); rc = -1; break; }
         size_t ol = strlen(out);
         if (out[ol - 1] == '/') { out[ol - 1] = 0; if (mkdirs(out) != 0) { snprintf(err, errlen, "mkdir %s: %s", out, strerror(errno)); rc = -1; } continue; }
         char parent[8192]; snprintf(parent, sizeof parent, "%s", out);
@@ -295,6 +296,8 @@ int zip_create_from_dir(const char *src_dir, const char *zip_path, char *err, si
     fts_close(fts);
     free(in); free(outb);
 
+    if (rc == 0 && ferror(f)) { rc = -1; snprintf(err, errlen, "write error while packing"); }
+
     if (rc == 0) {
         uint64_t cd_off = (uint64_t)ftello(f);
         for (size_t i = 0; i < cnt; i++) {
@@ -320,6 +323,7 @@ int zip_create_from_dir(const char *src_dir, const char *zip_path, char *err, si
         wr16(f, z64 ? 0xFFFF : (uint16_t)cnt); wr16(f, z64 ? 0xFFFF : (uint16_t)cnt);
         wr32(f, z64 ? 0xFFFFFFFF : (uint32_t)cd_size); wr32(f, z64 ? 0xFFFFFFFF : (uint32_t)cd_off); wr16(f, 0);
     }
+    if (rc == 0 && ferror(f)) { rc = -1; snprintf(err, errlen, "write error while writing central directory"); }
     if (fclose(f) != 0 && rc == 0) { rc = -1; snprintf(err, errlen, "close: %s", strerror(errno)); }
     for (size_t i = 0; i < cnt; i++) free(ents[i].name);
     free(ents);

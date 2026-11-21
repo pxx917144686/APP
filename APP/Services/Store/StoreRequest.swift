@@ -183,11 +183,17 @@ class StoreRequest {
     func download(appIdentifier: String, account: Account,
                   appVersion: String? = nil) async throws -> StoreDownloadResponse {
         try await performDownload(appIdentifier: appIdentifier, account: account,
+                                  appVersion: appVersion, retried: false).response
+    }
+
+    func downloadWithRawSongList(appIdentifier: String, account: Account,
+                                 appVersion: String? = nil) async throws -> (response: StoreDownloadResponse, rawSongList: [[String: Any]]) {
+        try await performDownload(appIdentifier: appIdentifier, account: account,
                                   appVersion: appVersion, retried: false)
     }
 
     private func performDownload(appIdentifier: String, account: Account,
-                                 appVersion: String?, retried: Bool) async throws -> StoreDownloadResponse {
+                                 appVersion: String?, retried: Bool) async throws -> (response: StoreDownloadResponse, rawSongList: [[String: Any]]) {
         let guid = GUIDCache.shared.get()
         var body = downloadBody(appIdentifier: appIdentifier, appVersion: appVersion)
         body["guid"] = guid
@@ -203,7 +209,9 @@ class StoreRequest {
             return try await performDownload(appIdentifier: appIdentifier, account: fresh,
                                              appVersion: appVersion, retried: true)
         }
-        return try parseDownloadResponse(plist: plist)
+        let response = try parseDownloadResponse(plist: plist)
+        let rawSongList = plist["songList"] as? [[String: Any]] ?? []
+        return (response, rawSongList)
     }
 
     func download(appIdentifier: String, directoryServicesIdentifier: String,
@@ -317,7 +325,13 @@ class StoreRequest {
                                    metadataDict["item-name"] as? String ?? ""
             let bundleShortVersionString = metadataDict["bundleShortVersionString"] as? String ??
                                           metadataDict["bundle-short-version-string"] as? String ?? ""
-            let softwareVersionExternalIdentifier = String(metadataDict["softwareVersionExternalIdentifier"] as? Int ?? 0)
+            let softwareVersionExternalIdentifier: String
+            switch metadataDict["softwareVersionExternalIdentifier"] {
+            case let n as Int: softwareVersionExternalIdentifier = String(n)
+            case let n as Int64: softwareVersionExternalIdentifier = String(n)
+            case let s as String: softwareVersionExternalIdentifier = s
+            default: softwareVersionExternalIdentifier = ""
+            }
             let softwareVersionExternalIdentifiers = metadataDict["softwareVersionExternalIdentifiers"] as? [Int]
             metadata = AppMetadata(
                 bundleId: bundleId,
@@ -351,7 +365,8 @@ class StoreRequest {
             throw StoreError.fromFailureType(failureType)
         }
         let hasDialog = plist["dialog"] != nil
-        if hasDialog && !customerMessage.isEmpty {
+        _ = customerMessage
+        if hasDialog {
             throw StoreError.userInteractionRequired
         }
         let dsPersonId = (plist["dsPersonID"] as? String) ?? (plist["dsPersonId"] as? String) ?? ""
@@ -398,40 +413,40 @@ public enum StoreError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return "store_err_network".localized(error.localizedDescription)
         case .invalidResponse:
-            return "Invalid response from server"
+            return "store_err_invalid_response".localized
         case .authenticationFailed:
-            return "Authentication failed"
+            return "store_err_auth_failed".localized
         case .authenticationFailedWithDetails(let s):
-            return "Authentication failed (\(s))"
+            return "store_err_auth_failed_details".localized(s)
         case .accountNotFound:
-            return "Account not found"
+            return "store_err_account_not_found".localized
         case .invalidCredentials:
-            return "Invalid credentials"
+            return "store_err_invalid_credentials".localized
         case .invalidCredentialsWithDetails(let s):
-            return "Invalid credentials (\(s))"
+            return "store_err_invalid_credentials_details".localized(s)
         case .serverError(let code):
-            return "Server error: \(code)"
+            return "store_err_server".localized(String(code))
         case .serverErrorWithDetails(let code, let s):
-            return "Server error \(code): \(s)"
+            return "store_err_server_details".localized(String(code), s)
         case .unknown(let message):
-            return "Unknown error: \(message)"
+            return "store_err_unknown".localized(message)
         case .genericError:
-            return "Generic error occurred"
+            return "store_err_generic".localized
         case .invalidItem:
-            return "Invalid item"
+            return "store_err_invalid_item".localized
         case .invalidLicense:
-            return "Invalid license"
+            return "store_err_invalid_license".localized
         case .codeRequired:
-            return "Verification code required"
+            return "store_err_code_required".localized
         case .lockedAccount:
-            return "Account is locked"
+            return "store_err_locked_account".localized
         case .lockedAccountWithDetails(let s):
-            return "Account is locked (\(s))"
+            return "store_err_locked_account_details".localized(s)
         case .keychainError(let status, let detail):
             let hex = String(format: "OSStatus=0x%08X(%d)", status, status)
-            return "Keychain 失败 \(hex)：\(detail ?? SecCopyErrorMessageString(status, nil) as String? ?? "unknown")"
+            return "store_err_keychain".localized(hex, detail ?? SecCopyErrorMessageString(status, nil) as String? ?? "unknown")
         case .userInteractionRequired:
             return "store_err_auth_required".localized
         case .invalidVerificationCode:
@@ -453,7 +468,7 @@ public enum StoreError: Error, LocalizedError, Equatable {
         case .notOwned:
             return "store_err_not_purchased".localized
         case .unknownError:
-            return "Unknown error occurred"
+            return "store_err_unknown_generic".localized
         }
     }
 
@@ -473,8 +488,12 @@ public enum StoreError: Error, LocalizedError, Equatable {
             return .invalidVerificationCode
         case "licenseExpired", "invalidLicense":
             return .licenseExpired
-        case "2034", "paymentVerificationRequired":
+        case "paymentVerificationRequired":
             return .paymentVerificationRequired
+        case "2034":
+            return .authenticationFailed
+        case "5002":
+            return .unknownError
         case "2056", "termsOfServiceUpdateRequired":
             return .termsOfServiceUpdateRequired
         case "storefrontChangeRequired", "100":

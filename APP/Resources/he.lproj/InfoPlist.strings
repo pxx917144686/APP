@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "נדרשת גישה למצלמה לסריקת קודי QR להורדת אפליקציות.";
+"NSFaceIDUsageDescription" = "משמש לפתיחת רשומות חתימה מוסתרות וכספת החתימות.";
+"NSLocalNetworkUsageDescription" = "נדרשת גישה לרשת המקומית להפעלת שרת זמני להתקנת אפליקציות שהורדו.";

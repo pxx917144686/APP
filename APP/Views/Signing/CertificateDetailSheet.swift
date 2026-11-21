@@ -61,11 +61,14 @@ struct CertificateDetailSheet: View {
         profile?.entitlementKeys?.count ?? 0
     }
 
+    private static var parsedValuesCache: [String: [String: Any]] = [:]
+
     private var profileEntitlements: [String: Any] {
-        guard let data = profile?.entitlementsData,
-              let dictionary = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
-            return [:]
-        }
+        guard let profile, let data = profile.entitlementsData else { return [:] }
+        let cacheKey = "\(profile.id)-\(data.count)"
+        if let cached = Self.parsedValuesCache[cacheKey] { return cached }
+        let dictionary = (try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]) ?? [:]
+        Self.parsedValuesCache[cacheKey] = dictionary
         return dictionary
     }
 

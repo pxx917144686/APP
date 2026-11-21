@@ -191,7 +191,7 @@ int zsign(
 	bool bForce = true;
 	bool bWeakInject = false;
 	bool bAdhoc = adhoc;
-	bool bSHA256Only = false;
+	bool bSHA256Only = true;
 	
 	string strCertFile;
 	string strPKeyFile;

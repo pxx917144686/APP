@@ -248,10 +248,19 @@ final class LanguageManager: ObservableObject {
     private func updateCurrentBundle() {
         switch currentLanguage {
         case .system:
-            currentBundle = Bundle.main
+            currentBundle = bundle(for: bestSystemLanguageCode())
         default:
             currentBundle = bundle(for: currentLanguage.rawValue)
         }
+    }
+
+    private func bestSystemLanguageCode() -> String {
+        for localization in Bundle.main.preferredLocalizations {
+            if Bundle.main.path(forResource: localization, ofType: "lproj") != nil {
+                return localization
+            }
+        }
+        return "en"
     }
 
     private func bundle(for language: String) -> Bundle? {

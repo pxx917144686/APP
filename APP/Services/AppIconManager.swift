@@ -52,6 +52,26 @@ final class AppIconManager: NSObject {
         }
     }
 
+    private var iconBackupDirectory: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("IconBackup", isDirectory: true)
+    }
+
+    private func backupDefaultIconsIfNeeded() {
+        let fm = FileManager.default
+        try? fm.createDirectory(at: iconBackupDirectory, withIntermediateDirectories: true)
+        let marker = iconBackupDirectory.appendingPathComponent(".complete")
+        guard !fm.fileExists(atPath: marker.path) else { return }
+        let bundlePath = Bundle.main.bundlePath
+        let src = URL(fileURLWithPath: bundlePath).appendingPathComponent("AppIcon1024x1024.png")
+        let dst = iconBackupDirectory.appendingPathComponent("AppIcon1024x1024.png")
+        if fm.fileExists(atPath: src.path) {
+            try? fm.removeItem(at: dst)
+            try? fm.copyItem(at: src, to: dst)
+            fm.createFile(atPath: marker.path, contents: Data(), attributes: nil)
+        }
+    }
+
     private func setAlternateIconViaFileReplace(_ iconName: String?, completion: ((Bool, Error?) -> Void)? = nil) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -59,6 +79,7 @@ final class AppIconManager: NSObject {
             let targetName = iconName ?? "AppIcon"
 
             do {
+                if iconName != nil { self.backupDefaultIconsIfNeeded() }
                 let replacedCount = try self.replaceAllAppIcons(with: targetName)
 
                 guard replacedCount > 0 else {
@@ -194,6 +215,10 @@ final class AppIconManager: NSObject {
 
     private func loadSourceImage(named name: String) -> UIImage? {
         if name == "AppIcon" || name == "app" || name.isEmpty {
+            let backupPath = iconBackupDirectory.appendingPathComponent("AppIcon1024x1024.png").path
+            if FileManager.default.fileExists(atPath: backupPath) {
+                return UIImage(contentsOfFile: backupPath)
+            }
             if let imagePath = Bundle.main.path(forResource: "AppIcon1024x1024", ofType: "png") {
                 return UIImage(contentsOfFile: imagePath)
             }

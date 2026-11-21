@@ -282,14 +282,25 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private var directDownloadFileHandles: [String: FileHandle] = [:]
     private var directDownloadTempFiles: [String: URL] = [:]
     private var directDownloadBytesWritten: [String: Int64] = [:]
+    private var directDownloadResponseErrors: [String: NSError] = [:]
     private var progressHandlers: [String: @Sendable (DownloadProgress) -> Void] = [:]
     private var completionHandlers: [String: @Sendable (Result<DownloadResult, DownloadError>) -> Void] = [:]
     private var downloadStartTimes: [String: Date] = [:]
     private var lastProgressUpdate: [String: (bytes: Int64, time: Date)] = [:]
     private var lastUIUpdate: [String: Date] = [:]
+    private var smoothedSpeed: [String: Double] = [:]
     private var downloadDestinations: [String: URL] = [:]
     private var downloadStoreItems: [String: DownloadStoreItem] = [:]
     private var startingDownloads: Set<String> = []
+    private var segmentedDownloadIds: Set<String> = []
+    private var suspendedTaskIds: Set<String> = []
+    private lazy var delegateQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "com.app.download.delegate"
+        queue.maxConcurrentOperationCount = 1
+        queue.qualityOfService = .userInitiated
+        return queue
+    }()
     private lazy var urlSession: URLSession = {
         let config = URLSessionConfiguration.background(
             withIdentifier: "com.app.appstoredownload.session"
@@ -331,7 +342,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         config.tlsMinimumSupportedProtocolVersion = .TLSv12
         config.tlsMaximumSupportedProtocolVersion = .TLSv13
         config.networkServiceType = .default
-        return URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
+        return URLSession(configuration: config, delegate: self, delegateQueue: delegateQueue)
     }()
     private var activeSessionType: [String: String] = [:]
     private var resumeDataStore: [String: Data] = [:]
@@ -350,7 +361,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
     private struct WriteCapture: Sendable {
         let id: String
         let handler: @Sendable (DownloadProgress) -> Void
-        let start: Date
         let last: (bytes: Int64, time: Date)?
     }
 
@@ -550,6 +560,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         destinationURL: URL,
         appVersion: String? = nil,
         downloadId: String? = nil,
+        prefetchedSongList: [[String: Any]]? = nil,
         progressHandler: @escaping @Sendable (DownloadProgress) -> Void,
         completion: @escaping @Sendable (Result<DownloadResult, DownloadError>) -> Void
     ) {
@@ -575,13 +586,18 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 let passwordToken = account.passwordToken
                 let storeFront = account.storeResponse.storeFront
 
-                let plistResponse = try await StoreRequest.shared.downloadRawPlist(
-                    appIdentifier: appIdentifier,
-                    directoryServicesIdentifier: dsPersonId,
-                    appVersion: appVersion,
-                    passwordToken: passwordToken,
-                    storeFront: storeFront
-                )
+                let plistResponse: [String: Any]
+                if let prefetchedSongList, !prefetchedSongList.isEmpty {
+                    plistResponse = ["songList": prefetchedSongList]
+                } else {
+                    plistResponse = try await StoreRequest.shared.downloadRawPlist(
+                        appIdentifier: appIdentifier,
+                        directoryServicesIdentifier: dsPersonId,
+                        appVersion: appVersion,
+                        passwordToken: passwordToken,
+                        storeFront: storeFront
+                    )
+                }
 
                 var downloadStoreItem: DownloadStoreItem?
 
@@ -816,7 +832,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         }
 
         let shouldStart: Bool = locked {
-            if directDownloadTasks[downloadId] != nil {
+            if directDownloadTasks[downloadId] != nil || segmentedDownloadIds.contains(downloadId) {
                 progressHandlers[downloadId] = progressHandler
                 completionHandlers[downloadId] = completion
                 return false
@@ -826,8 +842,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             completionHandlers[downloadId] = completion
             progressHandlers[downloadId] = progressHandler
             downloadStartTimes[downloadId] = Date()
-            directDownloadData[downloadId] = Data()
-            directDownloadBytesWritten[downloadId] = 0
+            segmentedDownloadIds.insert(downloadId)
             return true
         }
         guard shouldStart else { return }
@@ -845,25 +860,40 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         let tempFileURL = URL(fileURLWithPath: tempDir).appendingPathComponent("\(downloadId).tmp")
         locked { directDownloadTempFiles[downloadId] = tempFileURL }
 
-        let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: tempFileURL.path) {
-            try? fileManager.removeItem(at: tempFileURL)
+        await SegmentedIPADownloader.shared.start(
+            downloadId: downloadId,
+            url: downloadURL,
+            tempFileURL: tempFileURL,
+            onProgress: { [weak self] bytesDownloaded, totalBytes in
+                self?.handleSegmentedProgress(downloadId: downloadId, bytesDownloaded: bytesDownloaded, totalBytes: totalBytes)
+            },
+            onFinish: { [weak self] result in
+                self?.handleSegmentedCompletion(downloadId: downloadId, result: result)
+            }
+        )
+    }
+
+    private func handleSegmentedProgress(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64) {
+        let captured = buildProgressUpdate(downloadId: downloadId, bytesDownloaded: bytesDownloaded, totalBytes: totalBytes)
+        guard let captured, captured.shouldUpdate else { return }
+        DispatchQueue.main.async {
+            captured.handler(captured.progress)
         }
-        fileManager.createFile(atPath: tempFileURL.path, contents: nil)
+    }
 
-        if let fileHandle = try? FileHandle(forWritingTo: tempFileURL) {
-            locked { directDownloadFileHandles[downloadId] = fileHandle }
+    private func handleSegmentedCompletion(downloadId: String, result: Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>) {
+        _ = locked { segmentedDownloadIds.remove(downloadId) }
+        switch result {
+        case .success(let payload):
+            finalizeDownloadedFile(
+                downloadId: downloadId,
+                tempFileURL: payload.tempFileURL,
+                downloadedFileSize: payload.totalBytes,
+                expectedSize: payload.totalBytes
+            )
+        case .failure(let error):
+            safeComplete(downloadId: downloadId, result: .failure(error))
         }
-
-        var request = URLRequest(url: downloadURL)
-        request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
-        request.setValue("*/*", forHTTPHeaderField: "Accept")
-
-        let dataTask = foregroundSession.dataTask(with: request)
-        dataTask.taskDescription = downloadId
-        locked { directDownloadTasks[downloadId] = dataTask }
-
-        dataTask.resume()
     }
 
     @MainActor
@@ -934,19 +964,39 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             var tasks: [URLSessionTask] = []
             if let task = downloadTasks[downloadId] { tasks.append(task) }
             if let task = directDownloadTasks[downloadId] { tasks.append(task) }
+            if !tasks.isEmpty {
+                suspendedTaskIds.insert(downloadId)
+            }
             return tasks
         }
         tasks.forEach { $0.suspend() }
+        if locked({ segmentedDownloadIds.contains(downloadId) }) {
+            SegmentedIPADownloader.shared.pause(downloadId: downloadId)
+        }
     }
 
     func resumeDownload(downloadId: String) {
         let tasks: [URLSessionTask] = locked {
             var tasks: [URLSessionTask] = []
-            if let task = downloadTasks[downloadId] { tasks.append(task) }
-            if let task = directDownloadTasks[downloadId] { tasks.append(task) }
+            if suspendedTaskIds.remove(downloadId) != nil {
+                if let task = downloadTasks[downloadId] { tasks.append(task) }
+                if let task = directDownloadTasks[downloadId] { tasks.append(task) }
+            }
             return tasks
         }
         tasks.forEach { $0.resume() }
+        if locked({ segmentedDownloadIds.contains(downloadId) }) {
+            SegmentedIPADownloader.shared.resume(downloadId: downloadId)
+        }
+    }
+
+    func hasSuspendedTasks(for downloadId: String) -> Bool {
+        let directSuspended = locked { suspendedTaskIds.contains(downloadId) }
+        if directSuspended { return true }
+        if locked({ segmentedDownloadIds.contains(downloadId) }) {
+            return SegmentedIPADownloader.shared.isPaused(downloadId: downloadId)
+        }
+        return false
     }
 
     func cancelDownload(downloadId: String) {
@@ -963,9 +1013,20 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             return tasks
         }
         tasks.forEach { $0.cancel() }
+        if locked({ segmentedDownloadIds.contains(downloadId) }) {
+            SegmentedIPADownloader.shared.cancel(downloadId: downloadId)
+        }
         _ = locked { startingDownloads.remove(downloadId) }
     }
 
+    func purgeDownloadArtifacts(downloadId: String) {
+        _ = locked { segmentedDownloadIds.remove(downloadId) }
+        SegmentedIPADownloader.shared.discard(downloadId: downloadId)
+        cleanupDownload(downloadId: downloadId)
+    }
+
+    /// 有**运行中**任务的下载 id 集合。已暂停（任务挂起）的下载不算活动，
+    /// 否则 syncDownloadStatus 的对账会把暂停状态错误翻回“下载中”
     var activeDownloadIds: Set<String> {
         get async {
             let tasks = await urlSession.allTasks
@@ -974,10 +1035,16 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 return desc
             }
             var result = Set(ids)
-            locked {
+            let segmentedIds: Set<String> = locked {
                 result.formUnion(downloadTasks.keys)
                 result.formUnion(directDownloadTasks.keys)
+                result.formUnion(segmentedDownloadIds)
+                result.subtract(suspendedTaskIds)
+                return Set(segmentedDownloadIds)
             }
+            // 已暂停的分段下载同样排除（挂起状态记录在分段下载器内）
+            let pausedSegmented = segmentedIds.filter { SegmentedIPADownloader.shared.isPaused(downloadId: $0) }
+            result.subtract(pausedSegmented)
             return result
         }
     }
@@ -993,7 +1060,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             if directDownloadTasks[downloadId] != nil {
                 return true
             }
-            return false
+            return segmentedDownloadIds.contains(downloadId)
         }
     }
 
@@ -1045,21 +1112,21 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         downloadStartTimes.removeValue(forKey: downloadId)
         lastProgressUpdate.removeValue(forKey: downloadId)
         lastUIUpdate.removeValue(forKey: downloadId)
+        smoothedSpeed.removeValue(forKey: downloadId)
         downloadDestinations.removeValue(forKey: downloadId)
         downloadStoreItems.removeValue(forKey: downloadId)
         directDownloadTasks.removeValue(forKey: downloadId)
         directDownloadData.removeValue(forKey: downloadId)
         directDownloadExpectedSize.removeValue(forKey: downloadId)
         directDownloadBytesWritten.removeValue(forKey: downloadId)
+        segmentedDownloadIds.remove(downloadId)
+        suspendedTaskIds.remove(downloadId)
 
         if let fileHandle = directDownloadFileHandles[downloadId] {
             try? fileHandle.close()
         }
         directDownloadFileHandles.removeValue(forKey: downloadId)
 
-        if let tempFileURL = directDownloadTempFiles[downloadId] {
-            try? FileManager.default.removeItem(at: tempFileURL)
-        }
         directDownloadTempFiles.removeValue(forKey: downloadId)
 
         isRetryingDownload.remove(downloadId)
@@ -1267,34 +1334,45 @@ extension AppStoreDownloadManager {
         let captured: WriteCapture? = locked {
             guard let downloadId = self.downloadId(for: downloadTask),
                   let progressHandler = progressHandlers[downloadId],
-                  let startTime = downloadStartTimes[downloadId] else {
+                  downloadStartTimes[downloadId] != nil else {
                 return nil
             }
             return WriteCapture(id: downloadId, handler: progressHandler,
-                                start: startTime, last: lastProgressUpdate[downloadId])
+                                last: lastProgressUpdate[downloadId])
         }
         guard let captured else { return }
         let downloadId = captured.id
         let progressHandler = captured.handler
-        let startTime = captured.start
         let currentTime = Date()
 
-        var speed: Double = 0.0
-        var remainingTime: TimeInterval = 0.0
+        var instantSpeed: Double = 0.0
+        var isFirstTick = false
         if let lastUpdate = captured.last {
             let timeDiff = currentTime.timeIntervalSince(lastUpdate.time)
             if timeDiff > 0 {
                 let bytesDiff = totalBytesWritten - lastUpdate.bytes
-                speed = Double(bytesDiff) / timeDiff
+                instantSpeed = Double(bytesDiff) / timeDiff
             }
         } else {
-
-            let totalTime = currentTime.timeIntervalSince(startTime)
-            if totalTime > 0 {
-                speed = Double(totalBytesWritten) / totalTime
-            }
+            isFirstTick = true
         }
 
+        let speed: Double = locked {
+            if isFirstTick {
+                lastProgressUpdate[downloadId] = (totalBytesWritten, currentTime)
+                smoothedSpeed.removeValue(forKey: downloadId)
+                return 0.0
+            }
+            if let previous = smoothedSpeed[downloadId] {
+                let smoothed = 0.25 * instantSpeed + 0.75 * previous
+                smoothedSpeed[downloadId] = smoothed
+                return smoothed
+            }
+            smoothedSpeed[downloadId] = instantSpeed
+            return instantSpeed
+        }
+
+        var remainingTime: TimeInterval = 0.0
         if speed > 0 && totalBytesExpectedToWrite > totalBytesWritten {
             let remainingBytes = totalBytesExpectedToWrite - totalBytesWritten
             remainingTime = Double(remainingBytes) / speed
@@ -1588,22 +1666,73 @@ extension AppStoreDownloadManager {
             completionHandler(.allow)
             return
         }
+        if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let responseError = NSError(domain: "DownloadManager", code: http.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "dl_err_failed_retry".localized + " (HTTP \(http.statusCode))"])
+            locked { directDownloadResponseErrors[downloadId] = responseError }
+            completionHandler(.cancel)
+            dataTask.cancel()
+            return
+        }
         let expectedSize = response.expectedContentLength
         locked { directDownloadExpectedSize[downloadId] = expectedSize }
         completionHandler(.allow)
     }
 
+    private func buildProgressUpdate(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64) -> (progress: DownloadProgress, handler: @Sendable (DownloadProgress) -> Void, shouldUpdate: Bool)? {
+        guard let progressHandler = progressHandlers[downloadId],
+              downloadStartTimes[downloadId] != nil else {
+            return nil
+        }
+
+        let currentTime = Date()
+        var speed: Double = 0.0
+        if let lastUpdate = lastProgressUpdate[downloadId] {
+            let timeDiff = currentTime.timeIntervalSince(lastUpdate.time)
+            if timeDiff > 0 {
+                let bytesDiff = bytesDownloaded - lastUpdate.bytes
+                let instantSpeed = Double(bytesDiff) / timeDiff
+                speed = smoothedSpeed[downloadId].map { 0.25 * instantSpeed + 0.75 * $0 } ?? instantSpeed
+                smoothedSpeed[downloadId] = speed
+                lastProgressUpdate[downloadId] = (bytesDownloaded, currentTime)
+            }
+        } else {
+            lastProgressUpdate[downloadId] = (bytesDownloaded, currentTime)
+            smoothedSpeed.removeValue(forKey: downloadId)
+        }
+
+        var remainingTime: TimeInterval = 0
+        if speed > 0 && totalBytes > 0 {
+            remainingTime = Double(totalBytes - bytesDownloaded) / speed
+        }
+
+        let progressValue = totalBytes > 0 ? Double(bytesDownloaded) / Double(totalBytes) : 0.0
+        let progress = DownloadProgress(
+            downloadId: downloadId,
+            bytesDownloaded: bytesDownloaded,
+            totalBytes: totalBytes,
+            progress: progressValue,
+            speed: speed,
+            remainingTime: remainingTime,
+            status: .downloading
+        )
+
+        let lastUIUpdateTime = lastUIUpdate[downloadId] ?? Date.distantPast
+        let shouldUpdate = currentTime.timeIntervalSince(lastUIUpdateTime) >= 0.1 || progressValue >= 1.0
+
+        if shouldUpdate {
+            lastUIUpdate[downloadId] = currentTime
+        }
+        return (progress, progressHandler, shouldUpdate)
+    }
+
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        let outcome: (progress: DownloadProgress, handler: @Sendable (DownloadProgress) -> Void, shouldUpdate: Bool)? = locked {
+        let captured: (outcome: (progress: DownloadProgress, handler: @Sendable (DownloadProgress) -> Void, shouldUpdate: Bool), downloadId: String)? = locked {
             guard let downloadId = dataTask.taskDescription, !downloadId.isEmpty else { return nil }
 
             if let fileHandle = directDownloadFileHandles[downloadId] {
                 do {
-                    if #available(iOS 13.0, *) {
-                        try fileHandle.seekToEnd()
-                    } else {
-                        fileHandle.seekToEndOfFile()
-                    }
+                    try fileHandle.seekToEnd()
                     fileHandle.write(data)
                     directDownloadBytesWritten[downloadId] = (directDownloadBytesWritten[downloadId] ?? 0) + Int64(data.count)
                 } catch {
@@ -1613,58 +1742,15 @@ extension AppStoreDownloadManager {
 
             let totalBytesWritten = directDownloadBytesWritten[downloadId] ?? 0
             let totalBytesExpected = directDownloadExpectedSize[downloadId] ?? 0
-            let progress = totalBytesExpected > 0 ? Double(totalBytesWritten) / Double(totalBytesExpected) : 0
-
-            guard let progressHandler = progressHandlers[downloadId],
-                  let startTime = downloadStartTimes[downloadId] else {
+            guard let outcome = buildProgressUpdate(downloadId: downloadId, bytesDownloaded: totalBytesWritten, totalBytes: totalBytesExpected) else {
                 return nil
             }
-
-            let currentTime = Date()
-            var speed: Double = 0.0
-            if let lastUpdate = lastProgressUpdate[downloadId] {
-                let timeDiff = currentTime.timeIntervalSince(lastUpdate.time)
-                if timeDiff > 0 {
-                    let bytesDiff = totalBytesWritten - lastUpdate.bytes
-                    speed = Double(bytesDiff) / timeDiff
-                }
-            } else {
-                let totalTime = currentTime.timeIntervalSince(startTime)
-                if totalTime > 0 {
-                    speed = Double(totalBytesWritten) / totalTime
-                }
-            }
-
-            lastProgressUpdate[downloadId] = (totalBytesWritten, currentTime)
-
-            var remainingTime: TimeInterval = 0
-            if speed > 0 && totalBytesExpected > 0 {
-                remainingTime = Double(totalBytesExpected - totalBytesWritten) / speed
-            }
-
-            let downloadProgress = DownloadProgress(
-                downloadId: downloadId,
-                bytesDownloaded: totalBytesWritten,
-                totalBytes: totalBytesExpected,
-                progress: progress,
-                speed: speed,
-                remainingTime: remainingTime,
-                status: .downloading
-            )
-
-            let lastUIUpdateTime = lastUIUpdate[downloadId] ?? Date.distantPast
-            let shouldUpdate = currentTime.timeIntervalSince(lastUIUpdateTime) >= 0.1
-
-            if shouldUpdate {
-                lastUIUpdate[downloadId] = currentTime
-            }
-
-            return (downloadProgress, progressHandler, shouldUpdate)
+            return (outcome, downloadId)
         }
 
-        guard let outcome, outcome.shouldUpdate else { return }
+        guard let captured, captured.outcome.shouldUpdate else { return }
         DispatchQueue.main.async {
-            outcome.handler(outcome.progress)
+            captured.outcome.handler(captured.outcome.progress)
         }
     }
 
@@ -1822,17 +1908,16 @@ extension AppStoreDownloadManager {
     }
 
     private func handleDirectDownloadCompletion(downloadId: String, error: Error?) {
-        let captured: (destination: URL, storeItem: DownloadStoreItem)? = locked {
-            guard let destinationURL = downloadDestinations[downloadId],
-                  let storeItem = downloadStoreItems[downloadId] else { return nil }
+        let hasContext: Bool = locked {
+            guard downloadDestinations[downloadId] != nil,
+                  downloadStoreItems[downloadId] != nil else { return false }
             if let fileHandle = directDownloadFileHandles[downloadId] {
                 try? fileHandle.close()
                 directDownloadFileHandles.removeValue(forKey: downloadId)
             }
-            return (destinationURL, storeItem)
+            return true
         }
-        guard let destinationURL = captured?.destination,
-              let storeItem = captured?.storeItem else {
+        guard hasContext else {
             NSLog("[Download] \(downloadId) 完成回调缺少目标或元数据，放弃本次下载")
             safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_local_file_missing".localized)))
             return
@@ -1840,6 +1925,11 @@ extension AppStoreDownloadManager {
 
         if let error = error {
             let nsError = error as NSError
+
+            if let storedError = locked({ directDownloadResponseErrors.removeValue(forKey: downloadId) }) {
+                safeComplete(downloadId: downloadId, result: .failure(.networkError(storedError)))
+                return
+            }
 
             let received: Int64 = locked { directDownloadBytesWritten[downloadId] ?? 0 }
             let expected: Int64 = locked { directDownloadExpectedSize[downloadId] ?? 0 }
@@ -1882,6 +1972,39 @@ extension AppStoreDownloadManager {
             safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_empty_data".localized)))
             return
         }
+
+        let expectedSize: Int64 = locked { directDownloadExpectedSize[downloadId] ?? 0 }
+        finalizeDownloadedFile(
+            downloadId: downloadId,
+            tempFileURL: tempFileURL,
+            downloadedFileSize: downloadedFileSize,
+            expectedSize: expectedSize
+        )
+    }
+
+    private func finalizeDownloadedFile(downloadId: String, tempFileURL: URL, downloadedFileSize: Int64, expectedSize: Int64) {
+        let captured: (destination: URL, storeItem: DownloadStoreItem)? = locked {
+            guard let destinationURL = downloadDestinations[downloadId],
+                  let storeItem = downloadStoreItems[downloadId] else { return nil }
+            return (destinationURL, storeItem)
+        }
+        guard let destinationURL = captured?.destination,
+              let storeItem = captured?.storeItem else {
+            safeComplete(downloadId: downloadId, result: .failure(.fileSystemError("dl_err_local_file_missing".localized)))
+            return
+        }
+
+        if expectedSize > 0, downloadedFileSize != expectedSize {
+            safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "dl_err_size_mismatch".localized(downloadedFileSize, expectedSize)]))))
+            return
+        }
+        let expectedMD5 = storeItem.md5
+        if !expectedMD5.isEmpty,
+           !verifyFileIntegrity(fileURL: tempFileURL, expectedMD5: expectedMD5) {
+            safeComplete(downloadId: downloadId, result: .failure(.networkError(NSError(domain: "DownloadManager", code: -4, userInfo: [NSLocalizedDescriptionKey: "dl_err_checksum_failed".localized]))))
+            return
+        }
+        _ = locked { directDownloadResponseErrors.removeValue(forKey: downloadId) }
 
         do {
             let targetDirectory = destinationURL.deletingLastPathComponent()
@@ -1974,6 +2097,14 @@ extension AppStoreDownloadManager {
     }
 }
 
+enum DownloadByteFormatter {
+    static let file: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+}
+
 struct DownloadProgress {
     let downloadId: String
     let bytesDownloaded: Int64
@@ -1986,14 +2117,11 @@ struct DownloadProgress {
         return String(format: "%.1f%%", progress * 100)
     }
     var formattedSize: String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
+        let formatter = DownloadByteFormatter.file
         return "\(formatter.string(fromByteCount: bytesDownloaded)) / \(formatter.string(fromByteCount: totalBytes))"
     }
     var formattedSpeed: String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return "\(formatter.string(fromByteCount: Int64(speed)))/s"
+        return "\(DownloadByteFormatter.file.string(fromByteCount: Int64(speed)))/s"
     }
     var formattedRemainingTime: String {
         if remainingTime <= 0 {

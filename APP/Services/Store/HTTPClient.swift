@@ -90,6 +90,13 @@ final class HTTPClient: Sendable {
             let (data, response) = try await session.data(for: request)
             guard let response = response as? HTTPURLResponse else { throw ToolError.message("auth_err_server_response".localized) }
             if [301, 302, 303, 307, 308].contains(response.statusCode) {
+                if let redirectURL = response.url,
+                   let cookieFields = response.allHeaderFields as? [String: String] {
+                    let hopCookies = HTTPCookie.cookies(withResponseHeaderFields: cookieFields, for: redirectURL)
+                    if !hopCookies.isEmpty {
+                        HTTPCookieStorage.shared.setCookies(hopCookies, for: redirectURL, mainDocumentURL: nil)
+                    }
+                }
                 guard allowRedirects else { throw HTTPStatusError(code: response.statusCode) }
                 guard let location = response.value(forHTTPHeaderField: "Location"),
                       let rawNext = URL(string: location, relativeTo: current)?.absoluteURL,

@@ -266,14 +266,6 @@ public class StoreClient: @unchecked Sendable {
     }
 
     private func compareVersionStrings(_ v1: String, _ v2: String) -> Int {
-        let components1 = v1.split(separator: ".").compactMap { Int($0) }
-        let components2 = v2.split(separator: ".").compactMap { Int($0) }
-        for i in 0..<max(components1.count, components2.count) {
-            let num1 = i < components1.count ? components1[i] : 0
-            let num2 = i < components2.count ? components2[i] : 0
-            if num1 > num2 { return 1 }
-            else if num1 < num2 { return -1 }
-        }
-        return 0
+        StoreAppVersion.compareVersionStrings(v1, v2)
     }
 }

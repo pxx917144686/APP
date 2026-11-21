@@ -117,7 +117,8 @@ final class InstallHeartbeat {
     private init() {}
 
     func start(for seconds: TimeInterval) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
             let session = AVAudioSession.sharedInstance()
             try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try? session.setActive(true)
@@ -383,7 +384,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
                 isRunning = false
                 return
             }
-            app?.http.server.configuration.tlsConfiguration = TLSConfiguration.forServer(
+            app?.http.server.configuration.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
                 certificateChain: chain.map { .certificate($0) },
                 privateKey: .privateKey(privateKey)
             )
@@ -672,7 +673,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
                         try {
                             window.location.href = itmsURL;
-                            status.innerHTML = '<span class="success">✅ 已启动安装程序...</span>';
+                            status.innerHTML = '<span class="success">\("install_auto_started".localized)</span>';
                             installSuccess = true;
 
                             console.log('安装程序启动成功');
@@ -703,15 +704,15 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 
                         button.disabled = true;
                         button.textContent = '\("installing".localized)';
-                        status.innerHTML = '<span class="loading"></span>手动触发安装...';
+                        status.innerHTML = '<span class="loading"></span>\("install_manual_triggering".localized)';
                         isInstalling = true;
 
                         try {
                             window.location.href = itmsURL;
-                            status.innerHTML = '<span class="success">✅ 手动安装已启动</span>';
+                            status.innerHTML = '<span class="success">\("install_manual_started".localized)</span>';
                             installSuccess = true;
                         } catch (error) {
-                            status.innerHTML = '<span class="error">❌ 手动安装失败: ' + error.message + '</span>';
+                            status.innerHTML = '<span class="error">\("install_manual_failed".localized)' + error.message + '</span>';
                             button.disabled = false;
                             button.textContent = '\("retry_install".localized)';
                             isInstalling = false;
@@ -1065,12 +1066,22 @@ struct DownloadView: SwiftUI.View {
                     .shadow(color: Color.black.opacity(0.28), radius: 10, y: 4)
 
                 if decryptedCount > 0 {
-                    Text("\(decryptedCount)")
-                        .font(.system(size: 11, weight: .bold))
+                    Text(decryptedCount > 99 ? "99+" : "\(decryptedCount)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
+                        .padding(.horizontal, 4)
                         .frame(minWidth: 18, minHeight: 18)
-                        .background(Circle().fill(Color.red))
-                        .offset(x: 3, y: -3)
+                        .background(
+                            Circle()
+                                .fill(Color.red)
+                                .overlay(
+                                    Circle()
+                                        .strokeBorder(Color.white, lineWidth: 1.5)
+                                )
+                                .shadow(color: Color.black.opacity(0.2), radius: 3, y: 1)
+                        )
+                        .offset(x: 4, y: -4)
+                        .transition(.scale(scale: 0.4).combined(with: .opacity))
                 }
             }
         }
@@ -1084,7 +1095,10 @@ struct DownloadView: SwiftUI.View {
             at: DecryptedFilesView.folderURL,
             includingPropertiesForKeys: nil
         )) ?? []
-        decryptedCount = urls.filter { $0.pathExtension.lowercased() == "ipa" }.count
+        let count = urls.filter { $0.pathExtension.lowercased() == "ipa" }.count
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            decryptedCount = count
+        }
     }
 
     private func handleAppEnteredBackground() {
@@ -1185,6 +1199,7 @@ struct DownloadView: SwiftUI.View {
                 )
 
             Button(action: {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 guard let url = URL(string: "https://github.com/pxx917144686"),
                     UIApplication.shared.canOpenURL(url) else {
                     return
@@ -1202,15 +1217,15 @@ struct DownloadView: SwiftUI.View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(
                             LinearGradient(
-                                colors: [Color.blue, Color.purple],
+                                colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.75)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                 )
-                .shadow(color: colorScheme == .dark ? Color.blue.opacity(0.5) : Color.blue.opacity(0.3), radius: colorScheme == .dark ? 12 : 8, x: 0, y: 4)
+                .shadow(color: themeManager.accentColor.opacity(colorScheme == .dark ? 0.5 : 0.3), radius: colorScheme == .dark ? 12 : 8, x: 0, y: 4)
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(ScaleButtonStyle())
 
             .frame(maxWidth: 200)
             .padding(.horizontal, 8)
@@ -1258,10 +1273,6 @@ struct DownloadView: SwiftUI.View {
         NotificationCenter.default.post(name: NSNotification.Name("ForceRefreshUI"), object: nil)
     }
 
-    private func retryDownload() {
-
-    }
-
 }
 
 struct DownloadScrollOffsetPreferenceKey: PreferenceKey {
@@ -1271,101 +1282,6 @@ struct DownloadScrollOffsetPreferenceKey: PreferenceKey {
     }
 }
 
-struct CustomProgressView: SwiftUI.View {
-    let progress: Double
-    var height: CGFloat = 4
-    var cornerRadius: CGFloat = 2
-    var color: Color = .blue
-
-    var body: some SwiftUI.View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color(.systemGray5))
-                    .frame(height: height)
-
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(color)
-                    .frame(width: geometry.size.width * CGFloat(max(0, min(1, progress))), height: height)
-            }
-        }
-        .frame(height: height)
-    }
-}
-
-struct DownloadProgressView: SwiftUI.View {
-    let progress: Double
-    let status: DownloadStatus
-    let error: String?
-    let accentColor: Color
-
-    private var progressLabel: String {
-        switch status {
-        case .waiting:
-            return "download_waiting".localized
-        case .downloading:
-            return "downloading".localized
-        case .paused:
-            return "download_paused".localized
-        case .completed:
-            return "download_completed".localized
-        case .failed:
-            return "download_failed".localized
-        case .cancelled:
-            return "download_cancelled".localized
-        }
-    }
-
-    private var progressColor: Color {
-        switch status {
-        case .waiting, .paused:
-            return .orange
-        case .downloading, .completed:
-            return accentColor
-        case .failed:
-            return .red
-        case .cancelled:
-            return .gray
-        }
-    }
-
-    var body: some SwiftUI.View {
-        VStack(spacing: 6) {
-            HStack(spacing: 8) {
-                Text(progressLabel)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-
-                Spacer()
-
-                if status != .failed && status != .cancelled {
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(accentColor)
-                }
-            }
-
-            CustomProgressView(
-                progress: progress,
-                height: 4,
-                cornerRadius: 2,
-                color: progressColor
-            )
-
-            if let error = error, !error.isEmpty {
-                HStack {
-                    Text(error)
-                        .font(.system(size: 12))
-                        .foregroundColor(.red)
-                        .lineLimit(8)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Spacer()
-                }
-            }
-        }
-    }
-}
 
 struct DownloadCardView: SwiftUI.View {
     @ObservedObject var request: DownloadRequest
@@ -1512,10 +1428,6 @@ struct DownloadCardView: SwiftUI.View {
             syncExpansionState()
         }
         .onDisappear {
-            decryptTask?.cancel()
-            if DecryptCoordinator.shared.activeRequestID == request.id {
-                DecryptCoordinator.shared.cancel()
-            }
             expandedRequestIDs.remove(request.id)
         }
         .id(request.id)
@@ -1713,8 +1625,8 @@ struct DownloadCardView: SwiftUI.View {
             decryptLog.finish()
             return
         }
-        if DecryptCoordinator.shared.isBusy,
-           DecryptCoordinator.shared.activeRequestID != request.id {
+        if DecryptCoordinator.shared.isBusy {
+            if DecryptCoordinator.shared.activeRequestID == request.id { return }
             decryptMessage = "dc_err_busy".localized
             return
         }
@@ -1801,69 +1713,122 @@ struct DownloadCardView: SwiftUI.View {
     @ViewBuilder
     private var primaryActionButton: some SwiftUI.View {
         switch request.runtime.status {
-        case .downloading, .waiting, .paused:
+        case .downloading:
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                UnifiedDownloadManager.shared.pauseDownload(request: request)
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("download_pause".localized)
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(themeManager.accentColor)
+                .frame(width: 76, height: 32)
+                .background(
+                    Capsule()
+                        .fill(themeManager.accentColor.opacity(0.12))
+                )
+            }
+            .buttonStyle(ScaleButtonStyle())
+            .accessibilityLabel("download_pause".localized)
+
+        case .paused:
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                UnifiedDownloadManager.shared.resumeDownload(request: request)
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("download_resume".localized)
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(themeManager.accentColor)
+                .frame(width: 76, height: 32)
+                .background(
+                    Capsule()
+                        .fill(themeManager.accentColor.opacity(0.12))
+                )
+            }
+            .buttonStyle(ScaleButtonStyle())
+            .accessibilityLabel("download_resume".localized)
+
+        case .waiting:
             EmptyView()
 
         case .failed, .cancelled:
-            HStack(spacing: 3) {
-                Text("🔄")
-                    .font(.system(size: 13))
-                Text("retry".localized)
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .foregroundColor(.orange)
-            .frame(width: 76, height: 32)
-            .background(
-                Capsule()
-                    .fill(Color.orange.opacity(0.12))
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 retryDownload()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("retry".localized)
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(.orange)
+                .frame(width: 76, height: 32)
+                .background(
+                    Capsule()
+                        .fill(Color.orange.opacity(0.12))
+                )
             }
+            .buttonStyle(ScaleButtonStyle())
+            .accessibilityLabel("retry".localized)
 
         case .completed:
             if request.localFilePath != nil {
-                HStack(spacing: 4) {
-                    if isInstalling {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.7)
-                    } else {
-                        Text("📦")
-                            .font(.system(size: 14))
-                    }
-                    Text(isInstalling ? "installing".localized : "install".localized)
-                        .font(.system(size: 13, weight: .bold))
-                }
-                .foregroundColor(.white)
-                .frame(width: 84, height: 34)
-                .background(
-                    LinearGradient(
-                        colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.85)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(Capsule())
-                .shadow(color: themeManager.accentColor.opacity(0.4), radius: 6, x: 0, y: 3)
-                .contentShape(Rectangle())
-                .onTapGesture {
+                Button {
                     guard !isInstalling else { return }
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     startInstallation(for: request)
+                } label: {
+                    HStack(spacing: 4) {
+                        if isInstalling {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "arrow.down.forward.app.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        Text(isInstalling ? "installing".localized : "install".localized)
+                            .font(.system(size: 13, weight: .bold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(width: 84, height: 34)
+                    .background(
+                        LinearGradient(
+                            colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.85)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .clipShape(Capsule())
+                    .shadow(color: themeManager.accentColor.opacity(0.4), radius: 6, x: 0, y: 3)
+                    .opacity(isInstalling ? 0.85 : 1.0)
                 }
+                .buttonStyle(ScaleButtonStyle())
+                .disabled(isInstalling)
+                .accessibilityLabel(isInstalling ? "installing".localized : "install".localized)
             } else {
-                Text("✅")
-                    .font(.system(size: 20))
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.green)
+                    .accessibilityLabel("download_completed".localized)
             }
         }
     }
 
     private var completedStatusView: some SwiftUI.View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
-                Text("✅")
-                    .font(.caption)
+            HStack(spacing: 5) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.green)
 
                 Text("file_saved_to".localized)
                     .font(.system(size: 12))
@@ -1924,114 +1889,6 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
-    private var statusIndicator: some SwiftUI.View {
-        Group {
-            switch request.runtime.status {
-            case DownloadStatus.waiting:
-                Text("⏳")
-            case DownloadStatus.downloading:
-                Text("⬇️")
-            case DownloadStatus.paused:
-                Text("⏸️")
-            case DownloadStatus.completed:
-                Text("✅")
-            case DownloadStatus.failed:
-                Text("❌")
-            case DownloadStatus.cancelled:
-                Text("❌")
-            }
-        }
-        .font(.title2)
-    }
-
-    private var progressView: some SwiftUI.View {
-        VStack(spacing: 6) {
-            HStack(spacing: 8) {
-                Text(getProgressLabel())
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-
-                Spacer()
-
-                if request.runtime.status != .failed && request.runtime.status != .cancelled {
-                    Text("\(Int(request.runtime.progressValue * 100))%")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(themeManager.accentColor)
-                }
-            }
-
-            CustomProgressView(
-                progress: request.runtime.progressValue,
-                height: 4,
-                cornerRadius: 2,
-                color: themeManager.accentColor
-            )
-
-            if let error = request.runtime.error, !error.isEmpty {
-                HStack {
-                    Text(error)
-                        .font(.system(size: 12))
-                        .foregroundColor(.red)
-                        .lineLimit(8)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Spacer()
-                }
-            }
-        }
-    }
-
-    private func getProgressLabel() -> String {
-        switch request.runtime.status {
-        case DownloadStatus.waiting:
-            return "download_waiting".localized
-        case DownloadStatus.downloading:
-            return "downloading".localized
-        case DownloadStatus.paused:
-            return "download_paused".localized
-        case DownloadStatus.completed:
-            return "download_completed".localized
-        case DownloadStatus.failed:
-            return "download_failed".localized
-        case DownloadStatus.cancelled:
-            return "download_cancelled".localized
-        }
-    }
-
-    private func getProgressIcon() -> String {
-        switch request.runtime.status {
-        case DownloadStatus.waiting:
-            return "clock"
-        case DownloadStatus.downloading:
-            return "arrow.down.circle"
-        case DownloadStatus.paused:
-            return "pause.circle"
-        case DownloadStatus.completed:
-            return "checkmark.circle"
-        case DownloadStatus.failed:
-            return "xmark.circle"
-        case DownloadStatus.cancelled:
-            return "xmark.circle"
-        }
-    }
-
-    private func getProgressColor() -> Color {
-        switch request.runtime.status {
-        case DownloadStatus.waiting:
-            return .orange
-        case DownloadStatus.downloading:
-            return themeManager.accentColor
-        case DownloadStatus.paused:
-            return .orange
-        case DownloadStatus.completed:
-            return .green
-        case DownloadStatus.failed:
-            return .red
-        case DownloadStatus.cancelled:
-            return .gray
-        }
-    }
-
     private func getFileSize(path: String) -> String? {
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: path)
@@ -2047,22 +1904,6 @@ struct DownloadCardView: SwiftUI.View {
     }
 
     private func retryDownload() {
-
-        UnifiedDownloadManager.shared.resumeDownload(request: request)
-
-    }
-
-    private func cancelDownload() {
-
-        UnifiedDownloadManager.shared.cancelDownload(request: request)
-
-    }
-
-    private func pauseDownload() {
-        UnifiedDownloadManager.shared.pauseDownload(request: request)
-    }
-
-    private func resumeDownload() {
         UnifiedDownloadManager.shared.resumeDownload(request: request)
     }
 
@@ -2080,7 +1921,15 @@ struct DownloadCardView: SwiftUI.View {
         installationProgress = 0.0
         installationMessage = "preparing_install".localized
 
-        let backgroundTaskID = UIApplication.shared.beginBackgroundTask {
+        var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask {
+            DispatchQueue.main.async {
+                guard backgroundTaskID != .invalid else { return }
+                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                backgroundTaskID = .invalid
+                installationMessage = "install_bg_expired".localized
+                isInstalling = false
+            }
         }
 
         Task {
@@ -2183,7 +2032,10 @@ struct DownloadCardView: SwiftUI.View {
                         }
                         cleanupInstallation(request.id)
                     }
-                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                    if backgroundTaskID != .invalid {
+                        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                        backgroundTaskID = .invalid
+                    }
                     return
                 }
 
@@ -2213,7 +2065,10 @@ struct DownloadCardView: SwiftUI.View {
                         )
                         cleanupInstallation(request.id)
                     }
-                    UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                    if backgroundTaskID != .invalid {
+                        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                        backgroundTaskID = .invalid
+                    }
                     return
                 }
 

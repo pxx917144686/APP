@@ -32,8 +32,7 @@ struct WindowsTransferProgressView: View {
     }
 
     private var sizeText: String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
+        let formatter = DownloadByteFormatter.file
         let completed = formatter.string(fromByteCount: max(0, completedBytes))
         let total = formatter.string(fromByteCount: max(0, totalBytes))
         if totalBytes <= 0 { return completed }
