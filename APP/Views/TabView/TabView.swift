@@ -5,7 +5,6 @@ enum TabEnum: String, CaseIterable, Hashable {
     case settings
     case downloads
     case decrypt
-    case purchased
     case sign
     case search
 
@@ -14,7 +13,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "tab_settings".localized
         case .downloads:  return "tab_downloads".localized
         case .decrypt:    return "tab_decrypt".localized
-        case .purchased:  return "tab_purchased".localized
         case .sign:       return "tab_sign".localized
         case .search:     return "tab_search".localized
         }
@@ -25,7 +23,6 @@ enum TabEnum: String, CaseIterable, Hashable {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
         case .decrypt:    return "lock.open.fill"
-        case .purchased:  return "bag.fill"
         case .sign:       return "signature"
         case .search:     return "magnifyingglass.circle.fill"
         }
@@ -39,33 +36,23 @@ enum TabEnum: String, CaseIterable, Hashable {
                 .environmentObject(themeManager)
                 .environmentObject(tabBarStyleManager)
         case .downloads:
-            NavigationView {
+            NavigationStack {
                 DownloadView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
-            .navigationViewStyle(.stack)
         case .decrypt:
-            NavigationView {
+            NavigationStack {
                 DecryptView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
-            .navigationViewStyle(.stack)
-        case .purchased:
-            NavigationView {
-                PurchasedView()
-                    .environmentObject(themeManager)
-                    .environmentObject(tabBarStyleManager)
-            }
-            .navigationViewStyle(.stack)
         case .sign:
-            NavigationView {
+            NavigationStack {
                 SignView()
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
-            .navigationViewStyle(.stack)
         case .search:
             SearchView()
                 .environmentObject(themeManager)
@@ -114,6 +101,8 @@ struct TabbarView: View {
         }
         .onChange(of: selectedTab) { _, newValue in
             AnalyticsManager.shared.trackScreen(newValue.rawValue)
+            SoundEffects.play(.tick)
+            updateTabBarAppearance()
         }
         .onChange(of: router.requested) { _, newValue in
             guard let newValue else { return }
@@ -136,9 +125,39 @@ struct TabbarView: View {
 
     @ViewBuilder
     private var standardTabView: some View {
+        if #available(iOS 18.0, *) {
+            modernStandardTabView
+        } else {
+            legacyStandardTabView
+        }
+    }
+
+    /// iOS 18+：搜索用 `role: .search` 单独成一个按钮，不占前五个位置，
+    /// 这样六个标签也不会被系统塞进「更多」那个老式表格页。
+    @available(iOS 18.0, *)
+    private var modernStandardTabView: some View {
+        TabView(selection: $selectedTab) {
+            ForEach(tabOrder.order.filter { $0 != .search }, id: \.self) { tab in
+                Tab(value: tab) {
+                    tabContent(for: tab)
+                } label: {
+                    Label(tab.title, systemImage: tab.icon)
+                }
+            }
+
+            Tab(value: TabEnum.search, role: .search) {
+                tabContent(for: .search)
+            } label: {
+                Label(TabEnum.search.title, systemImage: TabEnum.search.icon)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var legacyStandardTabView: some View {
         TabView(selection: $selectedTab) {
             ForEach(tabOrder.order, id: \.self) { tab in
-                TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+                tabContent(for: tab)
                     .tabItem {
                         Label {
                             Text(tab.title)
@@ -148,9 +167,7 @@ struct TabbarView: View {
                     }
                     .tag(tab)
             }
-
         }
-        
     }
 
     @available(iOS 18.0, *)
@@ -158,14 +175,24 @@ struct TabbarView: View {
     private var floatingCardTabView: some View {
         GeometryReader { geo in
             ZStack(alignment: .bottom) {
+                // 兜底：整屏再铺一层，TabView 没盖到的缝隙也不会露出黑底
+                LiquidGlassBackdrop()
+                    .environmentObject(themeManager)
+                    .ignoresSafeArea()
+
                 TabView(selection: $selectedTab) {
                     ForEach(tabOrder.order, id: \.self) { tab in
-                        TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
-                            .padding(.bottom, geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
+                        tabContent(for: tab)
+                            // 用 safeAreaInset 而不是 padding：只把内容顶起来，
+                            // 页面背景仍然铺到屏幕最底，不会留黑带
+                            .safeAreaInset(edge: .bottom, spacing: 0) {
+                                Color.clear
+                                    .frame(height: tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
+                            }
                             .tag(tab)
                     }
                 }
-
+        
                 floatingTabBarContent
                     .padding(.horizontal, floatingHorizontalPadding(for: geo.size.width))
                     .padding(.bottom, max(geo.safeAreaInsets.bottom + tabBarStyleManager.floatingConfig.bottomOffset - 16, 4))
@@ -173,6 +200,20 @@ struct TabbarView: View {
             .ignoresSafeArea(edges: .bottom)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    /// 每个标签页自带一层液态玻璃背景：TabView 容器本身不透明，
+    /// 放在最外层的背景会被它盖住。
+    @ViewBuilder
+    private func tabContent(for tab: TabEnum) -> some SwiftUI.View {
+        TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
+            // 悬浮模式下系统自带的 tab bar 会留一条空白矩形，这里彻底藏掉
+            .toolbar(
+                tabBarStyleManager.currentStyle == .floatingCard ? .hidden : .visible,
+                for: .tabBar
+            )
+            // iOS 26 的玻璃 tab bar 不吃 UITabBarAppearance，必须显式隐藏背景
+            .toolbarBackground(.hidden, for: .tabBar)
     }
 
     private func floatingHorizontalPadding(for width: CGFloat) -> CGFloat {
@@ -291,5 +332,37 @@ struct TabbarView: View {
         if #available(iOS 15.0, *) {
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }
+
+        let hidden = style == .floatingCard
+        DispatchQueue.main.async {
+            for bar in Self.liveTabBars() {
+                bar.standardAppearance = appearance
+                bar.scrollEdgeAppearance = appearance
+                bar.isHidden = hidden
+                bar.setNeedsLayout()
+            }
+        }
+    }
+
+    private static func liveTabBars() -> [UITabBar] {
+        var bars: [UITabBar] = []
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
+                if let bar = findTabBar(in: window.rootViewController), !bars.contains(where: { $0 === bar }) {
+                    bars.append(bar)
+                }
+            }
+        }
+        return bars
+    }
+
+    private static func findTabBar(in controller: UIViewController?) -> UITabBar? {
+        guard let controller else { return nil }
+        if let tab = controller as? UITabBarController { return tab.tabBar }
+        for child in controller.children {
+            if let found = findTabBar(in: child) { return found }
+        }
+        return findTabBar(in: controller.presentedViewController)
     }
 }

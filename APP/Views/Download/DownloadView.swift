@@ -882,7 +882,8 @@ struct DownloadView: SwiftUI.View {
 
     var body: some SwiftUI.View {
         ZStack {
-            themeManager.backgroundColor
+            LiquidGlassBackdrop()
+                .environmentObject(themeManager)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -2015,6 +2016,7 @@ struct DownloadCardView: SwiftUI.View {
                 }
 
                 guard serverReady else {
+                    SoundEffects.play(.error)
                     let resolvedAddress = resolveIPv4(installServerHost)
                     let detail = lastProbeError?.localizedDescription ?? resolvedAddress ?? "unavailable"
                     await MainActor.run {
@@ -2056,6 +2058,7 @@ struct DownloadCardView: SwiftUI.View {
                 }
 
                 guard manifestReady else {
+                    SoundEffects.play(.error)
                     let detail = manifestError?.localizedDescription ?? "unavailable"
                     await MainActor.run {
                         installationMessage = "install_manifest_failed".localized
@@ -2079,12 +2082,14 @@ struct DownloadCardView: SwiftUI.View {
                     let itmsURLString = "itms-services://?action=download-manifest&url=" + queryEncoded(manifestURL)
 
                     guard let itmsURL = URL(string: itmsURLString) else {
+                        SoundEffects.play(.error)
                         installationMessage = "install_start_failed".localized
                         cleanupInstallation(request.id)
                         return
                     }
 
                     guard UIApplication.shared.canOpenURL(itmsURL) else {
+                        SoundEffects.play(.error)
                         installationMessage = "install_start_failed".localized
                         presentInstallAlert("install_open_rejected".localized)
                         cleanupInstallation(request.id)
@@ -2094,10 +2099,12 @@ struct DownloadCardView: SwiftUI.View {
                     UIApplication.shared.open(itmsURL, options: [:]) { success in
                         DispatchQueue.main.async {
                             if success {
+                                SoundEffects.play(.attention)
                                 installationMessage = "install_handed_off".localized
                                 isInstalling = false
                                 cleanupInstallation(request.id, keepServer: true)
                             } else {
+                                SoundEffects.play(.error)
                                 installationMessage = "install_start_failed".localized
                                 presentInstallAlert("install_open_failed".localized)
                                 cleanupInstallation(request.id)

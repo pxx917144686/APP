@@ -15,7 +15,8 @@ struct DecryptView: SwiftUI.View {
 
     var body: some SwiftUI.View {
         ZStack {
-            themeManager.backgroundColor
+            LiquidGlassBackdrop()
+                .environmentObject(themeManager)
                 .ignoresSafeArea()
 
             List {
@@ -120,11 +121,10 @@ struct DecryptView: SwiftUI.View {
             Button {
                 showImporter = true
             } label: {
-                HStack(spacing: 12) {
+                HStack(alignment: .center, spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 11, style: .continuous)
                             .fill(themeManager.accentColor.opacity(0.15))
-                            .frame(width: 42, height: 42)
                         if store.isImporting {
                             ProgressView()
                                 .scaleEffect(0.8)
@@ -135,6 +135,7 @@ struct DecryptView: SwiftUI.View {
                                 .foregroundStyle(themeManager.accentColor)
                         }
                     }
+                    .frame(width: 42, height: 42)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(store.isImporting ? "decrypt_importing".localized : "decrypt_import".localized)
@@ -146,17 +147,16 @@ struct DecryptView: SwiftUI.View {
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-
-                    Spacer(minLength: 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.tertiary)
                 }
-                .padding(.vertical, 6)
+                .padding(.vertical, 8)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plain, sound: .tap)
             .disabled(store.isImporting)
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
@@ -462,7 +462,7 @@ private struct DecryptJobCard: SwiftUI.View {
                         .frame(width: 30, height: 30)
                         .background(Circle().fill(Color.primary.opacity(0.06)))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plain, sound: .tap)
                 .accessibilityLabel("decrypt_action_log".localized)
             }
 
@@ -473,7 +473,7 @@ private struct DecryptJobCard: SwiftUI.View {
                     .frame(width: 30, height: 30)
                     .background(Circle().fill(Color.primary.opacity(0.06)))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plain, sound: .dismiss)
             .accessibilityLabel("delete".localized)
         }
     }
@@ -492,7 +492,7 @@ private struct DecryptJobCard: SwiftUI.View {
             .background(Capsule().fill(Color.primary.opacity(0.06)))
             .overlay(Capsule().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plain, sound: .tap)
     }
 
     private func primaryButton(_ title: String, icon: String, tint: Color? = nil, action: @escaping () -> Void) -> some SwiftUI.View {
@@ -510,6 +510,6 @@ private struct DecryptJobCard: SwiftUI.View {
             .background(Capsule().fill(color.opacity(0.12)))
             .overlay(Capsule().strokeBorder(color.opacity(0.25), lineWidth: 0.5))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plain, sound: .press)
     }
 }

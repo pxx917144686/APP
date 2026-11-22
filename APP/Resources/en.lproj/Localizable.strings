@@ -688,10 +688,10 @@
 "sign_injection_framework_invalid" = "Please choose a .framework folder.";
 "sign_err_inject" = "Injection failed: %@";
 "sign_identity_section" = "Certificate & Profile";
-"sign_identity_import" = "Import Certificate or Profile";
-"sign_identity_import_hint" = "A certificate and profile from the same Team are paired automatically.";
-"sign_identity_import_cert_hint" = "Import a .p12 certificate with its password.";
-"sign_identity_import_profile_hint" = "Import a .mobileprovision file.";
+"sign_identity_import" = "Import Certificate & Profile";
+"sign_identity_import_hint" = "Pick both the .p12 and the .mobileprovision at once to import them together.";
+"sign_identity_import_cert_hint" = "Choose a .p12 (you can also pick the profile), then enter its password.";
+"sign_identity_import_profile_hint" = "Choose a .mobileprovision (you can also pick the certificate) — imported right away.";
 "sign_identity_paired" = "Paired · %@";
 "sign_identity_waiting" = "Waiting for pairing";
 "sign_identity_mismatch" = "Team mismatch · %@";
@@ -1040,3 +1040,9 @@
 "decrypt_clear_hint" = "Only imported source IPAs are removed. Decrypted outputs are kept.";
 "decrypt_dup_skipped" = "Same version already imported, skipped";
 "decrypt_import_result" = "Import Result";
+"sound_effects" = "Sound Effects";
+"cp_download_title" = "Downloading %@";
+"cp_decrypt_title" = "Decrypting %@";
+"cp_sign_title" = "Signing %@";
+"sign_import_wrong_cert" = "Please choose a .p12 certificate file";
+"sign_import_wrong_profile" = "Please choose a .mobileprovision profile";

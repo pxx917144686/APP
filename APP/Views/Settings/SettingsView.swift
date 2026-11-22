@@ -54,9 +54,16 @@ struct SettingsView: View {
         "#FFB6C1", "#98FB98", "#E6E6FA", "#FF7F50", "#50C878"
     ]
 
+    @AppStorage(SoundEffects.enabledKey) private var soundEffects = true
+
     var body: some View {
-        NavigationView {
-            ScrollView {
+        NavigationStack {
+            ZStack {
+                LiquidGlassBackdrop()
+                    .environmentObject(themeManager)
+                    .ignoresSafeArea()
+
+                ScrollView {
                 VStack(spacing: 20) {
                     accountHeaderSection
 
@@ -103,6 +110,13 @@ struct SettingsView: View {
                     }
 
                     VStack(spacing: 0) {
+                        soundRow
+                    }
+                    .liquidGlassSurface(cornerRadius: 16)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+
+                    VStack(spacing: 0) {
                         iconGridContent
                     }
                     .liquidGlassSurface(cornerRadius: 16)
@@ -113,8 +127,9 @@ struct SettingsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 20)
+                }
+                .background(Color.clear)
             }
-            .background(Color.clear)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(true)
             .onAppear {
@@ -144,7 +159,6 @@ struct SettingsView: View {
             }
 
         }
-        .navigationViewStyle(.stack)
     }
 
     private var accountHeaderSection: some View {
@@ -275,6 +289,28 @@ extension SettingsView {
         .padding(.vertical, 0)
     }
 
+    private var soundRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(themeManager.accentColor))
+
+            Text("sound_effects".localized)
+                .font(.system(size: 16))
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Toggle("", isOn: $soundEffects)
+                .labelsHidden()
+                .toggleStyle(SoundingToggleStyle())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
     private var appearanceRow: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
@@ -311,7 +347,7 @@ extension SettingsView {
                                     .fill(themeManager.selectedTheme == theme ? themeManager.accentColor : Color(.systemGray5))
                             )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(PlainButtonStyle(), sound: .tick)
                 }
             }
         }
@@ -356,7 +392,7 @@ extension SettingsView {
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(PlainButtonStyle(), sound: .tick)
             .sheet(isPresented: $showingColorPicker) {
                 NavigationView {
                     ColorPickerView(selectedColor: $selectedColor)
@@ -461,7 +497,7 @@ extension SettingsView {
             .padding(.vertical, 14)
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PlainButtonStyle(), sound: .tick)
     }
 
     private func styleDescription(for style: TabBarStyle) -> String {
@@ -506,7 +542,7 @@ extension SettingsView {
                     Spacer()
                     HStack(spacing: 6) {
                         HStack(spacing: 0) {
-                            ForEach([TabEnum.settings, .downloads, .purchased, .sign], id: \.self) { tab in
+                            ForEach([TabEnum.settings, .downloads, .decrypt, .sign], id: \.self) { tab in
                                 VStack(spacing: 1) {
                                     Image(systemName: tab.icon)
                                         .font(.system(size: 10))
@@ -683,7 +719,7 @@ extension SettingsView {
             .padding(.vertical, 12)
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PlainButtonStyle(), sound: .tick)
     }
 
     private var languageRow: some View {
@@ -711,7 +747,7 @@ extension SettingsView {
             .padding(.vertical, 12)
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PlainButtonStyle(), sound: .tick)
     }
 
     @ViewBuilder

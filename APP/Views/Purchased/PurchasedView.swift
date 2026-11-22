@@ -2,7 +2,11 @@ import SwiftUI
 import Combine
 
 struct PurchasedView: View {
+    /// 非空时表示以 sheet 形式呈现：保留导航栏，由外层放关闭按钮。
+    var onClose: (() -> Void)? = nil
+
     @EnvironmentObject var appStore: AppStore
+    @EnvironmentObject var themeManager: ThemeManager
     @ObservedObject private var downloadManager = UnifiedDownloadManager.shared
     @State private var apps: [OwnedApp] = []
     @State private var isLoading = false
@@ -17,17 +21,23 @@ struct PurchasedView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
+            LiquidGlassBackdrop()
+                .environmentObject(themeManager)
+                .ignoresSafeArea()
+
+            Group {
             if let account = appStore.selectedAccount {
                 content(account: account)
             } else {
                 hint("please_login_first".localized, systemImage: "person.crop.circle.badge.exclamationmark")
             }
         }
-        .navigationBarHidden(true)
-        .task(id: appStore.selectedAccount?.email) {
-            if let account = appStore.selectedAccount {
-                await load(account)
+        .toolbar(onClose == nil ? .hidden : .visible, for: .navigationBar)
+            .task(id: appStore.selectedAccount?.email) {
+                if let account = appStore.selectedAccount {
+                    await load(account)
+                }
             }
         }
     }
@@ -94,6 +104,7 @@ struct PurchasedView: View {
                         row(app)
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .scrollDismissesKeyboard(.immediately)
                     .refreshable { await load(account, force: true) }
                 }

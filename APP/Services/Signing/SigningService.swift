@@ -608,6 +608,12 @@ final class SigningSession: ObservableObject {
     }
 
     func start(_ taskRequest: SigningIPTask) {
+        SoundEffects.play(.press)
+        ContinuedProcessing.shared.begin(
+            "sign",
+            title: "cp_sign_title".localized(taskRequest.ipa.displayName),
+            subtitle: "0%"
+        )
         reset()
         isRunning = true
         isExpanded = true
@@ -663,7 +669,10 @@ final class SigningSession: ObservableObject {
         if let startedAt {
             elapsed = Date().timeIntervalSince(startedAt)
         }
+        ContinuedProcessing.shared.end("sign", success: output != nil && !cancelled)
+
         if let output, !cancelled {
+            SoundEffects.play(.success)
             phase = .completed
             progress = 1
             outcome = .completed
@@ -679,6 +688,7 @@ final class SigningSession: ObservableObject {
             } else {
                 outcome = .failed
             }
+            SoundEffects.play(cancelled ? .fall : .error)
             append("failed  \(message)", level: .failure)
         }
     }

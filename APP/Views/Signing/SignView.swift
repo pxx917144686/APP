@@ -55,6 +55,7 @@ struct SignView: SwiftUI.View {
 
     @State private var showCertificateImporter = false
     @State private var showProfileImporter = false
+    @State private var pendingCertificateQueue: [URL] = []
     @State private var showIPAImporter = false
     @State private var showIPAPicker = false
     @State private var showCertificateSheet = false
@@ -264,7 +265,9 @@ struct SignView: SwiftUI.View {
 
     var body: some SwiftUI.View {
         ZStack {
-            themeManager.backgroundColor.ignoresSafeArea()
+            LiquidGlassBackdrop()
+                .environmentObject(themeManager)
+                .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -313,11 +316,17 @@ struct SignView: SwiftUI.View {
         }
         .navigationTitle("tab_sign".localized)
         .navigationBarTitleDisplayMode(.inline)
-        .fileImporter(isPresented: $showCertificateImporter, allowedContentTypes: [p12Type], allowsMultipleSelection: false) { result in
-            handleCertificateImport(result)
+        .sheet(isPresented: $showCertificateImporter) {
+            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                showCertificateImporter = false
+                handleIdentityImport(urls)
+            }
         }
-        .fileImporter(isPresented: $showProfileImporter, allowedContentTypes: [profileType], allowsMultipleSelection: false) { result in
-            handleProfileImport(result)
+        .sheet(isPresented: $showProfileImporter) {
+            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                showProfileImporter = false
+                handleIdentityImport(urls)
+            }
         }
         .onAppear { consumeSigningHandoff() }
         .onChange(of: handoff.pendingIPA) { _, _ in consumeSigningHandoff() }
@@ -327,13 +336,20 @@ struct SignView: SwiftUI.View {
                 if let url = urls.first { handlePickedIPA(url) }
             }
         }
-        .fileImporter(isPresented: $showDylibImporter, allowedContentTypes: [dylibType], allowsMultipleSelection: true) { result in
-            handleDylibImport(result)
+        .sheet(isPresented: $showDylibImporter) {
+            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                showDylibImporter = false
+                handleDylibImport(.success(urls))
+            }
         }
         .fileImporter(isPresented: $showFrameworkImporter, allowedContentTypes: [.folder], allowsMultipleSelection: true) { result in
             handleFrameworkImport(result)
         }
-        .sheet(isPresented: $showCertificateSheet) {
+        .sheet(isPresented: $showCertificateSheet, onDismiss: {
+            pendingCertificateData = nil
+            pendingCertificateName = ""
+            advanceCertificateQueue()
+        }) {
             if let data = pendingCertificateData {
                 CertificateImportSheet(fileName: pendingCertificateName) { password, name in
                     _ = try store.importCertificate(
@@ -488,7 +504,10 @@ struct SignView: SwiftUI.View {
                         tint: accent
                     ) {
                         showIdentityImportMenu = false
-                        showCertificateImporter = true
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 250_000_000)
+                            showCertificateImporter = true
+                        }
                     }
                     CenteredChoiceRow(
                         icon: "doc.badge.gearshape",
@@ -497,7 +516,10 @@ struct SignView: SwiftUI.View {
                         tint: .cyan
                     ) {
                         showIdentityImportMenu = false
-                        showProfileImporter = true
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 250_000_000)
+                            showProfileImporter = true
+                        }
                     }
                 }
                 .zIndex(20)
@@ -2543,39 +2565,72 @@ struct SignView: SwiftUI.View {
         }
     }
 
-    private func handleCertificateImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard let url = urls.first else { return }
-            let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            do {
-                let data = try Data(contentsOf: url)
-                pendingCertificateData = data
-                pendingCertificateName = url.lastPathComponent
-                showCertificateSheet = true
-            } catch {
-                presentError(error)
+    /// 证书和描述文件可以一次多选，一起导入：
+    /// 描述文件当场入库，证书按顺序弹密码框。
+    private func handleIdentityImport(_ urls: [URL]) {
+        var certificates: [URL] = []
+        var profiles: [URL] = []
+
+        CertImportLog.add("picked \(urls.count) file(s): " + urls.map { "\($0.lastPathComponent)[\($0.pathExtension)]" }.joined(separator: ", "))
+
+        for url in urls {
+            switch url.pathExtension.lowercased() {
+            case "p12", "pfx": certificates.append(url)
+            case "mobileprovision": profiles.append(url)
+            default: break
             }
-        case .failure(let error):
-            presentError(error)
+        }
+
+        guard !certificates.isEmpty || !profiles.isEmpty else {
+            presentError(message: "sign_import_wrong_cert".localized)
+            return
+        }
+
+        var importedProfiles = 0
+        for profile in profiles where importProfileFile(profile) {
+            importedProfiles += 1
+        }
+        if importedProfiles > 0 {
+            SoundEffects.play(.rise)
+        }
+
+        if !certificates.isEmpty {
+            pendingCertificateQueue.append(contentsOf: certificates)
+            advanceCertificateQueue()
         }
     }
 
-    private func handleProfileImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard let url = urls.first else { return }
-            let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            do {
-                let data = try Data(contentsOf: url)
-                _ = try store.importProfile(data: data, originalFileName: url.lastPathComponent)
-            } catch {
-                presentError(error)
-            }
-        case .failure(let error):
+    private func advanceCertificateQueue() {
+        guard !showCertificateSheet, !pendingCertificateQueue.isEmpty else { return }
+        let next = pendingCertificateQueue.removeFirst()
+        loadCertificateFile(next)
+    }
+
+    private func loadCertificateFile(_ url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let data = try Data(contentsOf: url)
+            pendingCertificateData = data
+            pendingCertificateName = url.lastPathComponent
+            showCertificateSheet = true
+        } catch {
             presentError(error)
+            advanceCertificateQueue()
+        }
+    }
+
+    @discardableResult
+    private func importProfileFile(_ url: URL) -> Bool {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let data = try Data(contentsOf: url)
+            _ = try store.importProfile(data: data, originalFileName: url.lastPathComponent)
+            return true
+        } catch {
+            presentError(error)
+            return false
         }
     }
 

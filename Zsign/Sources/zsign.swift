@@ -5,12 +5,30 @@
 //  Created by samara on 17.04.2025.
 //
 
+import Foundation
 import Zsign
 
 public enum Zsign {
 	/// Checks if the MachO-file is properly signed
 	/// - Parameter appExecutable: Executable
 	/// - Returns: True if its signed
+	/// 用 OpenSSL 解析 p12，返回证书 DER（支持 PBES2/AES 加密）。
+	static public func certificateDER(p12Data: Data, password: String) -> Data? {
+		certificateDERWithError(p12Data: p12Data, password: password).data
+	}
+
+	/// 同上，失败时一并返回 OpenSSL 的错误描述。
+	static public func certificateDERWithError(p12Data: Data, password: String) -> (data: Data?, error: String) {
+		// 直接从内存解析：真机上写临时文件这条路径出过问题。
+		let data: Data? = p12Data.withUnsafeBytes { raw in
+			guard let base = raw.baseAddress else { return nil }
+			return p12_certificate_der_data(base, raw.count, password)
+		}
+		if let data { return (data, "") }
+		let message = String(cString: p12_last_error())
+		return (nil, message.isEmpty ? "unknown" : message)
+	}
+
 	static public func checkSigned(appExecutable: String) -> Bool {
 		CheckIfSigned(appExecutable)
 	}

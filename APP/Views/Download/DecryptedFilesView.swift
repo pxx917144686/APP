@@ -138,6 +138,7 @@ struct DecryptedFilesView: View {
             Spacer(minLength: 6)
 
             Button {
+                SoundEffects.play(.tap)
                 shareItem = ShareFile(url: item.url)
             } label: {
                 Image(systemName: "square.and.arrow.up")
@@ -148,6 +149,7 @@ struct DecryptedFilesView: View {
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
+                SoundEffects.play(.dismiss)
                 pendingDelete = item
             } label: {
                 Label("delete".localized, systemImage: "trash")

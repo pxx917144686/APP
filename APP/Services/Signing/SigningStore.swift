@@ -1,3 +1,4 @@
+import ZsignSwift
 import Foundation
 import Security
 import CryptoKit
@@ -515,31 +516,43 @@ enum SigningParser {
     }
 
     static func certificate(data: Data, password: String) throws -> CertificateMetadata {
-        var items: CFArray?
-        let options = [kSecImportExportPassphrase as String: password] as CFDictionary
-        let status = SecPKCS12Import(data as CFData, options, &items)
-        guard status == errSecSuccess else {
+        CertImportLog.add("p12 \(data.count) bytes, password length \(password.count)")
+
+        // 先走 OpenSSL：它同时支持老式 PBE-SHA1/3DES 和新式 PBES2 + AES-256，
+        // 而苹果的 SecPKCS12Import 遇到后者只会返回 errSecDecode。
+        let openssl = Zsign.certificateDERWithError(p12Data: data, password: password)
+        var der = openssl.data
+        let opensslResult = der == nil ? "nil (\(openssl.error))" : "\(der!.count) bytes"
+        CertImportLog.add("openssl -> " + opensslResult)
+
+        var status: OSStatus = errSecSuccess
+        if der == nil {
+            var items: CFArray?
+            let options = [kSecImportExportPassphrase as String: password] as CFDictionary
+            status = SecPKCS12Import(data as CFData, options, &items)
+            CertImportLog.add("SecPKCS12Import -> \(status)")
+
+            if status == errSecSuccess,
+               let list = items as? [[String: Any]],
+               let identityValue = list.first?[kSecImportItemIdentity as String] {
+                let identity = identityValue as! SecIdentity
+                var certificate: SecCertificate?
+                if SecIdentityCopyCertificate(identity, &certificate) == errSecSuccess, let certificate {
+                    der = SecCertificateCopyData(certificate) as Data
+                }
+            }
+        }
+
+        guard let der else {
+            CertImportLog.add("both parsers failed")
             if status == errSecAuthFailed {
                 throw SigningStoreError.badPassword
             }
             throw SigningStoreError.invalidCertificate
         }
-        guard let list = items as? [[String: Any]],
-              let identityValue = list.first?[kSecImportItemIdentity as String] else {
-            throw SigningStoreError.invalidCertificate
-        }
-        let identity = identityValue as! SecIdentity
-        var certificate: SecCertificate?
-        guard SecIdentityCopyCertificate(identity, &certificate) == errSecSuccess,
-              let certificate else {
-            throw SigningStoreError.invalidCertificate
-        }
-
-        let der = SecCertificateCopyData(certificate) as Data
         let parsed = SigningX509.parse(der)
-        let summary = SecCertificateCopySubjectSummary(certificate) as String? ?? "Certificate"
         return CertificateMetadata(
-            commonName: parsed.commonName ?? summary,
+            commonName: parsed.commonName ?? "Certificate",
             teamID: parsed.teamID ?? "",
             expiresAt: parsed.notAfter,
             notBefore: parsed.notBefore,

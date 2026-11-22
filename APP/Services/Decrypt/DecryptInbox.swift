@@ -238,6 +238,7 @@ final class DecryptInboxStore: ObservableObject {
             do {
                 let job = try await importIPA(from: source)
                 jobs.insert(job, at: 0)
+                SoundEffects.play(.rise)
                 pump()
             } catch {
                 failures.append("\(source.lastPathComponent)：\(error.localizedDescription)")
@@ -352,6 +353,12 @@ final class DecryptInboxStore: ObservableObject {
     }
 
     private func run(_ job: DecryptJob) {
+        SoundEffects.play(.press)
+        ContinuedProcessing.shared.begin(
+            "decrypt-\(job.id.uuidString)",
+            title: "cp_decrypt_title".localized(job.displayName),
+            subtitle: "0%"
+        )
         let token = DecryptCoordinator.shared.begin(requestID: job.id)
         job.state = .running
         job.message = nil
@@ -368,6 +375,14 @@ final class DecryptInboxStore: ObservableObject {
                 cancelToken: token,
                 onEvent: { event in
                     job.log.consume(event)
+                    if case .phase(let phase) = event {
+                        Task { @MainActor in
+                            ContinuedProcessing.shared.update(
+                                "decrypt-\(job.id.uuidString)",
+                                subtitle: phase
+                            )
+                        }
+                    }
                     if case .entry(let relativePath, let status, _) = event, status < 0 {
                         Task { @MainActor in job.recordFailure(relativePath) }
                     }
@@ -380,7 +395,9 @@ final class DecryptInboxStore: ObservableObject {
             if token.isCancelled {
                 job.state = .cancelled
                 job.message = "dc_err_cancelled".localized
+                SoundEffects.play(.fall)
             } else if record.status == .completed {
+                SoundEffects.play(.success)
                 job.state = .completed
                 if let path = record.outputPath {
                     job.outputURL = URL(fileURLWithPath: path)
@@ -390,7 +407,13 @@ final class DecryptInboxStore: ObservableObject {
             } else {
                 job.state = .failed
                 job.message = record.message
+                SoundEffects.play(.error)
             }
+
+            ContinuedProcessing.shared.end(
+                "decrypt-\(job.id.uuidString)",
+                success: job.state == .completed
+            )
 
             pump()
         }

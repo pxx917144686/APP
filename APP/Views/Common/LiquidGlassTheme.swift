@@ -41,8 +41,10 @@ struct LiquidGlassBackground: View {
                         )
                     )
 
-                LiquidWaterLayer()
-                    .environmentObject(themeManager)
+                if themeManager.waterEffectEnabled {
+                    LiquidWaterLayer()
+                        .environmentObject(themeManager)
+                }
             }
             .ignoresSafeArea()
         }
@@ -67,26 +69,20 @@ struct LiquidGlassBackground: View {
 }
 
 struct LiquidGlassBackdrop: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        GeometryReader { proxy in
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { timeline in
-                LiquidGlassBackground()
-                    .layerEffect(
-                        ShaderLibrary.liquidLens(
-                            .float2(Float(proxy.size.width), Float(proxy.size.height)),
-                            .float(reduceMotion ? 0 : Float(timeline.date.timeIntervalSinceReferenceDate)),
-                            .float(0.72),
-                            .float(0.46)
-                        ),
-                        maxSampleOffset: CGSize(width: 42, height: 42)
-                    )
-            }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        solid
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    /// 纯色静态背景：不做渐变、不跑 TimelineView、没有水波，避免持续重绘。
+    private var solid: Color {
+        colorScheme == .dark
+            ? Color(red: 0.086, green: 0.094, blue: 0.118)
+            : Color(red: 0.960, green: 0.968, blue: 0.984)
     }
 }
 

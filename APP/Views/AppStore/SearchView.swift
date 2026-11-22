@@ -247,7 +247,7 @@ struct SearchView: SwiftUI.View {
     @EnvironmentObject var themeManager: ThemeManager
 
     private var searchBarBackgroundColor: Color {
-        Color(.systemGray6)
+        themeManager.liquidGlassEnabled ? Color.primary.opacity(0.06) : Color(.systemGray6)
     }
     @EnvironmentObject var appStore: AppStore
     @StateObject private var sessionManager = SessionManager.shared
@@ -255,6 +255,7 @@ struct SearchView: SwiftUI.View {
 
     @State var showLoginSheet = false
     @State var showAccountSheet = false
+    @State private var showPurchasedSheet = false
     @State var showDirectSheet = false
     @State var directInput = ""
 
@@ -287,16 +288,17 @@ struct SearchView: SwiftUI.View {
     @State var isLoadingVersions = false
     @State var versionError: String?
     var body: some SwiftUI.View {
-        NavigationView {
+        NavigationStack {
             ZStack {
-                Color(.systemBackground)
+                LiquidGlassBackdrop()
+                    .environmentObject(themeManager)
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
 
                     modernSearchBar
                         .padding(.horizontal, 16)
-                        .background(Color(.systemBackground))
+                        .background(themeManager.backgroundColor)
 
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 0) {
@@ -324,11 +326,26 @@ struct SearchView: SwiftUI.View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showVersionPicker) {
                 versionPickerSheet
                     .environmentObject(appStore)
                     .environmentObject(themeManager)
+            }
+            .sheet(isPresented: $showPurchasedSheet) {
+                NavigationView {
+                    PurchasedView(onClose: { showPurchasedSheet = false })
+                        .environmentObject(appStore)
+                        .environmentObject(themeManager)
+                        .navigationTitle("tab_purchased".localized)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("done".localized) { showPurchasedSheet = false }
+                            }
+                        }
+                }
+                .navigationViewStyle(.stack)
             }
             .sheet(isPresented: $showAccountSheet) {
                 AccountSheetView()
@@ -449,7 +466,7 @@ struct SearchView: SwiftUI.View {
             )
             .padding(.top, 8)
 
-            HStack(spacing: 16) {
+            HStack(spacing: 8) {
 
                 Menu {
                     ForEach(DeviceFamily.allCases, id: \.self) { type in
@@ -471,6 +488,8 @@ struct SearchView: SwiftUI.View {
                             .font(.system(size: 14, weight: .medium))
                         Text(searchType.displayName)
                             .font(.caption)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
                         Image(systemName: "chevron.down")
                             .font(.system(size: 12, weight: .medium))
                     }
@@ -503,13 +522,23 @@ struct SearchView: SwiftUI.View {
                 Spacer()
 
                 Button(action: {
-                    showAccountSheet = true
+                    showPurchasedSheet = true
                 }) {
-                    AccountAvatarButton(size: 36, isEditable: false)
-                        .environmentObject(appStore)
-                        .environmentObject(themeManager)
+                    HStack(spacing: 5) {
+                        Image(systemName: "bag.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("tab_purchased".localized)
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .foregroundColor(themeManager.accentColor)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(themeManager.accentColor.opacity(0.1)))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("tab_purchased".localized)
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
@@ -931,12 +960,6 @@ struct SearchView: SwiftUI.View {
                 .scaledToFit()
                 .frame(width: 120, height: 120)
                 .cornerRadius(24)
-                .scaleEffect(animateLogo ? 1.1 : 1.0)
-                .opacity(animateLogo ? 1.0 : 0.7)
-                .animation(
-                    Animation.easeInOut(duration: 2).repeatForever(autoreverses: true),
-                    value: animateLogo
-                )
             VStack(spacing: 8) {
                 Text("app_downgrade".localized)
                     .font(.title)

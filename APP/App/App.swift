@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import ZsignSwift
 
 @main
 struct App: SwiftUI.App {
@@ -12,7 +13,22 @@ struct App: SwiftUI.App {
 
     init() {
         CrashLogger.install()
+        SoundEffects.prepare()
+        #if DEBUG
+        Self.runP12SelfTestIfNeeded()
+        #endif
     }
+
+    #if DEBUG
+    private static func runP12SelfTestIfNeeded() {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let probe = docs.appendingPathComponent("debug-cert.p12")
+        guard let data = try? Data(contentsOf: probe) else { return }
+        let result = Zsign.certificateDERWithError(p12Data: data, password: "1")
+        CertImportLog.add("SELFTEST \(data.count) bytes -> " +
+                          (result.data == nil ? "nil (\(result.error))" : "\(result.data!.count) bytes"))
+    }
+    #endif
 
     var body: some SwiftUI.Scene {
         WindowGroup {

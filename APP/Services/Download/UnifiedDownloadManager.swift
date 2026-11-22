@@ -144,6 +144,15 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
 
+                    if downloadProgress.totalBytes > 0 {
+                        let fraction = Double(downloadProgress.bytesDownloaded) / Double(downloadProgress.totalBytes)
+                        ContinuedProcessing.shared.update(
+                            "download-\(request.id.uuidString)",
+                            subtitle: "\(Int(fraction * 100))% · \(downloadProgress.formattedSpeed)",
+                            progress: fraction
+                        )
+                    }
+
                     switch downloadProgress.status {
                     case .waiting:
                         request.runtime.status = DownloadStatus.waiting
@@ -187,6 +196,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.error = error.localizedDescription
                         request.runtime.status = DownloadStatus.failed
                     }
+
+                    if request.runtime.status == .completed {
+                        SoundEffects.play(.success)
+                    } else if request.runtime.status == .failed {
+                        SoundEffects.play(.error)
+                    }
+
+                    ContinuedProcessing.shared.end(
+                        "download-\(request.id.uuidString)",
+                        success: request.runtime.status == .completed
+                    )
 
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
@@ -249,6 +269,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.error = error.localizedDescription
                         request.runtime.status = .failed
                     }
+
+                    if request.runtime.status == .completed {
+                        SoundEffects.play(.success)
+                    } else if request.runtime.status == .failed {
+                        SoundEffects.play(.error)
+                    }
+
+                    ContinuedProcessing.shared.end(
+                        "download-\(request.id.uuidString)",
+                        success: request.runtime.status == .completed
+                    )
 
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
@@ -320,6 +351,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func startDownload(for request: DownloadRequest) {
+        SoundEffects.play(.press)
+        ContinuedProcessing.shared.begin(
+            "download-\(request.id.uuidString)",
+            title: "cp_download_title".localized(request.package.name),
+            subtitle: "0%"
+        )
         guard request.runtime.status != .completed else {
             return
         }
@@ -577,6 +614,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = DownloadStatus.failed
                     }
 
+                    if request.runtime.status == .completed {
+                        SoundEffects.play(.success)
+                    } else if request.runtime.status == .failed {
+                        SoundEffects.play(.error)
+                    }
+
+                    ContinuedProcessing.shared.end(
+                        "download-\(request.id.uuidString)",
+                        success: request.runtime.status == .completed
+                    )
+
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
                 }
@@ -616,6 +664,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func pauseDownload(request: DownloadRequest) {
+        SoundEffects.play(.tap)
         if waitingDownloads.contains(request.id) {
             if let index = downloadQueue.firstIndex(where: { $0.id == request.id }) {
                 downloadQueue.remove(at: index)
@@ -636,6 +685,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func resumeDownload(request: DownloadRequest) {
+        SoundEffects.play(.tap)
         guard request.runtime.status == DownloadStatus.paused ||
               request.runtime.status == DownloadStatus.failed ||
               request.runtime.status == DownloadStatus.cancelled else { return }

@@ -5,7 +5,7 @@ import SwiftUI
 final class TabOrderStore: ObservableObject {
     static let shared = TabOrderStore()
 
-    static let reorderable: [TabEnum] = [.settings, .downloads, .decrypt, .purchased, .sign, .search]
+    static let reorderable: [TabEnum] = [.settings, .downloads, .decrypt, .sign, .search]
 
     @Published private(set) var order: [TabEnum]
 

@@ -688,10 +688,10 @@
 "sign_injection_framework_invalid" = "请选择 .framework 目录。";
 "sign_err_inject" = "注入失败：%@";
 "sign_identity_section" = "证书与描述文件";
-"sign_identity_import" = "导入证书或描述文件";
-"sign_identity_import_hint" = "同一 Team 的证书和描述文件会自动配对。";
-"sign_identity_import_cert_hint" = "导入 .p12 证书并输入密码。";
-"sign_identity_import_profile_hint" = "导入 .mobileprovision 描述文件。";
+"sign_identity_import" = "导入证书和描述文件";
+"sign_identity_import_hint" = "可以一次选中 .p12 和 .mobileprovision，两个一起导入。";
+"sign_identity_import_cert_hint" = "选中 .p12 证书（可同时选描述文件），再输入密码。";
+"sign_identity_import_profile_hint" = "选中 .mobileprovision（可同时选证书），立即导入。";
 "sign_identity_paired" = "已配对 · %@";
 "sign_identity_waiting" = "等待配对";
 "sign_identity_mismatch" = "Team 不一致 · %@";
@@ -1040,3 +1040,9 @@
 "decrypt_clear_hint" = "只删除导入的源 IPA，已脱壳的产物会保留";
 "decrypt_dup_skipped" = "已存在相同版本，已跳过";
 "decrypt_import_result" = "导入结果";
+"sound_effects" = "音效";
+"cp_download_title" = "正在下载 %@";
+"cp_decrypt_title" = "正在脱壳 %@";
+"cp_sign_title" = "正在签名 %@";
+"sign_import_wrong_cert" = "请选择 .p12 格式的证书文件";
+"sign_import_wrong_profile" = "请选择 .mobileprovision 格式的描述文件";
