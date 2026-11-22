@@ -113,6 +113,17 @@ struct DecryptView: SwiftUI.View {
         } message: {
             Text(importFailures.joined(separator: "\n"))
         }
+        .alert(
+            "dc_failed_title".localized,
+            isPresented: Binding(
+                get: { store.failureAlert != nil },
+                set: { if !$0 { store.failureAlert = nil } }
+            )
+        ) {
+            Button("ok".localized, role: .cancel) { store.failureAlert = nil }
+        } message: {
+            Text(store.failureAlert ?? "")
+        }
         .onAppear { store.reload() }
     }
 

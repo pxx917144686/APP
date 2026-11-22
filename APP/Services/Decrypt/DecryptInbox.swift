@@ -162,6 +162,8 @@ final class DecryptInboxStore: ObservableObject {
 
     @Published private(set) var jobs: [DecryptJob] = []
     @Published private(set) var isImporting = false
+    /// 脱壳失败时给弹窗用：应用名 + 原因
+    @Published var failureAlert: String?
 
     private let fileManager = FileManager.default
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
@@ -407,6 +409,10 @@ final class DecryptInboxStore: ObservableObject {
             } else {
                 job.state = .failed
                 job.message = record.message
+                let reason = record.message?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                failureAlert = reason.isEmpty
+                    ? job.displayName
+                    : "\(job.displayName)\n\n\(reason)"
                 SoundEffects.play(.error)
             }
 

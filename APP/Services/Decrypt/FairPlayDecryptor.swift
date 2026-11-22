@@ -6,19 +6,40 @@ enum FairPlayDecryptor {
         AppGroupDiagnostics.candidateGroups()
     }
 
+    /// 工作目录顺序（按历史验证过的优先级）：
+    /// 1. App Group 容器 —— 之前一直能解密，FairPlay 在这里工作正常
+    /// 2. Documents —— 同样受数据保护，group 不可写时用
+    /// 3. Caches —— 最后兜底（实测这里 mremap_encrypted 会返回 ENOMEM，尽量别用）
     static func containerURL() -> URL? {
-        for group in candidateGroups {
-            if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) {
-                return url
+        if let group = firstWritableGroup() { return group }
+
+        let manager = FileManager.default
+        if let docs = manager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let dir = docs.appendingPathComponent("FairPlayedWork", isDirectory: true)
+            if (try? manager.createDirectory(at: dir, withIntermediateDirectories: true)) != nil {
+                return dir
             }
         }
 
-        guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+        guard let caches = manager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             return nil
         }
-        let fallback = caches.appendingPathComponent("FairPlayedWork", isDirectory: true)
-        try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
-        return fallback
+        let dir = caches.appendingPathComponent("FairPlayedWork", isDirectory: true)
+        try? manager.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    /// 拿到第一个真的能写进去的 group 容器。
+    private static func firstWritableGroup() -> URL? {
+        let manager = FileManager.default
+        for group in candidateGroups {
+            guard let url = manager.containerURL(forSecurityApplicationGroupIdentifier: group) else { continue }
+            let probe = url.appendingPathComponent(".fp-probe-\(UUID().uuidString)", isDirectory: true)
+            guard (try? manager.createDirectory(at: probe, withIntermediateDirectories: true)) != nil else { continue }
+            try? manager.removeItem(at: probe)
+            return url
+        }
+        return nil
     }
 
     static var isAvailable: Bool { containerURL() != nil }
@@ -27,7 +48,8 @@ enum FairPlayDecryptor {
         case noAppGroup
         case badArchive(String)
         case noPayload
-        case notDecryptable
+        case notDecryptable(String)
+        case noEntitlement
         case zipFailed(String)
         case notEnoughSpace(Int64, Int64)
         case cancelled
@@ -40,8 +62,11 @@ enum FairPlayDecryptor {
                 return "dc_err_unzip".localized + " (\(detail))"
             case .noPayload:
                 return "dc_err_no_binary".localized
-            case .notDecryptable:
-                return "dc_err_not_decryptable".localized
+            case .noEntitlement:
+                return "dc_err_no_entitlement".localized
+            case .notDecryptable(let detail):
+                let base = "dc_err_not_decryptable".localized
+                return detail.isEmpty ? base : base + "\n" + detail
             case .zipFailed(let detail):
                 return "dc_err_copy".localized(detail)
             case .cancelled:
@@ -98,6 +123,17 @@ enum FairPlayDecryptor {
             }
         }
 
+        let canExec = fp_exec_memory_available() == 1
+        emit(.line("exec-memory (dynamic-codesigning): \(canExec ? "yes" : "NO")", canExec ? .info : .warning))
+        guard canExec else {
+            emit(.line("abort: 当前签名缺少 dynamic-codesigning，内核不会解密任何页面", .failure))
+            throw DecryptError.noEntitlement
+        }
+        guard canExec else {
+            emit(.line("abort: 当前签名缺少 dynamic-codesigning，内核不会解密任何页面", .failure))
+            throw DecryptError.noEntitlement
+        }
+
         emit(.phase("EXTRACT"))
         emit(.line("root    \(groupRoot.path)", .info))
         emit(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
@@ -142,6 +178,10 @@ enum FairPlayDecryptor {
         var failedCount: Int32 = 0
         var skippedCount: Int32 = 0
         let box = EventBox(emit, cancelToken: cancelToken)
+        box.onFailureDetail = { detail in
+            // 只留第一条，够定位就行
+            if Self.firstFailure == nil { Self.firstFailure = detail }
+        }
 
         let decrypted = withExtendedLifetime(box) { () -> Int32 in
             appDir.path.withCString { dir in
@@ -155,7 +195,11 @@ enum FairPlayDecryptor {
                     { ctx, line in
                         guard let ctx, let line else { return }
                         let box = Unmanaged<EventBox>.fromOpaque(ctx).takeUnretainedValue()
-                        box.handler?(.line(String(cString: line), .detail))
+                        let text = String(cString: line)
+                        if text.contains("mremap="), text.contains("pages=") {
+                            box.onFailureDetail?(text)
+                        }
+                        box.handler?(.line(text, .detail))
                     },
                     { ctx in
                         guard let ctx else { return false }
@@ -202,9 +246,15 @@ enum FairPlayDecryptor {
         }
 
         guard decrypted > 0 else {
+            let raw = Self.firstFailure ?? ""
+            Self.firstFailure = nil
+            let detail = Self.humanReason(for: raw)
             emit(.line("main binary rejected by FairPlay", .failure))
-            throw DecryptError.notDecryptable
+            if !raw.isEmpty { emit(.line("  \(raw)", .failure)) }
+            if !detail.isEmpty { emit(.line("  → \(detail)", .warning)) }
+            throw DecryptError.notDecryptable(detail)
         }
+        Self.firstFailure = nil
 
         emit(.phase("PACK"))
         let suffix = failedCount > 0 ? "-PARTIAL" : "-decrypted"
@@ -247,12 +297,49 @@ enum FairPlayDecryptor {
     private final class EventBox {
         let handler: (@Sendable (DecryptEvent) -> Void)?
         let cancelToken: DecryptCancelToken?
+        var onFailureDetail: (@Sendable (String) -> Void)?
 
         init(_ handler: (@Sendable (DecryptEvent) -> Void)?,
              cancelToken: DecryptCancelToken?) {
             self.handler = handler
             self.cancelToken = cancelToken
         }
+    }
+
+    /// C 核心每次尝试都会打一行 "R/cryptid1: sig=.. mmap=.. mremap=.. pages=x/y ..."，
+    /// 留下第一条失败的，用来告诉用户为什么没解出来。
+    nonisolated(unsafe) private static var firstFailure: String?
+
+    private static func humanReason(for raw: String) -> String {
+        // 探针能申请到可执行内存 = 签名带 dynamic-codesigning，权限没问题
+        let hasEntitlement = fp_exec_memory_available() == 1
+        guard !raw.isEmpty else {
+            return hasEntitlement ? "" : "dc_reason_entitlement".localized
+        }
+        let lower = raw.lowercased()
+        if !hasEntitlement {
+            return "dc_reason_entitlement".localized
+        }
+        // 有权限却被拒（EPERM）：是这个包的 FairPlay 票据对不上当前设备/账号
+        if lower.contains("errno 1 ") || lower.contains("operation not permitted") {
+            return "dc_reason_ticket".localized
+        }
+        if lower.contains("errno 12 ") || lower.contains("cannot allocate memory") {
+            return "dc_reason_enomem".localized
+        }
+        if lower.contains("errno 1 ") || lower.contains("operation not permitted") {
+            return "dc_reason_eperm".localized
+        }
+        if lower.contains("mremap=0") && lower.contains("pages=0/") {
+            return "dc_reason_pages".localized
+        }
+        if lower.contains("changed=0") {
+            return "dc_reason_unchanged".localized
+        }
+        if lower.contains("unsupported magic") || lower.contains("parse failed") {
+            return "dc_reason_parse".localized
+        }
+        return ""
     }
 
     private static func formatBytes(_ value: Int64) -> String {

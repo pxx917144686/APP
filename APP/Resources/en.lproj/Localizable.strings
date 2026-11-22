@@ -1046,3 +1046,18 @@
 "cp_sign_title" = "Signing %@";
 "sign_import_wrong_cert" = "Please choose a .p12 certificate file";
 "sign_import_wrong_profile" = "Please choose a .mobileprovision profile";
+"check_updates" = "Check for Updates";
+"update_latest" = "Up to date";
+"update_failed" = "Check failed, tap to retry";
+"dc_reason_eperm" = "This build has no decryption permission: re-sign the app with a developer certificate that carries dynamic-codesigning";
+"dc_reason_pages" = "The kernel refused every page (mremap returned 0 but all pages failed) — usually the same signing permission problem";
+"dc_reason_unchanged" = "The content did not change after decryption: this binary may already be decrypted or malformed";
+"dc_reason_parse" = "The Mach-O structure cannot be parsed — packed or non-standard binary";
+"dc_reason_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not decrypt any page. Re-sign the app with a developer certificate that carries it";
+"dc_failed_title" = "Decryption failed";
+"dc_reason_ticket" = "This build has decryption permission, but the FairPlay ticket in this IPA does not match this device — usually because it was downloaded with a different Apple ID. Re-download it with the account signed in on this device";
+"dc_reason_enomem" = "The kernel refused to create the decryption mapping (ENOMEM): the ticket may be damaged or the file was repacked";
+"dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
+Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
+"dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
+Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";

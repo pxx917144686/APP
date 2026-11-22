@@ -426,6 +426,9 @@ int fp_decrypt_file(const char *in_path, const char *out_path, fp_log_t log,
         const fp_slice_t *s = &sl[i];
         if (!s->has_enc || s->cryptid == 0) continue;
 
+        logf_(log, ctx, "  slice[%d] cpu=0x%x/0x%x cryptoff=0x%x cryptsize=0x%x cryptid=%u cs=0x%x+0x%x",
+              i, s->cputype, s->cpusubtype, s->cryptoff, s->cryptsize, s->cryptid, s->cs_off, s->cs_size);
+
         uint8_t *dec = NULL;
         bool dec_mapped = false;
         struct stat ost;

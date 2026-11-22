@@ -1,4 +1,7 @@
 #include "FPBridge.h"
+
+#include <sys/mman.h>
+#include <errno.h>
 #include "fpcore.h"
 #include "zipio.h"
 
@@ -157,4 +160,16 @@ int fp_decrypt_tree(const char *appDir,
     if (skipped) *skipped = skip;
     if (done == -2) return -2;
     return done;
+}
+
+// 探针：能申请到可执行匿名内存，说明签名带 dynamic-codesigning / JIT 权限。
+// mremap_encrypted 需要的正是同一个权限，缺了它就只会返回 ENOMEM。
+int fp_exec_memory_available(void) {
+    void *p = mmap(NULL, 0x4000, PROT_READ | PROT_WRITE | PROT_EXEC,
+                   MAP_PRIVATE | MAP_ANON, -1, 0);
+    if (p != MAP_FAILED) { munmap(p, 0x4000); return 1; }
+    p = mmap(NULL, 0x4000, PROT_READ | PROT_WRITE | PROT_EXEC,
+             MAP_PRIVATE | MAP_ANON | MAP_JIT, -1, 0);
+    if (p != MAP_FAILED) { munmap(p, 0x4000); return 1; }
+    return 0;
 }

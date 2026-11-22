@@ -1046,3 +1046,18 @@
 "cp_sign_title" = "正在签名 %@";
 "sign_import_wrong_cert" = "请选择 .p12 格式的证书文件";
 "sign_import_wrong_profile" = "请选择 .mobileprovision 格式的描述文件";
+"check_updates" = "检查更新";
+"update_latest" = "已是最新";
+"update_failed" = "检查失败，点击重试";
+"dc_reason_eperm" = "当前签名没有解密权限：需要带 dynamic-codesigning 的开发者证书重签本应用";
+"dc_reason_pages" = "内核拒绝解密任何一页（mremap 返回 0 但页面全失败），通常仍是签名权限问题";
+"dc_reason_unchanged" = "解密后内容没有变化，这个二进制可能本身已解密或结构异常";
+"dc_reason_parse" = "Mach-O 结构无法解析，可能是加壳或非常规二进制";
+"dc_reason_entitlement" = "本应用当前签名缺少 dynamic-codesigning 权限，内核不会解密任何页面。请用带该权限的开发者证书重签本应用";
+"dc_failed_title" = "脱壳失败";
+"dc_reason_ticket" = "本应用有解密权限，但该安装包的 FairPlay 票据对不上当前设备：通常是用别的 Apple ID 下载的。请用设备已登录的账号重新下载后再脱壳";
+"dc_reason_enomem" = "内核拒绝建立解密映射（ENOMEM），可能是票据损坏或文件被重新打包过";
+"dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。
+请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
+"dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。
+请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";

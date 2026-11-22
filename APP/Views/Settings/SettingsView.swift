@@ -9,6 +9,7 @@ struct SettingsView: View {
     @EnvironmentObject private var tabBarStyleManager: TabBarStyleManager
 
     @AppStorage("APP.userTintColor") private var selectedColorHex: String = "#007AFF"
+    @ObservedObject private var updateChecker = UpdateChecker.shared
     @State private var selectedColor = Color(hex: "#007AFF")
     @State private var showingIconSuccess = false
     @State private var isIconLoading = false
@@ -123,6 +124,14 @@ struct SettingsView: View {
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
+                    VStack(spacing: 0) {
+                        updateRow
+                    }
+                    .liquidGlassSurface(cornerRadius: 16)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+
+                    versionFooter
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -287,6 +296,89 @@ extension SettingsView {
         }
         .padding(.horizontal, 0)
         .padding(.vertical, 0)
+    }
+
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
+    }
+
+    private var updateRow: some View {
+        Button {
+            switch updateChecker.state {
+            case .available(_, let url):
+                UIApplication.shared.open(url)
+            default:
+                Task { await updateChecker.check() }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(themeManager.accentColor))
+
+                Text("check_updates".localized)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                updateStatusView
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain, sound: .tap)
+        .disabled(updateChecker.state == .checking)
+    }
+
+    @ViewBuilder
+    private var updateStatusView: some View {
+        switch updateChecker.state {
+        case .idle:
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        case .checking:
+            ProgressView()
+                .scaleEffect(0.75)
+        case .upToDate:
+            Text("update_latest".localized)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+        case .available(let version, _):
+            HStack(spacing: 4) {
+                Text("v\(version)")
+                    .font(.system(size: 13, weight: .semibold))
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundStyle(themeManager.accentColor)
+        case .failed(let message):
+            Text(message)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: 150, alignment: .trailing)
+        }
+    }
+
+    private var versionFooter: some View {
+        VStack(spacing: 3) {
+            Text("APP")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            Text("v\(appVersion)")
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
     }
 
     private var soundRow: some View {
