@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Perfil comodín";
 "sign_target_coverage_missing" = "No hay perfil coincidente";
 "sign_target_profile_warning" = "Las extensiones %@ no tienen un perfil independiente utilizable y se firmarán con el perfil principal; la instalación puede fallar. Importa un perfil de extensión coincidente o elimina las extensiones.";
-"sign_remove_extensions" = "Eliminar todas las extensiones";
-"sign_remove_extensions_hint" = "Elimina NE, widgets y otras extensiones al firmar con un solo perfil. Esto evita perfiles de extensión no coincidentes, pero desactiva las funciones de las extensiones.";
-"sign_remove_extensions_action" = "Eliminar todas las extensiones y continuar";
 "sign_injection_builtin" = "INTEGRADO";
 "sign_ipa_encrypted" = "El ejecutable principal de esta IPA sigue cifrado (FairPlay). Volver a firmarla no hará que se inicie. Usa una IPA descifrada.";
 "sign_ipa_encrypted_tag" = "Cifrada";

@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Perfil comodí";
 "sign_target_coverage_missing" = "Cap perfil coincident";
 "sign_target_profile_warning" = "Les extensions %@ no tenen cap perfil independent utilitzable i se signaran amb el perfil principal; la instal·lació pot fallar. Importeu un perfil d'extensió coincident o elimineu les extensions.";
-"sign_remove_extensions" = "Elimina totes les extensions";
-"sign_remove_extensions_hint" = "Elimina NE, widgets i altres extensions en signar amb un sol perfil. Això evita desencontres de perfils d'extensions però desactiva les funcions d'extensió.";
-"sign_remove_extensions_action" = "Elimina totes les extensions i continua";
 "sign_injection_builtin" = "INTEGRAT";
 "sign_ipa_encrypted" = "L'executable principal d'aquest IPA encara està xifrat (FairPlay). Tornar-lo a signar no farà que s'obri. Useu un IPA desxifrat.";
 "sign_ipa_encrypted_tag" = "Xifrat";

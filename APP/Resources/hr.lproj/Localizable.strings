@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard profil";
 "sign_target_coverage_missing" = "Nema odgovarajućeg profila";
 "sign_target_profile_warning" = "Proširenja %@ nemaju upotrebljiv neovisni profil i potpisat će se glavnim profilom; instalacija može zakazati. Uvezite odgovarajući profil proširenja ili uklonite proširenja.";
-"sign_remove_extensions" = "Ukloni sva proširenja";
-"sign_remove_extensions_hint" = "Uklonite NE, widgete i druga proširenja pri potpisivanju jednim profilom. To izbjegava nepodudaranje profila proširenja, ali onemogućuje funkcije proširenja.";
-"sign_remove_extensions_action" = "Ukloni sva proširenja i nastavi";
 "sign_injection_builtin" = "UGRAĐENO";
 "sign_ipa_encrypted" = "Glavna izvršna datoteka ovog IPA još je šifrirana (FairPlay). Ponovno potpisivanje neće omogućiti njegovo pokretanje. Koristite dešifrirani IPA.";
 "sign_ipa_encrypted_tag" = "Šifrirano";

@@ -614,8 +614,6 @@
 "sign_cancel" = "Cancel signing";
 "sign_share" = "Share";
 "sign_install" = "Install";
-"sign_install_title" = "Install";
-"sign_install_handed_off" = "Handed to iOS. Check the Home Screen.";
 "sign_install_server_unavailable" = "Could not start the local install server.";
 "sign_install_manifest_unavailable" = "The install manifest is unavailable.";
 "sign_install_open_failed" = "iOS could not open the install link.";
@@ -797,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard profile";
 "sign_target_coverage_missing" = "No matching profile";
 "sign_target_profile_warning" = "Extensions %@ have no usable independent profile and will be signed with the main profile; installation may fail. Import a matching extension profile or remove the extensions.";
-"sign_remove_extensions" = "Remove All Extensions";
-"sign_remove_extensions_hint" = "Remove NE, widgets and other extensions when signing with a single profile. This avoids extension profile mismatches but disables extension features.";
-"sign_remove_extensions_action" = "Remove All Extensions and Continue";
 "sign_injection_builtin" = "BUILT-IN";
 "sign_ipa_encrypted" = "This IPA's main executable is still encrypted (FairPlay). Re-signing it will not make it launch. Use a decrypted IPA.";
 "sign_ipa_encrypted_tag" = "Encrypted";
@@ -924,7 +919,6 @@
 "sign_history_size" = "%d total";
 "sign_history_file_missing" = "File deleted";
 "sign_history_install_self" = "This package has the same Bundle ID as this app and cannot be installed here. Share it instead.";
-"sign_history_install_handoff" = "Handed to the system installer.";
 "sign_history_delete_failed" = "Could not delete the signed package.";
 "sign_target_watch" = "Watch App";
 "sign_target_app_clip" = "App Clip";
@@ -963,8 +957,8 @@
 "sign_ent_import_empty" = "None of the imported entitlements exist in this profile.";
 "sign_ent_export_failed" = "Export Failed";
 "sign_ent_export_empty" = "No entitlements selected to export.";
-"sign_use_target_profiles" = "Use Matched Extension Profiles";
-"sign_use_target_profiles_hint" = "Sign each extension with its own matched Bundle ID profile. %d target(s) currently matched; unmatched extensions fall back to the main profile.";
+"sign_use_target_profiles" = "Auto-Match Extension Profiles";
+"sign_use_target_profiles_hint" = "Automatically match a Bundle ID profile for each extension. Manual choices in Extension Certificates & Profiles still apply when this is off. %d target(s) currently matched.";
 "sign_audit_per_target" = "PER-TARGET";
 "sign_audit_using_independent" = "Independent profile: %@";
 "sign_audit_using_main" = "Main profile: %@";
@@ -1008,7 +1002,7 @@
 "sign_import_wrong_type" = "Choose an .ipa or .zip file.";
 "sign_target_control_center" = "Control Center";
 "sign_remove_uncovered_extensions" = "Remove Uncovered Extensions";
-"sign_remove_uncovered_extensions_hint" = "NE, widgets, control center and other extensions without a matching profile are removed automatically so the main app can install. Import their profiles to keep them.";
+"sign_remove_uncovered_extensions_hint" = "Extensions with no covering profile are removed. Leave off to keep them; check extension profiles if installation fails.";
 "sign_self_injection_warning" = "You are signing this signing tool itself. The built-in 内购破解.dylib will not be injected; injecting it can break file pickers and other system integrations.";
 
 "tab_decrypt" = "Decrypt";
@@ -1068,3 +1062,26 @@ Re-sign the app with a developer certificate that carries it (free certificates 
 "live_island_sign" = "Signing";
 "live_island_decrypt" = "Decryption";
 "live_island_install" = "Installation";
+
+
+"sign_extension_ids" = "Extension Bundle IDs";
+
+"sign_extension_credentials" = "Extension Certificates & Profiles";
+"sign_extension_credentials_hint" = "Choose a separate certificate and profile for NE/WE and other extensions. A configured extension is signed with that certificate and left untouched by the main pass.";
+"sign_extension_credentials_empty" = "No configurable extensions in this IPA.";
+"sign_extension_custom_badge" = "CUSTOM";
+"sign_extension_certificate" = "Certificate";
+"sign_extension_profile" = "Profile";
+"sign_extension_follow_main_certificate" = "Main certificate";
+"sign_extension_auto_profile" = "Auto match";
+"sign_extension_id" = "ID";
+"sign_extension_profile_missing" = "No profile covers this extension ID.";
+"sign_extension_password_missing" = "No password is stored for this certificate.";
+"sign_extension_reset" = "Reset";
+"sign_extension_cert_mismatch" = "This profile does not match the selected certificate.";
+"sign_extension_follow_hint" = "Extension IDs follow the main Bundle ID. Extensions with their own App-ID or profile can be configured in Extension Certificates & Profiles.";
+
+"sign_certificate_id" = "Certificate ID";
+"sign_certificate_id_hint" = "Same value as Bundle ID. Enter the App ID from the certificate/profile, or fill it from the selected profile.";
+"sign_fill_from_profile" = "Fill from Profile";
+"sign_certificate_id_wildcard" = "This profile is a wildcard. Enter a concrete App ID manually.";

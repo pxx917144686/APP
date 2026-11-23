@@ -74,6 +74,11 @@ struct SigningInjection: Identifiable, Sendable {
 struct SigningTargetCredentials: Sendable {
     let targetID: String
     let bundlePath: String
+    let originalBundleIdentifier: String
+    let bundleIdentifier: String
+    let certificate: SigningCertificate
+    let certificateURL: URL
+    let password: String
     let profile: SigningProfile
     let profileURL: URL
     let entitlementsPlist: Data?
@@ -92,7 +97,6 @@ struct SigningIPTask: Sendable {
     let removeProvision: Bool
     let entitlementsPlist: Data?
     let injections: [SigningInjection]
-    let removeExtensions: Bool
     let removeWatchApp: Bool
     let removeTargetPaths: [String]
     let targetCredentials: [SigningTargetCredentials]
@@ -219,9 +223,6 @@ enum SigningEngine {
                 }
             }
         }
-        if task.removeExtensions {
-            try removeAllExtensions(from: appURL, onUpdate: onUpdate)
-        }
         if task.removeWatchApp {
             removeWatchAppBundle(from: appURL, onUpdate: onUpdate)
         }
@@ -243,7 +244,9 @@ enum SigningEngine {
             try applyInjections(task.injections, to: appURL, removeTargetPaths: task.removeTargetPaths, onUpdate: onUpdate)
         }
 
-        var independentlySignedPaths: [String] = []
+        Zsign.setSkipSignPaths(targetCredentials.map(\.bundlePath))
+        defer { Zsign.setSkipSignPaths([]) }
+
         for credentials in targetCredentials {
             let targetURL = appURL.appendingPathComponent(credentials.bundlePath, isDirectory: true)
             guard fileManager.fileExists(atPath: targetURL.path) else { continue }
@@ -254,22 +257,30 @@ enum SigningEngine {
                 try data.write(to: entitlementsURL, options: .atomic)
                 targetEntitlementsPath = entitlementsURL.path
             }
+            if credentials.bundleIdentifier != credentials.originalBundleIdentifier
+                || task.bundleIdentifier != task.ipa.bundleIdentifier {
+                try rewriteTargetReferences(
+                    at: targetURL,
+                    credentials: credentials,
+                    allCredentials: targetCredentials,
+                    oldMainID: task.ipa.bundleIdentifier,
+                    newMainID: task.bundleIdentifier,
+                    onUpdate: onUpdate
+                )
+            }
             onUpdate(SigningUpdate(progress: 0.38, text: "target sign  \(credentials.bundlePath)  \(credentials.profile.displayName)", level: .info))
             try signTargetBundle(
                 targetURL,
                 profileURL: credentials.profileURL,
-                certificateURL: task.certificateURL,
-                password: task.password,
+                certificateURL: credentials.certificateURL,
+                password: credentials.password,
                 entitlementsPath: targetEntitlementsPath,
                 targetLabel: credentials.bundlePath,
+                customIdentifier: credentials.bundleIdentifier == credentials.originalBundleIdentifier ? "" : credentials.bundleIdentifier,
                 removeProvision: task.removeProvision
             )
-            independentlySignedPaths.append(credentials.bundlePath)
             onUpdate(SigningUpdate(progress: 0.40, text: "target signed  \(credentials.bundlePath)", level: .success))
         }
-
-        Zsign.setSkipSignPaths(independentlySignedPaths)
-        defer { Zsign.setSkipSignPaths([]) }
 
         try cancelFlag.throwIfCancelled()
         onUpdate(SigningUpdate(phase: .signing, progress: 0.42, text: "sign  Zsign + \(task.certificate.commonName)", level: .phase))
@@ -381,37 +392,6 @@ enum SigningEngine {
         try? fileManager.copyItem(at: profileURL, to: destination)
     }
 
-    private static func removeAllExtensions(
-        from appURL: URL,
-        onUpdate: @escaping @Sendable (SigningUpdate) -> Void
-    ) throws {
-        let fileManager = FileManager.default
-        var removed = 0
-
-        if let enumerator = fileManager.enumerator(
-            at: appURL,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        ) {
-            for case let url as URL in enumerator {
-                guard (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else { continue }
-                guard url.pathExtension.lowercased() == "appex" else { continue }
-                try? fileManager.removeItem(at: url)
-                enumerator.skipDescendants()
-                removed += 1
-            }
-        }
-
-        for name in ["PlugIns", "Extensions"] {
-            let directory = appURL.appendingPathComponent(name, isDirectory: true)
-            if let contents = try? fileManager.contentsOfDirectory(atPath: directory.path), contents.isEmpty {
-                try? fileManager.removeItem(at: directory)
-            }
-        }
-
-        onUpdate(SigningUpdate(progress: 0.33, text: "extensions  removed \(removed)", level: removed > 0 ? .success : .info))
-    }
-
     private static func applyInjections(
         _ injections: [SigningInjection],
         to appURL: URL,
@@ -484,6 +464,7 @@ enum SigningEngine {
         password: String,
         entitlementsPath: String,
         targetLabel: String,
+        customIdentifier: String = "",
         removeProvision: Bool = false
     ) throws {
         let box = ZsignErrorBox()
@@ -495,7 +476,7 @@ enum SigningEngine {
                 p12Path: certificateURL.path,
                 p12Password: password,
                 entitlementsPath: entitlementsPath,
-                customIdentifier: "",
+                customIdentifier: customIdentifier,
                 customName: "",
                 customVersion: "",
                 adhoc: false,
@@ -513,6 +494,70 @@ enum SigningEngine {
         if let error = box.get() {
             throw SigningEngineError.signFailed("\(targetLabel): \(error.localizedDescription)")
         }
+    }
+
+
+    private static func rewriteTargetReferences(
+        at targetURL: URL,
+        credentials: SigningTargetCredentials,
+        allCredentials: [SigningTargetCredentials],
+        oldMainID: String,
+        newMainID: String,
+        onUpdate: @escaping @Sendable (SigningUpdate) -> Void
+    ) throws {
+        let infoURL = targetURL.appendingPathComponent("Info.plist")
+        guard let data = try? Data(contentsOf: infoURL),
+              var plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else {
+            return
+        }
+
+        var replacements: [String: String] = [:]
+        if !oldMainID.isEmpty, !newMainID.isEmpty {
+            replacements[oldMainID] = newMainID
+        }
+        for credential in allCredentials where !credential.originalBundleIdentifier.isEmpty {
+            replacements[credential.originalBundleIdentifier] = credential.bundleIdentifier
+        }
+
+        func mapped(_ value: String) -> String {
+            if let direct = replacements[value] {
+                return direct
+            }
+            if !oldMainID.isEmpty,
+               !newMainID.isEmpty,
+               value.hasPrefix(oldMainID + ".") {
+                return newMainID + String(value.dropFirst(oldMainID.count))
+            }
+            return value
+        }
+
+        var changed = false
+
+        if let companion = plist["WKCompanionAppBundleIdentifier"] as? String {
+            let updated = mapped(companion)
+            if updated != companion {
+                plist["WKCompanionAppBundleIdentifier"] = updated
+                changed = true
+                onUpdate(SigningUpdate(progress: 0.37, text: "bundle id  \(companion) -> \(updated)", level: .detail))
+            }
+        }
+
+        if var extensionDict = plist["NSExtension"] as? [String: Any],
+           var attributes = extensionDict["NSExtensionAttributes"] as? [String: Any],
+           let appBundleID = attributes["WKAppBundleIdentifier"] as? String {
+            let updated = mapped(appBundleID)
+            if updated != appBundleID {
+                attributes["WKAppBundleIdentifier"] = updated
+                extensionDict["NSExtensionAttributes"] = attributes
+                plist["NSExtension"] = extensionDict
+                changed = true
+                onUpdate(SigningUpdate(progress: 0.37, text: "bundle id  \(appBundleID) -> \(updated)", level: .detail))
+            }
+        }
+
+        guard changed else { return }
+        let updatedData = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0)
+        try updatedData.write(to: infoURL, options: .atomic)
     }
 
     private static func runZsign(

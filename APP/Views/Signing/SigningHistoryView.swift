@@ -337,9 +337,6 @@ struct SigningHistoryView: View {
                 try await SigningInstaller.install(ipaURL: url)
                 await MainActor.run {
                     isInstalling = false
-                    alertTitle = "sign_install_title".localized
-                    alertMessage = "sign_history_install_handoff".localized
-                    showAlert = true
                 }
             } catch {
                 await MainActor.run {

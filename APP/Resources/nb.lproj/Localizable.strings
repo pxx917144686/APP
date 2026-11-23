@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard-profil";
 "sign_target_coverage_missing" = "Ingen samsvarende profil";
 "sign_target_profile_warning" = "Utvidelser %@ har ingen brukbar uavhengig profil og signeres med hovedprofilen; installasjon kan mislykkes. Importer en samsvarende utvidelsesprofil eller fjern utvidelsene.";
-"sign_remove_extensions" = "Fjern alle utvidelser";
-"sign_remove_extensions_hint" = "Fjern NE, widgets og andre utvidelser ved signering med én profil. Dette unngår samsvarproblemer med utvidelsesprofiler, men deaktiverer utvidelsesfunksjoner.";
-"sign_remove_extensions_action" = "Fjern alle utvidelser og fortsett";
 "sign_injection_builtin" = "INNEBYGD";
 "sign_ipa_encrypted" = "Denne IPA-ens kjørbare hovedfil er fortsatt kryptert (FairPlay). Å signere på nytt gjør den ikke startbar. Bruk en dekryptert IPA.";
 "sign_ipa_encrypted_tag" = "Kryptert";

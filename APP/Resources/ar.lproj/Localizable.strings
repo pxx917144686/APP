@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "ملف Wildcard";
 "sign_target_coverage_missing" = "لا يوجد ملف مطابق";
 "sign_target_profile_warning" = "الامتدادات %@ ليس لديها ملف مستقل قابل للاستخدام وسيُوقَّع بالملف الرئيسي؛ قد يفشل التثبيت. استورد ملف امتداد مطابق أو أزل الامتدادات.";
-"sign_remove_extensions" = "إزالة كل الامتدادات";
-"sign_remove_extensions_hint" = "إزالة NE والودجات والامتدادات الأخرى عند التوقيع بملف واحد. هذا يتجنب عدم تطابق ملفات الامتدادات لكنه يعطل ميزات الامتدادات.";
-"sign_remove_extensions_action" = "إزالة كل الامتدادات والمتابعة";
 "sign_injection_builtin" = "مدمج";
 "sign_ipa_encrypted" = "الملف التنفيذي الرئيسي لهذا الـIPA لا يزال مشفرًا (FairPlay). إعادة التوقيع لن تجعله يعمل. استخدم IPA مفكوك التشفير.";
 "sign_ipa_encrypted_tag" = "مشفر";

@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profil wildcard";
 "sign_target_coverage_missing" = "Tidak ada profil yang cocok";
 "sign_target_profile_warning" = "Ekstensi %@ tidak memiliki profil independen yang dapat digunakan dan akan ditandatangani dengan profil utama; instalasi mungkin gagal. Impor profil ekstensi yang cocok atau hapus ekstensinya.";
-"sign_remove_extensions" = "Hapus Semua Ekstensi";
-"sign_remove_extensions_hint" = "Hapus NE, widget, dan ekstensi lain saat menandatangani dengan satu profil. Ini menghindari ketidakcocokan profil ekstensi tetapi menonaktifkan fitur ekstensi.";
-"sign_remove_extensions_action" = "Hapus Semua Ekstensi dan Lanjutkan";
 "sign_injection_builtin" = "BAWAAN";
 "sign_ipa_encrypted" = "Eksekusi utama IPA ini masih terenkripsi (FairPlay). Menandatanganinya ulang tidak akan membuatnya diluncurkan. Gunakan IPA yang sudah didekripsi.";
 "sign_ipa_encrypted_tag" = "Terenkripsi";

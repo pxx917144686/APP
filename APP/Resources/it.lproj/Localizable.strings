@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profilo wildcard";
 "sign_target_coverage_missing" = "Nessun profilo corrispondente";
 "sign_target_profile_warning" = "Le estensioni %@ non hanno un profilo indipendente utilizzabile e verranno firmate con il profilo principale; l'installazione potrebbe fallire. Importa un profilo di estensione corrispondente o rimuovi le estensioni.";
-"sign_remove_extensions" = "Rimuovi tutte le estensioni";
-"sign_remove_extensions_hint" = "Rimuove NE, widget e altre estensioni quando firmi con un unico profilo. Evita profili di estensione non corrispondenti ma disattiva le funzioni delle estensioni.";
-"sign_remove_extensions_action" = "Rimuovi tutte le estensioni e continua";
 "sign_injection_builtin" = "INTEGRATO";
 "sign_ipa_encrypted" = "L'eseguibile principale di questa IPA è ancora crittografato (FairPlay). Rifirmando non si avvierà. Usa una IPA decrittografata.";
 "sign_ipa_encrypted_tag" = "Crittografata";

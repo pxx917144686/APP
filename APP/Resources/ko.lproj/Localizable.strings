@@ -794,9 +794,6 @@
 "sign_target_coverage_wildcard" = "와일드카드 프로파일";
 "sign_target_coverage_missing" = "일치하는 프로파일 없음";
 "sign_target_profile_warning" = "확장 %@에는 사용 가능한 독립 프로파일이 없어 메인 프로파일로 서명됩니다. 설치가 실패할 수 있습니다. 일치하는 확장 프로파일을 가져오거나 확장을 제거하세요.";
-"sign_remove_extensions" = "모든 확장 제거";
-"sign_remove_extensions_hint" = "단일 프로파일로 서명할 때 네트워크 확장, 위젯 등 확장을 제거합니다. 확장 프로파일 불일치를 피할 수 있지만 확장 기능을 사용할 수 없습니다.";
-"sign_remove_extensions_action" = "모든 확장 제거 후 계속";
 "sign_injection_builtin" = "내장";
 "sign_ipa_encrypted" = "이 IPA의 메인 실행 파일이 아직 암호화되어 있습니다(FairPlay). 다시 서명해도 실행되지 않습니다. 복호화된 IPA를 사용하세요.";
 "sign_ipa_encrypted_tag" = "암호화됨";

@@ -794,9 +794,6 @@
 "sign_target_coverage_wildcard" = "ワイルドカードプロファイル";
 "sign_target_coverage_missing" = "一致するプロファイルなし";
 "sign_target_profile_warning" = "拡張機能 %@ には使用可能な独立プロファイルがなく、メインプロファイルで署名されます。インストールに失敗する可能性があります。一致する拡張機能プロファイルをインポートするか、拡張機能を削除してください。";
-"sign_remove_extensions" = "すべての拡張機能を削除";
-"sign_remove_extensions_hint" = "単一のプロファイルで署名する際は、Network Extension、ウィジェットなどの拡張機能を削除します。拡張機能のプロファイル不一致を避けられますが、拡張機能は使えなくなります。";
-"sign_remove_extensions_action" = "すべての拡張機能を削除して続行";
 "sign_injection_builtin" = "内蔵";
 "sign_ipa_encrypted" = "この IPA のメイン実行ファイルはまだ暗号化されています（FairPlay）。再署名しても起動できません。復号済みの IPA を使用してください。";
 "sign_ipa_encrypted_tag" = "暗号化済み";

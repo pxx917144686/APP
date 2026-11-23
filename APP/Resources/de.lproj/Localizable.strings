@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard-Profil";
 "sign_target_coverage_missing" = "Kein passendes Profil";
 "sign_target_profile_warning" = "Erweiterungen %@ haben kein nutzbares unabhängiges Profil und werden mit dem Hauptprofil signiert; die Installation kann fehlschlagen. Importieren Sie ein passendes Erweiterungsprofil oder entfernen Sie die Erweiterungen.";
-"sign_remove_extensions" = "Alle Erweiterungen entfernen";
-"sign_remove_extensions_hint" = "Entfernt NE, Widgets und andere Erweiterungen beim Signieren mit einem einzelnen Profil. Dadurch werden Profil-Konflikte bei Erweiterungen vermieden, aber Erweiterungsfunktionen deaktiviert.";
-"sign_remove_extensions_action" = "Alle Erweiterungen entfernen und fortfahren";
 "sign_injection_builtin" = "EINGEBAUT";
 "sign_ipa_encrypted" = "Das Haupt-Executable dieser IPA ist noch verschlüsselt (FairPlay). Erneutes Signieren macht sie nicht startfähig. Verwenden Sie eine entschlüsselte IPA.";
 "sign_ipa_encrypted_tag" = "Verschlüsselt";

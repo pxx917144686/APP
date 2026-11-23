@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard profil";
 "sign_target_coverage_missing" = "Žiadny zodpovedajúci profil";
 "sign_target_profile_warning" = "Rozšírenia %@ nemajú použiteľný nezávislý profil a budú podpísané hlavným profilom; inštalácia môže zlyhať. Importujte zodpovedajúci profil rozšírenia alebo rozšírenia odstráňte.";
-"sign_remove_extensions" = "Odstrániť všetky rozšírenia";
-"sign_remove_extensions_hint" = "Pri podpisovaní jedným profilom odstráňte NE, widgety a ďalšie rozšírenia. Tým sa zabráni nezhodám profilov rozšírení, ale funkcie rozšírení budú vypnuté.";
-"sign_remove_extensions_action" = "Odstrániť všetky rozšírenia a pokračovať";
 "sign_injection_builtin" = "VSTAVANÉ";
 "sign_ipa_encrypted" = "Hlavný spustiteľný súbor tohto IPA je stále zašifrovaný (FairPlay). Opätovné podpísanie nespôsobí jeho spustenie. Použite dešifrovaný IPA.";
 "sign_ipa_encrypted_tag" = "Šifrované";

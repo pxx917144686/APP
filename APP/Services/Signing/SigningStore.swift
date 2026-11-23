@@ -52,7 +52,17 @@ struct SigningProfile: Identifiable, Codable, Hashable, Sendable {
     var entitlementDescriptions: [String: String]?
     var importedAt: Date
 
-    var isWildcard: Bool { bundleIDPattern == "*" }
+    var isWildcard: Bool { bundleIDPattern.contains("*") }
+
+    func covers(bundleID: String) -> Bool {
+        let pattern = bundleIDPattern.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !pattern.isEmpty else { return false }
+        if pattern == "*" { return true }
+        if pattern.hasSuffix("*") {
+            return bundleID.hasPrefix(String(pattern.dropLast()))
+        }
+        return pattern == bundleID
+    }
 }
 
 enum SigningStoreError: LocalizedError {
@@ -310,7 +320,7 @@ final class SigningStore: ObservableObject {
         let now = Date()
         let candidates = profiles.filter { profile in
             guard profile.expiresAt == nil || profile.expiresAt! > now else { return false }
-            guard profile.bundleIDPattern == "*" || profile.bundleIDPattern == bundleID else { return false }
+            guard profile.covers(bundleID: bundleID) else { return false }
             if let certificate, !certificate.teamID.isEmpty, !profile.teamID.isEmpty,
                certificate.teamID != profile.teamID {
                 return false

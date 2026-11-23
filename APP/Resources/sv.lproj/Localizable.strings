@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard-profil";
 "sign_target_coverage_missing" = "Ingen matchande profil";
 "sign_target_profile_warning" = "Tillägg %@ har ingen användbar oberoende profil och signeras med huvudprofilen; installationen kan misslyckas. Importera en matchande tilläggsprofil eller ta bort tilläggen.";
-"sign_remove_extensions" = "Ta bort alla tillägg";
-"sign_remove_extensions_hint" = "Ta bort NE, widgets och andra tillägg vid signering med en enda profil. Detta undviker felmatchade tilläggsprofiler men inaktiverar tilläggsfunktioner.";
-"sign_remove_extensions_action" = "Ta bort alla tillägg och fortsätt";
 "sign_injection_builtin" = "INBYGGD";
 "sign_ipa_encrypted" = "Denna IPAs huvudkörbara fil är fortfarande krypterad (FairPlay). Att signera om den gör den inte startbar. Använd en dekrypterad IPA.";
 "sign_ipa_encrypted_tag" = "Krypterad";

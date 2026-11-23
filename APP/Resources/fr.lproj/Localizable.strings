@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profil générique";
 "sign_target_coverage_missing" = "Aucun profil correspondant";
 "sign_target_profile_warning" = "Les extensions %@ n'ont pas de profil indépendant utilisable et seront signées avec le profil principal ; l'installation peut échouer. Importez un profil d'extension correspondant ou supprimez les extensions.";
-"sign_remove_extensions" = "Supprimer toutes les extensions";
-"sign_remove_extensions_hint" = "Supprime NE, widgets et autres extensions lors de la signature avec un seul profil. Cela évite les incompatibilités de profils d'extension mais désactive les fonctions d'extension.";
-"sign_remove_extensions_action" = "Supprimer toutes les extensions et continuer";
 "sign_injection_builtin" = "INTÉGRÉ";
 "sign_ipa_encrypted" = "L'exécutable principal de cette IPA est encore chiffré (FairPlay). Le resigner ne le rendra pas lançable. Utilisez une IPA déchiffrée.";
 "sign_ipa_encrypted_tag" = "Chiffrée";

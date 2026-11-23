@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcardprofiel";
 "sign_target_coverage_missing" = "Geen overeenkomend profiel";
 "sign_target_profile_warning" = "Extensies %@ hebben geen bruikbaar onafhankelijk profiel en worden met het hoofdprofiel ondertekend; installatie kan mislukken. Importeer een overeenkomend extensieprofiel of verwijder de extensies.";
-"sign_remove_extensions" = "Alle extensies verwijderen";
-"sign_remove_extensions_hint" = "Verwijder NE, widgets en andere extensies bij het ondertekenen met één profiel. Dit voorkomt problemen met extensieprofielen, maar schakelt extensiefuncties uit.";
-"sign_remove_extensions_action" = "Alle extensies verwijderen en doorgaan";
 "sign_injection_builtin" = "INGEBOUWD";
 "sign_ipa_encrypted" = "De hoofduitvoerbare code van deze IPA is nog versleuteld (FairPlay). Opnieuw ondertekenen zorgt niet dat deze start. Gebruik een ontsleutelde IPA.";
 "sign_ipa_encrypted_tag" = "Versleuteld";

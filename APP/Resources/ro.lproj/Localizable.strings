@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profil wildcard";
 "sign_target_coverage_missing" = "Fără profil corespunzător";
 "sign_target_profile_warning" = "Extensiile %@ nu au un profil independent utilizabil și vor fi semnate cu profilul principal; instalarea poate eșua. Importați un profil de extensie corespunzător sau eliminați extensiile.";
-"sign_remove_extensions" = "Elimină toate extensiile";
-"sign_remove_extensions_hint" = "Eliminați NE, widgeturile și alte extensii când semnați cu un singur profil. Astfel se evită nepotrivirile profilurilor extensiilor, dar funcțiile extensiilor sunt dezactivate.";
-"sign_remove_extensions_action" = "Elimină toate extensiile și continuă";
 "sign_injection_builtin" = "INTEGRAT";
 "sign_ipa_encrypted" = "Executabilul principal al acestui IPA este încă criptat (FairPlay). Re-semnarea nu îl va face să pornească. Utilizați un IPA decriptat.";
 "sign_ipa_encrypted_tag" = "Criptat";

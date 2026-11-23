@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profil wildcard";
 "sign_target_coverage_missing" = "Brak pasującego profilu";
 "sign_target_profile_warning" = "Rozszerzenia %@ nie mają użytecznego niezależnego profilu i zostaną podpisane profilem głównym; instalacja może się nie powieść. Zaimportuj pasujący profil rozszerzenia lub usuń rozszerzenia.";
-"sign_remove_extensions" = "Usuń wszystkie rozszerzenia";
-"sign_remove_extensions_hint" = "Usuń rozszerzenia NE, widżety i inne przy podpisywaniu jednym profilem. Pozwala to uniknąć niezgodności profili rozszerzeń, ale wyłącza funkcje rozszerzeń.";
-"sign_remove_extensions_action" = "Usuń wszystkie rozszerzenia i kontynuuj";
 "sign_injection_builtin" = "WBUDOWANE";
 "sign_ipa_encrypted" = "Główny plik wykonywalny tego IPA jest nadal zaszyfrowany (FairPlay). Ponowne podpisanie nie sprawi, że się uruchomi. Użyj odszyfrowanego IPA.";
 "sign_ipa_encrypted_tag" = "Zaszyfrowany";

@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Wildcard profil";
 "sign_target_coverage_missing" = "Nincs egyező profil";
 "sign_target_profile_warning" = "A %@ kiterjesztéseknek nincs használható önálló profiljuk, és a főprofillal lesznek aláírva; a telepítés sikertelen lehet. Importáljon megfelelő kiterjesztés-profilt, vagy távolítsa el a kiterjesztéseket.";
-"sign_remove_extensions" = "Összes kiterjesztés eltávolítása";
-"sign_remove_extensions_hint" = "Egyetlen profillal történő aláírásnál távolítsa el a NE-t, a widgeteket és más kiterjesztéseket. Ez elkerüli a kiterjesztésprofil-eltéréseket, de letiltja a kiterjesztések funkcióit.";
-"sign_remove_extensions_action" = "Összes kiterjesztés eltávolítása és folytatás";
 "sign_injection_builtin" = "BEÉPÍTETT";
 "sign_ipa_encrypted" = "Ennek az IPA-nak a fő futtatható fájlja továbbra is titkosított (FairPlay). Az újraaláírás nem indítja el. Használjon visszafejtett IPA-t.";
 "sign_ipa_encrypted_tag" = "Titkosított";

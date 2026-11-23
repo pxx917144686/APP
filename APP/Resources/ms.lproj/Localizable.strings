@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Profil wildcard";
 "sign_target_coverage_missing" = "Tiada profil sepadan";
 "sign_target_profile_warning" = "Sambungan %@ tiada profil berasingan yang boleh digunakan dan akan ditandatangani dengan profil utama; pemasangan mungkin gagal. Import profil sambungan sepadan atau alih keluar sambungan.";
-"sign_remove_extensions" = "Alih Keluar Semua Sambungan";
-"sign_remove_extensions_hint" = "Alih keluar NE, widget dan sambungan lain semasa menandatangani dengan satu profil. Ini mengelakkan ketidaksepadanan profil sambungan tetapi melumpuhkan ciri sambungan.";
-"sign_remove_extensions_action" = "Alih Keluar Semua Sambungan dan Teruskan";
 "sign_injection_builtin" = "TERBINA DALAM";
 "sign_ipa_encrypted" = "Boleh laku utama IPA ini masih disulitkan (FairPlay). Menandatangani semula tidak akan menjadikannya dilancarkan. Guna IPA yang dinyahsulit.";
 "sign_ipa_encrypted_tag" = "Disulitkan";

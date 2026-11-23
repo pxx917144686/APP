@@ -179,7 +179,10 @@ struct SigningTargetSelectionSheet: View {
         if let exact = profiles.first(where: { $0.bundleIDPattern == target.bundleIdentifier && (team.isEmpty || $0.teamID == team) }) {
             return exact
         }
-        return profiles.first(where: { $0.bundleIDPattern == "*" && (team.isEmpty || $0.teamID == team) })
+        return profiles
+            .filter { $0.covers(bundleID: target.bundleIdentifier) && (team.isEmpty || $0.teamID == team) }
+            .sorted { $0.bundleIDPattern.count > $1.bundleIDPattern.count }
+            .first
     }
 
     private func coverage(for target: SigningTarget) -> ProfileCoverage {

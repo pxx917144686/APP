@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Hồ sơ wildcard";
 "sign_target_coverage_missing" = "Không có hồ sơ khớp";
 "sign_target_profile_warning" = "Các tiện ích %@ không có hồ sơ độc lập dùng được và sẽ được ký bằng hồ sơ chính; cài đặt có thể thất bại. Hãy nhập hồ sơ tiện ích khớp hoặc xóa các tiện ích.";
-"sign_remove_extensions" = "Xóa tất cả tiện ích mở rộng";
-"sign_remove_extensions_hint" = "Xóa NE, widget và các tiện ích mở rộng khác khi ký bằng một hồ sơ. Điều này tránh việc hồ sơ tiện ích không khớp nhưng làm mất tính năng của tiện ích.";
-"sign_remove_extensions_action" = "Xóa tất cả tiện ích mở rộng và tiếp tục";
 "sign_injection_builtin" = "CÓ SẴN";
 "sign_ipa_encrypted" = "Tệp thực thi chính của IPA này vẫn được mã hóa (FairPlay). Ký lại cũng không khiến nó khởi chạy. Hãy dùng IPA đã giải mã.";
 "sign_ipa_encrypted_tag" = "Đã mã hóa";

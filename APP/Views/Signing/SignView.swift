@@ -4,6 +4,11 @@ import UniformTypeIdentifiers
 import Combine
 import ZsignSwift
 
+struct ExtensionCredentialChoice: Hashable {
+    var certificateID: UUID?
+    var profileID: UUID?
+}
+
 struct SignView: SwiftUI.View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var tabBarStyleManager: TabBarStyleManager
@@ -18,11 +23,12 @@ struct SignView: SwiftUI.View {
     @State private var displayName = ""
     @State private var version = ""
     @State private var removeProvision = false
-    @State private var removeAllExtensions = false
     @State private var removeWatchApp = false
-    @State private var removeUncoveredExtensions = true
-    @State private var useTargetProfiles = true
-    @State private var autoInstallAfterSign = false
+    @State private var removeUncoveredExtensions = false
+    @State private var useTargetProfiles = false
+    @State private var extensionChoices: [String: ExtensionCredentialChoice] = [:]
+    @State private var showExtensionCredentials = false
+    @State private var autoInstallAfterSign = true
     @State private var showSelfInstallAlert = false
     @State private var didAutoInstall = false
     @State private var didSeedDefaultInjection = false
@@ -195,7 +201,7 @@ struct SignView: SwiftUI.View {
             if let expiresAt = profile.expiresAt, expiresAt < Date() {
                 issues.append(SigningIssue(text: "sign_profile_expired".localized, isError: true))
             }
-            if !profile.bundleIDPattern.isEmpty, profile.bundleIDPattern != "*", profile.bundleIDPattern != trimmedBundleID {
+            if !profile.bundleIDPattern.isEmpty, !profile.covers(bundleID: targetAppBundleID) {
                 issues.append(SigningIssue(text: String(format: "sign_profile_fallback_warning".localized, profile.bundleIDPattern), isError: false))
             }
             if let certificate,
@@ -415,6 +421,21 @@ struct SignView: SwiftUI.View {
             )
                 .environmentObject(themeManager)
         }
+        .sheet(isPresented: $showExtensionCredentials) {
+            ExtensionCredentialsSheet(
+                targets: availableTargets.filter { $0.kind != .main },
+                certificates: store.certificates,
+                profiles: store.profiles,
+                mainCertificate: certificate,
+                mainProfile: profile,
+                oldMainID: originalAppBundleID,
+                newMainID: targetAppBundleID,
+                usesCustomMainID: extensionIDOverrideActive,
+                hasPassword: { store.password(for: $0) != nil },
+                choices: $extensionChoices
+            )
+            .environmentObject(themeManager)
+        }
         .sheet(isPresented: $showHistory) {
             SigningHistoryView(onRefresh: { record in
                 showHistory = false
@@ -434,9 +455,6 @@ struct SignView: SwiftUI.View {
         .onAppear {
             resetEntitlementSelection()
             seedDefaultInjectionIfNeeded()
-        }
-        .onChange(of: removeAllExtensions) { _, _ in
-            normalizeInjectionTargets()
         }
         .onChange(of: removeWatchApp) { _, _ in
             normalizeInjectionTargets()
@@ -885,15 +903,158 @@ struct SignView: SwiftUI.View {
         var hasGap: Bool { gapCount > 0 }
     }
 
+    private var originalAppBundleID: String {
+        selectedIPA?.bundleIdentifier ?? ""
+    }
+
+    private var targetAppBundleID: String {
+        let trimmed = trimmedBundleID
+        let raw = trimmed.isEmpty ? originalAppBundleID : trimmed
+        let normalized = normalizedCertificateID(raw)
+        return normalized.isEmpty ? raw : normalized
+    }
+
+    private var extensionIDOverrideActive: Bool {
+        !originalAppBundleID.isEmpty
+            && targetAppBundleID != originalAppBundleID
+    }
+
+    private func derivedExtensionID(for target: SigningTarget) -> String {
+        guard target.kind != .main else { return targetAppBundleID }
+        let original = target.bundleIdentifier
+        guard !original.isEmpty else { return targetAppBundleID }
+        guard extensionIDOverrideActive else { return original }
+        if original == targetAppBundleID || original.hasPrefix(targetAppBundleID + ".") {
+            return original
+        }
+        if original == originalAppBundleID {
+            return targetAppBundleID
+        }
+        if original.hasPrefix(originalAppBundleID + ".") {
+            return targetAppBundleID + String(original.dropFirst(originalAppBundleID.count))
+        }
+        let suffix = original.split(separator: ".").suffix(2).joined(separator: ".")
+        return suffix.isEmpty ? targetAppBundleID : targetAppBundleID + "." + suffix
+    }
+
+    private func separateProfile(for target: SigningTarget, bundleID: String) -> SigningProfile? {
+        guard useTargetProfiles, target.kind != .main, let profile else { return nil }
+        let team = profile.teamID
+        let candidates = store.profiles.filter { candidate in
+            guard candidate.id != profile.id else { return false }
+            guard team.isEmpty || candidate.teamID == team else { return false }
+            guard candidate.covers(bundleID: bundleID) else { return false }
+            return isTargetProfileUsable(candidate)
+        }
+        return candidates.sorted { lhs, rhs in
+            let lhsExact = lhs.bundleIDPattern == bundleID
+            let rhsExact = rhs.bundleIDPattern == bundleID
+            if lhsExact != rhsExact { return lhsExact }
+            return lhs.bundleIDPattern.count > rhs.bundleIDPattern.count
+        }.first
+    }
+
+    private func choice(for target: SigningTarget) -> ExtensionCredentialChoice {
+        extensionChoices[target.bundlePath] ?? ExtensionCredentialChoice()
+    }
+
+    private func certificateForChoice(_ choice: ExtensionCredentialChoice) -> SigningCertificate? {
+        if let id = choice.certificateID {
+            return store.certificates.first { $0.id == id }
+        }
+        return certificate
+    }
+
+    private func profileMatchesCertificate(_ candidate: SigningProfile, certificate candidateCertificate: SigningCertificate?) -> Bool {
+        guard let candidateCertificate else { return true }
+        if let expiry = candidate.expiresAt, expiry < Date() { return false }
+        if !candidateCertificate.teamID.isEmpty,
+           !candidate.teamID.isEmpty,
+           candidateCertificate.teamID != candidate.teamID {
+            return false
+        }
+        if let fingerprint = candidateCertificate.fingerprint,
+           !fingerprint.isEmpty,
+           let certificates = candidate.certificates,
+           !certificates.isEmpty,
+           !certificates.contains(where: { $0.fingerprint?.caseInsensitiveCompare(fingerprint) == .orderedSame }) {
+            return false
+        }
+        let udid = deviceUDID.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !udid.isEmpty,
+           candidate.provisionsAllDevices != true,
+           !candidate.isEnterprise {
+            let devices = candidate.provisionedDevices ?? []
+            if !devices.isEmpty, !devices.contains(where: { $0.caseInsensitiveCompare(udid) == .orderedSame }) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func bestProfile(for target: SigningTarget, certificate candidateCertificate: SigningCertificate?) -> SigningProfile? {
+        let derived = derivedExtensionID(for: target)
+        let original = target.bundleIdentifier
+        let candidates = store.profiles.filter { candidate in
+            guard profileMatchesCertificate(candidate, certificate: candidateCertificate) else { return false }
+            return candidate.covers(bundleID: derived) || candidate.covers(bundleID: original)
+        }
+        return candidates.sorted { lhs, rhs in
+            let lhsID = lhs.covers(bundleID: original) ? original : derived
+            let rhsID = rhs.covers(bundleID: original) ? original : derived
+            let lhsExact = lhs.bundleIDPattern == lhsID
+            let rhsExact = rhs.bundleIDPattern == rhsID
+            if lhsExact != rhsExact { return lhsExact }
+            return lhs.bundleIDPattern.count > rhs.bundleIDPattern.count
+        }.first
+    }
+
+    private func chosenProfile(for target: SigningTarget) -> SigningProfile? {
+        guard target.kind != .main else { return nil }
+        let current = choice(for: target)
+        guard current.certificateID != nil || current.profileID != nil else { return nil }
+        let selectedCertificate = certificateForChoice(current)
+        if let profileID = current.profileID {
+            return store.profiles.first { $0.id == profileID }
+        }
+        return bestProfile(for: target, certificate: selectedCertificate)
+    }
+
+    private func extensionID(for target: SigningTarget, profile candidate: SigningProfile) -> String {
+        guard extensionIDOverrideActive else { return target.bundleIdentifier }
+        let original = target.bundleIdentifier
+        let derived = derivedExtensionID(for: target)
+        if let mainProfile = profile, candidate.id == mainProfile.id {
+            return derived
+        }
+        if candidate.covers(bundleID: derived) { return derived }
+        if candidate.covers(bundleID: original) { return original }
+        return derived
+    }
+
+    private func effectiveExtensionID(for target: SigningTarget) -> String {
+        guard target.kind != .main else { return targetAppBundleID }
+        let original = target.bundleIdentifier
+        guard extensionIDOverrideActive else { return original }
+        if let chosen = chosenProfile(for: target) {
+            return extensionID(for: target, profile: chosen)
+        }
+        let derived = derivedExtensionID(for: target)
+        guard useTargetProfiles else { return derived }
+        if separateProfile(for: target, bundleID: derived) != nil {
+            return derived
+        }
+        if separateProfile(for: target, bundleID: original) != nil {
+            return original
+        }
+        return derived
+    }
+
     private func matchedProfileForTarget(_ target: SigningTarget) -> SigningProfile? {
         guard let profile else { return nil }
         if target.kind == .main { return profile }
-        let team = profile.teamID
-        let candidates = store.profiles.filter { team.isEmpty || $0.teamID == team }
-        if let exact = candidates.first(where: { $0.bundleIDPattern == target.bundleIdentifier }) {
-            return exact
-        }
-        return candidates.first(where: { $0.bundleIDPattern == "*" })
+        if let chosen = chosenProfile(for: target) { return chosen }
+        return separateProfile(for: target, bundleID: effectiveExtensionID(for: target))
     }
 
     private func isTargetProfileUsable(_ candidate: SigningProfile) -> Bool {
@@ -925,23 +1086,41 @@ struct SignView: SwiftUI.View {
     }
 
     private func independentProfile(for target: SigningTarget) -> SigningProfile? {
-        guard useTargetProfiles, target.kind != .main else { return nil }
-        guard let candidate = matchedProfileForTarget(target), isTargetProfileUsable(candidate) else { return nil }
-        return candidate
+        guard target.kind != .main else { return nil }
+        return matchedProfileForTarget(target)
+    }
+
+    private var autoMatchedTargetCount: Int {
+        guard useTargetProfiles, profile != nil else { return 0 }
+        return targets.filter { target in
+            guard target.kind != .main else { return false }
+            if removeWatchApp && target.kind == .watchApp { return false }
+            let selected = choice(for: target)
+            guard selected.certificateID == nil, selected.profileID == nil else { return false }
+            return independentProfile(for: target) != nil
+        }.count
     }
 
     private var targetSigningCredentials: [SigningTargetCredentials] {
-        guard useTargetProfiles, profile != nil else { return [] }
+        guard profile != nil else { return [] }
         let removedPaths = Set(targetsToRemove.map(\.bundlePath))
         return targets.compactMap { target in
             guard target.kind != .main else { return nil }
-            if removeAllExtensions { return nil }
             if removeWatchApp && target.kind == .watchApp { return nil }
             if removedPaths.contains(target.bundlePath) { return nil }
             guard let matched = independentProfile(for: target) else { return nil }
+            let selectedCertificate = certificateForChoice(choice(for: target)) ?? certificate
+            guard let selectedCertificate,
+                  let password = store.password(for: selectedCertificate) else { return nil }
+            guard profileMatchesCertificate(matched, certificate: selectedCertificate) else { return nil }
             return SigningTargetCredentials(
                 targetID: target.id,
                 bundlePath: target.bundlePath,
+                originalBundleIdentifier: target.bundleIdentifier,
+                bundleIdentifier: effectiveExtensionID(for: target),
+                certificate: selectedCertificate,
+                certificateURL: store.certificateURL(for: selectedCertificate),
+                password: password,
                 profile: matched,
                 profileURL: store.profileURL(for: matched),
                 entitlementsPlist: matched.entitlementsData
@@ -959,7 +1138,6 @@ struct SignView: SwiftUI.View {
             "get-task-allow"
         ]
         let visibleTargets = targets.filter { target in
-            if removeAllExtensions && target.kind != .main { return false }
             if removeWatchApp && target.kind == .watchApp { return false }
             return true
         }
@@ -994,8 +1172,8 @@ struct SignView: SwiftUI.View {
 
             let resolvedID = target.kind == .main
                 ? (trimmedBundleID.isEmpty ? target.bundleIdentifier : trimmedBundleID)
-                : target.bundleIdentifier
-            let covered = effectiveProfile.bundleIDPattern == "*" || effectiveProfile.bundleIDPattern == resolvedID
+                : effectiveExtensionID(for: target)
+            let covered = effectiveProfile.covers(bundleID: resolvedID)
 
             guard target.hasOriginalProfile else {
                 return ProvisioningAuditEntry(
@@ -1336,6 +1514,7 @@ struct SignView: SwiftUI.View {
                             Button(role: .destructive) {
                                 self.selectedIPA = nil
                                 bundleID = ""
+                                extensionChoices = [:]
                                 displayName = ""
                                 version = ""
                             } label: {
@@ -1500,6 +1679,110 @@ struct SignView: SwiftUI.View {
         sectionCard(title: "sign_options_section".localized, icon: "slider.horizontal.3", count: nil, action: nil) {
             VStack(spacing: 10) {
                 labeledField(title: "sign_bundle_id".localized, text: $bundleID, mono: true)
+                labeledField(title: "sign_certificate_id".localized, text: $bundleID, mono: true)
+
+                HStack(spacing: 6) {
+                    Text("sign_certificate_id_hint".localized)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 4)
+
+                    Button {
+                        fillCertificateIDFromProfile()
+                    } label: {
+                        Text("sign_fill_from_profile".localized)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(accent)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(profile == nil)
+                    .opacity(profile == nil ? 0.45 : 1)
+                }
+
+                if extensionIDOverrideActive {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("sign_extension_follow_hint".localized)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text("sign_extension_ids".localized)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        ForEach(targets.filter { target in
+                            target.kind != .main
+                                && !(removeWatchApp && target.kind == .watchApp)
+                        }.prefix(4)) { target in
+                            HStack(spacing: 6) {
+                                Image(systemName: target.kind.icon)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(accent)
+                                Text(target.kind.title)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                Spacer(minLength: 4)
+                                Text(effectiveExtensionID(for: target))
+                                    .font(.system(size: 9, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                        }
+                    }
+                    .padding(9)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
+                    )
+                }
+
+                Button {
+                    showExtensionCredentials = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "puzzlepiece.extension.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(accent)
+                            .frame(width: 24, height: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("sign_extension_credentials".localized)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.primary)
+                            Text("sign_extension_credentials_hint".localized)
+                                .font(.system(size: 9))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        Spacer()
+
+                        if !extensionChoices.isEmpty {
+                            Text("\(extensionChoices.count)")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(accent)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(accent.opacity(0.12)))
+                        }
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(9)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(availableTargets.filter { $0.kind != .main }.isEmpty)
+
                 labeledField(title: "sign_display_name".localized, text: $displayName, mono: false)
                 labeledField(title: "sign_version".localized, text: $version, mono: true)
 
@@ -1508,18 +1791,6 @@ struct SignView: SwiftUI.View {
                         Text("sign_remove_provision".localized)
                             .font(.system(size: 12, weight: .medium))
                         Text("sign_remove_provision_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $removeAllExtensions) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_remove_extensions".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text("sign_remove_extensions_hint".localized)
                             .font(.system(size: 9))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1550,18 +1821,20 @@ struct SignView: SwiftUI.View {
                     }
                 }
                 .tint(accent)
+                .disabled(profile == nil)
 
                 Toggle(isOn: $useTargetProfiles) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("sign_use_target_profiles".localized)
                             .font(.system(size: 12, weight: .medium))
-                        Text(String(format: "sign_use_target_profiles_hint".localized, targetSigningCredentials.count))
+                        Text(String(format: "sign_use_target_profiles_hint".localized, autoMatchedTargetCount))
                             .font(.system(size: 9))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .tint(accent)
+                .disabled(profile == nil || availableTargets.filter { $0.kind != .main }.isEmpty)
 
                 Toggle(isOn: $autoInstallAfterSign) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -1710,24 +1983,6 @@ struct SignView: SwiftUI.View {
                     )
                 }
 
-                if !uncoveredExtensionTargets.isEmpty {
-                    Button {
-                        removeAllExtensions = true
-                        normalizeInjectionTargets()
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "scissors")
-                                .font(.system(size: 10, weight: .bold))
-                            Text("sign_remove_extensions_action".localized)
-                                .font(.system(size: 10, weight: .semibold))
-                        }
-                        .foregroundStyle(.orange)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(Color.orange.opacity(0.10)))
-                    }
-                    .buttonStyle(.plain)
-                }
             }
         }
     }
@@ -1996,6 +2251,34 @@ struct SignView: SwiftUI.View {
         .buttonStyle(.plain)
     }
 
+    private func normalizedCertificateID(_ raw: String) -> String {
+        var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return "" }
+        if let dot = value.firstIndex(of: ".") {
+            let prefix = String(value[..<dot])
+            if prefix.count == 10,
+               prefix.allSatisfy({ $0.isASCII && ($0.isUppercase || $0.isNumber) }) {
+                value = String(value[value.index(after: dot)...])
+            }
+        }
+        return value
+    }
+
+    private func fillCertificateIDFromProfile() {
+        guard let profile else {
+            presentError(message: "sign_hint_select_all".localized)
+            return
+        }
+        let raw = profile.applicationIdentifier.isEmpty ? profile.bundleIDPattern : profile.applicationIdentifier
+        let normalized = normalizedCertificateID(raw)
+        guard !normalized.isEmpty, !normalized.contains("*") else {
+            presentError(message: "sign_certificate_id_wildcard".localized)
+            return
+        }
+        bundleID = normalized
+        SoundEffects.play(.tick)
+    }
+
     private func labeledField(title: String, text: Binding<String>, mono: Bool) -> some SwiftUI.View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
@@ -2063,15 +2346,14 @@ struct SignView: SwiftUI.View {
             presentError(message: hintText)
             return
         }
-        let finalBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
+        let rawBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
+        let finalBundleID = normalizedCertificateID(rawBundleID)
         let finalName = trimmedDisplayName.isEmpty ? ipa.displayName : trimmedDisplayName
         let finalVersion = trimmedVersion.isEmpty ? ipa.version : trimmedVersion
         let isSigningSelf = finalBundleID == Bundle.main.bundleIdentifier
         let effectiveInjections = injections.map { item in
             var copy = item
-            if removeAllExtensions {
-                copy.targets = ["."]
-            } else if removeWatchApp {
+            if removeWatchApp {
                 copy.targets = copy.targets.filter { !$0.hasPrefix("Watch/") }
                 if copy.targets.isEmpty {
                     copy.targets = ["."]
@@ -2095,7 +2377,6 @@ struct SignView: SwiftUI.View {
             removeProvision: removeProvision,
             entitlementsPlist: signingEntitlementsPlist,
             injections: effectiveInjections,
-            removeExtensions: removeAllExtensions,
             removeWatchApp: removeWatchApp,
             removeTargetPaths: targetsToRemove.map(\.bundlePath),
             targetCredentials: targetSigningCredentials,
@@ -2112,7 +2393,6 @@ struct SignView: SwiftUI.View {
             profileName: profile.displayName,
             profileExpiresAt: profile.expiresAt,
             injectionNames: effectiveInjections.map(\.name),
-            removedExtensions: removeAllExtensions,
             certificateID: certificate.id,
             profileID: profile.id
         )
@@ -2361,7 +2641,6 @@ struct SignView: SwiftUI.View {
         let profileName: String
         let profileExpiresAt: Date?
         let injectionNames: [String]
-        let removedExtensions: Bool
         let certificateID: UUID
         let profileID: UUID
     }
@@ -2448,7 +2727,6 @@ struct SignView: SwiftUI.View {
             profileName: metadata.profileName,
             profileExpiresAt: metadata.profileExpiresAt,
             injectionNames: metadata.injectionNames,
-            removedExtensions: metadata.removedExtensions,
             certificateID: metadata.certificateID,
             profileID: metadata.profileID
         )
@@ -2514,9 +2792,6 @@ struct SignView: SwiftUI.View {
                 })
                 await MainActor.run {
                     isInstalling = false
-                    alertTitle = "sign_install_title".localized
-                    alertMessage = "sign_install_handed_off".localized
-                    showAlert = true
                 }
             } catch {
                 await MainActor.run {
@@ -2540,6 +2815,7 @@ struct SignView: SwiftUI.View {
                     SoundEffects.play(.rise)
                     selectedIPA = info
                     bundleID = info.bundleIdentifier
+                    extensionChoices = [:]
                     if pendingRefreshRecord == nil {
                         autoSelectProfileForCurrentIPA()
                     }
@@ -2552,7 +2828,6 @@ struct SignView: SwiftUI.View {
                         bundleID = record.bundleId
                         displayName = record.displayName
                         version = record.version
-                        removeAllExtensions = record.removedExtensions
                         pendingRefreshRecord = nil
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
                             startSigning()
@@ -2687,9 +2962,6 @@ struct SignView: SwiftUI.View {
             base = targets
         }
         var available = base
-        if removeAllExtensions {
-            available = available.filter { $0.kind == .main }
-        }
         if removeWatchApp {
             available = available.filter { $0.kind != .watchApp }
         }
@@ -2697,19 +2969,18 @@ struct SignView: SwiftUI.View {
     }
 
     private var targetsToRemove: [SigningTarget] {
-        guard removeUncoveredExtensions, !removeAllExtensions else { return [] }
+        guard removeUncoveredExtensions else { return [] }
         return uncoveredExtensionTargets
     }
 
     private var uncoveredExtensionTargets: [SigningTarget] {
-        guard let profile, !removeAllExtensions else { return [] }
+        guard let profile else { return [] }
         return targets.filter { target in
             guard target.kind != .main,
                   !(removeWatchApp && target.kind == .watchApp),
                   !target.bundleIdentifier.isEmpty else { return false }
             if independentProfile(for: target) != nil { return false }
-            return profile.bundleIDPattern != "*" &&
-                profile.bundleIDPattern != target.bundleIdentifier
+            return !profile.covers(bundleID: effectiveExtensionID(for: target))
         }
     }
 

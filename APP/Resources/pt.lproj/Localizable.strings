@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "Perfil curinga";
 "sign_target_coverage_missing" = "Nenhum perfil correspondente";
 "sign_target_profile_warning" = "As extensões %@ não têm um perfil independente utilizável e serão assinadas com o perfil principal; a instalação pode falhar. Importe um perfil de extensão correspondente ou remova as extensões.";
-"sign_remove_extensions" = "Remover todas as extensões";
-"sign_remove_extensions_hint" = "Remove NE, widgets e outras extensões ao assinar com um único perfil. Isso evita perfis de extensão não correspondentes, mas desativa as funções das extensões.";
-"sign_remove_extensions_action" = "Remover todas as extensões e continuar";
 "sign_injection_builtin" = "INTEGRADO";
 "sign_ipa_encrypted" = "O executável principal desta IPA ainda está criptografado (FairPlay). Reassinar não fará com que inicie. Use uma IPA descriptografada.";
 "sign_ipa_encrypted_tag" = "Criptografada";

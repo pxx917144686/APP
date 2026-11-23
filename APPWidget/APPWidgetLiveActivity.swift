@@ -71,13 +71,10 @@ struct APPWidgetLiveActivity: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
-                    IslandProgressBar(
-                        progress: state.progress,
-                        tint: tint(for: state.status, kind: kind),
-                        height: 8,
-                        track: .white.opacity(0.22)
-                    )
-                    .frame(maxWidth: .infinity)
+                    ProgressView(value: state.progress)
+                        .progressViewStyle(.linear)
+                        .tint(tint(for: state.status, kind: kind))
+                        .frame(maxWidth: .infinity)
                 }
 
             } compactLeading: {

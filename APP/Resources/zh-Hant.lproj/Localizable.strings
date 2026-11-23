@@ -614,8 +614,6 @@
 "sign_cancel" = "取消簽名";
 "sign_share" = "分享";
 "sign_install" = "安裝";
-"sign_install_title" = "安裝";
-"sign_install_handed_off" = "已交給系統安裝，請查看主畫面。";
 "sign_install_server_unavailable" = "本機安裝服務啟動失敗。";
 "sign_install_manifest_unavailable" = "安裝清單不可用。";
 "sign_install_open_failed" = "系統無法開啟安裝連結。";
@@ -797,9 +795,6 @@
 "sign_target_coverage_wildcard" = "萬用描述檔涵蓋";
 "sign_target_coverage_missing" = "缺少符合的描述檔";
 "sign_target_profile_warning" = "擴充功能 %@ 沒有可用的獨立描述檔，會用主描述檔簽名，安裝可能失敗。請匯入符合的擴充功能描述檔，或移除擴充功能。";
-"sign_remove_extensions" = "移除所有擴充功能";
-"sign_remove_extensions_hint" = "使用單一描述檔簽名時，移除 NE、小工具等擴充功能，避免擴充功能描述檔不符；會失去擴充功能。";
-"sign_remove_extensions_action" = "移除所有擴充功能並繼續";
 "sign_injection_builtin" = "內建";
 "sign_ipa_encrypted" = "此 IPA 主程式仍是加密狀態（FairPlay），重簽後無法啟動。請使用已解密的 IPA。";
 "sign_ipa_encrypted_tag" = "已加密";
@@ -924,7 +919,6 @@
 "sign_history_size" = "共 %d";
 "sign_history_file_missing" = "檔案已刪除";
 "sign_history_install_self" = "此包與目前 App 同 Bundle ID，不能在本機安裝；請使用分享。";
-"sign_history_install_handoff" = "已交給系統安裝。";
 "sign_history_delete_failed" = "刪除簽名包失敗。";
 "sign_target_watch" = "Watch App";
 "sign_target_app_clip" = "App Clip";
@@ -963,8 +957,8 @@
 "sign_ent_import_empty" = "匯入的權限沒有一個存在於目前描述檔中。";
 "sign_ent_export_failed" = "匯出失敗";
 "sign_ent_export_empty" = "沒有勾選可匯出的權限。";
-"sign_use_target_profiles" = "使用符合的擴充功能描述檔";
-"sign_use_target_profiles_hint" = "每個擴充功能用自己符合 Bundle ID 的描述檔簽名；目前符合 %d 個目標。未符合的擴充功能仍用主描述檔。";
+"sign_use_target_profiles" = "自動匹配擴展描述檔";
+"sign_use_target_profiles_hint" = "自動為每個擴展匹配 Bundle ID 描述檔；關閉後仍可使用「擴展憑證與描述檔」手動設定。目前自動匹配 %d 個目標。";
 "sign_audit_per_target" = "獨立簽名";
 "sign_audit_using_independent" = "獨立描述檔：%@";
 "sign_audit_using_main" = "主描述檔：%@";
@@ -1008,7 +1002,7 @@
 "sign_import_wrong_type" = "請選擇 .ipa 或 .zip 檔案。";
 "sign_target_control_center" = "控制中心";
 "sign_remove_uncovered_extensions" = "移除未涵蓋擴充功能";
-"sign_remove_uncovered_extensions_hint" = "沒有符合描述檔的 NE、小工具、大工具、控制中心等擴充功能會自動移除，保證主 App 能安裝。要保留請匯入對應擴充功能描述檔。";
+"sign_remove_uncovered_extensions_hint" = "沒有描述檔覆蓋的擴展會被移除；關閉時保留，安裝失敗時請檢查擴展描述檔。";
 "sign_self_injection_warning" = "你正在簽名這個簽名工具本身。內建「内购破解.dylib」不會注入；注入它可能破壞檔案選擇器和其他系統整合。";
 
 "tab_decrypt" = "脫殼";
@@ -1068,3 +1062,26 @@
 "live_island_sign" = "簽名任務";
 "live_island_decrypt" = "解密任務";
 "live_island_install" = "安裝任務";
+
+
+"sign_extension_ids" = "擴展 Bundle ID";
+
+"sign_extension_credentials" = "擴展憑證與描述檔";
+"sign_extension_credentials_hint" = "為 NE/WE 等擴展單獨選擇憑證和描述檔。設定後的擴展會用該憑證簽名，主簽名不再改動它。";
+"sign_extension_credentials_empty" = "這個 IPA 沒有可設定的擴展。";
+"sign_extension_custom_badge" = "自訂";
+"sign_extension_certificate" = "憑證";
+"sign_extension_profile" = "描述檔";
+"sign_extension_follow_main_certificate" = "跟隨主憑證";
+"sign_extension_auto_profile" = "自動匹配";
+"sign_extension_id" = "ID";
+"sign_extension_profile_missing" = "沒有描述檔覆蓋這個擴展 ID。";
+"sign_extension_password_missing" = "該憑證的密碼未儲存。";
+"sign_extension_reset" = "重置";
+"sign_extension_cert_mismatch" = "描述檔與所選憑證不匹配。";
+"sign_extension_follow_hint" = "擴展 ID 會跟隨主 Bundle ID 派生；有獨立 App-ID/描述檔的擴展可在「擴展憑證與描述檔」中單獨設定。";
+
+"sign_certificate_id" = "憑證 ID";
+"sign_certificate_id_hint" = "與 Bundle ID 同步；可直接填憑證/描述檔的 App ID，或從描述檔填入。";
+"sign_fill_from_profile" = "從描述檔填入";
+"sign_certificate_id_wildcard" = "該描述檔是通配符，請手動填入具體的 App ID。";

@@ -795,9 +795,6 @@
 "sign_target_coverage_wildcard" = "פרופיל Wildcard";
 "sign_target_coverage_missing" = "אין פרופיל תואם";
 "sign_target_profile_warning" = "להרחבות %@ אין פרופיל עצמאי שמיש והן ייחתמו עם הפרופיל הראשי; ההתקנה עלולה להיכשל. ייבאו פרופיל הרחבה תואם או הסירו את ההרחבות.";
-"sign_remove_extensions" = "הסרת כל ההרחבות";
-"sign_remove_extensions_hint" = "הסרת NE, ווידג׳טים והרחבות אחרות בעת חתימה עם פרופיל יחיד. זה מונע אי התאמת פרופיל של הרחבות אך משבית תכונות הרחבה.";
-"sign_remove_extensions_action" = "הסרת כל ההרחבות והמשך";
 "sign_injection_builtin" = "מובנה";
 "sign_ipa_encrypted" = "הקובץ הראשי של ה-IPA עדיין מוצפן (FairPlay). חתימה מחדש לא תגרום לו להיפתח. השתמשו ב-IPA מפוענח.";
 "sign_ipa_encrypted_tag" = "מוצפן";

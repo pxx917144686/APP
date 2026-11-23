@@ -12,7 +12,6 @@ struct SigningHistoryRecord: Codable, Identifiable, Equatable {
     let profileName: String?
     let profileExpiresAt: Date?
     let injectionNames: [String]
-    let removedExtensions: Bool
     var certificateID: UUID? = nil
     var profileID: UUID? = nil
     var sourceFileName: String? = nil
@@ -80,7 +79,6 @@ final class SigningHistoryStore: ObservableObject {
         profileName: String?,
         profileExpiresAt: Date?,
         injectionNames: [String],
-        removedExtensions: Bool,
         certificateID: UUID? = nil,
         profileID: UUID? = nil
     ) -> SigningHistoryRecord {
@@ -102,7 +100,6 @@ final class SigningHistoryStore: ObservableObject {
             profileName: profileName,
             profileExpiresAt: profileExpiresAt,
             injectionNames: injectionNames,
-            removedExtensions: removedExtensions,
             certificateID: certificateID,
             profileID: profileID
         )
@@ -189,7 +186,6 @@ final class SigningHistoryStore: ObservableObject {
                         profileName: nil,
                         profileExpiresAt: nil,
                         injectionNames: [],
-                        removedExtensions: false
                     )
                 )
             }

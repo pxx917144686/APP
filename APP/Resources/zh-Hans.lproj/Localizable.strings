@@ -614,8 +614,6 @@
 "sign_cancel" = "取消签名";
 "sign_share" = "分享";
 "sign_install" = "安装";
-"sign_install_title" = "安装";
-"sign_install_handed_off" = "已交给系统安装，请查看桌面。";
 "sign_install_server_unavailable" = "本地安装服务启动失败。";
 "sign_install_manifest_unavailable" = "安装清单不可用。";
 "sign_install_open_failed" = "系统无法打开安装链接。";
@@ -797,9 +795,6 @@
 "sign_target_coverage_wildcard" = "通配描述文件覆盖";
 "sign_target_coverage_missing" = "缺少匹配描述文件";
 "sign_target_profile_warning" = "扩展 %@ 没有可用的独立描述文件，会用主描述文件签名，安装可能失败。请导入匹配的扩展描述文件，或移除扩展。";
-"sign_remove_extensions" = "移除所有扩展";
-"sign_remove_extensions_hint" = "使用单描述文件签名时，移除 NE、小组件等扩展，避免扩展描述文件不匹配；会失去扩展功能。";
-"sign_remove_extensions_action" = "移除所有扩展并继续";
 "sign_injection_builtin" = "内置";
 "sign_ipa_encrypted" = "此 IPA 主程序仍是加密状态（FairPlay），重签后无法启动。请使用已解密的 IPA。";
 "sign_ipa_encrypted_tag" = "已加密";
@@ -924,7 +919,6 @@
 "sign_history_size" = "共 %d";
 "sign_history_file_missing" = "文件已删除";
 "sign_history_install_self" = "此包与当前 App 同 Bundle ID，不能在本机安装；请使用分享。";
-"sign_history_install_handoff" = "已交给系统安装。";
 "sign_history_delete_failed" = "删除签名包失败。";
 "sign_target_watch" = "Watch App";
 "sign_target_app_clip" = "App Clip";
@@ -963,8 +957,8 @@
 "sign_ent_import_empty" = "导入的权限没有一个存在于当前描述文件中。";
 "sign_ent_export_failed" = "导出失败";
 "sign_ent_export_empty" = "没有勾选可导出的权限。";
-"sign_use_target_profiles" = "使用匹配的扩展描述文件";
-"sign_use_target_profiles_hint" = "每个扩展用自己匹配 Bundle ID 的描述文件签名；当前匹配 %d 个目标。未匹配的扩展仍用主描述文件。";
+"sign_use_target_profiles" = "自动匹配扩展描述文件";
+"sign_use_target_profiles_hint" = "自动为每个扩展匹配 Bundle ID 描述文件；关闭后仍可使用「扩展证书与描述文件」手动配置。当前自动匹配 %d 个目标。";
 "sign_audit_per_target" = "独立签名";
 "sign_audit_using_independent" = "独立描述文件：%@";
 "sign_audit_using_main" = "主描述文件：%@";
@@ -1008,7 +1002,7 @@
 "sign_import_wrong_type" = "请选择 .ipa 或 .zip 文件。";
 "sign_target_control_center" = "控制中心";
 "sign_remove_uncovered_extensions" = "移除未覆盖扩展";
-"sign_remove_uncovered_extensions_hint" = "没有匹配描述文件的 NE、小组件、大组件、控制中心等扩展会自动移除，保证主 App 能安装。要保留请导入对应扩展描述文件。";
+"sign_remove_uncovered_extensions_hint" = "没有描述文件覆盖的扩展会被移除；关闭时保留，安装失败时请检查扩展描述文件。";
 "sign_self_injection_warning" = "你正在签名这个签名工具本身。内置「内购破解.dylib」不会注入；注入它可能破坏文件选择器和其他系统集成。";
 
 "tab_decrypt" = "脱壳";
@@ -1068,3 +1062,26 @@
 "live_island_sign" = "签名任务";
 "live_island_decrypt" = "解密任务";
 "live_island_install" = "安装任务";
+
+
+"sign_extension_ids" = "扩展 Bundle ID";
+
+"sign_extension_credentials" = "扩展证书与描述文件";
+"sign_extension_credentials_hint" = "为 NE/WE 等扩展单独选择证书和描述文件。配置后的扩展会用该证书签名，主签名不再改动它。";
+"sign_extension_credentials_empty" = "这个 IPA 没有可配置的扩展。";
+"sign_extension_custom_badge" = "自定义";
+"sign_extension_certificate" = "证书";
+"sign_extension_profile" = "描述文件";
+"sign_extension_follow_main_certificate" = "跟随主证书";
+"sign_extension_auto_profile" = "自动匹配";
+"sign_extension_id" = "ID";
+"sign_extension_profile_missing" = "没有描述文件覆盖这个扩展 ID。";
+"sign_extension_password_missing" = "该证书的密码未保存。";
+"sign_extension_reset" = "重置";
+"sign_extension_cert_mismatch" = "描述文件与所选证书不匹配。";
+"sign_extension_follow_hint" = "扩展 ID 会跟随主 Bundle ID 派生；有独立 App-ID/描述文件的扩展可在「扩展证书与描述文件」中单独配置。";
+
+"sign_certificate_id" = "证书 ID";
+"sign_certificate_id_hint" = "与 Bundle ID 同步；可直接填证书/描述文件的 App ID，或从描述文件填入。";
+"sign_fill_from_profile" = "从描述文件填入";
+"sign_certificate_id_wildcard" = "该描述文件是通配符，请手动填入具体的 App ID。";
