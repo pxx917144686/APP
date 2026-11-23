@@ -49,6 +49,9 @@ struct App: SwiftUI.App {
                 }
             }
             .preferredColorScheme(colorScheme)
+            .onOpenURL { url in
+                IslandDeepLink.handle(url)
+            }
             .onAppear {
                 performDelayedInitialization()
             }

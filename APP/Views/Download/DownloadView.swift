@@ -45,24 +45,50 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
 
     private init() {}
 
-    func startInstallation(for requestId: UUID) -> Bool {
+    func startInstallation(for requestId: UUID, title: String = "") -> Bool {
         guard !isAnyInstalling else { return false }
         isAnyInstalling = true
         currentInstallingRequestId = requestId
+        InstallActivityManager.shared.start(
+            key: IslandTaskKey.install(requestId),
+            title: title.isEmpty ? "install".localized : title,
+            step: "install_stage_preparing".localized
+        )
         return true
     }
 
+    func updateInstallationStep(for requestId: UUID, step: String) {
+        InstallActivityManager.shared.update(key: IslandTaskKey.install(requestId), step: step)
+    }
+
     func finishInstallation() {
+        let pending = currentInstallingRequestId
         isAnyInstalling = false
         currentInstallingRequestId = nil
+        if let pending {
+            InstallActivityManager.shared.finish(
+                key: IslandTaskKey.install(pending),
+                detail: "install_handed_off".localized
+            )
+        }
     }
 
     func finishInstallation(for requestId: UUID) {
-
         if currentInstallingRequestId == requestId || currentInstallingRequestId == nil {
             isAnyInstalling = false
             currentInstallingRequestId = nil
+            InstallActivityManager.shared.finish(
+                key: IslandTaskKey.install(requestId),
+                detail: "install_handed_off".localized
+            )
         }
+    }
+
+    func failInstallation(for requestId: UUID, reason: String) {
+        InstallActivityManager.shared.fail(
+            key: IslandTaskKey.install(requestId),
+            reason: reason
+        )
     }
 }
 
@@ -1014,6 +1040,7 @@ struct DownloadView: SwiftUI.View {
     private static func presentShareSheet(for url: URL) {
         #if canImport(UIKit)
         guard let presenter = topMostViewController() else { return }
+        SoundEffects.play(.tap)
 
         let controller = UIActivityViewController(
             activityItems: [url],
@@ -1253,6 +1280,7 @@ struct DownloadView: SwiftUI.View {
     }
 
     private func deleteDownload(_ request: DownloadRequest) {
+        SoundEffects.play(.dismiss)
         expandedRequestIDs.remove(request.id)
 
         if case .details(let current)? = activeSheet, current.id == request.id {
@@ -1913,11 +1941,12 @@ struct DownloadCardView: SwiftUI.View {
             installationMessage = "ipa_not_found".localized
             return
         }
-        guard GlobalInstallationManager.shared.startInstallation(for: request.id) else {
+        guard GlobalInstallationManager.shared.startInstallation(for: request.id, title: request.name) else {
             installationMessage = "dc_err_busy".localized
             return
         }
 
+        SoundEffects.play(.press)
         isInstalling = true
         installationProgress = 0.0
         installationMessage = "preparing_install".localized
@@ -2032,7 +2061,7 @@ struct DownloadCardView: SwiftUI.View {
                                 title: "install_tls_failed_title".localized
                             )
                         }
-                        cleanupInstallation(request.id)
+                        cleanupInstallation(request.id, failureReason: installationMessage)
                     }
                     if backgroundTaskID != .invalid {
                         UIApplication.shared.endBackgroundTask(backgroundTaskID)
@@ -2066,7 +2095,7 @@ struct DownloadCardView: SwiftUI.View {
                             String(format: "install_manifest_failed_detail".localized, detail),
                             title: "install_failed_title".localized
                         )
-                        cleanupInstallation(request.id)
+                        cleanupInstallation(request.id, failureReason: installationMessage)
                     }
                     if backgroundTaskID != .invalid {
                         UIApplication.shared.endBackgroundTask(backgroundTaskID)
@@ -2078,13 +2107,17 @@ struct DownloadCardView: SwiftUI.View {
                 await MainActor.run {
                     installationProgress = 0.8
                     installationMessage = "opening_install_page".localized
+                    GlobalInstallationManager.shared.updateInstallationStep(
+                        for: request.id,
+                        step: "install_stage_opening_system".localized
+                    )
 
                     let itmsURLString = "itms-services://?action=download-manifest&url=" + queryEncoded(manifestURL)
 
                     guard let itmsURL = URL(string: itmsURLString) else {
                         SoundEffects.play(.error)
                         installationMessage = "install_start_failed".localized
-                        cleanupInstallation(request.id)
+                        cleanupInstallation(request.id, failureReason: installationMessage)
                         return
                     }
 
@@ -2092,7 +2125,7 @@ struct DownloadCardView: SwiftUI.View {
                         SoundEffects.play(.error)
                         installationMessage = "install_start_failed".localized
                         presentInstallAlert("install_open_rejected".localized)
-                        cleanupInstallation(request.id)
+                        cleanupInstallation(request.id, failureReason: installationMessage)
                         return
                     }
 
@@ -2107,7 +2140,7 @@ struct DownloadCardView: SwiftUI.View {
                                 SoundEffects.play(.error)
                                 installationMessage = "install_start_failed".localized
                                 presentInstallAlert("install_open_failed".localized)
-                                cleanupInstallation(request.id)
+                                cleanupInstallation(request.id, failureReason: installationMessage)
                             }
                         }
                     }
@@ -2124,20 +2157,31 @@ struct DownloadCardView: SwiftUI.View {
                     installationProgress = 0.0
 
                     HTTPServerManager.shared.stopServer(for: request.id)
-                    GlobalInstallationManager.shared.finishInstallation(for: request.id)
+                    GlobalInstallationManager.shared.failInstallation(
+                        for: request.id,
+                        reason: error.localizedDescription
+                    )
                 }
                 UIApplication.shared.endBackgroundTask(backgroundTaskID)
             }
         }
     }
 
-    private func cleanupInstallation(_ requestId: UUID, keepServer: Bool = false) {
+    private func cleanupInstallation(
+        _ requestId: UUID,
+        keepServer: Bool = false,
+        failureReason: String? = nil
+    ) {
 
         Task {
             await MainActor.run {
                 isInstalling = false
                 installationProgress = 0.0
-                GlobalInstallationManager.shared.finishInstallation(for: requestId)
+                if let failureReason {
+                    GlobalInstallationManager.shared.failInstallation(for: requestId, reason: failureReason)
+                } else {
+                    GlobalInstallationManager.shared.finishInstallation(for: requestId)
+                }
 
                 if !keepServer {
                     HTTPServerManager.shared.stopServer(for: requestId)

@@ -7,14 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06CC9CAA43BDDCF70A8E6E82 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
+		21C6E9C6D08C32F3C8B536C6 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
+		681E98F3353E3F41694CB729 /* APPWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 850E83342FEDA2C30047BDF8 /* Alamofire */; };
 		851F44E62FDDECA400574B00 /* Vapor in Frameworks */ = {isa = PBXBuildFile; productRef = 851F44E52FDDECA400574B00 /* Vapor */; };
 		A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */ = {isa = PBXBuildFile; productRef = A1C000000000000000000002 /* AsyncHTTPClient */; };
-		A1D100000000000000000002 /* APP/InAppPurchase.dylib in Copy InAppPurchase.dylib */ = {isa = PBXBuildFile; fileRef = A1D100000000000000000001 /* APP/InAppPurchase.dylib */; };
+		A1D100000000000000000002 /* InAppPurchase.dylib in Copy InAppPurchase.dylib */ = {isa = PBXBuildFile; fileRef = A1D100000000000000000001 /* InAppPurchase.dylib */; };
 		D50DBD7A600A5337B02DD11E /* SRP in Frameworks */ = {isa = PBXBuildFile; productRef = E2BFBE6BCBC4081A86D24867 /* SRP */; };
 		D5A1B2C3D4E5F60718293010 /* ZsignSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D5A1B2C3D4E5F60718293011 /* ZsignSwift */; };
 		D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D6A1B2C3D4E5F60718293002 /* GRDB */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E871FAE0AD1F4A042D59A70A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 851FD9572E578774002136BA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 58098B174893E41DAB198A04;
+			remoteInfo = APPWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		85B1AA9B2F00000000D00002 /* Copy Files */ = {
@@ -43,19 +56,39 @@
 			dstPath = "";
 			dstSubfolderSpec = 1;
 			files = (
-				A1D100000000000000000002 /* APP/InAppPurchase.dylib in Copy InAppPurchase.dylib */,
+				A1D100000000000000000002 /* InAppPurchase.dylib in Copy InAppPurchase.dylib */,
 			);
 			name = "Copy InAppPurchase.dylib";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC2F998AB38D4711DD156A63 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				681E98F3353E3F41694CB729 /* APPWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		851FD95F2E578774002136BA /* APP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APP.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1D100000000000000000001 /* APP/InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = APP/InAppPurchase.dylib; sourceTree = SOURCE_ROOT; };
+		939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = APPWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1D100000000000000000001 /* InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = APP/InAppPurchase.dylib; sourceTree = SOURCE_ROOT; };
+		C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IslandActivityTypes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5F402FFA589197F01B4BAAFA /* Exceptions for "APPWidget" folder in "APPWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 58098B174893E41DAB198A04 /* APPWidgetExtension */;
+		};
 		A1C100000000000000000001 /* Exceptions for "APP" folder in "APP" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -75,6 +108,14 @@
 			path = APP;
 			sourceTree = "<group>";
 		};
+		BBB8B572868E69293F4E9A52 /* APPWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5F402FFA589197F01B4BAAFA /* Exceptions for "APPWidget" folder in "APPWidgetExtension" target */,
+			);
+			path = APPWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,15 +132,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D007B9E5C796F731F7BC467E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		347453212985AC119A208052 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		851FD9562E578774002136BA = {
 			isa = PBXGroup;
 			children = (
 				851FD9612E578774002136BA /* APP */,
 				851FD9602E578774002136BA /* Products */,
 				856CCA8930AF298000764042 /* Recovered References */,
+				9229E7AF72451AFB7E69510D /* Frameworks */,
+				BBB8B572868E69293F4E9A52 /* APPWidget */,
+				D6B8F7B5097B8951BA8F6250 /* Shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -107,6 +165,7 @@
 			isa = PBXGroup;
 			children = (
 				851FD95F2E578774002136BA /* APP.app */,
+				939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,14 +173,51 @@
 		856CCA8930AF298000764042 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				A1D100000000000000000001 /* APP/InAppPurchase.dylib */,
+				A1D100000000000000000001 /* InAppPurchase.dylib */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		9229E7AF72451AFB7E69510D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				347453212985AC119A208052 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D6B8F7B5097B8951BA8F6250 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */,
+			);
+			name = Shared;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		58098B174893E41DAB198A04 /* APPWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 930EE0CDC2D5BDF645B189F3 /* Build configuration list for PBXNativeTarget "APPWidgetExtension" */;
+			buildPhases = (
+				9B5959DA5CC2FBE9D846003D /* Sources */,
+				D007B9E5C796F731F7BC467E /* Frameworks */,
+				9F78F1B3159481BB6EB51577 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BBB8B572868E69293F4E9A52 /* APPWidget */,
+			);
+			name = APPWidgetExtension;
+			productName = APPWidgetExtension;
+			productReference = 939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		851FD95E2E578774002136BA /* APP */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 851FD96A2E578775002136BA /* Build configuration list for PBXNativeTarget "APP" */;
@@ -132,10 +228,12 @@
 				85B1AA9B2F00000000D00002 /* Copy Files */,
 				85B1AAC02F00000000D0000C /* Copy libiosexec to App Root */,
 				A1D100000000000000000003 /* Copy InAppPurchase.dylib */,
+				DC2F998AB38D4711DD156A63 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4BC56596445E98240B9E3C90 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				851FD9612E578774002136BA /* APP */,
@@ -223,12 +321,20 @@
 			projectRoot = "";
 			targets = (
 				851FD95E2E578774002136BA /* APP */,
+				58098B174893E41DAB198A04 /* APPWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		851FD95D2E578774002136BA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F78F1B3159481BB6EB51577 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -242,10 +348,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21C6E9C6D08C32F3C8B536C6 /* IslandActivityTypes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B5959DA5CC2FBE9D846003D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06CC9CAA43BDDCF70A8E6E82 /* IslandActivityTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4BC56596445E98240B9E3C90 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = APPWidgetExtension;
+			target = 58098B174893E41DAB198A04 /* APPWidgetExtension */;
+			targetProxy = E871FAE0AD1F4A042D59A70A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		851FD9682E578775002136BA /* Debug */ = {
@@ -495,6 +619,69 @@
 			};
 			name = Release;
 		};
+		B003DD2AE33D2030167A5570 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = APPWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.7.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App.APPWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F1033B306858C78B865C53EB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = APPWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.7.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App.APPWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -512,6 +699,15 @@
 			buildConfigurations = (
 				851FD96B2E578775002136BA /* Debug */,
 				851FD96C2E578775002136BA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		930EE0CDC2D5BDF645B189F3 /* Build configuration list for PBXNativeTarget "APPWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B003DD2AE33D2030167A5570 /* Release */,
+				F1033B306858C78B865C53EB /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

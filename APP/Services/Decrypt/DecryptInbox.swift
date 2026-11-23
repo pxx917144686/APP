@@ -356,11 +356,6 @@ final class DecryptInboxStore: ObservableObject {
 
     private func run(_ job: DecryptJob) {
         SoundEffects.play(.press)
-        ContinuedProcessing.shared.begin(
-            "decrypt-\(job.id.uuidString)",
-            title: "cp_decrypt_title".localized(job.displayName),
-            subtitle: "0%"
-        )
         let token = DecryptCoordinator.shared.begin(requestID: job.id)
         job.state = .running
         job.message = nil
@@ -368,6 +363,12 @@ final class DecryptInboxStore: ObservableObject {
         job.log.reset(title: "INIT")
         job.log.isExpanded = true
         job.resetFailures()
+
+        DecryptActivityManager.shared.start(
+            key: IslandTaskKey.decrypt(job.id),
+            title: job.displayName,
+            step: "preparing".localized
+        )
 
         beginBackgroundAssertion()
 
@@ -379,9 +380,9 @@ final class DecryptInboxStore: ObservableObject {
                     job.log.consume(event)
                     if case .phase(let phase) = event {
                         Task { @MainActor in
-                            ContinuedProcessing.shared.update(
-                                "decrypt-\(job.id.uuidString)",
-                                subtitle: phase
+                            DecryptActivityManager.shared.update(
+                                key: IslandTaskKey.decrypt(job.id),
+                                step: phase
                             )
                         }
                     }
@@ -416,10 +417,18 @@ final class DecryptInboxStore: ObservableObject {
                 SoundEffects.play(.error)
             }
 
-            ContinuedProcessing.shared.end(
-                "decrypt-\(job.id.uuidString)",
-                success: job.state == .completed
-            )
+            if job.state == .completed {
+                DecryptActivityManager.shared.finish(
+                    key: IslandTaskKey.decrypt(job.id),
+                    detail: job.outputSizeText ?? ""
+                )
+            } else {
+                DecryptActivityManager.shared.fail(
+                    key: IslandTaskKey.decrypt(job.id),
+                    reason: job.message ?? "",
+                    cancelled: job.state == .cancelled
+                )
+            }
 
             pump()
         }

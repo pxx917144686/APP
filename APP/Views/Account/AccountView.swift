@@ -155,6 +155,7 @@ struct AccountView: View {
                 }
                 Button("delete".localized, role: .destructive) {
                     if let account = accountToDelete {
+                        SoundEffects.play(.dismiss)
                         if appStore.savedAccounts.count == 1 {
                             appStore.logoutAccount()
                         } else if appStore.savedAccounts.contains(where: { $0.id == account.id }) {

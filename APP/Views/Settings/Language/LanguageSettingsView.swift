@@ -28,6 +28,7 @@ struct LanguageSettingsView: View {
                 selectedLanguage = languageManager.currentLanguage
             }
             Button("confirm_switch".localized) {
+                SoundEffects.play(.success)
                 languageManager.setLanguage(selectedLanguage)
                 dismiss()
             }
@@ -39,6 +40,7 @@ struct LanguageSettingsView: View {
     private func languageRow(language: AppLanguage) -> some View {
         Button(action: {
             if language != languageManager.currentLanguage {
+                SoundEffects.play(.tick)
                 selectedLanguage = language
                 showRestartAlert = true
             }

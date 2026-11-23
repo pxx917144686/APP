@@ -56,6 +56,7 @@ struct SettingsView: View {
     ]
 
     @AppStorage(SoundEffects.enabledKey) private var soundEffects = true
+    @ObservedObject private var islandSettings = IslandSettings.shared
 
     var body: some View {
         NavigationStack {
@@ -112,6 +113,13 @@ struct SettingsView: View {
 
                     VStack(spacing: 0) {
                         soundRow
+                    }
+                    .liquidGlassSurface(cornerRadius: 16)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+
+                    VStack(spacing: 0) {
+                        islandSettingsContent
                     }
                     .liquidGlassSurface(cornerRadius: 16)
                     .cornerRadius(16)
@@ -401,6 +409,85 @@ extension SettingsView {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+    }
+
+    private var islandSettingsContent: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Image(systemName: "dot.radiowaves.left.and.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(themeManager.accentColor))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("live_island".localized)
+                        .font(.system(size: 16))
+                        .foregroundColor(.primary)
+                    Text("live_island_desc".localized)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $islandSettings.isEnabled)
+                    .labelsHidden()
+                    .toggleStyle(SoundingToggleStyle())
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+
+            VStack(spacing: 0) {
+                Divider().padding(.leading, 56)
+                islandToggleRow(
+                    icon: "arrow.down.to.line",
+                    title: "live_island_download".localized,
+                    isOn: $islandSettings.showsDownload
+                )
+                Divider().padding(.leading, 56)
+                islandToggleRow(
+                    icon: "signature",
+                    title: "live_island_sign".localized,
+                    isOn: $islandSettings.showsSign
+                )
+                Divider().padding(.leading, 56)
+                islandToggleRow(
+                    icon: "lock.open",
+                    title: "live_island_decrypt".localized,
+                    isOn: $islandSettings.showsDecrypt
+                )
+                Divider().padding(.leading, 56)
+                islandToggleRow(
+                    icon: "shippingbox",
+                    title: "live_island_install".localized,
+                    isOn: $islandSettings.showsInstall
+                )
+            }
+            .disabled(!islandSettings.isEnabled)
+            .opacity(islandSettings.isEnabled ? 1 : 0.45)
+        }
+    }
+
+    private func islandToggleRow(icon: String, title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.accentColor)
+                .frame(width: 28, height: 28)
+
+            Text(title)
+                .font(.system(size: 15))
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .toggleStyle(SoundingToggleStyle())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 11)
     }
 
     private var appearanceRow: some View {

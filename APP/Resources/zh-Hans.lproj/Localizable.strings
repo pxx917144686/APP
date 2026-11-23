@@ -1061,3 +1061,10 @@
 请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
 "dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。
 请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
+
+"live_island" = "灵动岛";
+"live_island_desc" = "在灵动岛显示任务进度";
+"live_island_download" = "下载任务";
+"live_island_sign" = "签名任务";
+"live_island_decrypt" = "解密任务";
+"live_island_install" = "安装任务";

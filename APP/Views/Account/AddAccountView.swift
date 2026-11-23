@@ -271,8 +271,10 @@ struct AddAccountView: View {
                 password: password,
                 code: showTwoFactorField ? code : nil
             )
+            SoundEffects.play(.success)
             dismiss()
         } catch {
+            SoundEffects.play(.error)
             isLoading = false
 
             if let storeError = error as? StoreError {

@@ -1061,3 +1061,10 @@
 Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
 "dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
 Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
+
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Show task progress in the Dynamic Island";
+"live_island_download" = "Downloads";
+"live_island_sign" = "Signing";
+"live_island_decrypt" = "Decryption";
+"live_island_install" = "Installation";

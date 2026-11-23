@@ -98,6 +98,10 @@ struct TabbarView: View {
         .onAppear {
             AnalyticsManager.shared.trackScreen(selectedTab.rawValue)
             updateTabBarAppearance()
+            if let requested = router.requested {
+                router.requested = nil
+                selectedTab = requested
+            }
         }
         .onChange(of: selectedTab) { _, newValue in
             AnalyticsManager.shared.trackScreen(newValue.rawValue)

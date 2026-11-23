@@ -358,6 +358,7 @@ struct SignView: SwiftUI.View {
                         password: password,
                         displayName: name
                     )
+                    SoundEffects.play(.rise)
                 }
                 .environmentObject(themeManager)
             }
@@ -2125,6 +2126,7 @@ struct SignView: SwiftUI.View {
 
     private func shareOutput() {
         guard let output = session.outputURL else { return }
+        SoundEffects.play(.tap)
         shareFile = ShareFile(url: output)
     }
 
@@ -2535,6 +2537,7 @@ struct SignView: SwiftUI.View {
                 let info = try await Task.detached { try SigningIPAInfo.read(url: url) }.value
                 let scanned = (try? await Task.detached { try SigningTargetScanner.scan(ipaURL: url) }.value) ?? []
                 await MainActor.run {
+                    SoundEffects.play(.rise)
                     selectedIPA = info
                     bundleID = info.bundleIdentifier
                     if pendingRefreshRecord == nil {
@@ -2826,6 +2829,7 @@ struct SignView: SwiftUI.View {
     }
 
     private func presentError(message: String) {
+        SoundEffects.play(.error)
         alertTitle = "sign_error_title".localized
         alertMessage = message
         showAlert = true

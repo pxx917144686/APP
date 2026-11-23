@@ -193,6 +193,7 @@ struct AccountDetailView: View {
     }
 
     private func deleteAccount() {
+        SoundEffects.play(.dismiss)
         AppStore.this.deleteAccount(account)
         dismiss()
     }

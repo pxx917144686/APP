@@ -48,6 +48,10 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     private var reservedDestinationPaths: Set<String> = []
     private var persistSequence = 0
     private var requestDestinationPaths: [UUID: String] = [:]
+    private var islandTicker: Timer?
+    private var islandKeepAlive = false
+    private var islandKeepAliveRetryAt = Date.distantPast
+    private var islandBackground = false
 
     private var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -103,6 +107,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             restoreDownloadTasks()
             restoreBackgroundDownloadHandlers()
             syncDownloadStatus()
+            reconcileIslandActivities()
+            syncIslandLifecycle()
         }
 
         NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
@@ -118,6 +124,24 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                 self.restoreBackgroundDownloadHandlers()
                 self.syncDownloadStatus()
                 self.saveDownloadTasks()
+                self.reconcileIslandActivities()
+                self.syncIslandLifecycle()
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.islandBackground = true
+                self.syncIslandLifecycle()
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.islandBackground = false
+                self.syncIslandLifecycle()
             }
         }
 
@@ -144,15 +168,6 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     )
                     request.runtime.speed = downloadProgress.formattedSpeed
 
-                    if downloadProgress.totalBytes > 0 {
-                        let fraction = Double(downloadProgress.bytesDownloaded) / Double(downloadProgress.totalBytes)
-                        ContinuedProcessing.shared.update(
-                            "download-\(request.id.uuidString)",
-                            subtitle: "\(Int(fraction * 100))% · \(downloadProgress.formattedSpeed)",
-                            progress: fraction
-                        )
-                    }
-
                     switch downloadProgress.status {
                     case .waiting:
                         request.runtime.status = DownloadStatus.waiting
@@ -166,6 +181,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = DownloadStatus.failed
                     case .cancelled:
                         request.runtime.status = DownloadStatus.cancelled
+                    }
+
+                    switch downloadProgress.status {
+                    case .completed:
+                        self.reportIslandFinish(request)
+                    case .failed:
+                        self.reportIslandFail(request, cancelled: false)
+                    case .cancelled:
+                        self.reportIslandFail(request, cancelled: true)
+                    default:
+                        self.reportIslandProgress(request)
                     }
 
                     request.objectWillChange.send()
@@ -198,18 +224,20 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     }
 
                     if request.runtime.status == .completed {
+                        self.reportIslandFinish(request)
+                    } else {
+                        self.reportIslandFail(request, cancelled: false)
+                    }
+
+                    if request.runtime.status == .completed {
                         SoundEffects.play(.success)
                     } else if request.runtime.status == .failed {
                         SoundEffects.play(.error)
                     }
 
-                    ContinuedProcessing.shared.end(
-                        "download-\(request.id.uuidString)",
-                        success: request.runtime.status == .completed
-                    )
-
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
+                    self.syncIslandLifecycle()
                 }
             }
         )
@@ -237,6 +265,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     if !self.activeDownloads.contains(request.id) {
                         self.activeDownloads.insert(request.id)
                     }
+
+                    self.reportIslandProgress(request)
+                    self.syncIslandLifecycle()
 
                     request.objectWillChange.send()
                     request.runtime.objectWillChange.send()
@@ -271,18 +302,20 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     }
 
                     if request.runtime.status == .completed {
+                        self.reportIslandFinish(request)
+                    } else {
+                        self.reportIslandFail(request, cancelled: false)
+                    }
+
+                    if request.runtime.status == .completed {
                         SoundEffects.play(.success)
                     } else if request.runtime.status == .failed {
                         SoundEffects.play(.error)
                     }
 
-                    ContinuedProcessing.shared.end(
-                        "download-\(request.id.uuidString)",
-                        success: request.runtime.status == .completed
-                    )
-
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
+                    self.syncIslandLifecycle()
                     self.saveDownloadTasks()
                 }
             }
@@ -332,6 +365,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
     func deleteDownload(request: DownloadRequest) {
         downloadManager.purgeDownloadArtifacts(downloadId: request.id.uuidString)
+        IslandActivityManager.shared.end(key: islandKey(for: request), removeSnapshot: true)
         if let index = downloadRequests.firstIndex(where: { $0.id == request.id }) {
             downloadRequests.remove(at: index)
         }
@@ -348,15 +382,11 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         activeDownloads.remove(request.id)
         completedRequests.remove(request.id)
         waitingDownloads.remove(request.id)
+        syncIslandLifecycle()
     }
 
     func startDownload(for request: DownloadRequest) {
         SoundEffects.play(.press)
-        ContinuedProcessing.shared.begin(
-            "download-\(request.id.uuidString)",
-            title: "cp_download_title".localized(request.package.name),
-            subtitle: "0%"
-        )
         guard request.runtime.status != .completed else {
             return
         }
@@ -370,6 +400,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             request.runtime.status = DownloadStatus.waiting
             waitingDownloads.insert(request.id)
             downloadQueue.append(request)
+            syncIslandLifecycle()
             return
         }
 
@@ -385,6 +416,10 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
         request.runtime.progress = Progress(totalUnitCount: 0)
         request.runtime.progress.completedUnitCount = 0
+
+        IslandActivityManager.shared.allowRecreate(key: islandKey(for: request))
+        reportIslandProgress(request)
+        syncIslandLifecycle()
 
         Task {
             let downloadId = request.id.uuidString
@@ -408,6 +443,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.error = "session_err_no_account".localized
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
+                    self.reportIslandFail(request, cancelled: false)
+                    self.syncIslandLifecycle()
                 }
                 self.processNextInQueue()
                 return
@@ -441,13 +478,18 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.error = "session_err_expired".localized
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
+                    self.reportIslandFail(request, cancelled: false)
+                    self.syncIslandLifecycle()
                 }
                 self.processNextInQueue()
                 return
             }
 
             if request.runtime.status == DownloadStatus.cancelled || request.runtime.status == DownloadStatus.paused {
-                _ = await MainActor.run { self.activeDownloads.remove(request.id) }
+                _ = await MainActor.run {
+                    self.activeDownloads.remove(request.id)
+                    self.syncIslandLifecycle()
+                }
                 self.processNextInQueue()
                 return
             }
@@ -512,6 +554,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     request.runtime.error = error.localizedDescription
                     request.runtime.status = DownloadStatus.failed
                     self.activeDownloads.remove(request.id)
+                    self.reportIslandFail(request, cancelled: false)
+                    self.syncIslandLifecycle()
                 }
                 self.processNextInQueue()
             }
@@ -576,6 +620,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = DownloadStatus.cancelled
                     }
 
+                    switch downloadProgress.status {
+                    case .completed:
+                        self.reportIslandFinish(request)
+                    case .failed:
+                        self.reportIslandFail(request, cancelled: false)
+                    case .cancelled:
+                        self.reportIslandFail(request, cancelled: true)
+                    default:
+                        self.reportIslandProgress(request)
+                    }
+
                     let progressPercent = Int(downloadProgress.progress * 100)
                     if progressPercent % 1 == 0 && progressPercent > 0 {
                     }
@@ -615,18 +670,20 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                     }
 
                     if request.runtime.status == .completed {
+                        self.reportIslandFinish(request)
+                    } else {
+                        self.reportIslandFail(request, cancelled: false)
+                    }
+
+                    if request.runtime.status == .completed {
                         SoundEffects.play(.success)
                     } else if request.runtime.status == .failed {
                         SoundEffects.play(.error)
                     }
 
-                    ContinuedProcessing.shared.end(
-                        "download-\(request.id.uuidString)",
-                        success: request.runtime.status == .completed
-                    )
-
                     self.activeDownloads.remove(request.id)
                     self.processNextInQueue()
+                    self.syncIslandLifecycle()
                 }
             }
         )
@@ -643,6 +700,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
     }
 
     func cancelDownload(request: DownloadRequest) {
+        SoundEffects.play(.fall)
         if let index = downloadQueue.firstIndex(where: { $0.id == request.id }) {
             downloadQueue.remove(at: index)
         }
@@ -660,7 +718,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         request.runtime.status = DownloadStatus.cancelled
         request.runtime.error = nil
         request.runtime.isAuthFailure = false
+        reportIslandFail(request, cancelled: true)
         saveDownloadTasks()
+        syncIslandLifecycle()
     }
 
     func pauseDownload(request: DownloadRequest) {
@@ -671,7 +731,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             }
             waitingDownloads.remove(request.id)
             request.runtime.status = DownloadStatus.paused
+            reportIslandProgress(request)
             saveDownloadTasks()
+            syncIslandLifecycle()
             return
         }
 
@@ -679,8 +741,10 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             downloadManager.pauseDownload(downloadId: request.id.uuidString)
             request.runtime.status = DownloadStatus.paused
             activeDownloads.remove(request.id)
+            reportIslandProgress(request)
             processNextInQueue()
             saveDownloadTasks()
+            syncIslandLifecycle()
         }
     }
 
@@ -693,6 +757,124 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         request.runtime.error = nil
         request.runtime.isAuthFailure = false
         startDownload(for: request)
+    }
+
+    private func reportIslandProgress(_ request: DownloadRequest) {
+        guard request.runtime.status != .completed else { return }
+
+        let status: String
+        let phase: String
+        switch request.runtime.status {
+        case .waiting:
+            status = "running"
+            phase = "download_waiting".localized
+        case .paused:
+            status = "paused"
+            phase = "download_paused".localized
+        case .failed:
+            status = "failed"
+            phase = "failed".localized
+        case .cancelled:
+            status = "cancelled"
+            phase = "decrypt_state_cancelled".localized
+        default:
+            status = "running"
+            phase = "downloading".localized
+        }
+
+        IslandActivityManager.shared.start(
+            key: islandKey(for: request),
+            kind: IslandTaskKind.download,
+            title: request.package.name,
+            phase: phase,
+            detail: request.runtime.speed,
+            progress: request.runtime.progressValue,
+            remaining: Self.islandRemaining(request.runtime.remainingTime),
+            status: status
+        )
+    }
+
+    private func reportIslandFinish(_ request: DownloadRequest) {
+        IslandActivityManager.shared.finish(key: islandKey(for: request), detail: request.package.name)
+    }
+
+    private func reportIslandFail(_ request: DownloadRequest, cancelled: Bool) {
+        IslandActivityManager.shared.fail(
+            key: islandKey(for: request),
+            reason: cancelled ? "" : (request.runtime.error ?? ""),
+            cancelled: cancelled
+        )
+    }
+
+    private func syncIslandLifecycle() {
+        let isBusy = !activeDownloads.isEmpty || !waitingDownloads.isEmpty
+
+        if islandKeepAlive, !isBusy || !islandBackground || !InstallKeepAlive.shared.isActive {
+            islandKeepAlive = false
+            islandKeepAliveRetryAt = Date().addingTimeInterval(30)
+            InstallKeepAlive.shared.stop("download")
+        }
+
+        if isBusy {
+            startIslandTicker()
+            if islandBackground, !islandKeepAlive, Date() >= islandKeepAliveRetryAt {
+                islandKeepAlive = true
+                InstallKeepAlive.shared.start("download")
+            }
+            syncIslandProgress()
+        } else {
+            stopIslandTicker()
+        }
+    }
+
+    private func reconcileIslandActivities() {
+        let keys = Set(downloadRequests.map { islandKey(for: $0) })
+        IslandActivityManager.shared.endOrphanedDownloadActivities(validKeys: keys)
+
+        for request in downloadRequests {
+            let key = islandKey(for: request)
+            guard IslandActivityManager.shared.hasActivity(key: key) else { continue }
+            switch request.runtime.status {
+            case .completed:
+                IslandActivityManager.shared.finish(key: key)
+            case .failed:
+                IslandActivityManager.shared.fail(key: key, reason: request.runtime.error ?? "")
+            case .cancelled:
+                IslandActivityManager.shared.fail(key: key, reason: "", cancelled: true)
+            default:
+                reportIslandProgress(request)
+            }
+        }
+    }
+
+    private func startIslandTicker() {
+        guard islandTicker == nil else { return }
+        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.syncIslandProgress() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        islandTicker = timer
+    }
+
+    private func stopIslandTicker() {
+        islandTicker?.invalidate()
+        islandTicker = nil
+    }
+
+    private func syncIslandProgress() {
+        guard !activeDownloads.isEmpty else { return }
+        for request in downloadRequests where activeDownloads.contains(request.id) {
+            reportIslandProgress(request)
+        }
+    }
+
+    private func islandKey(for request: DownloadRequest) -> String {
+        IslandTaskKey.download(request.id)
+    }
+
+    private static func islandRemaining(_ seconds: TimeInterval) -> String {
+        guard seconds.isFinite, seconds > 0 else { return "" }
+        return islandDurationString(Int32(seconds.rounded()))
     }
 
     var queuePosition: (Int, Int) {
@@ -1147,6 +1329,11 @@ extension UnifiedDownloadManager {
             let refreshed = downloadRequests
             downloadRequests = refreshed
 
+            for request in downloadRequests where IslandActivityManager.shared.hasActivity(key: islandKey(for: request)) {
+                reportIslandProgress(request)
+            }
+
+            syncIslandLifecycle()
         }
     }
 
@@ -1157,16 +1344,19 @@ extension UnifiedDownloadManager {
                 downloadManager.pauseDownload(downloadId: request.id.uuidString)
                 request.runtime.status = DownloadStatus.paused
                 activeDownloads.remove(request.id)
+                reportIslandProgress(request)
             }
             if request.runtime.status == DownloadStatus.waiting {
                 request.runtime.status = DownloadStatus.paused
                 waitingDownloads.remove(request.id)
+                reportIslandProgress(request)
             }
         }
 
         downloadQueue.removeAll()
 
         saveDownloadTasks()
+        syncIslandLifecycle()
     }
 
     func resumeAllDownloads() {

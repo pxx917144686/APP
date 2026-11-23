@@ -14,11 +14,28 @@ final class InstallKeepAlive {
     }
 
     private(set) var isActive = false
+    private var holders: Set<String> = []
     private var watchdog: Task<Void, Never>?
     private var sourceAttached = false
-    private static let maxDuration: TimeInterval = 30 * 60
+    private static let maxDuration: TimeInterval = 3 * 60 * 60
 
-    func start() {
+    func start(_ holder: String = "default") {
+        holders.insert(holder)
+        activateIfNeeded()
+    }
+
+    func stop(_ holder: String = "default") {
+        holders.remove(holder)
+        guard holders.isEmpty else { return }
+        deactivate()
+    }
+
+    func stopAll() {
+        holders.removeAll()
+        deactivate()
+    }
+
+    private func activateIfNeeded() {
         guard !isActive else { return }
         do {
             let session = AVAudioSession.sharedInstance()
@@ -35,19 +52,19 @@ final class InstallKeepAlive {
             watchdog = Task { [weak self] in
                 try? await Task.sleep(nanoseconds: UInt64(Self.maxDuration * 1_000_000_000))
                 guard !Task.isCancelled else { return }
-                self?.stop()
+                self?.stopAll()
             }
         } catch {
             isActive = false
         }
     }
 
-    func stop() {
-        guard isActive else { return }
-        isActive = false
+    private func deactivate() {
         watchdog?.cancel()
         watchdog = nil
+        guard isActive else { return }
+        isActive = false
         engine.stop()
-        try? AVAudioSession.sharedInstance().setActive(false)
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 }

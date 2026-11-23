@@ -282,6 +282,7 @@ struct AccountSheetView: View {
     }
 
     private func logoutAccount() {
+        SoundEffects.play(.dismiss)
         appStore.logoutAccount()
         dismiss()
     }
