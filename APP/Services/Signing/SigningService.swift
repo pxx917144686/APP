@@ -643,7 +643,8 @@ final class SigningSession: ObservableObject {
     @Published private(set) var outputURL: URL?
     @Published private(set) var errorMessage: String?
 
-    private var task: Task<Void, Never>?
+    private let tasks = TaskBag()
+    private let signingTaskKey = "signing"
     private var ticker: Timer?
     private var startedAt: Date?
     private var cancelled = false
@@ -678,21 +679,20 @@ final class SigningSession: ObservableObject {
         }
         reportIsland(progress: 0.04, phase: SigningPhase.preparing.title, detail: taskRequest.certificate.commonName)
 
-        task = Task { [weak self] in
+        tasks.replace(key: signingTaskKey) { [weak self] token in
             guard let self else { return }
             do {
                 let output = try await SigningEngine.sign(taskRequest) { [weak self] update in
                     Task { @MainActor [weak self] in
-                        self?.apply(update)
+                        guard let self, self.tasks.isCurrent(token, for: self.signingTaskKey) else { return }
+                        self.apply(update)
                     }
                 }
-                await MainActor.run {
-                    self.finish(output: output, error: nil)
-                }
+                guard self.tasks.isCurrent(token, for: self.signingTaskKey) else { return }
+                self.finish(output: output, error: nil)
             } catch {
-                await MainActor.run {
-                    self.finish(output: nil, error: error)
-                }
+                guard self.tasks.isCurrent(token, for: self.signingTaskKey) else { return }
+                self.finish(output: nil, error: error)
             }
         }
     }
@@ -700,7 +700,7 @@ final class SigningSession: ObservableObject {
     func cancel() {
         guard isRunning else { return }
         cancelled = true
-        task?.cancel()
+        tasks.cancel(key: signingTaskKey)
         append("cancelling…", level: .warning)
     }
 
@@ -783,8 +783,7 @@ final class SigningSession: ObservableObject {
     }
 
     private func reset() {
-        task?.cancel()
-        task = nil
+        tasks.cancel(key: signingTaskKey)
         ticker?.invalidate()
         ticker = nil
         SigningCancelCenter.shared.unregister(islandKey)
@@ -816,7 +815,6 @@ final class SigningSession: ObservableObject {
 
     deinit {
         ticker?.invalidate()
-        task?.cancel()
     }
 }
 

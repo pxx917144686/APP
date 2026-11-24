@@ -184,9 +184,12 @@ struct TelegramCheckmark: View {
     var size: CGFloat
     var color: Color
     var lineWidth: CGFloat?
+    var progress: CGFloat = 1
 
     var body: some View {
+        let clamped = min(max(progress, 0), 1)
         CheckmarkShape()
+            .trim(from: 0, to: clamped)
             .stroke(
                 color,
                 style: StrokeStyle(
@@ -211,9 +214,9 @@ struct TelegramCheckmark: View {
             let second = CGPoint(x: 4.6667 * scale, y: -6.0 * scale)
 
             var path = Path()
-            path.move(to: CGPoint(x: start.x + first.x + second.x, y: start.y + first.y + second.y))
+            path.move(to: start)
             path.addLine(to: CGPoint(x: start.x + first.x, y: start.y + first.y))
-            path.addLine(to: start)
+            path.addLine(to: CGPoint(x: start.x + first.x + second.x, y: start.y + first.y + second.y))
             return path
         }
     }

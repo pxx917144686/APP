@@ -56,14 +56,12 @@ struct AppSearchResultCardView: View {
     private var appIconView: some View {
         Group {
             if let iconURL = app.artworkUrl100, let url = URL(string: iconURL) {
-                ArtworkView(
+                ResourceImage(
                     url: url,
-                    aspectRatio: 1,
+                    pointSize: CGSize(width: 64, height: 64),
                     contentMode: .fill,
                     cornerRadius: 14,
-                    showsBorder: true,
-                    loadingAnimation: !isPreview,
-                    isPreview: isPreview
+                    showsBorder: true
                 )
                 .frame(width: 64, height: 64)
             } else {

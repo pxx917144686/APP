@@ -59,16 +59,13 @@ struct SigningConsoleView: SwiftUI.View {
 
     private var header: some SwiftUI.View {
         HStack(alignment: .center, spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(LinearGradient(colors: [.cyan, .blue.opacity(0.75)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 36, height: 36)
-                    .shadow(color: .cyan.opacity(0.45), radius: 6, x: 0, y: 2)
-                Image(systemName: session.outcome == .completed ? "checkmark.seal.fill" : "signature")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.white)
-                    .symbolEffect(.pulse, options: .repeating, isActive: session.outcome == .running)
-            }
+            TelegramRadialProgress(
+                progress: progress,
+                outcome: session.outcome,
+                tint: accent,
+                size: 44,
+                lineWidth: 3.5
+            )
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {

@@ -210,14 +210,24 @@ struct SigningIPAPickerSheet: View {
 
     private func row(for request: DownloadRequest, path: String) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: "shippingbox.fill")
-                .font(.system(size: 18))
-                .foregroundStyle(themeManager.accentColor)
-                .frame(width: 34, height: 34)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(themeManager.accentColor.opacity(0.12))
+            if let iconURL = request.package.iconURL, let url = URL(string: iconURL) {
+                ResourceImage(
+                    url: url,
+                    pointSize: CGSize(width: 34, height: 34),
+                    cornerRadius: 9,
+                    showsBorder: true
                 )
+                .frame(width: 34, height: 34)
+            } else {
+                Image(systemName: "shippingbox.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(themeManager.accentColor)
+                    .frame(width: 34, height: 34)
+                    .background(
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .fill(themeManager.accentColor.opacity(0.12))
+                    )
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(request.package.name)

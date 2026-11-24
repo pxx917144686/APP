@@ -1205,6 +1205,7 @@ struct DownloadView: SwiftUI.View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .scrollEdgeFade()
         .coordinateSpace(name: "downloadScroll")
         .refreshable {
             vm.syncDownloadStatus()
@@ -1540,14 +1541,12 @@ struct DownloadCardView: SwiftUI.View {
     private var appIconView: some SwiftUI.View {
         Group {
             if let iconURL = request.package.iconURL, let url = URL(string: iconURL) {
-                ArtworkView(
+                ResourceImage(
                     url: url,
-                    aspectRatio: 1,
+                    pointSize: CGSize(width: 52, height: 52),
                     contentMode: .fill,
                     cornerRadius: 12,
-                    showsBorder: true,
-                    loadingAnimation: !isPreview,
-                    isPreview: isPreview
+                    showsBorder: true
                 )
                 .frame(width: 52, height: 52)
             } else {

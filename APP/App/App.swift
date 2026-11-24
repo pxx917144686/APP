@@ -43,6 +43,7 @@ struct App: SwiftUI.App {
                         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AppLanguageChanged"))) { _ in
                             languageToggle.toggle()
                         }
+                        .appPresentationHost()
                 } else {
                     LaunchScreenView()
                         .environmentObject(themeManager)

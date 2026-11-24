@@ -29,7 +29,6 @@ struct SignView: SwiftUI.View {
     @State private var extensionChoices: [String: ExtensionCredentialChoice] = [:]
     @State private var showExtensionCredentials = false
     @State private var autoInstallAfterSign = true
-    @State private var showSelfInstallAlert = false
     @State private var didAutoInstall = false
     @State private var didSeedDefaultInjection = false
     @State private var isLoadingIPA = false
@@ -68,12 +67,10 @@ struct SignView: SwiftUI.View {
     @State private var pendingCertificateData: Data?
     @State private var pendingCertificateName = ""
 
-    @State private var showAlert = false
-    @State private var alertTitle = "sign_error_title".localized
-    @State private var alertMessage = ""
     @State private var shareFile: ShareFile?
     @State private var isInstalling = false
     @State private var installPhase: SigningInstallPhase = .idle
+    @State private var tasks = TaskBag()
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -278,20 +275,34 @@ struct SignView: SwiftUI.View {
             ScrollView {
                 VStack(spacing: 14) {
                     heroCard
-                    identityCard
-                    ipaCard
+                    identityCardView
+                    SigningIPACard(
+                        selectedIPA: selectedIPA,
+                        isLoading: isLoadingIPA,
+                        accent: accent,
+                        colorScheme: colorScheme,
+                        onPick: { showIPAPicker = true },
+                        onImportFiles: { showIPAImporter = true },
+                        onClear: {
+                            selectedIPA = nil
+                            bundleID = ""
+                            extensionChoices = [:]
+                            displayName = ""
+                            version = ""
+                        }
+                    )
                     if selectedIPA != nil {
                         ipaPreflightCard
                     }
                     if selectedIPA != nil, profile != nil {
                         provisioningAuditCard
                     }
-                    optionsCard
-                    injectionCard
+                    optionsCardView
+                    extensionCardView
                     if !canSign && !session.isRunning {
                         signingPreflight
                     }
-                    signAction
+                    signActionView
 
                     if session.isActive {
                         SigningConsoleView(
@@ -306,14 +317,18 @@ struct SignView: SwiftUI.View {
                     }
 
                     if session.outcome == .completed, let output = session.outputURL {
-                        signResultCard(output)
+                        SigningResultCard(
+                            output: output,
+                            onShare: { shareOutput() },
+                            onInstall: { installOutput() }
+                        )
                     }
 
                     if installPhase != .idle {
-                        installPhaseCard
+                        SigningInstallCard(phase: installPhase, accent: accent)
                     }
 
-                    historyCard
+                    historyCardView
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -469,19 +484,6 @@ struct SignView: SwiftUI.View {
         .onChange(of: profile?.id) { _, _ in
             resetEntitlementSelection()
         }
-        .alert(alertTitle, isPresented: $showAlert) {
-            Button("ok".localized, role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
-        .alert("sign_install_self_title".localized, isPresented: $showSelfInstallAlert) {
-            Button("sign_share".localized) {
-                shareOutput()
-            }
-            Button("cancel".localized, role: .cancel) { }
-        } message: {
-            Text("sign_install_self_warning".localized)
-        }
         .overlay {
             if showInjectionMenu {
                 CenteredChoicePopup(
@@ -601,282 +603,6 @@ struct SignView: SwiftUI.View {
         .background(Capsule().fill(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.05)))
     }
 
-    private var identityCard: some SwiftUI.View {
-        sectionCard(
-            title: "sign_identity_section".localized,
-            icon: "person.badge.key.fill",
-            count: nil,
-            action: { showIdentityImportMenu = true }
-        ) {
-            if certificate != nil || profile != nil {
-                identitySummaryRow
-            } else {
-                emptyRow(
-                    icon: "person.badge.key",
-                    title: "sign_identity_empty".localized,
-                    hint: "sign_identity_empty_hint".localized,
-                    actionTitle: "sign_identity_import".localized
-                ) {
-                    showIdentityImportMenu = true
-                }
-            }
-        }
-    }
-
-    private var identitySummaryRow: some SwiftUI.View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "key.horizontal.fill")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(accent)
-                .frame(width: 34, height: 34)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(accent.opacity(0.10))
-                )
-
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Text(identityCertificateName)
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    pairingBadge
-                }
-
-                Text(identitySubtitle)
-                    .font(.system(size: 9.5, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-
-                HStack(spacing: 8) {
-                    if let expiresAt = identityCertificateExpiry {
-                        meta("sign_cert_section".localized, dateText(expiresAt), warning: expiresAt < Date())
-                    }
-                    if let profile, let expiresAt = profile.expiresAt {
-                        meta("sign_profile_section".localized, dateText(expiresAt), warning: expiresAt < Date())
-                    }
-                    if let profile {
-                        meta("sign_profile_devices".localized, profile.isEnterprise ? "sign_profile_enterprise".localized : "\(profile.deviceCount)")
-                    }
-                }
-            }
-
-            Spacer(minLength: 4)
-
-            HStack(spacing: 7) {
-                Button {
-                    showCertificateDetail = true
-                } label: {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(accent)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("detail_action".localized)
-
-                Button {
-                    showEntitlements = true
-                } label: {
-                    Image(systemName: "checkmark.shield.fill")
-                        .font(.system(size: 15))
-                        .foregroundStyle(accent)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("sign_entitlements_title".localized)
-
-                Menu {
-                    identityMenu
-                } label: {
-                    Image(systemName: "ellipsis.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .padding(11)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
-        )
-    }
-
-    private var identityCertificateName: String {
-        if let certificate {
-            if certificate.teamID.isEmpty, let profileCertificate = profile?.certificates?.first {
-                return profileCertificate.commonName
-            }
-            return certificate.commonName
-        }
-        return profile?.displayName ?? "—"
-    }
-
-    private var identityCertificateExpiry: Date? {
-        certificate?.expiresAt ?? profile?.certificates?.first?.notAfter
-    }
-
-    private func checkRevocation() {
-        guard let certificate, let profile, let password = certificatePassword else {
-            alertTitle = "sign_ocsp_missing".localized
-            alertMessage = "sign_ocsp_missing_message".localized
-            showAlert = true
-            return
-        }
-        let certificateURL = store.certificateURL(for: certificate)
-        let profileURL = store.profileURL(for: profile)
-        ocspChecking = true
-        Task {
-            let result: (Int32, Date?, String?) = await withCheckedContinuation { continuation in
-                Zsign.checkRevokage(
-                    provisionPath: profileURL.path,
-                    p12Path: certificateURL.path,
-                    p12Password: password
-                ) { status, date, error in
-                    continuation.resume(returning: (status, date, error))
-                }
-            }
-            await MainActor.run {
-                ocspChecking = false
-                let dateTextValue = result.1.map { dateText($0) } ?? "—"
-                switch result.0 {
-                case 0:
-                    alertTitle = "sign_ocsp_good_title".localized
-                    alertMessage = String(format: "sign_ocsp_good_message".localized, dateTextValue)
-                case 1:
-                    alertTitle = "sign_ocsp_revoked_title".localized
-                    alertMessage = "sign_ocsp_revoked_message".localized
-                default:
-                    alertTitle = "sign_ocsp_unknown_title".localized
-                    alertMessage = result.2 ?? "sign_ocsp_unknown_message".localized
-                }
-                showAlert = true
-            }
-        }
-    }
-
-    private var identitySubtitle: String {
-        let team = certificate?.teamID.isEmpty == false ? certificate!.teamID : (profile?.teamID ?? "—")
-        let appID = profile?.bundleIDPattern ?? "—"
-        return "\(team)  ·  \(appID)"
-    }
-
-    @ViewBuilder
-    private var identityMenu: some SwiftUI.View {
-        Section("sign_select_certificate".localized) {
-            ForEach(store.certificates) { item in
-                Button {
-                    store.selectCertificate(item.id)
-                    autoSelectProfileForCurrentIPA(preferredCertificate: item)
-                } label: {
-                    Label(item.displayName, systemImage: item.id == certificate?.id ? "checkmark" : "key")
-                }
-            }
-        }
-        Section("sign_select_profile".localized) {
-            ForEach(store.profiles) { item in
-                Button {
-                    store.selectProfile(item.id)
-                } label: {
-                    Label(item.displayName, systemImage: item.id == profile?.id ? "checkmark" : "doc")
-                }
-            }
-        }
-        Divider()
-        Button {
-            showCertificateDetail = true
-        } label: {
-            Label("sign_cert_detail_title".localized, systemImage: "info.circle")
-        }
-        Button {
-            showEntitlements = true
-        } label: {
-            Label("sign_entitlements_title".localized, systemImage: "checkmark.shield")
-        }
-        Button {
-            checkRevocation()
-        } label: {
-            Label("sign_ocsp_check".localized, systemImage: "checkmark.seal")
-        }
-        .disabled(ocspChecking)
-        Divider()
-        Button {
-            showCertificateImporter = true
-        } label: {
-            Label("sign_import_cert".localized, systemImage: "plus")
-        }
-        Button {
-            showProfileImporter = true
-        } label: {
-            Label("sign_import_profile".localized, systemImage: "plus")
-        }
-        if let certificate {
-            Divider()
-            Button(role: .destructive) {
-                store.deleteCertificate(certificate)
-            } label: {
-                Label("sign_delete_cert".localized, systemImage: "trash")
-            }
-        }
-        if let profile {
-            Button(role: .destructive) {
-                store.deleteProfile(profile)
-            } label: {
-                Label("sign_delete_profile".localized, systemImage: "trash")
-            }
-        }
-    }
-
-    private enum IdentityPairing {
-        case waiting
-        case paired(String)
-        case mismatch(String)
-    }
-
-    private var identityPairing: IdentityPairing {
-        guard let certificate else { return .waiting }
-        guard let profile else { return .waiting }
-        let certTeam = certificate.teamID
-        if certTeam.isEmpty || profile.teamID.isEmpty || certTeam == profile.teamID {
-            return .paired(profile.teamID.isEmpty ? "—" : profile.teamID)
-        }
-        return .mismatch("\(certTeam) / \(profile.teamID)")
-    }
-
-    private var pairingBadge: some SwiftUI.View {
-        let pairing = identityPairing
-        let color: Color
-        let icon: String
-        let text: String
-        switch pairing {
-        case .waiting:
-            color = .orange
-            icon = "link.badge.plus"
-            text = "sign_identity_waiting".localized
-        case .paired(let team):
-            color = .green
-            icon = "checkmark.circle.fill"
-            text = String(format: "sign_identity_paired".localized, team)
-        case .mismatch(let teams):
-            color = .red
-            icon = "exclamationmark.triangle.fill"
-            text = String(format: "sign_identity_mismatch".localized, teams)
-        }
-
-        return HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: 9, weight: .bold))
-            Text(text)
-                .font(.system(size: 9, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .background(Capsule().fill(color.opacity(0.10)))
-    }
-
     private struct ProvisioningAuditEntry: Identifiable {
         let target: SigningTarget
         let covered: Bool
@@ -901,6 +627,75 @@ struct SignView: SwiftUI.View {
         }
 
         var hasGap: Bool { gapCount > 0 }
+    }
+
+    private var identityCardView: some SwiftUI.View {
+        SigningIdentityCard(
+            certificate: certificate,
+            profile: profile,
+            certificates: store.certificates,
+            profiles: store.profiles,
+            accent: accent,
+            colorScheme: colorScheme,
+            isCheckingRevocation: ocspChecking,
+            onAdd: { showIdentityImportMenu = true },
+            onShowDetail: { showCertificateDetail = true },
+            onShowEntitlements: { showEntitlements = true },
+            onCheckRevocation: { checkRevocation() },
+            onSelectCertificate: { item in
+                store.selectCertificate(item.id)
+                autoSelectProfileForCurrentIPA(preferredCertificate: item)
+            },
+            onSelectProfile: { id in store.selectProfile(id) },
+            onImportCertificate: { showCertificateImporter = true },
+            onImportProfile: { showProfileImporter = true },
+            onDeleteCertificate: { if let certificate { store.deleteCertificate(certificate) } },
+            onDeleteProfile: { if let profile { store.deleteProfile(profile) } }
+        )
+    }
+
+    private func checkRevocation() {
+        guard let certificate, let profile, let password = certificatePassword else {
+            AppPresenter.shared.present(alert: AppAlert(
+                title: "sign_ocsp_missing".localized,
+                message: "sign_ocsp_missing_message".localized
+            ))
+            return
+        }
+        let certificateURL = store.certificateURL(for: certificate)
+        let profileURL = store.profileURL(for: profile)
+        ocspChecking = true
+        tasks.replace(key: "ocsp") { token in
+            let result: (Int32, Date?, String?) = await withCheckedContinuation { continuation in
+                Zsign.checkRevokage(
+                    provisionPath: profileURL.path,
+                    p12Path: certificateURL.path,
+                    p12Password: password
+                ) { status, date, error in
+                    continuation.resume(returning: (status, date, error))
+                }
+            }
+            guard self.tasks.isCurrent(token, for: "ocsp") else { return }
+            self.ocspChecking = false
+            let dateTextValue = result.1.map { self.dateText($0) } ?? "—"
+            switch result.0 {
+            case 0:
+                AppPresenter.shared.present(alert: AppAlert(
+                    title: "sign_ocsp_good_title".localized,
+                    message: String(format: "sign_ocsp_good_message".localized, dateTextValue)
+                ))
+            case 1:
+                AppPresenter.shared.present(alert: AppAlert(
+                    title: "sign_ocsp_revoked_title".localized,
+                    message: "sign_ocsp_revoked_message".localized
+                ))
+            default:
+                AppPresenter.shared.present(alert: AppAlert(
+                    title: "sign_ocsp_unknown_title".localized,
+                    message: result.2 ?? "sign_ocsp_unknown_message".localized
+                ))
+            }
+        }
     }
 
     private var originalAppBundleID: String {
@@ -1102,17 +897,23 @@ struct SignView: SwiftUI.View {
     }
 
     private var targetSigningCredentials: [SigningTargetCredentials] {
-        guard profile != nil else { return [] }
+        guard let mainProfile = profile else { return [] }
         let removedPaths = Set(targetsToRemove.map(\.bundlePath))
         return targets.compactMap { target in
             guard target.kind != .main else { return nil }
             if removeWatchApp && target.kind == .watchApp { return nil }
             if removedPaths.contains(target.bundlePath) { return nil }
-            guard let matched = independentProfile(for: target) else { return nil }
+            let matched = independentProfile(for: target) ?? mainProfile
             let selectedCertificate = certificateForChoice(choice(for: target)) ?? certificate
             guard let selectedCertificate,
                   let password = store.password(for: selectedCertificate) else { return nil }
-            guard profileMatchesCertificate(matched, certificate: selectedCertificate) else { return nil }
+            let entitlements: Data?
+            if matched.id == mainProfile.id {
+                entitlements = extensionEntitlements(for: target, profile: mainProfile)
+            } else {
+                guard profileMatchesCertificate(matched, certificate: selectedCertificate) else { return nil }
+                entitlements = matched.entitlementsData
+            }
             return SigningTargetCredentials(
                 targetID: target.id,
                 bundlePath: target.bundlePath,
@@ -1123,9 +924,31 @@ struct SignView: SwiftUI.View {
                 password: password,
                 profile: matched,
                 profileURL: store.profileURL(for: matched),
-                entitlementsPlist: matched.entitlementsData
+                entitlementsPlist: entitlements
             )
         }
+    }
+
+    private func extensionEntitlements(for target: SigningTarget, profile targetProfile: SigningProfile) -> Data? {
+        var dictionary: [String: Any] = [:]
+        if let data = signingEntitlementsPlist,
+           let parsed = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+            dictionary = parsed
+        } else if let data = targetProfile.entitlementsData,
+                  let parsed = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+            dictionary = parsed
+        } else {
+            return targetProfile.entitlementsData
+        }
+        let team = targetProfile.teamID
+        let bundleID = effectiveExtensionID(for: target)
+        if !team.isEmpty, !bundleID.isEmpty {
+            dictionary["application-identifier"] = "\(team).\(bundleID)"
+            if dictionary["com.apple.application-identifier"] != nil {
+                dictionary["com.apple.application-identifier"] = "\(team).\(bundleID)"
+            }
+        }
+        return try? PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
     }
 
     private var provisioningAuditEntries: [ProvisioningAuditEntry] {
@@ -1459,533 +1282,97 @@ struct SignView: SwiftUI.View {
         .background(Capsule().fill(Color.primary.opacity(0.04)))
     }
 
-    private var ipaCard: some SwiftUI.View {
-        sectionCard(
-            title: "sign_ipa_section".localized,
-            icon: "shippingbox.fill",
-            count: nil,
-            action: { showIPAPicker = true }
-        ) {
-            if isLoadingIPA {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text("sign_loading_ipa".localized)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(11)
-            } else if let selectedIPA {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(selectedIPA.displayName)
-                                .font(.system(size: 14, weight: .semibold))
-                                .lineLimit(1)
-                            Text(selectedIPA.bundleIdentifier)
-                                .font(.system(size: 10, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                            HStack(spacing: 8) {
-                                meta("sign_version".localized, selectedIPA.version)
-                                meta("sign_ipa_size".localized, selectedIPA.sizeText)
-                                if selectedIPA.isEncrypted {
-                                    Label("sign_ipa_encrypted_tag".localized, systemImage: "lock.fill")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(.red)
-                                }
-                            }
-                        }
-                        Spacer(minLength: 4)
-                        Menu {
-                            Button {
-                                showIPAPicker = true
-                            } label: {
-                                Label("sign_from_downloads".localized, systemImage: "arrow.down.circle")
-                            }
-                            Button {
-                                showIPAImporter = true
-                            } label: {
-                                Label("sign_from_files".localized, systemImage: "doc.badge.plus")
-                            }
-                            Divider()
-                            Button(role: .destructive) {
-                                self.selectedIPA = nil
-                                bundleID = ""
-                                extensionChoices = [:]
-                                displayName = ""
-                                version = ""
-                            } label: {
-                                Label("sign_clear".localized, systemImage: "xmark.circle")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.circle.fill")
-                                .font(.system(size: 18))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                .padding(11)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
-                )
-            } else {
-                emptyRow(
-                    icon: "shippingbox",
-                    title: "sign_no_ipa".localized,
-                    hint: "sign_no_ipa_hint".localized,
-                    actionTitle: "sign_choose_ipa".localized
-                ) {
-                    showIPAPicker = true
-                }
-            }
+    private var hintText: String {
+        if certificate == nil || profile == nil || selectedIPA == nil {
+            return "sign_hint_select_all".localized
         }
+        if certificatePassword == nil {
+            return "sign_hint_password_missing".localized
+        }
+        if hasBlockingIssues {
+            return "sign_hint_fix_issues".localized
+        }
+        return "sign_hint_ready".localized
     }
 
-    private var injectionCard: some SwiftUI.View {
-        sectionCard(
-            title: "sign_injection_section".localized,
-            icon: "puzzlepiece.extension.fill",
-            count: injections.count,
-            action: { showInjectionMenu = true }
-        ) {
-            if injections.isEmpty {
-                emptyRow(
-                    icon: "puzzlepiece.extension",
-                    title: "sign_injection_empty".localized,
-                    hint: "sign_injection_empty_hint".localized,
-                    actionTitle: "sign_injection_add".localized
-                ) {
-                    showInjectionMenu = true
-                }
-            } else {
-                VStack(spacing: 7) {
-                    ForEach(injections) { injection in
-                        injectionRow(injection)
-                    }
-                    HStack(spacing: 5) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 8))
-                        Text("sign_injection_weak_hint".localized)
-                            .font(.system(size: 8.5))
-                            .fixedSize(horizontal: false, vertical: true)
-                        Spacer(minLength: 0)
-                    }
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 1)
-                }
-            }
-        }
-    }
-
-    private func injectionRow(_ injection: SigningInjection) -> some SwiftUI.View {
-        HStack(spacing: 9) {
-            Image(systemName: injection.isFramework ? "shippingbox.fill" : "link")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(accent)
-                .frame(width: 30, height: 30)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(accent.opacity(0.10))
-                )
-
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 4) {
-                    Text(injection.name)
-                        .font(.system(size: 11.5, weight: .semibold))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    if injection.name == "内购破解.dylib" {
-                        Text("sign_injection_builtin".localized)
-                            .font(.system(size: 6.5, weight: .bold))
-                            .foregroundStyle(.cyan)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
-                            .background(Capsule().fill(Color.cyan.opacity(0.12)))
-                    }
-                }
-                HStack(spacing: 5) {
-                    Text(injection.isFramework ? "sign_injection_framework_type".localized : "sign_injection_dylib_type".localized)
-                        .font(.system(size: 8.5, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                    Button {
-                        targetEditingInjectionID = injection.id
-                        showTargetSheet = true
-                    } label: {
-                        HStack(spacing: 2) {
-                            Image(systemName: "scope")
-                                .font(.system(size: 7, weight: .bold))
-                            Text(targetSummary(injection))
-                                .font(.system(size: 8, weight: .semibold))
-                                .lineLimit(1)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 6, weight: .bold))
-                        }
-                        .foregroundStyle(accent)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1.5)
-                        .background(Capsule().fill(accent.opacity(0.10)))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            Spacer(minLength: 4)
-
-            VStack(spacing: 1) {
-                Toggle("", isOn: weakBinding(for: injection))
-                    .labelsHidden()
-                    .scaleEffect(0.75)
-                    .tint(accent)
-                Text("sign_injection_weak".localized)
-                    .font(.system(size: 7.5))
-                    .foregroundStyle(.secondary)
-            }
-
-            Button {
-                injections.removeAll { $0.id == injection.id }
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.red.opacity(0.8))
-                    .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.red.opacity(0.08)))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("delete".localized)
-        }
-        .padding(9)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
-        )
-    }
-
-    private func weakBinding(for injection: SigningInjection) -> Binding<Bool> {
-        Binding(
-            get: { injections.first(where: { $0.id == injection.id })?.weak ?? true },
-            set: { newValue in
-                if let index = injections.firstIndex(where: { $0.id == injection.id }) {
-                    injections[index].weak = newValue
+    private var signActionView: some SwiftUI.View {
+        SigningActionCard(
+            canSign: canSign,
+            isRunning: session.isRunning,
+            hint: hintText,
+            accent: accent,
+            onTap: {
+                if canSign {
+                    startSigning()
+                } else {
+                    presentError(message: hintText)
                 }
             }
         )
     }
 
-    private var optionsCard: some SwiftUI.View {
-        sectionCard(title: "sign_options_section".localized, icon: "slider.horizontal.3", count: nil, action: nil) {
-            VStack(spacing: 10) {
-                labeledField(title: "sign_bundle_id".localized, text: $bundleID, mono: true)
-                labeledField(title: "sign_certificate_id".localized, text: $bundleID, mono: true)
-
-                HStack(spacing: 6) {
-                    Text("sign_certificate_id_hint".localized)
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Spacer(minLength: 4)
-
-                    Button {
-                        fillCertificateIDFromProfile()
-                    } label: {
-                        Text("sign_fill_from_profile".localized)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(accent)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(profile == nil)
-                    .opacity(profile == nil ? 0.45 : 1)
-                }
-
-                if extensionIDOverrideActive {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("sign_extension_follow_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text("sign_extension_ids".localized)
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(.secondary)
-
-                        ForEach(targets.filter { target in
-                            target.kind != .main
-                                && !(removeWatchApp && target.kind == .watchApp)
-                        }.prefix(4)) { target in
-                            HStack(spacing: 6) {
-                                Image(systemName: target.kind.icon)
-                                    .font(.system(size: 9, weight: .semibold))
-                                    .foregroundStyle(accent)
-                                Text(target.kind.title)
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                                Spacer(minLength: 4)
-                                Text(effectiveExtensionID(for: target))
-                                    .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
-                            }
-                        }
-                    }
-                    .padding(9)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
-                    )
-                }
-
-                Button {
-                    showExtensionCredentials = true
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "puzzlepiece.extension.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(accent)
-                            .frame(width: 24, height: 24)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("sign_extension_credentials".localized)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.primary)
-                            Text("sign_extension_credentials_hint".localized)
-                                .font(.system(size: 9))
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-
-                        Spacer()
-
-                        if !extensionChoices.isEmpty {
-                            Text("\(extensionChoices.count)")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(accent)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Capsule().fill(accent.opacity(0.12)))
-                        }
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(9)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
-                    )
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(availableTargets.filter { $0.kind != .main }.isEmpty)
-
-                labeledField(title: "sign_display_name".localized, text: $displayName, mono: false)
-                labeledField(title: "sign_version".localized, text: $version, mono: true)
-
-                Toggle(isOn: $removeProvision) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_remove_provision".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text("sign_remove_provision_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $removeWatchApp) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_remove_watch".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text("sign_remove_watch_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $removeUncoveredExtensions) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_remove_uncovered_extensions".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text("sign_remove_uncovered_extensions_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-                .disabled(profile == nil)
-
-                Toggle(isOn: $useTargetProfiles) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_use_target_profiles".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text(String(format: "sign_use_target_profiles_hint".localized, autoMatchedTargetCount))
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-                .disabled(profile == nil || availableTargets.filter { $0.kind != .main }.isEmpty)
-
-                Toggle(isOn: $autoInstallAfterSign) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_auto_install".localized)
-                            .font(.system(size: 12, weight: .medium))
-                        Text("sign_auto_install_hint".localized)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Button {
-                    showDeviceSheet = true
-                } label: {
-                    HStack(spacing: 9) {
-                        Image(systemName: "iphone")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(accent)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("sign_device_title".localized)
-                                .font(.system(size: 12, weight: .medium))
-                            Text(deviceUDID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                 ? "sign_device_not_set".localized
-                                 : deviceUDID)
-                                .font(.system(size: 8.5, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                        Spacer(minLength: 4)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.vertical, 2)
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    showEntitlements = true
-                } label: {
-                    HStack(spacing: 9) {
-                        Image(systemName: "checkmark.shield.fill")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(accent)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("sign_ent_mode".localized)
-                                .font(.system(size: 12, weight: .medium))
-                            Text(entitlementsMode.title + " · " + entitlementsMode.hint)
-                                .font(.system(size: 9))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        Spacer(minLength: 4)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.vertical, 2)
-                }
-                .buttonStyle(.plain)
-
-                Toggle(isOn: $isolateKeychain) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_ent_isolate_keychain".localized)
-                            .font(.system(size: 11, weight: .medium))
-                        Text("sign_ent_isolate_keychain_hint".localized)
-                            .font(.system(size: 8.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $dropUnsignableEntitlements) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_ent_drop_unsignable".localized)
-                            .font(.system(size: 11, weight: .medium))
-                        Text("sign_ent_drop_unsignable_hint".localized)
-                            .font(.system(size: 8.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $removeICloudEntitlements) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_ent_remove_icloud".localized)
-                            .font(.system(size: 11, weight: .medium))
-                        Text("sign_ent_remove_icloud_hint".localized)
-                            .font(.system(size: 8.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $keepGetTaskAllow) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_ent_keep_get_task_allow".localized)
-                            .font(.system(size: 11, weight: .medium))
-                        Text("sign_ent_keep_get_task_allow_hint".localized)
-                            .font(.system(size: 8.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                Toggle(isOn: $increasedMemoryLimit) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("sign_ent_increased_memory".localized)
-                            .font(.system(size: 11, weight: .medium))
-                        Text("sign_ent_increased_memory_hint".localized)
-                            .font(.system(size: 8.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .tint(accent)
-
-                if !validationIssues.isEmpty {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(validationIssues) { issue in
-                            HStack(alignment: .top, spacing: 5) {
-                                Image(systemName: issue.isError ? "xmark.octagon.fill" : "exclamationmark.triangle.fill")
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(issue.isError ? .red : .orange)
-                                    .padding(.top, 1)
-                                Text(issue.text)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(issue.isError ? .red : .orange)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Spacer(minLength: 0)
-                            }
-                        }
-                    }
-                    .padding(9)
-                    .background(
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .fill(Color.red.opacity(0.05))
-                    )
-                }
-
-            }
-        }
+    private var historyCardView: some SwiftUI.View {
+        SigningHistoryCard(
+            records: historyStore.records,
+            accent: accent,
+            colorScheme: colorScheme,
+            onOpen: { showHistory = true }
+        )
     }
+
+    private var extensionCardView: some SwiftUI.View {
+        SigningExtensionCard(
+            injections: injections,
+            accent: accent,
+            colorScheme: colorScheme,
+            onAdd: { showInjectionMenu = true },
+            onEditTargets: { injection in
+                targetEditingInjectionID = injection.id
+                showTargetSheet = true
+            },
+            onRemove: { id in injections.removeAll { $0.id == id } },
+            onToggleWeak: { id, weak in
+                if let index = injections.firstIndex(where: { $0.id == id }) {
+                    injections[index].weak = weak
+                }
+            }
+        )
+    }
+
+    private var optionsCardView: some SwiftUI.View {
+        SigningOptionsCard(
+            bundleID: $bundleID,
+            displayName: $displayName,
+            version: $version,
+            removeProvision: $removeProvision,
+            removeWatchApp: $removeWatchApp,
+            removeUncoveredExtensions: $removeUncoveredExtensions,
+            useTargetProfiles: $useTargetProfiles,
+            autoInstallAfterSign: $autoInstallAfterSign,
+            isolateKeychain: $isolateKeychain,
+            dropUnsignableEntitlements: $dropUnsignableEntitlements,
+            removeICloudEntitlements: $removeICloudEntitlements,
+            keepGetTaskAllow: $keepGetTaskAllow,
+            increasedMemoryLimit: $increasedMemoryLimit,
+            targets: targets,
+            hasProfile: profile != nil,
+            extensionIDOverrideActive: extensionIDOverrideActive,
+            hasExtensionTargets: !availableTargets.filter { $0.kind != .main }.isEmpty,
+            autoMatchedTargetCount: autoMatchedTargetCount,
+            extensionChoicesCount: extensionChoices.count,
+            entitlementsMode: entitlementsMode,
+            validationIssues: validationIssues,
+            deviceUDID: deviceUDID,
+            accent: accent,
+            colorScheme: colorScheme,
+            effectiveExtensionID: { effectiveExtensionID(for: $0) },
+            onFillCertificateID: { fillCertificateIDFromProfile() },
+            onShowExtensionCredentials: { showExtensionCredentials = true },
+            onShowDeviceSheet: { showDeviceSheet = true },
+            onShowEntitlements: { showEntitlements = true }
+        )
+    }
+
 
     private var signingPreflight: some SwiftUI.View {
         VStack(alignment: .leading, spacing: 7) {
@@ -2095,71 +1482,6 @@ struct SignView: SwiftUI.View {
         return nil
     }
 
-    private var signAction: some SwiftUI.View {
-        VStack(spacing: 6) {
-            Button {
-                if canSign {
-                    startSigning()
-                } else {
-                    presentError(message: hintText)
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    if session.isRunning {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.white)
-                            .scaleEffect(0.85)
-                    } else {
-                        Image(systemName: "signature")
-                            .font(.system(size: 15, weight: .bold))
-                    }
-                    Text(session.isRunning ? "sign_running".localized : "sign_start".localized)
-                        .font(.system(size: 15, weight: .bold))
-                }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: canSign || session.isRunning
-                                    ? [accent, Color.cyan.opacity(0.85)]
-                                    : [Color.gray.opacity(0.55), Color.gray.opacity(0.40)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .shadow(color: canSign ? accent.opacity(0.35) : .clear, radius: 10, y: 5)
-                )
-            }
-            .buttonStyle(.plain)
-            .disabled(session.isRunning)
-            .opacity(session.isRunning ? 0.75 : 1)
-
-            if !canSign && !session.isRunning {
-                Text(hintText)
-                    .font(.system(size: 9.5))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    private var hintText: String {
-        if certificate == nil || profile == nil || selectedIPA == nil {
-            return "sign_hint_select_all".localized
-        }
-        if certificatePassword == nil {
-            return "sign_hint_password_missing".localized
-        }
-        if hasBlockingIssues {
-            return "sign_hint_fix_issues".localized
-        }
-        return "sign_hint_ready".localized
-    }
 
     private func sectionCard<Content: SwiftUI.View>(
         title: String,
@@ -2251,64 +1573,6 @@ struct SignView: SwiftUI.View {
         .buttonStyle(.plain)
     }
 
-    private func normalizedCertificateID(_ raw: String) -> String {
-        var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty else { return "" }
-        if let dot = value.firstIndex(of: ".") {
-            let prefix = String(value[..<dot])
-            if prefix.count == 10,
-               prefix.allSatisfy({ $0.isASCII && ($0.isUppercase || $0.isNumber) }) {
-                value = String(value[value.index(after: dot)...])
-            }
-        }
-        return value
-    }
-
-    private func fillCertificateIDFromProfile() {
-        guard let profile else {
-            presentError(message: "sign_hint_select_all".localized)
-            return
-        }
-        let raw = profile.applicationIdentifier.isEmpty ? profile.bundleIDPattern : profile.applicationIdentifier
-        let normalized = normalizedCertificateID(raw)
-        guard !normalized.isEmpty, !normalized.contains("*") else {
-            presentError(message: "sign_certificate_id_wildcard".localized)
-            return
-        }
-        bundleID = normalized
-        SoundEffects.play(.tick)
-    }
-
-    private func labeledField(title: String, text: Binding<String>, mono: Bool) -> some SwiftUI.View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(.secondary)
-            TextField(title, text: text)
-                .font(.system(size: 12, design: mono ? .monospaced : .default))
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(Color.primary.opacity(colorScheme == .dark ? 0.06 : 0.04))
-                )
-        }
-    }
-
-    private func meta(_ title: String, _ value: String, warning: Bool = false) -> some SwiftUI.View {
-        HStack(spacing: 3) {
-            Text(title)
-                .font(.system(size: 8.5))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: 8.5, weight: .medium, design: .monospaced))
-                .foregroundStyle(warning ? .red : .secondary)
-                .lineLimit(1)
-        }
-    }
-
     private func dateText(_ date: Date) -> String {
         date.formatted(date: .abbreviated, time: .omitted)
     }
@@ -2346,8 +1610,7 @@ struct SignView: SwiftUI.View {
             presentError(message: hintText)
             return
         }
-        let rawBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
-        let finalBundleID = normalizedCertificateID(rawBundleID)
+        let finalBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
         let finalName = trimmedDisplayName.isEmpty ? ipa.displayName : trimmedDisplayName
         let finalVersion = trimmedVersion.isEmpty ? ipa.version : trimmedVersion
         let isSigningSelf = finalBundleID == Bundle.main.bundleIdentifier
@@ -2399,236 +1662,14 @@ struct SignView: SwiftUI.View {
         didAutoInstall = false
         let impact = UIImpactFeedbackGenerator(style: .medium)
         impact.impactOccurred()
-        withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+        MotionTransition.smooth.run {
             session.start(taskRequest)
         }
     }
 
     private func shareOutput() {
         guard let output = session.outputURL else { return }
-        SoundEffects.play(.tap)
         shareFile = ShareFile(url: output)
-    }
-
-    private var installPhaseCard: some SwiftUI.View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(spacing: 7) {
-                Image(systemName: installPhaseIcon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(installPhaseColor)
-                Text("sign_install_phase_title".localized)
-                    .font(.system(size: 13, weight: .bold))
-                Spacer()
-                Text(installPhasePercent)
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(installPhaseColor)
-            }
-
-            HStack(spacing: 4) {
-                ForEach(Array(installPhaseSteps.enumerated()), id: \.offset) { index, title in
-                    VStack(spacing: 3) {
-                        ZStack {
-                            Circle()
-                                .fill(index <= installPhaseStep ? installPhaseColor : Color.primary.opacity(0.08))
-                                .frame(width: 18, height: 18)
-                            if index < installPhaseStep {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 8, weight: .bold))
-                                    .foregroundStyle(.white)
-                            } else {
-                                Text("\(index + 1)")
-                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(index == installPhaseStep ? .white : .secondary)
-                            }
-                        }
-                        Text(title)
-                            .font(.system(size: 7.5, weight: .semibold))
-                            .foregroundStyle(index <= installPhaseStep ? installPhaseColor : .secondary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    if index < installPhaseSteps.count - 1 {
-                        Rectangle()
-                            .fill(index < installPhaseStep ? installPhaseColor.opacity(0.5) : Color.primary.opacity(0.08))
-                            .frame(height: 1)
-                            .offset(y: -7)
-                    }
-                }
-            }
-
-            ProgressView(value: installPhaseProgress)
-                .tint(installPhaseColor)
-                .scaleEffect(y: 0.75)
-
-            Text(installPhaseMessage)
-                .font(.system(size: 9.5))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(installPhaseColor.opacity(0.18), lineWidth: 0.5)
-        )
-    }
-
-    private var installPhaseSteps: [String] {
-        [
-            "sign_install_step_prepare".localized,
-            "sign_install_step_connect".localized,
-            "sign_install_step_transfer".localized,
-            "sign_install_step_install".localized,
-            "sign_install_step_deliver".localized
-        ]
-    }
-
-    private var installPhaseStep: Int {
-        switch installPhase {
-        case .idle, .preparing: return 0
-        case .connecting: return 1
-        case .transferring: return 2
-        case .awaitingSystem: return 3
-        case .delivered: return 4
-        case .failed: return 0
-        }
-    }
-
-    private var installPhaseProgress: Double {
-        switch installPhase {
-        case .transferring(let fraction): return max(0.05, min(0.95, fraction))
-        case .preparing: return 0.05
-        case .connecting: return 0.2
-        case .awaitingSystem: return 0.7
-        case .delivered: return 1
-        case .failed: return 0
-        case .idle: return 0
-        }
-    }
-
-    private var installPhasePercent: String {
-        "\(Int(min(1, max(0, installPhaseProgress)) * 100))%"
-    }
-
-    private var installPhaseColor: Color {
-        switch installPhase {
-        case .failed: return .red
-        case .delivered: return .green
-        default: return accent
-        }
-    }
-
-    private var installPhaseIcon: String {
-        switch installPhase {
-        case .failed: return "exclamationmark.triangle.fill"
-        case .delivered: return "checkmark.seal.fill"
-        default: return "iphone.arrow.down"
-        }
-    }
-
-    private var installPhaseMessage: String {
-        switch installPhase {
-        case .idle: return ""
-        case .preparing: return "sign_install_msg_preparing".localized
-        case .connecting: return "sign_install_msg_connecting".localized
-        case .transferring(let fraction): return String(format: "sign_install_msg_transferring".localized, Int(fraction * 100))
-        case .awaitingSystem: return "sign_install_msg_awaiting".localized
-        case .delivered: return "sign_install_msg_delivered".localized
-        case .failed(let message): return message
-        }
-    }
-
-    private func signResultCard(_ output: URL) -> some SwiftUI.View {
-        let info = try? SigningIPAInfo.read(url: output)
-        let isSelf = info?.bundleIdentifier == Bundle.main.bundleIdentifier
-        return VStack(alignment: .leading, spacing: 9) {
-            HStack(spacing: 7) {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.green)
-                Text("sign_result_title".localized)
-                    .font(.system(size: 13, weight: .bold))
-                Spacer()
-                Text(info?.sizeText ?? "")
-                    .font(.system(size: 8.5, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            }
-
-            if let info {
-                HStack(spacing: 6) {
-                    resultChip("sign_result_bundle_id".localized, info.bundleIdentifier, color: isSelf ? .red : .secondary)
-                    resultChip("sign_version".localized, info.version, color: .secondary)
-                }
-            }
-
-            if isSelf {
-                HStack(alignment: .top, spacing: 5) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.red)
-                    Text("sign_result_same_warning".localized)
-                        .font(.system(size: 9.5))
-                        .foregroundStyle(.red)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-
-            HStack(spacing: 8) {
-                Button {
-                    shareOutput()
-                } label: {
-                    Label("sign_share".localized, systemImage: "square.and.arrow.up")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.cyan)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(Color.cyan.opacity(0.12)))
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    installOutput()
-                } label: {
-                    Label("sign_install".localized, systemImage: "arrow.down.app.fill")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(LinearGradient(colors: [.cyan, .blue], startPoint: .leading, endPoint: .trailing)))
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-            }
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(isSelf ? Color.red.opacity(0.25) : Color.primary.opacity(0.06), lineWidth: 0.5)
-        )
-    }
-
-    private func resultChip(_ title: String, _ value: String, color: Color) -> some SwiftUI.View {
-        HStack(spacing: 3) {
-            Text(title)
-                .font(.system(size: 7.5))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: 8.5, weight: .semibold, design: .monospaced))
-                .foregroundStyle(color)
-                .lineLimit(1)
-                .truncationMode(.middle)
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Capsule().fill(Color.primary.opacity(0.04)))
     }
 
     private struct PendingSigningMetadata {
@@ -2643,75 +1684,6 @@ struct SignView: SwiftUI.View {
         let injectionNames: [String]
         let certificateID: UUID
         let profileID: UUID
-    }
-
-    private var historyCard: some SwiftUI.View {
-        sectionCard(
-            title: "sign_history_title".localized,
-            icon: "clock.arrow.circlepath",
-            count: historyStore.records.count,
-            action: { showHistory = true }
-        ) {
-            if historyStore.records.isEmpty {
-                emptyRow(
-                    icon: "clock",
-                    title: "sign_history_empty".localized,
-                    hint: "sign_history_empty_hint".localized,
-                    actionTitle: "sign_history_open".localized
-                ) {
-                    showHistory = true
-                }
-            } else {
-                VStack(spacing: 6) {
-                    ForEach(historyStore.records.prefix(3)) { record in
-                        Button {
-                            showHistory = true
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "app.fill")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(accent)
-                                    .frame(width: 26, height: 26)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                            .fill(accent.opacity(0.10))
-                                    )
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(record.displayName)
-                                        .font(.system(size: 10.5, weight: .semibold))
-                                        .lineLimit(1)
-                                    Text(record.bundleId.isEmpty ? record.outputName : record.bundleId)
-                                        .font(.system(size: 8, design: .monospaced))
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                }
-                                Spacer(minLength: 4)
-                                Text(record.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.system(size: 8, design: .monospaced))
-                                    .foregroundStyle(.tertiary)
-                            }
-                            .padding(7)
-                            .background(
-                                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                    .fill(Color.primary.opacity(0.03))
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    if historyStore.records.count > 3 {
-                        Button {
-                            showHistory = true
-                        } label: {
-                            Text("sign_history_view_all".localized)
-                                .font(.system(size: 9.5, weight: .semibold))
-                                .foregroundStyle(accent)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
     }
 
     private func recordSigningResult() {
@@ -2736,18 +1708,14 @@ struct SignView: SwiftUI.View {
 
     private func refreshFromHistory(_ record: SigningHistoryRecord) {
         guard let source = historyStore.retainedSourceURL(for: record) else {
-            alertTitle = "sign_error_title".localized
-            alertMessage = "sign_history_refresh_source_missing".localized
-            showAlert = true
+            presentError(message: "sign_history_refresh_source_missing".localized)
             return
         }
         guard let certificateID = record.certificateID,
               store.certificates.contains(where: { $0.id == certificateID }),
               let profileID = record.profileID,
               store.profiles.contains(where: { $0.id == profileID }) else {
-            alertTitle = "sign_error_title".localized
-            alertMessage = "sign_history_refresh_identity_missing".localized
-            showAlert = true
+            presentError(message: "sign_history_refresh_identity_missing".localized)
             return
         }
         store.selectCertificate(certificateID)
@@ -2780,27 +1748,36 @@ struct SignView: SwiftUI.View {
             return
         }
         guard info.bundleIdentifier != Bundle.main.bundleIdentifier else {
-            showSelfInstallAlert = true
+            AppPresenter.shared.present(alert: AppAlert(
+                title: "sign_install_self_title".localized,
+                message: "sign_install_self_warning".localized,
+                primaryTitle: "sign_share".localized,
+                onPrimary: { shareOutput() },
+                secondaryTitle: "cancel".localized
+            ))
             return
         }
         isInstalling = true
         installPhase = .preparing
-        Task {
+        tasks.replace(key: "install") { token in
             do {
                 try await SigningInstaller.install(ipaURL: output, onPhase: { phase in
-                    installPhase = phase
+                    self.installPhase = phase
                 })
-                await MainActor.run {
-                    isInstalling = false
-                }
+                guard self.tasks.isCurrent(token, for: "install") else { return }
+                self.isInstalling = false
+                TopBannerPresenter.shared.show(TopBanner(
+                    message: "sign_install_handed_off".localized,
+                    systemImage: "checkmark.seal.fill"
+                ))
             } catch {
-                await MainActor.run {
-                    isInstalling = false
-                    installPhase = .failed(error.localizedDescription)
-                    alertTitle = "sign_error_title".localized
-                    alertMessage = error.localizedDescription
-                    showAlert = true
-                }
+                guard self.tasks.isCurrent(token, for: "install") else { return }
+                self.isInstalling = false
+                self.installPhase = .failed(error.localizedDescription)
+                AppPresenter.shared.present(alert: AppAlert(
+                    title: "sign_error_title".localized,
+                    message: error.localizedDescription
+                ))
             }
         }
     }
@@ -2812,10 +1789,8 @@ struct SignView: SwiftUI.View {
                 let info = try await Task.detached { try SigningIPAInfo.read(url: url) }.value
                 let scanned = (try? await Task.detached { try SigningTargetScanner.scan(ipaURL: url) }.value) ?? []
                 await MainActor.run {
-                    SoundEffects.play(.rise)
                     selectedIPA = info
                     bundleID = info.bundleIdentifier
-                    extensionChoices = [:]
                     if pendingRefreshRecord == nil {
                         autoSelectProfileForCurrentIPA()
                     }
@@ -2843,72 +1818,39 @@ struct SignView: SwiftUI.View {
         }
     }
 
-    /// 证书和描述文件可以一次多选，一起导入：
-    /// 描述文件当场入库，证书按顺序弹密码框。
-    private func handleIdentityImport(_ urls: [URL]) {
-        var certificates: [URL] = []
-        var profiles: [URL] = []
-
-        CertImportLog.add("picked \(urls.count) file(s): " + urls.map { "\($0.lastPathComponent)[\($0.pathExtension)]" }.joined(separator: ", "))
-
-        for url in urls {
-            switch url.pathExtension.lowercased() {
-            case "p12", "pfx": certificates.append(url)
-            case "mobileprovision": profiles.append(url)
-            default: break
+    private func handleCertificateImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                pendingCertificateData = data
+                pendingCertificateName = url.lastPathComponent
+                showCertificateSheet = true
+            } catch {
+                presentError(error)
             }
-        }
-
-        guard !certificates.isEmpty || !profiles.isEmpty else {
-            presentError(message: "sign_import_wrong_cert".localized)
-            return
-        }
-
-        var importedProfiles = 0
-        for profile in profiles where importProfileFile(profile) {
-            importedProfiles += 1
-        }
-        if importedProfiles > 0 {
-            SoundEffects.play(.rise)
-        }
-
-        if !certificates.isEmpty {
-            pendingCertificateQueue.append(contentsOf: certificates)
-            advanceCertificateQueue()
-        }
-    }
-
-    private func advanceCertificateQueue() {
-        guard !showCertificateSheet, !pendingCertificateQueue.isEmpty else { return }
-        let next = pendingCertificateQueue.removeFirst()
-        loadCertificateFile(next)
-    }
-
-    private func loadCertificateFile(_ url: URL) {
-        let scoped = url.startAccessingSecurityScopedResource()
-        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-        do {
-            let data = try Data(contentsOf: url)
-            pendingCertificateData = data
-            pendingCertificateName = url.lastPathComponent
-            showCertificateSheet = true
-        } catch {
+        case .failure(let error):
             presentError(error)
-            advanceCertificateQueue()
         }
     }
 
-    @discardableResult
-    private func importProfileFile(_ url: URL) -> Bool {
-        let scoped = url.startAccessingSecurityScopedResource()
-        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-        do {
-            let data = try Data(contentsOf: url)
-            _ = try store.importProfile(data: data, originalFileName: url.lastPathComponent)
-            return true
-        } catch {
+    private func handleProfileImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                _ = try store.importProfile(data: data, originalFileName: url.lastPathComponent)
+            } catch {
+                presentError(error)
+            }
+        case .failure(let error):
             presentError(error)
-            return false
         }
     }
 
@@ -2934,10 +1876,61 @@ struct SignView: SwiftUI.View {
         }
     }
 
+    private func normalizedCertificateID(_ raw: String) -> String {
+        var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return "" }
+        if let dot = value.firstIndex(of: ".") {
+            let prefix = String(value[..<dot])
+            if prefix.count == 10,
+               prefix.allSatisfy({ $0.isASCII && ($0.isUppercase || $0.isNumber) }) {
+                value = String(value[value.index(after: dot)...])
+            }
+        }
+        return value
+    }
+
+    private func fillCertificateIDFromProfile() {
+        guard let profile else {
+            presentError(message: "sign_hint_select_all".localized)
+            return
+        }
+        let raw = profile.applicationIdentifier.isEmpty ? profile.bundleIDPattern : profile.applicationIdentifier
+        let normalized = normalizedCertificateID(raw)
+        guard !normalized.isEmpty, !normalized.contains("*") else {
+            presentError(message: "sign_certificate_id_wildcard".localized)
+            return
+        }
+        bundleID = normalized
+    }
+
+    private func handleIdentityImport(_ urls: [URL]) {
+        guard !urls.isEmpty else { return }
+        let certificateFiles = urls.filter { $0.pathExtension.lowercased() == "p12" }
+        let profileFiles = urls.filter { $0.pathExtension.lowercased() == "mobileprovision" }
+        for url in profileFiles {
+            guard let data = try? Data(contentsOf: url) else { continue }
+            _ = try? store.importProfile(data: data, originalFileName: url.lastPathComponent)
+        }
+        pendingCertificateQueue = certificateFiles
+        advanceCertificateQueue()
+    }
+
+    private func advanceCertificateQueue() {
+        guard pendingCertificateData == nil, !pendingCertificateQueue.isEmpty else { return }
+        let url = pendingCertificateQueue.removeFirst()
+        guard let data = try? Data(contentsOf: url) else {
+            advanceCertificateQueue()
+            return
+        }
+        pendingCertificateName = url.lastPathComponent
+        pendingCertificateData = data
+        showCertificateSheet = true
+    }
+
     private func consumeSigningHandoff() {
         guard let url = handoff.pendingIPA else { return }
         handoff.pendingIPA = nil
-        handlePickedIPA(url)
+        applyIPA(url)
     }
 
     private var availableTargets: [SigningTarget] {
@@ -2980,7 +1973,8 @@ struct SignView: SwiftUI.View {
                   !(removeWatchApp && target.kind == .watchApp),
                   !target.bundleIdentifier.isEmpty else { return false }
             if independentProfile(for: target) != nil { return false }
-            return !profile.covers(bundleID: effectiveExtensionID(for: target))
+            return profile.bundleIDPattern != "*" &&
+                profile.bundleIDPattern != target.bundleIdentifier
         }
     }
 
@@ -3100,10 +2094,10 @@ struct SignView: SwiftUI.View {
     }
 
     private func presentError(message: String) {
-        SoundEffects.play(.error)
-        alertTitle = "sign_error_title".localized
-        alertMessage = message
-        showAlert = true
+        AppPresenter.shared.present(alert: AppAlert(
+            title: "sign_error_title".localized,
+            message: message
+        ))
     }
 
     private var p12Type: UTType {
@@ -3129,10 +2123,4 @@ struct SignView: SwiftUI.View {
     private var dylibType: UTType {
         UTType(filenameExtension: "dylib") ?? .data
     }
-}
-
-private struct SigningIssue: Identifiable {
-    let id = UUID()
-    let text: String
-    let isError: Bool
 }

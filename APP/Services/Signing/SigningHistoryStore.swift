@@ -26,14 +26,17 @@ final class SigningHistoryStore: ObservableObject {
 
     private let signedDirectory: URL
     private let sourcesDirectory: URL
-    private let indexURL: URL
+    private let store: VersionedStore<[SigningHistoryRecord]>
 
     private init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let signingDirectory = documents.appendingPathComponent("Signing", isDirectory: true)
         signedDirectory = SigningStore.shared.signedOutputDirectory
         sourcesDirectory = signingDirectory.appendingPathComponent("RefreshSources", isDirectory: true)
-        indexURL = signingDirectory.appendingPathComponent("history.json")
+        store = VersionedStore(
+            fileURL: signingDirectory.appendingPathComponent("history.json"),
+            currentVersion: 1
+        )
         try? FileManager.default.createDirectory(at: sourcesDirectory, withIntermediateDirectories: true)
         load()
     }
@@ -158,8 +161,7 @@ final class SigningHistoryStore: ObservableObject {
 
     private func load() {
         var loaded: [SigningHistoryRecord] = []
-        if let data = try? Data(contentsOf: indexURL),
-           let decoded = try? JSONDecoder().decode([SigningHistoryRecord].self, from: data) {
+        if let decoded = store.load() {
             loaded = decoded
         }
 
@@ -198,7 +200,6 @@ final class SigningHistoryStore: ObservableObject {
     }
 
     private func save() {
-        guard let data = try? JSONEncoder().encode(records) else { return }
-        try? data.write(to: indexURL, options: .atomic)
+        store.save(records)
     }
 }

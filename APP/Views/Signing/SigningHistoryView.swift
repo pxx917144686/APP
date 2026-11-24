@@ -1,20 +1,132 @@
 import SwiftUI
 import LocalAuthentication
 
+struct SigningHistoryViewState: BindableState {
+    var activeRecord: SigningHistoryRecord?
+    var shareFile: ShareFile?
+    var isInstalling = false
+    var hiddenUnlocked = false
+}
+
+enum SigningHistoryViewAction {
+    case select(SigningHistoryRecord)
+    case clearSelection
+    case share(SigningHistoryRecord)
+    case clearShare
+    case install(SigningHistoryRecord)
+    case delete(SigningHistoryRecord)
+    case toggleHidden(SigningHistoryRecord)
+    case toggleVault
+}
+
+@MainActor
+final class SigningHistoryViewModel: StateStoreViewModel<SigningHistoryViewState, SigningHistoryViewAction> {
+    private let store: SigningHistoryStore
+
+    init(store: SigningHistoryStore = .shared) {
+        self.store = store
+        super.init(initialViewState: SigningHistoryViewState())
+    }
+
+    override func process(viewAction: SigningHistoryViewAction) {
+        switch viewAction {
+        case .select(let record):
+            state.activeRecord = record
+        case .clearSelection:
+            state.activeRecord = nil
+        case .share(let record):
+            state.shareFile = ShareFile(url: store.outputURL(for: record))
+        case .clearShare:
+            state.shareFile = nil
+        case .install(let record):
+            install(record)
+        case .delete(let record):
+            delete(record)
+        case .toggleHidden(let record):
+            store.setHidden(record, hidden: record.isHidden != true)
+        case .toggleVault:
+            toggleVault()
+        }
+    }
+
+    private func install(_ record: SigningHistoryRecord) {
+        let url = store.outputURL(for: record)
+        guard let info = try? SigningIPAInfo.read(url: url) else {
+            presentError("sign_err_invalid_ipa".localized)
+            return
+        }
+        guard info.bundleIdentifier != Bundle.main.bundleIdentifier else {
+            presentError("sign_history_install_self".localized, title: "sign_install_self_title".localized)
+            return
+        }
+        state.isInstalling = true
+        Task { @MainActor in
+            do {
+                try await SigningInstaller.install(ipaURL: url)
+                state.isInstalling = false
+                TopBannerPresenter.shared.show(TopBanner(
+                    message: "sign_install_handed_off".localized,
+                    systemImage: "checkmark.seal.fill"
+                ))
+            } catch {
+                state.isInstalling = false
+                presentError(error.localizedDescription)
+            }
+        }
+    }
+
+    private func delete(_ record: SigningHistoryRecord) {
+        guard store.delete(record) else {
+            presentError("sign_history_delete_failed".localized)
+            return
+        }
+    }
+
+    private func toggleVault() {
+        if state.hiddenUnlocked {
+            state.hiddenUnlocked = false
+            return
+        }
+        let context = LAContext()
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+            presentError(
+                error?.localizedDescription ?? "sign_history_auth_unavailable_hint".localized,
+                title: "sign_history_auth_unavailable".localized
+            )
+            return
+        }
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "sign_history_hidden_auth_reason".localized) { success, error in
+            Task { @MainActor in
+                if success {
+                    self.state.hiddenUnlocked = true
+                } else {
+                    self.presentError(
+                        error?.localizedDescription ?? "sign_history_auth_failed_hint".localized,
+                        title: "sign_history_auth_failed".localized
+                    )
+                }
+            }
+        }
+    }
+
+    private func presentError(_ message: String, title: String? = nil) {
+        AppPresenter.shared.present(alert: AppAlert(
+            title: title ?? "sign_error_title".localized,
+            message: message
+        ))
+    }
+}
+
 struct SigningHistoryView: View {
     var onRefresh: (SigningHistoryRecord) -> Void = { _ in }
 
     @ObservedObject private var store = SigningHistoryStore.shared
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appViewFactory) private var appViewFactory
 
-    @State private var activeRecord: SigningHistoryRecord?
-    @State private var shareFile: ShareFile?
-    @State private var isInstalling = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    @State private var showAlert = false
-    @State private var hiddenUnlocked = false
+    @State private var model = SigningHistoryViewModel()
     @AppStorage("signing.strictHiddenLibrary") private var strictHiding = false
 
     var body: some SwiftUI.View {
@@ -34,7 +146,7 @@ struct SigningHistoryView: View {
                             ForEach(regularRecords) { record in
                                 recordRow(record)
                             }
-                            if hiddenUnlocked, !hiddenRecords.isEmpty {
+                            if model.state.hiddenUnlocked, !hiddenRecords.isEmpty {
                                 Text("sign_history_hidden_title".localized)
                                     .font(.system(size: 9, weight: .bold))
                                     .foregroundStyle(.secondary)
@@ -49,6 +161,7 @@ struct SigningHistoryView: View {
                         .padding(16)
                         .padding(.bottom, 30)
                     }
+                    .scrollEdgeFade(top: 14, bottom: 24)
                 }
             }
             .navigationTitle("sign_history_title".localized)
@@ -64,16 +177,19 @@ struct SigningHistoryView: View {
         .onAppear {
             store.refresh()
         }
-        .sheet(item: $shareFile) { file in
+        .sheet(item: Binding(
+            get: { model.state.shareFile },
+            set: { if $0 == nil { model.send(viewAction: .clearShare) } }
+        )) { file in
             ActivityView(items: [file.url])
         }
         .confirmationDialog(
-            activeRecord?.displayName ?? "",
+            model.state.activeRecord?.displayName ?? "",
             isPresented: Binding(
-                get: { activeRecord != nil },
-                set: { if !$0 { activeRecord = nil } }
+                get: { model.state.activeRecord != nil },
+                set: { if !$0 { model.send(viewAction: .clearSelection) } }
             ),
-            presenting: activeRecord
+            presenting: model.state.activeRecord
         ) { record in
             if store.hasRetainedSource(for: record) {
                 Button("sign_history_refresh".localized) {
@@ -83,22 +199,17 @@ struct SigningHistoryView: View {
             }
             if store.fileExists(for: record) {
                 Button("sign_install".localized) {
-                    install(record)
+                    model.send(viewAction: .install(record))
                 }
                 Button("sign_share".localized) {
-                    shareFile = ShareFile(url: store.outputURL(for: record))
+                    model.send(viewAction: .share(record))
                 }
             }
             Button("sign_delete".localized, role: .destructive) {
-                delete(record)
+                model.send(viewAction: .delete(record))
             }
         } message: { record in
             Text(store.fileExists(for: record) ? record.outputName : "sign_history_file_missing".localized)
-        }
-        .alert(alertTitle, isPresented: $showAlert) {
-            Button("ok".localized, role: .cancel) { }
-        } message: {
-            Text(alertMessage)
         }
     }
 
@@ -112,21 +223,21 @@ struct SigningHistoryView: View {
 
     private var notchVault: some SwiftUI.View {
         Button {
-            authenticateHiddenVault()
+            model.send(viewAction: .toggleVault)
         } label: {
             HStack(spacing: 8) {
                 Circle()
                     .fill(Color.black)
                     .frame(width: 10, height: 10)
                     .overlay(Circle().strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5))
-                Text(hiddenUnlocked ? "sign_history_hidden_unlocked".localized : "sign_history_hidden_vault".localized)
+                Text(model.state.hiddenUnlocked ? "sign_history_hidden_unlocked".localized : "sign_history_hidden_vault".localized)
                     .font(.system(size: 9.5, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.9))
                 Spacer()
-                Text(strictHiding && !hiddenUnlocked ? "•••" : String(format: "sign_history_hidden_count".localized, hiddenRecords.count))
+                Text(strictHiding && !model.state.hiddenUnlocked ? "•••" : String(format: "sign_history_hidden_count".localized, hiddenRecords.count))
                     .font(.system(size: 8.5, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.6))
-                Image(systemName: hiddenUnlocked ? "lock.open.fill" : "lock.fill")
+                Image(systemName: model.state.hiddenUnlocked ? "lock.open.fill" : "lock.fill")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(.white.opacity(0.65))
             }
@@ -142,36 +253,6 @@ struct SigningHistoryView: View {
         .buttonStyle(.plain)
     }
 
-    private func authenticateHiddenVault() {
-        if hiddenUnlocked {
-            hiddenUnlocked = false
-            return
-        }
-        let context = LAContext()
-        var error: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
-            alertTitle = "sign_history_auth_unavailable".localized
-            alertMessage = error?.localizedDescription ?? "sign_history_auth_unavailable_hint".localized
-            showAlert = true
-            return
-        }
-        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "sign_history_hidden_auth_reason".localized) { success, error in
-            DispatchQueue.main.async {
-                if success {
-                    hiddenUnlocked = true
-                } else {
-                    alertTitle = "sign_history_auth_failed".localized
-                    alertMessage = error?.localizedDescription ?? "sign_history_auth_failed_hint".localized
-                    showAlert = true
-                }
-            }
-        }
-    }
-
-    private func toggleHidden(_ record: SigningHistoryRecord) {
-        store.setHidden(record, hidden: record.isHidden != true)
-    }
-
     private var summary: some SwiftUI.View {
         HStack(spacing: 8) {
             Image(systemName: "clock.arrow.circlepath")
@@ -185,7 +266,7 @@ struct SigningHistoryView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if isInstalling {
+            if model.state.isInstalling {
                 ProgressView()
                     .scaleEffect(0.8)
                     .tint(themeManager.accentColor)
@@ -199,106 +280,15 @@ struct SigningHistoryView: View {
     }
 
     private func recordRow(_ record: SigningHistoryRecord) -> some SwiftUI.View {
-        let exists = store.fileExists(for: record)
-        return Button {
-            activeRecord = record
-        } label: {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
-                    Image(systemName: "app.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(themeManager.accentColor)
-                        .frame(width: 32, height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(themeManager.accentColor.opacity(0.10))
-                        )
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(record.displayName)
-                            .font(.system(size: 12, weight: .semibold))
-                            .lineLimit(1)
-                        Text(record.bundleId.isEmpty ? record.outputName : record.bundleId)
-                            .font(.system(size: 9, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-
-                    Spacer(minLength: 4)
-
-                    if store.hasRetainedSource(for: record) {
-                        Text("sign_history_source_ready".localized)
-                            .font(.system(size: 7.5, weight: .semibold))
-                            .foregroundStyle(.green)
-                    }
-                    if exists {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(.tertiary)
-                    } else {
-                        Text("sign_history_file_missing".localized)
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundStyle(.red)
-                    }
-                }
-
-                HStack(spacing: 8) {
-                    if !record.version.isEmpty {
-                        meta("v\(record.version)")
-                    }
-                    meta(record.date.formatted(date: .abbreviated, time: .shortened))
-                    if let profile = record.profileName {
-                        meta(profile, limit: 18)
-                    }
-                }
-
-                if let certificate = record.certificateName, !certificate.isEmpty {
-                    Text(certificate)
-                        .font(.system(size: 8, design: .monospaced))
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(1)
-                }
-            }
-            .padding(10)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
-            )
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
-            Button {
-                toggleHidden(record)
-            } label: {
-                Label(
-                    record.isHidden == true ? "sign_history_unhide".localized : "sign_history_hide".localized,
-                    systemImage: record.isHidden == true ? "eye" : "eye.slash"
-                )
-            }
-            Button(role: .destructive) {
-                if store.delete(record) == false {
-                    alertTitle = "sign_error_title".localized
-                    alertMessage = "sign_history_delete_failed".localized
-                    showAlert = true
-                }
-            } label: {
-                Label("sign_delete".localized, systemImage: "trash")
-            }
-        }
-    }
-
-    private func meta(_ text: String, limit: Int = 40) -> some SwiftUI.View {
-        Text(text)
-            .font(.system(size: 8, design: .monospaced))
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            .truncationMode(.middle)
-            .frame(maxWidth: CGFloat(limit) * 5, alignment: .leading)
+        appViewFactory.signingHistoryRow(SigningHistoryRowOptions(
+            record: record,
+            isAvailable: store.fileExists(for: record),
+            hasRetainedSource: store.hasRetainedSource(for: record),
+            accentColor: themeManager.accentColor,
+            onSelect: { model.send(viewAction: .select(record)) },
+            onToggleHidden: { model.send(viewAction: .toggleHidden(record)) },
+            onDelete: { model.send(viewAction: .delete(record)) }
+        ))
     }
 
     private var emptyState: some SwiftUI.View {
@@ -315,47 +305,6 @@ struct SigningHistoryView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(30)
-    }
-
-    private func install(_ record: SigningHistoryRecord) {
-        let url = store.outputURL(for: record)
-        guard let info = try? SigningIPAInfo.read(url: url) else {
-            alertTitle = "sign_error_title".localized
-            alertMessage = "sign_err_invalid_ipa".localized
-            showAlert = true
-            return
-        }
-        guard info.bundleIdentifier != Bundle.main.bundleIdentifier else {
-            alertTitle = "sign_install_self_title".localized
-            alertMessage = "sign_history_install_self".localized
-            showAlert = true
-            return
-        }
-        isInstalling = true
-        Task {
-            do {
-                try await SigningInstaller.install(ipaURL: url)
-                await MainActor.run {
-                    isInstalling = false
-                }
-            } catch {
-                await MainActor.run {
-                    isInstalling = false
-                    alertTitle = "sign_error_title".localized
-                    alertMessage = error.localizedDescription
-                    showAlert = true
-                }
-            }
-        }
-    }
-
-    private func delete(_ record: SigningHistoryRecord) {
-        guard store.delete(record) else {
-            alertTitle = "sign_error_title".localized
-            alertMessage = "sign_history_delete_failed".localized
-            showAlert = true
-            return
-        }
     }
 
     private func byteText(_ bytes: Int64) -> String {

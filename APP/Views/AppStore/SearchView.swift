@@ -1741,8 +1741,9 @@ struct SearchView: SwiftUI.View {
 
                 VStack(spacing: 16) {
 
-                    ArtworkView(
+                    ResourceImage(
                         url: URL(string: selectedApp?.artworkUrl512 ?? ""),
+                        pointSize: CGSize(width: 100, height: 100),
                         contentMode: .fit,
                         cornerRadius: 20
                     )
