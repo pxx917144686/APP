@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Pakej TestFlight ini tiada tiket SC_Info/sinf, jadi ia tidak boleh dinyahsulit. Log masuk di halaman TestFlight dan muat turun semula dengan Apple ID yang sama";
 "dc_reason_enomem" = "Kernel menolak untuk mencipta pemetaan nyahsulit (ENOMEM): tiket mungkin rosak atau fail dibungkus semula";
 "dc_err_no_entitlement" = "Binaan ini tiada hak dynamic-codesigning, jadi kernel tidak akan melakukan penyahsulitan FairPlay. Tandatangani semula app dengan sijil pembangun yang membawanya (sijil percuma dan sesetengah perkhidmatan tandatangan tiadanya).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Tunjukkan kemajuan tugas dan status latar belakang dalam Dynamic Island";
-"live_island_download" = "Muat turun";
-"live_island_sign" = "Penandatanganan";
-"live_island_decrypt" = "Penyahsulitan";
-"live_island_install" = "Pemasangan";
-"live_island_app" = "App di latar belakang";
-"island_app_phase" = "Berjalan di latar belakang";
-"island_app_tap_to_open" = "Ketik pulau untuk kembali";
 "sign_extension_ids" = "Bundle ID sambungan";
 "sign_extension_credentials" = "Sijil dan profil sambungan";
 "sign_extension_credentials_hint" = "Pilih sijil dan profil berasingan untuk NE/WE dan sambungan lain. Sambungan yang dikonfigurasikan ditandatangani dengan sijil itu dan tidak diubah oleh proses utama.";

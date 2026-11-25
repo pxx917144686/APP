@@ -1052,15 +1052,6 @@
 "dc_err_tf_no_sinf" = "이 TestFlight 패키지에는 SC_Info/sinf 티켓이 없어 복호화할 수 없습니다. TestFlight 페이지에서 로그인한 뒤 같은 Apple ID로 다시 다운로드하세요";
 "dc_reason_enomem" = "커널이 복호화 매핑 생성을 거부했습니다(ENOMEM). 티켓이 손상되었거나 파일이 다시 패키징되었을 수 있습니다";
 "dc_err_no_entitlement" = "이 빌드에는 dynamic-codesigning 권한이 없어 커널이 FairPlay 복호화를 수행하지 않습니다. 해당 권한이 있는 개발자 인증서로 다시 서명하세요(무료 인증서와 일부 서명 서비스에는 없습니다).";
-"live_island" = "다이나믹 아일랜드";
-"live_island_desc" = "다이나믹 아일랜드에 작업 진행률과 백그라운드 상태를 표시합니다";
-"live_island_download" = "다운로드";
-"live_island_sign" = "서명";
-"live_island_decrypt" = "복호화";
-"live_island_install" = "설치";
-"live_island_app" = "앱이 백그라운드에 있음";
-"island_app_phase" = "백그라운드에서 실행 중";
-"island_app_tap_to_open" = "아일랜드를 탭하여 돌아가기";
 "sign_extension_ids" = "확장 Bundle ID";
 "sign_extension_credentials" = "확장 인증서 및 프로파일";
 "sign_extension_credentials_hint" = "NE/WE 등 확장에는 별도의 인증서와 프로파일을 지정할 수 있습니다. 설정된 확장은 해당 인증서로 서명되며 기본 서명 단계에서 건드리지 않습니다.";

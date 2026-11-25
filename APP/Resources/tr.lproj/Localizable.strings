@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Bu TestFlight paketinde SC_Info/sinf bileti yok, bu yüzden şifresi çözülemez. TestFlight sayfasında oturum açın ve aynı Apple ID ile yeniden indirin";
 "dc_reason_enomem" = "Çekirdek şifre çözme eşlemesini oluşturmayı reddetti (ENOMEM): bilet bozuk olabilir veya dosya yeniden paketlenmiş";
 "dc_err_no_entitlement" = "Bu derlemede dynamic-codesigning izni yok, bu yüzden çekirdek FairPlay şifre çözme işlemini yapmaz. Uygulamayı bu izni içeren bir geliştirici sertifikasıyla yeniden imzalayın (ücretsiz sertifikalarda ve bazı imzalama hizmetlerinde bu izin yoktur).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Görev ilerlemesini ve arka plan durumunu Dynamic Island'da göster";
-"live_island_download" = "İndirmeler";
-"live_island_sign" = "İmzalama";
-"live_island_decrypt" = "Şifre çözme";
-"live_island_install" = "Kurulum";
-"live_island_app" = "Uygulama arka planda";
-"island_app_phase" = "Arka planda çalışıyor";
-"island_app_tap_to_open" = "Dönmek için adaya dokunun";
 "sign_extension_ids" = "Uzantı Bundle ID'leri";
 "sign_extension_credentials" = "Uzantı sertifikaları ve profilleri";
 "sign_extension_credentials_hint" = "NE/WE ve diğer uzantılar için ayrı bir sertifika ve profil seçin. Yapılandırılmış uzantı o sertifikayla imzalanır ve ana imzalama tarafından değiştirilmez.";

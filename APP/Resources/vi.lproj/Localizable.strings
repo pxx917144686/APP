@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Gói TestFlight này không có vé SC_Info/sinf nên không thể giải mã. Hãy đăng nhập ở trang TestFlight và tải lại bằng cùng Apple ID";
 "dc_reason_enomem" = "Kernel từ chối tạo ánh xạ giải mã (ENOMEM): vé có thể bị hỏng hoặc tệp đã bị đóng gói lại";
 "dc_err_no_entitlement" = "Bản dựng này thiếu quyền dynamic-codesigning nên kernel sẽ không thực hiện giải mã FairPlay. Ký lại ứng dụng bằng chứng chỉ nhà phát triển có quyền này (chứng chỉ miễn phí và một số dịch vụ ký không có quyền này).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Hiển thị tiến trình tác vụ và trạng thái nền trong Dynamic Island";
-"live_island_download" = "Tải xuống";
-"live_island_sign" = "Ký";
-"live_island_decrypt" = "Giải mã";
-"live_island_install" = "Cài đặt";
-"live_island_app" = "Ứng dụng ở nền";
-"island_app_phase" = "Đang chạy ở nền";
-"island_app_tap_to_open" = "Chạm vào đảo để quay lại";
 "sign_extension_ids" = "Bundle ID của tiện ích mở rộng";
 "sign_extension_credentials" = "Chứng chỉ và hồ sơ của tiện ích mở rộng";
 "sign_extension_credentials_hint" = "Chọn chứng chỉ và hồ sơ riêng cho NE/WE và các tiện ích khác. Tiện ích đã cấu hình sẽ được ký bằng chứng chỉ đó và không bị bước ký chính thay đổi.";

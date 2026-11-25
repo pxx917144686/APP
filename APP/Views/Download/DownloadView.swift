@@ -49,46 +49,26 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
         guard !isAnyInstalling else { return false }
         isAnyInstalling = true
         currentInstallingRequestId = requestId
-        InstallActivityManager.shared.start(
-            key: IslandTaskKey.install(requestId),
-            title: title.isEmpty ? "install".localized : title,
-            step: "install_stage_preparing".localized
-        )
         return true
     }
 
-    func updateInstallationStep(for requestId: UUID, step: String) {
-        InstallActivityManager.shared.update(key: IslandTaskKey.install(requestId), step: step)
-    }
-
     func finishInstallation() {
-        let pending = currentInstallingRequestId
         isAnyInstalling = false
         currentInstallingRequestId = nil
-        if let pending {
-            InstallActivityManager.shared.finish(
-                key: IslandTaskKey.install(pending),
-                detail: "install_handed_off".localized
-            )
-        }
     }
 
     func finishInstallation(for requestId: UUID) {
         if currentInstallingRequestId == requestId || currentInstallingRequestId == nil {
             isAnyInstalling = false
             currentInstallingRequestId = nil
-            InstallActivityManager.shared.finish(
-                key: IslandTaskKey.install(requestId),
-                detail: "install_handed_off".localized
-            )
         }
     }
 
     func failInstallation(for requestId: UUID, reason: String) {
-        InstallActivityManager.shared.fail(
-            key: IslandTaskKey.install(requestId),
-            reason: reason
-        )
+        if currentInstallingRequestId == requestId || currentInstallingRequestId == nil {
+            isAnyInstalling = false
+            currentInstallingRequestId = nil
+        }
     }
 }
 
@@ -2260,11 +2240,6 @@ struct DownloadCardView: SwiftUI.View {
                 await MainActor.run {
                     installationProgress = 0.8
                     installationMessage = "opening_install_page".localized
-                    GlobalInstallationManager.shared.updateInstallationStep(
-                        for: request.id,
-                        step: "install_stage_opening_system".localized
-                    )
-
                     let itmsURLString = "itms-services://?action=download-manifest&url=" + queryEncoded(manifestURL)
 
                     guard let itmsURL = URL(string: itmsURLString) else {

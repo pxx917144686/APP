@@ -70,7 +70,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.8.1</string>
+	<string>2.8.2</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -78,7 +78,7 @@
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>appisland</string>
+				<string>bambooapp</string>
 			</array>
 		</dict>
 	</array>
@@ -104,10 +104,6 @@
 	<string>用于解锁隐藏的签名记录和签名库。</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>需要访问本地网络以启动临时服务器，用于安装下载的应用程序。</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
-	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
-	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

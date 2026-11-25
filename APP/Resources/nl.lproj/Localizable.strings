@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Dit TestFlight-pakket heeft geen SC_Info/sinf-ticket en kan daarom niet worden ontsleuteld. Meld je aan op de TestFlight-pagina en download opnieuw met dezelfde Apple ID";
 "dc_reason_enomem" = "De kernel weigerde de ontsleutelingstoewijzing te maken (ENOMEM): het ticket is mogelijk beschadigd of het bestand is opnieuw verpakt";
 "dc_err_no_entitlement" = "Deze build mist de dynamic-codesigning-rechten, dus de kernel voert geen FairPlay-ontsleuteling uit. Onderteken de app opnieuw met een ontwikkelaarscertificaat dat deze bevat (gratis certificaten en sommige ondertekeningsdiensten hebben deze niet).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Toon taakvoortgang en achtergrondstatus in de Dynamic Island";
-"live_island_download" = "Downloads";
-"live_island_sign" = "Ondertekenen";
-"live_island_decrypt" = "Ontsleuteling";
-"live_island_install" = "Installatie";
-"live_island_app" = "App op de achtergrond";
-"island_app_phase" = "Actief op de achtergrond";
-"island_app_tap_to_open" = "Tik op het eiland om terug te keren";
 "sign_extension_ids" = "Bundle-ID's van extensies";
 "sign_extension_credentials" = "Certificaten en profielen van extensies";
 "sign_extension_credentials_hint" = "Kies een apart certificaat en profiel voor NE/WE en andere extensies. Een geconfigureerde extensie wordt met dat certificaat ondertekend en blijft buiten de hoofdondertekening.";

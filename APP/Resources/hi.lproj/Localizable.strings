@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "इस TestFlight पैकेज में SC_Info/sinf टिकट नहीं है, इसलिए इसे डिक्रिप्ट नहीं किया जा सकता। TestFlight पेज पर साइन इन करें और उसी Apple ID से फिर से डाउनलोड करें";
 "dc_reason_enomem" = "कर्नेल ने डिक्रिप्शन मैपिंग बनाने से मना किया (ENOMEM): टिकट ख़राब हो सकता है या फ़ाइल फिर से पैक की गई है";
 "dc_err_no_entitlement" = "इस बिल्ड में dynamic-codesigning अनुमति नहीं है, इसलिए कर्नेल FairPlay डिक्रिप्शन नहीं करेगा। ऐप को ऐसे डेवलपर प्रमाणपत्र से फिर से साइन करें जिसमें यह हो (मुफ़्त प्रमाणपत्रों और कुछ साइनिंग सेवाओं में यह नहीं होता)।";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Dynamic Island में कार्य प्रगति और बैकग्राउंड स्थिति दिखाएँ";
-"live_island_download" = "डाउनलोड";
-"live_island_sign" = "साइनिंग";
-"live_island_decrypt" = "डिक्रिप्शन";
-"live_island_install" = "इंस्टॉलेशन";
-"live_island_app" = "ऐप बैकग्राउंड में है";
-"island_app_phase" = "बैकग्राउंड में चल रहा है";
-"island_app_tap_to_open" = "वापस जाने के लिए आइलैंड पर टैप करें";
 "sign_extension_ids" = "एक्सटेंशन Bundle ID";
 "sign_extension_credentials" = "एक्सटेंशन प्रमाणपत्र और प्रोफ़ाइल";
 "sign_extension_credentials_hint" = "NE/WE और अन्य एक्सटेंशन के लिए अलग प्रमाणपत्र और प्रोफ़ाइल चुनें। कॉन्फ़िगर किया गया एक्सटेंशन उसी प्रमाणपत्र से साइन होता है और मुख्य साइनिंग उसे नहीं बदलती।";

@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Acest pachet TestFlight nu are bilet SC_Info/sinf, deci nu poate fi decriptat. Conectează-te în pagina TestFlight și descarcă-l din nou cu același Apple ID";
 "dc_reason_enomem" = "Kernelul a refuzat să creeze maparea de decriptare (ENOMEM): biletul poate fi deteriorat sau fișierul a fost reîmpachetat";
 "dc_err_no_entitlement" = "Acestei compilări îi lipsește permisiunea dynamic-codesigning, așa că kernelul nu va efectua decriptarea FairPlay. Semnează din nou aplicația cu un certificat de dezvoltator care o include (certificatele gratuite și unele servicii de semnare nu o au).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Afișează progresul activităților și starea din fundal în Dynamic Island";
-"live_island_download" = "Descărcări";
-"live_island_sign" = "Semnare";
-"live_island_decrypt" = "Decriptare";
-"live_island_install" = "Instalare";
-"live_island_app" = "Aplicația în fundal";
-"island_app_phase" = "Rulează în fundal";
-"island_app_tap_to_open" = "Atinge insula pentru a reveni";
 "sign_extension_ids" = "Bundle ID-urile extensiilor";
 "sign_extension_credentials" = "Certificatele și profilele extensiilor";
 "sign_extension_credentials_hint" = "Alege un certificat și un profil separate pentru NE/WE și alte extensii. O extensie configurată este semnată cu acel certificat și nu este modificată de semnarea principală.";

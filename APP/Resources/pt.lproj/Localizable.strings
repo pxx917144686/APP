@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Este pacote TestFlight não tem ticket SC_Info/sinf, então não pode ser descriptografado. Entre na página TestFlight e baixe novamente com o mesmo Apple ID";
 "dc_reason_enomem" = "O kernel recusou criar o mapeamento de descriptografia (ENOMEM): o ticket pode estar danificado ou o arquivo foi reempacotado";
 "dc_err_no_entitlement" = "Esta build não tem a permissão dynamic-codesigning, então o kernel não fará a descriptografia FairPlay. Assine o app novamente com um certificado de desenvolvedor que a inclua (certificados gratuitos e alguns serviços de assinatura não têm).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Mostrar o progresso das tarefas e o estado em segundo plano na Dynamic Island";
-"live_island_download" = "Downloads";
-"live_island_sign" = "Assinatura";
-"live_island_decrypt" = "Descriptografia";
-"live_island_install" = "Instalação";
-"live_island_app" = "App em segundo plano";
-"island_app_phase" = "Executando em segundo plano";
-"island_app_tap_to_open" = "Toque na ilha para voltar";
 "sign_extension_ids" = "Bundle IDs das extensões";
 "sign_extension_credentials" = "Certificados e perfis das extensões";
 "sign_extension_credentials_hint" = "Escolha um certificado e um perfil separados para NE/WE e outras extensões. Uma extensão configurada é assinada com esse certificado e não é alterada pela assinatura principal.";

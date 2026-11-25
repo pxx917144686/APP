@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "แพ็กเกจ TestFlight นี้ไม่มีตั๋ว SC_Info/sinf จึงถอดรหัสไม่ได้ โปรดลงชื่อเข้าใช้ในหน้า TestFlight แล้วดาวน์โหลดใหม่ด้วย Apple ID เดียวกัน";
 "dc_reason_enomem" = "เคอร์เนลปฏิเสธการสร้างแมปถอดรหัส (ENOMEM): ตั๋วอาจเสียหายหรือไฟล์ถูกแพ็กใหม่";
 "dc_err_no_entitlement" = "บิลด์นี้ไม่มีสิทธิ์ dynamic-codesigning เคอร์เนลจะไม่ถอดรหัส FairPlay ลงนามแอปใหม่ด้วยใบรับรองนักพัฒนาที่มีสิทธิ์นี้ (ใบรับรองฟรีและบริการลงนามบางรายไม่มีสิทธิ์นี้)";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "แสดงความคืบหน้าของงานและสถานะเบื้องหลังใน Dynamic Island";
-"live_island_download" = "ดาวน์โหลด";
-"live_island_sign" = "การลงนาม";
-"live_island_decrypt" = "การถอดรหัส";
-"live_island_install" = "การติดตั้ง";
-"live_island_app" = "แอปอยู่เบื้องหลัง";
-"island_app_phase" = "กำลังทำงานเบื้องหลัง";
-"island_app_tap_to_open" = "แตะไอส์แลนด์เพื่อกลับ";
 "sign_extension_ids" = "Bundle ID ของส่วนขยาย";
 "sign_extension_credentials" = "ใบรับรองและโปรไฟล์ของส่วนขยาย";
 "sign_extension_credentials_hint" = "เลือกใบรับรองและโปรไฟล์แยกสำหรับ NE/WE และส่วนขยายอื่น ส่วนขยายที่กำหนดไว้จะลงนามด้วยใบรับรองนั้นและไม่ถูกแก้ไขในการลงนามหลัก";

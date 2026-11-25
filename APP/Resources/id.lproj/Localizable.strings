@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Paket TestFlight ini tidak memiliki tiket SC_Info/sinf, jadi tidak dapat didekripsi. Masuk di halaman TestFlight dan unduh ulang dengan Apple ID yang sama";
 "dc_reason_enomem" = "Kernel menolak membuat pemetaan dekripsi (ENOMEM): tiket mungkin rusak atau file dipaketkan ulang";
 "dc_err_no_entitlement" = "Build ini tidak memiliki hak dynamic-codesigning, jadi kernel tidak akan melakukan dekripsi FairPlay. Tanda tangani ulang aplikasi dengan sertifikat pengembang yang membawanya (sertifikat gratis dan sebagian layanan tanda tangan tidak memilikinya).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Tampilkan kemajuan tugas dan status latar belakang di Dynamic Island";
-"live_island_download" = "Unduhan";
-"live_island_sign" = "Penandatanganan";
-"live_island_decrypt" = "Dekripsi";
-"live_island_install" = "Instalasi";
-"live_island_app" = "Aplikasi di latar belakang";
-"island_app_phase" = "Berjalan di latar belakang";
-"island_app_tap_to_open" = "Ketuk pulau untuk kembali";
 "sign_extension_ids" = "Bundle ID ekstensi";
 "sign_extension_credentials" = "Sertifikat dan profil ekstensi";
 "sign_extension_credentials_hint" = "Pilih sertifikat dan profil terpisah untuk NE/WE dan ekstensi lain. Ekstensi yang dikonfigurasi ditandatangani dengan sertifikat itu dan tidak diubah oleh proses utama.";

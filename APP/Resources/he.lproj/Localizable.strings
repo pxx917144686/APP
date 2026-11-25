@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "לחבילת TestFlight הזו אין כרטיס SC_Info/sinf, ולכן לא ניתן לפענח אותה. התחבר בעמוד TestFlight והורד אותה שוב עם אותו Apple ID";
 "dc_reason_enomem" = "הליבה סירבה ליצור את מיפוי הפענוח (ENOMEM): ייתכן שהכרטיס פגום או שהקובץ נארז מחדש";
 "dc_err_no_entitlement" = "לבנייה הזו חסרה הרשאת dynamic-codesigning, ולכן הליבה לא תבצע פענוח FairPlay. חתום מחדש על האפליקציה בתעודת מפתח שמכילה אותה (תעודות חינמיות וחלק משירותי החתימה אינם כוללים אותה).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "הצג התקדמות משימות ומצב רקע ב-Dynamic Island";
-"live_island_download" = "הורדות";
-"live_island_sign" = "חתימה";
-"live_island_decrypt" = "פענוח";
-"live_island_install" = "התקנה";
-"live_island_app" = "האפליקציה ברקע";
-"island_app_phase" = "פועל ברקע";
-"island_app_tap_to_open" = "הקש על האי כדי לחזור";
 "sign_extension_ids" = "מזהי Bundle של תוספים";
 "sign_extension_credentials" = "תעודות ופרופילים של תוספים";
 "sign_extension_credentials_hint" = "בחר תעודה ופרופיל נפרדים עבור NE/WE ותוספים אחרים. תוסף שהוגדר נחתם בתעודה זו ואינו משתנה בחתימה הראשית.";

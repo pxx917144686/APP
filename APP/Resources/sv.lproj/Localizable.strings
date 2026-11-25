@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Det här TestFlight-paketet saknar SC_Info/sinf-biljett och kan därför inte dekrypteras. Logga in på TestFlight-sidan och hämta det igen med samma Apple-ID";
 "dc_reason_enomem" = "Kärnan nekade att skapa dekrypteringsmappningen (ENOMEM): biljetten kan vara skadad eller filen har packats om";
 "dc_err_no_entitlement" = "Det här bygget saknar behörigheten dynamic-codesigning, så kärnan utför ingen FairPlay-dekryptering. Signera om appen med ett utvecklarcertifikat som har den (kostnadsfria certifikat och vissa signeringstjänster har den inte).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Visa uppgiftsförlopp och bakgrundsstatus i Dynamic Island";
-"live_island_download" = "Hämtningar";
-"live_island_sign" = "Signering";
-"live_island_decrypt" = "Dekryptering";
-"live_island_install" = "Installation";
-"live_island_app" = "App i bakgrunden";
-"island_app_phase" = "Körs i bakgrunden";
-"island_app_tap_to_open" = "Tryck på ön för att återgå";
 "sign_extension_ids" = "Bundle-ID:n för tillägg";
 "sign_extension_credentials" = "Certifikat och profiler för tillägg";
 "sign_extension_credentials_hint" = "Välj ett separat certifikat och en profil för NE/WE och andra tillägg. Ett konfigurerat tillägg signeras med det certifikatet och lämnas orört av huvudsigneringen.";

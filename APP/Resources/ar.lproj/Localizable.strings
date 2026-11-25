@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "حزمة TestFlight هذه لا تحتوي على تذكرة SC_Info/sinf، لذا لا يمكن فك تشفيرها. سجّل الدخول في صفحة TestFlight وأعد تنزيلها بنفس Apple ID";
 "dc_reason_enomem" = "رفضت النواة إنشاء تعيين فك التشفير (ENOMEM): قد تكون التذكرة تالفة أو أُعيد تجميع الملف";
 "dc_err_no_entitlement" = "هذا البناء يفتقد إذن dynamic-codesigning، لذا لن تنفذ النواة فك تشفير FairPlay. أعد توقيع التطبيق بشهادة مطور تحمله (الشهادات المجانية وبعض خدمات التوقيع لا تحمله).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "عرض تقدم المهام وحالة الخلفية في Dynamic Island";
-"live_island_download" = "التنزيلات";
-"live_island_sign" = "التوقيع";
-"live_island_decrypt" = "فك التشفير";
-"live_island_install" = "التثبيت";
-"live_island_app" = "التطبيق في الخلفية";
-"island_app_phase" = "يعمل في الخلفية";
-"island_app_tap_to_open" = "اضغط الجزيرة للعودة";
 "sign_extension_ids" = "معرفات حزم الإضافات";
 "sign_extension_credentials" = "شهادات وملفات تعريف الإضافات";
 "sign_extension_credentials_hint" = "اختر شهادة وملف تعريف منفصلين لـ NE/WE والإضافات الأخرى. تُوقَّع الإضافة المهيأة بتلك الشهادة ولا تمسها عملية التوقيع الرئيسية.";

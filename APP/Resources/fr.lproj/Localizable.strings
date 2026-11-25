@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Ce paquet TestFlight n’a pas de ticket SC_Info/sinf, il ne peut donc pas être déchiffré. Connectez-vous sur la page TestFlight et retéléchargez-le avec le même Apple ID";
 "dc_reason_enomem" = "Le noyau a refusé de créer le mappage de déchiffrement (ENOMEM) : le ticket est peut-être endommagé ou le fichier a été rempaqueté";
 "dc_err_no_entitlement" = "Cette build n’a pas l’autorisation dynamic-codesigning, le noyau n’effectuera donc pas le déchiffrement FairPlay. Re-signez l’app avec un certificat développeur qui la contient (les certificats gratuits et certains services de signature ne l’ont pas).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Afficher la progression des tâches et l’état en arrière-plan dans la Dynamic Island";
-"live_island_download" = "Téléchargements";
-"live_island_sign" = "Signature";
-"live_island_decrypt" = "Déchiffrement";
-"live_island_install" = "Installation";
-"live_island_app" = "App en arrière-plan";
-"island_app_phase" = "Exécution en arrière-plan";
-"island_app_tap_to_open" = "Touchez l’îlot pour revenir";
 "sign_extension_ids" = "Bundle IDs des extensions";
 "sign_extension_credentials" = "Certificats et profils des extensions";
 "sign_extension_credentials_hint" = "Choisissez un certificat et un profil distincts pour NE/WE et les autres extensions. Une extension configurée est signée avec ce certificat et n’est pas modifiée par la passe principale.";

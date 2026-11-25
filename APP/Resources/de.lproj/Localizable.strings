@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Dieses TestFlight-Paket hat kein SC_Info/sinf-Ticket und kann daher nicht entschlüsselt werden. Melde dich auf der TestFlight-Seite an und lade es mit derselben Apple ID erneut";
 "dc_reason_enomem" = "Der Kernel konnte die Entschlüsselungszuordnung nicht anlegen (ENOMEM): Das Ticket ist evtl. beschädigt oder die Datei wurde neu gepackt";
 "dc_err_no_entitlement" = "Diesem Build fehlt die Berechtigung dynamic-codesigning, daher führt der Kernel keine FairPlay-Entschlüsselung aus. Signiere die App mit einem Entwicklerzertifikat neu, das sie enthält (kostenlose Zertifikate und manche Signierdienste haben sie nicht).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Aufgabenfortschritt und Hintergrundstatus in der Dynamic Island anzeigen";
-"live_island_download" = "Downloads";
-"live_island_sign" = "Signieren";
-"live_island_decrypt" = "Entschlüsselung";
-"live_island_install" = "Installation";
-"live_island_app" = "App im Hintergrund";
-"island_app_phase" = "Läuft im Hintergrund";
-"island_app_tap_to_open" = "Tippe auf die Insel, um zurückzukehren";
 "sign_extension_ids" = "Bundle-IDs der Erweiterungen";
 "sign_extension_credentials" = "Zertifikate und Profile der Erweiterungen";
 "sign_extension_credentials_hint" = "Wähle ein eigenes Zertifikat und Profil für NE/WE und andere Erweiterungen. Eine konfigurierte Erweiterung wird mit diesem Zertifikat signiert und vom Hauptlauf nicht verändert.";

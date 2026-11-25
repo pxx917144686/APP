@@ -1052,15 +1052,6 @@
 "dc_err_tf_no_sinf" = "この TestFlight パッケージには SC_Info/sinf チケットがないため復号できません。TestFlight ページでサインインし、同じ Apple ID で再ダウンロードしてください";
 "dc_reason_enomem" = "カーネルが復号マッピングの作成を拒否しました（ENOMEM）。チケットが破損しているか、ファイルが再パッケージされた可能性があります";
 "dc_err_no_entitlement" = "このビルドには dynamic-codesigning 権限がないため、カーネルは FairPlay 復号を実行しません。その権限を含む開発者証明書で再署名してください（無料証明書や一部の署名サービスにはありません）。";
-"live_island" = "ダイナミックアイランド";
-"live_island_desc" = "ダイナミックアイランドにタスクの進捗とバックグラウンド状態を表示します";
-"live_island_download" = "ダウンロード";
-"live_island_sign" = "署名";
-"live_island_decrypt" = "復号";
-"live_island_install" = "インストール";
-"live_island_app" = "アプリはバックグラウンド";
-"island_app_phase" = "バックグラウンドで実行中";
-"island_app_tap_to_open" = "アイランドをタップして戻る";
 "sign_extension_ids" = "拡張機能の Bundle ID";
 "sign_extension_credentials" = "拡張機能の証明書とプロファイル";
 "sign_extension_credentials_hint" = "NE/WE などの拡張機能には個別の証明書とプロファイルを指定できます。設定した拡張機能はその証明書で署名され、メインの署名処理では変更されません。";

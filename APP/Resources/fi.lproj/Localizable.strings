@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Tässä TestFlight-paketissa ei ole SC_Info/sinf-lippua, joten sitä ei voi purkaa. Kirjaudu TestFlight-sivulla ja lataa se uudelleen samalla Apple ID:llä";
 "dc_reason_enomem" = "Ydin kieltäytyi luomasta salauksenpurkuyhdistelemää (ENOMEM): lippu voi olla vioittunut tai tiedosto on pakattu uudelleen";
 "dc_err_no_entitlement" = "Tästä buildista puuttuu dynamic-codesigning-oikeus, joten ydin ei suorita FairPlay-salauksen purkua. Allekirjoita sovellus uudelleen kehittäjävarmenteella, jossa se on (ilmaisissa varmenteissa ja joissakin allekirjoituspalveluissa sitä ei ole).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Näytä tehtävien edistyminen ja taustatila Dynamic Islandissa";
-"live_island_download" = "Lataukset";
-"live_island_sign" = "Allekirjoitus";
-"live_island_decrypt" = "Salauksen purku";
-"live_island_install" = "Asennus";
-"live_island_app" = "Sovellus taustalla";
-"island_app_phase" = "Käynnissä taustalla";
-"island_app_tap_to_open" = "Napauta saarta palataksesi";
 "sign_extension_ids" = "Laajennusten Bundle ID:t";
 "sign_extension_credentials" = "Laajennusten varmenteet ja profiilit";
 "sign_extension_credentials_hint" = "Valitse erillinen varmenne ja profiili NE/WE:lle ja muille laajennuksille. Määritetty laajennus allekirjoitetaan kyseisellä varmenteella, eikä pääallekirjoitus koske siihen.";

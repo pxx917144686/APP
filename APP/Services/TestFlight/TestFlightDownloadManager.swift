@@ -760,7 +760,7 @@ final class TestFlightDownloadManager: ObservableObject {
                 task.runtime.error = nil
             }
             UnifiedDownloadManager.shared.saveDownloadTasks()
-            UnifiedDownloadManager.shared.beginTestFlightIsland(taskID: unifiedTaskID)
+            UnifiedDownloadManager.shared.beginTestFlightTask(taskID: unifiedTaskID)
             defer {
                 downloadingBundle = nil
                 downloadingBuildID = nil
@@ -816,7 +816,6 @@ final class TestFlightDownloadManager: ObservableObject {
                             if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) {
                                 task.runtime.speed = "download_processing".localized
                             }
-                            UnifiedDownloadManager.shared.updateTestFlightIsland(taskID: unifiedTaskID)
                         }
                     },
                     log: log
@@ -832,13 +831,13 @@ final class TestFlightDownloadManager: ObservableObject {
                 }
                 UnifiedDownloadManager.shared.completedRequests.insert(unifiedTaskID)
                 UnifiedDownloadManager.shared.saveDownloadTasks()
-                UnifiedDownloadManager.shared.finishTestFlightIsland(taskID: unifiedTaskID)
+                UnifiedDownloadManager.shared.finishTestFlightTask(taskID: unifiedTaskID)
                 let megabytes = Double(report.outputBytes) / 1_048_576.0
                 status = String(format: "testflight_downloaded_format".localized,
                                 report.output.lastPathComponent, megabytes)
             } catch {
                 if let tfError = error as? TFError, case .cancelled = tfError {
-                    UnifiedDownloadManager.shared.failTestFlightIsland(taskID: unifiedTaskID, cancelled: true)
+                    UnifiedDownloadManager.shared.failTestFlightTask(taskID: unifiedTaskID)
                     return
                 }
                 let detail = error.localizedDescription
@@ -866,7 +865,7 @@ final class TestFlightDownloadManager: ObservableObject {
                     task.runtime.error = friendly
                 }
                 UnifiedDownloadManager.shared.saveDownloadTasks()
-                UnifiedDownloadManager.shared.failTestFlightIsland(taskID: unifiedTaskID)
+                UnifiedDownloadManager.shared.failTestFlightTask(taskID: unifiedTaskID)
             }
             return
         }

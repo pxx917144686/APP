@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Цей пакет TestFlight не має квитка SC_Info/sinf, тому його не можна розшифрувати. Увійдіть на сторінці TestFlight і завантажте його знову з тим самим Apple ID";
 "dc_reason_enomem" = "Ядро відмовилося створювати відображення розшифрування (ENOMEM): квиток пошкоджено або файл перепаковано";
 "dc_err_no_entitlement" = "У цій збірці немає дозволу dynamic-codesigning, тому ядро не виконає розшифрування FairPlay. Підпишіть застосунок заново сертифікатом розробника з цим дозволом (у безкоштовних сертифікатів і деяких сервісів підпису його немає).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Показувати прогрес завдань і стан у фоні в Dynamic Island";
-"live_island_download" = "Завантаження";
-"live_island_sign" = "Підписування";
-"live_island_decrypt" = "Розшифрування";
-"live_island_install" = "Встановлення";
-"live_island_app" = "Застосунок у фоні";
-"island_app_phase" = "Працює у фоні";
-"island_app_tap_to_open" = "Торкніться острівця, щоб повернутися";
 "sign_extension_ids" = "Bundle ID розширень";
 "sign_extension_credentials" = "Сертифікати й профілі розширень";
 "sign_extension_credentials_hint" = "Виберіть окремий сертифікат і профіль для NE/WE та інших розширень. Налаштоване розширення підписується цим сертифікатом і не змінюється основним підписом.";

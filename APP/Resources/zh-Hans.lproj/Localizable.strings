@@ -1055,15 +1055,6 @@
 "dc_reason_enomem" = "内核拒绝建立解密映射（ENOMEM），可能是票据损坏或文件被重新打包过";
 "dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。 请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
 
-"live_island" = "灵动岛";
-"live_island_desc" = "在灵动岛显示任务进度和后台状态";
-"live_island_download" = "下载任务";
-"live_island_sign" = "签名任务";
-"live_island_decrypt" = "解密任务";
-"live_island_install" = "安装任务";
-"live_island_app" = "后台显示 APP";
-"island_app_phase" = "在后台运行";
-"island_app_tap_to_open" = "轻点灵动岛返回 APP";
 
 
 "sign_extension_ids" = "扩展 Bundle ID";

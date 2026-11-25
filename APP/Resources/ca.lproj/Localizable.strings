@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Aquest paquet de TestFlight no té tiquet SC_Info/sinf, així que no es pot desxifrar. Inicia sessió a la pàgina de TestFlight i torna a baixar-lo amb el mateix Apple ID";
 "dc_reason_enomem" = "El nucli ha rebutjat crear la mapació de desxifrat (ENOMEM): el tiquet pot estar malmès o el fitxer s'ha reempaquetat";
 "dc_err_no_entitlement" = "Aquesta compilació no té el permís dynamic-codesigning, així que el nucli no farà el desxifrat FairPlay. Torna a signar l'app amb un certificat de desenvolupador que el inclogui (els certificats gratuïts i alguns serveis de signatura no el tenen).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Mostra el progrés de les tasques i l'estat en segon pla a la Dynamic Island";
-"live_island_download" = "Baixades";
-"live_island_sign" = "Signatura";
-"live_island_decrypt" = "Desxifrat";
-"live_island_install" = "Instal·lació";
-"live_island_app" = "App en segon pla";
-"island_app_phase" = "S'executa en segon pla";
-"island_app_tap_to_open" = "Toca l'illa per tornar";
 "sign_extension_ids" = "Bundle IDs de les extensions";
 "sign_extension_credentials" = "Certificats i perfils de les extensions";
 "sign_extension_credentials_hint" = "Tria un certificat i un perfil separats per a NE/WE i altres extensions. Una extensió configurada se signa amb aquest certificat i la signatura principal no la modifica.";

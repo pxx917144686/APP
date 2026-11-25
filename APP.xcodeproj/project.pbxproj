@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		06CC9CAA43BDDCF70A8E6E82 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
-		21C6E9C6D08C32F3C8B536C6 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
 		3C360D069E1903A6A0AA2DDB /* AppleAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8BE6990CEB031658612F1949 /* AppleAuth */; };
 		681E98F3353E3F41694CB729 /* APPWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 850E83342FEDA2C30047BDF8 /* Alamofire */; };
@@ -80,7 +78,6 @@
 		851FD95F2E578774002136BA /* APP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = APPWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1D100000000000000000001 /* APP/InAppPurchase.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = APP/InAppPurchase.dylib; sourceTree = SOURCE_ROOT; };
-		C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IslandActivityTypes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -161,7 +158,6 @@
 				856CCA8930AF298000764042 /* Recovered References */,
 				9229E7AF72451AFB7E69510D /* Frameworks */,
 				BBB8B572868E69293F4E9A52 /* APPWidget */,
-				D6B8F7B5097B8951BA8F6250 /* Shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -188,14 +184,6 @@
 				347453212985AC119A208052 /* iOS */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		D6B8F7B5097B8951BA8F6250 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */,
-			);
-			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -355,7 +343,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21C6E9C6D08C32F3C8B536C6 /* IslandActivityTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,7 +350,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				06CC9CAA43BDDCF70A8E6E82 /* IslandActivityTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,7 +532,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.8.1;
+				MARKETING_VERSION = 2.8.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -607,7 +593,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.8.1;
+				MARKETING_VERSION = 2.8.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";

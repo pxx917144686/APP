@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Ez a TestFlight-csomag nem tartalmaz SC_Info/sinf jegyet, ezért nem fejthető vissza. Jelentkezzen be a TestFlight oldalon, és töltse le újra ugyanazzal az Apple ID-val";
 "dc_reason_enomem" = "A kernel megtagadta a visszafejtési leképezés létrehozását (ENOMEM): a jegy sérült lehet, vagy a fájlt újracsomagolták";
 "dc_err_no_entitlement" = "Ebből a buildből hiányzik a dynamic-codesigning jogosultság, ezért a kernel nem végzi el a FairPlay-visszafejtést. Írja alá újra az appot egy olyan fejlesztői tanúsítvánnyal, amely tartalmazza (az ingyenes tanúsítványok és egyes aláírási szolgáltatások nem tartalmazzák).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Feladatfolyamat és háttérállapot megjelenítése a Dynamic Islanden";
-"live_island_download" = "Letöltések";
-"live_island_sign" = "Aláírás";
-"live_island_decrypt" = "Visszafejtés";
-"live_island_install" = "Telepítés";
-"live_island_app" = "App a háttérben";
-"island_app_phase" = "Fut a háttérben";
-"island_app_tap_to_open" = "Koppintson a szigetre a visszatéréshez";
 "sign_extension_ids" = "Kiterjesztések Bundle ID-i";
 "sign_extension_credentials" = "Kiterjesztések tanúsítványai és profiljai";
 "sign_extension_credentials_hint" = "Válasszon külön tanúsítványt és profilt a NE/WE és más kiterjesztésekhez. A beállított kiterjesztés azzal a tanúsítvánnyal íródik alá, és a fő aláírás nem módosítja.";

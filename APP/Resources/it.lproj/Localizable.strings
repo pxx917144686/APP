@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Questo pacchetto TestFlight non ha il ticket SC_Info/sinf, quindi non può essere decifrato. Accedi alla pagina TestFlight e riscaricalo con lo stesso Apple ID";
 "dc_reason_enomem" = "Il kernel ha rifiutato di creare la mappatura di decifratura (ENOMEM): il ticket potrebbe essere danneggiato o il file è stato reimpacchettato";
 "dc_err_no_entitlement" = "Questa build non ha l'autorizzazione dynamic-codesigning, quindi il kernel non eseguirà la decifratura FairPlay. Ri-firma l'app con un certificato sviluppatore che la includa (i certificati gratuiti e alcuni servizi di firma non la hanno).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Mostra l'avanzamento delle attività e lo stato in background nella Dynamic Island";
-"live_island_download" = "Download";
-"live_island_sign" = "Firma";
-"live_island_decrypt" = "Decifratura";
-"live_island_install" = "Installazione";
-"live_island_app" = "App in background";
-"island_app_phase" = "In esecuzione in background";
-"island_app_tap_to_open" = "Tocca l'isola per tornare";
 "sign_extension_ids" = "Bundle ID delle estensioni";
 "sign_extension_credentials" = "Certificati e profili delle estensioni";
 "sign_extension_credentials_hint" = "Scegli un certificato e un profilo separati per NE/WE e le altre estensioni. Un'estensione configurata viene firmata con quel certificato e non viene toccata dalla firma principale.";

@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Ten pakiet TestFlight nie ma biletu SC_Info/sinf, więc nie można go odszyfrować. Zaloguj się na stronie TestFlight i pobierz go ponownie z tym samym Apple ID";
 "dc_reason_enomem" = "Jądro odmówiło utworzenia mapowania odszyfrowywania (ENOMEM): bilet może być uszkodzony lub plik został ponownie spakowany";
 "dc_err_no_entitlement" = "Ta kompilacja nie ma uprawnienia dynamic-codesigning, więc jądro nie wykona odszyfrowywania FairPlay. Podpisz aplikację ponownie certyfikatem deweloperskim, który je zawiera (bezpłatne certyfikaty i niektóre usługi podpisywania go nie mają).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Pokazuj postęp zadań i stan w tle na Dynamic Island";
-"live_island_download" = "Pobierania";
-"live_island_sign" = "Podpisywanie";
-"live_island_decrypt" = "Odszyfrowywanie";
-"live_island_install" = "Instalacja";
-"live_island_app" = "Aplikacja w tle";
-"island_app_phase" = "Działa w tle";
-"island_app_tap_to_open" = "Dotknij wyspy, aby wrócić";
 "sign_extension_ids" = "Bundle ID rozszerzeń";
 "sign_extension_credentials" = "Certyfikaty i profile rozszerzeń";
 "sign_extension_credentials_hint" = "Wybierz osobny certyfikat i profil dla NE/WE oraz innych rozszerzeń. Skonfigurowane rozszerzenie jest podpisywane tym certyfikatem i nie jest zmieniane przez główne podpisywanie.";

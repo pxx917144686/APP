@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Tento balíček TestFlight nemá lístek SC_Info/sinf, a proto jej nelze dešifrovat. Přihlaste se na stránce TestFlight a stáhněte jej znovu se stejným Apple ID";
 "dc_reason_enomem" = "Jádro odmítlo vytvořit mapování dešifrování (ENOMEM): lístek může být poškozený nebo byl soubor znovu zabalen";
 "dc_err_no_entitlement" = "Tomuto sestavení chybí oprávnění dynamic-codesigning, takže jádro neprovede dešifrování FairPlay. Podepište aplikaci znovu vývojářským certifikátem, který je obsahuje (bezplatné certifikáty a některé podpisové služby je nemají).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Zobrazovat průběh úkolů a stav na pozadí v Dynamic Island";
-"live_island_download" = "Stahování";
-"live_island_sign" = "Podepisování";
-"live_island_decrypt" = "Dešifrování";
-"live_island_install" = "Instalace";
-"live_island_app" = "Aplikace na pozadí";
-"island_app_phase" = "Běží na pozadí";
-"island_app_tap_to_open" = "Klepnutím na ostrov se vrátíte";
 "sign_extension_ids" = "Bundle ID rozšíření";
 "sign_extension_credentials" = "Certifikáty a profily rozšíření";
 "sign_extension_credentials_hint" = "Vyberte samostatný certifikát a profil pro NE/WE a další rozšíření. Nakonfigurované rozšíření se podepíše tímto certifikátem a hlavní podpis jej nezmění.";

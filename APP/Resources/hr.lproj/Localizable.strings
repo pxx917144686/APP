@@ -1053,15 +1053,6 @@
 "dc_err_tf_no_sinf" = "Ovaj TestFlight paket nema SC_Info/sinf ulaznicu pa se ne može dešifrirati. Prijavite se na TestFlight stranici i preuzmite ga ponovno s istim Apple ID-om";
 "dc_reason_enomem" = "Jezgra je odbila stvoriti mapiranje dešifriranja (ENOMEM): ulaznica je možda oštećena ili je datoteka ponovno pakirana";
 "dc_err_no_entitlement" = "Ovoj verziji nedostaje dopuštenje dynamic-codesigning pa jezgra neće izvršiti FairPlay dešifriranje. Ponovno potpišite aplikaciju razvojnim certifikatom koji ga sadrži (besplatni certifikati i neke usluge potpisivanja ga nemaju).";
-"live_island" = "Dynamic Island";
-"live_island_desc" = "Prikaži napredak zadataka i pozadinski status na Dynamic Islandu";
-"live_island_download" = "Preuzimanja";
-"live_island_sign" = "Potpisivanje";
-"live_island_decrypt" = "Dešifriranje";
-"live_island_install" = "Instalacija";
-"live_island_app" = "Aplikacija u pozadini";
-"island_app_phase" = "Radi u pozadini";
-"island_app_tap_to_open" = "Dodirnite otok za povratak";
 "sign_extension_ids" = "Bundle ID-ovi proširenja";
 "sign_extension_credentials" = "Certifikati i profili proširenja";
 "sign_extension_credentials_hint" = "Odaberite zaseban certifikat i profil za NE/WE i druga proširenja. Konfigurirano se proširenje potpisuje tim certifikatom i glavni ga potpis ne mijenja.";
