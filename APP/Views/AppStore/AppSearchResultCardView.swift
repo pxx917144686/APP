@@ -3,11 +3,14 @@ import SwiftUI
 struct AppSearchResultCardView: View {
     let app: iTunesSearchResult
     let onTap: () -> Void
-    let onGetAction: () -> Void
+    var onGetAction: (() -> Void)? = nil
     var isDownloading: Bool
     var isPreview: Bool = false
     var showLicenseHint: Bool = false
     var isOwned: Bool? = nil
+    var onHistory: (() -> Void)? = nil
+    var actionTitle: String? = nil
+    var iconURLOverride: String? = nil
 
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.sizeCategory) private var sizeCategory
@@ -55,7 +58,7 @@ struct AppSearchResultCardView: View {
 
     private var appIconView: some View {
         Group {
-            if let iconURL = app.artworkUrl100, let url = URL(string: iconURL) {
+            if let iconURL = iconURLOverride ?? app.artworkUrl100, let url = URL(string: iconURL) {
                 ResourceImage(
                     url: url,
                     pointSize: CGSize(width: 64, height: 64),
@@ -142,19 +145,37 @@ struct AppSearchResultCardView: View {
 
     private var getButtonView: some View {
         VStack(spacing: 2) {
-            Group {
-                if isDownloading {
-                    AppStoreProgressButtonStyle()
-                } else if isOwned == true {
-                    Button(action: onGetAction) {
-                        AppStoreOwnedButtonStyle()
+            if onHistory != nil || onGetAction != nil {
+                HStack(spacing: 6) {
+                    if let onHistory {
+                        Button(action: onHistory) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(themeManager.accentColor)
+                                .frame(width: 34, height: 32)
+                                .background(Capsule().fill(themeManager.accentColor.opacity(0.1)))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("testflight_history_builds".localized)
                     }
-                    .buttonStyle(.plain)
-                } else {
-                    Button(action: onGetAction) {
-                        Text(buttonTitle)
+
+                    if let onGetAction {
+                        Group {
+                            if isDownloading {
+                                AppStoreProgressButtonStyle()
+                            } else if isOwned == true {
+                                Button(action: onGetAction) {
+                                    AppStoreOwnedButtonStyle()
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                Button(action: onGetAction) {
+                                    Text(buttonTitle)
+                                }
+                                .buttonStyle(AppStoreButtonStyle())
+                            }
+                        }
                     }
-                    .buttonStyle(AppStoreButtonStyle())
                 }
             }
             if showLicenseHint, let owned = isOwned {
@@ -213,6 +234,7 @@ struct AppSearchResultCardView: View {
     }
 
     private var buttonTitle: String {
+        if let actionTitle { return actionTitle }
         if let fp = app.formattedPrice {
             let lower = fp.lowercased()
             if lower.contains("free") || fp == "free".localized || app.price == 0 {

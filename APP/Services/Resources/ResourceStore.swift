@@ -115,6 +115,9 @@ final class ResourceStore {
     }
 
     private func loadData(for id: ResourceID) async -> Data? {
+        if id.url.isFileURL, let data = try? Data(contentsOf: id.url) {
+            return data
+        }
         let fileURL = diskURL(for: id)
 
         if let data = await readDisk(fileURL) {

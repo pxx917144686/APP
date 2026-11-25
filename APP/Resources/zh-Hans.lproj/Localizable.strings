@@ -106,6 +106,7 @@
 
 "download_title" = "下载";
 "downloading" = "下载中";
+"download_processing" = "处理中…";
 "download_paused" = "已暂停";
 "download_pause" = "暂停";
 "download_resume" = "继续";
@@ -291,7 +292,7 @@
 
 "hide_password" = "隐藏密码";
 "show_password" = "显示密码";
-"tab_purchased" = "已购";
+"tab_purchased" = "已购记录";
 "purchased_search_placeholder" = "搜索已购 App";
 "purchased_syncing" = "正在同步购买记录…";
 "purchased_empty" = "暂无已购项目";
@@ -524,7 +525,7 @@
 "dc_err_cancelled" = "已取消脱壳";
 "dc_cancel" = "取消脱壳";
 "dc_share_decrypted" = "分享脱壳后的包";
-"purchased" = "已购";
+"purchased" = "已购记录";
 "dc_group_wildcard" = "App ID 是通配符（TEAMID.*），通配符 App ID 不支持 App Group";
 "dc_group_none" = "签名里没有 App Group 声明";
 "dc_group_notgranted" = "声明了 App Group，但系统没有分配容器";
@@ -540,7 +541,7 @@
 "tab_order_hint" = "拖动右侧把手调整顺序。";
 "tab_order_reset" = "恢复默认顺序";
 "tab_order_search_hint" = "悬浮样式下固定在右侧";
-"delisted_apps_short" = "下架应用";
+"delisted_apps_short" = "下架";
 "legacy_apps_delisted" = "下架应用";
 "install_failed_title" = "安装失败";
 "install_dns_failed_title" = "域名解析被拦截";
@@ -1050,6 +1051,7 @@
 "dc_reason_entitlement" = "本应用当前签名缺少 dynamic-codesigning 权限，内核不会解密任何页面。请用带该权限的开发者证书重签本应用";
 "dc_failed_title" = "脱壳失败";
 "dc_reason_ticket" = "本应用有解密权限，但该安装包的 FairPlay 票据对不上当前设备：通常是用别的 Apple ID 下载的。请用设备已登录的账号重新下载后再脱壳";
+"dc_err_tf_no_sinf" = "该 TestFlight 包缺少 SC_Info/sinf 票据，无法脱壳。请在 TestFlight 页登录后用同一 Apple ID 重新下载";
 "dc_reason_enomem" = "内核拒绝建立解密映射（ENOMEM），可能是票据损坏或文件被重新打包过";
 "dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。
 请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
@@ -1085,3 +1087,72 @@
 "sign_certificate_id_hint" = "与 Bundle ID 同步；可直接填证书/描述文件的 App ID，或从描述文件填入。";
 "sign_fill_from_profile" = "从描述文件填入";
 "sign_certificate_id_wildcard" = "该描述文件是通配符，请手动填入具体的 App ID。";
+
+"testflight_title" = "TestFlight 下载";
+"testflight_warning_title" = "TestFlight 非公开协议";
+"testflight_warning" = "使用 TestFlight 非公开客户端协议。仅下载你已有测试权限的 Beta；下载到的 IPA 仍是 FairPlay 加密包。";
+"testflight_session_title" = "TestFlight 会话";
+"testflight_session_imported" = "已导入会话";
+"testflight_session_missing" = "未导入会话";
+"testflight_import" = "导入会话";
+"testflight_clear" = "清除";
+"testflight_loading" = "正在读取目录…";
+"testflight_catalog" = "Beta App";
+"testflight_catalog_count" = "%d 个 App";
+"testflight_no_apps" = "目录里没有可下载的 App。";
+"testflight_manual" = "手动 Bundle ID";
+"testflight_manual_placeholder" = "com.example.app";
+"testflight_download" = "下载";
+"testflight_downloaded" = "已下载";
+"testflight_downloaded_format" = "%@ · %.1f MB";
+"testflight_howto" = "如何获取会话";
+"testflight_instructions" = "可以直接用下方 Apple ID 登录；也可以在 Mac 上用 apple-auth / IPA-Decrypt 生成会话 JSON 导入。密码只用于本次登录，不会保存。";
+"testflight_step_1" = "用 Apple ID 登录并完成双重验证。";
+"testflight_step_2" = "如果 Apple 拒绝登录，导入 Mac 生成的 tf-session.json 作为备用。";
+"testflight_step_3" = "刷新目录，选择 Beta App 下载。";
+"testflight_encrypted" = "下载到的 IPA 是 FairPlay 加密包，需要匹配的 FairPlay 凭证才能解密。";
+"testflight_error" = "TestFlight 错误";
+
+"testflight_login" = "登录";
+"testflight_email" = "Apple ID";
+"testflight_password" = "密码";
+"testflight_login_hint" = "密码只用于本次登录，不会保存。验证码由 Apple 下发。";
+"testflight_logging_in" = "登录中…";
+"testflight_2fa_title" = "双重验证";
+"testflight_2fa_message" = "输入 Apple 发送的验证码。";
+"testflight_2fa_placeholder" = "123456";
+"testflight_login_empty" = "请输入 Apple ID 和密码。";
+"tab_testflight" = "TestFlight";
+
+"testflight_appleid_logged_in" = "Apple ID 已登录";
+"testflight_testflight_pending" = "Apple ID 已登录，但 TestFlight 会话还没建立。可以重试；仍失败就导出诊断。";
+"testflight_retry_session" = "重试 TestFlight";
+"testflight_error_appleid" = "Apple ID 登录失败：%@";
+"testflight_error_store" = "Store 会话失败：%@";
+"testflight_error_session" = "TestFlight 会话失败：%@";
+"testflight_store_missing" = "Store 会话不存在";
+"testflight_diagnostics_title" = "诊断";
+"testflight_diagnostics" = "导出诊断";
+"testflight_diagnostics_hint" = "包含请求 URL、HTTP 状态码和脱敏后的请求头；分享前请检查。";
+
+"testflight_error_settings" = "使用设置里的 Apple ID 创建 TestFlight 会话失败：%@";
+"testflight_use_settings" = "使用设置里的 Apple ID";
+"testflight_local_catalog_loaded" = "已从本地目录加载 %d 个 TestFlight App。";
+"testflight_download_unavailable" = "TestFlight 下载暂不可用。";
+"testflight_no_build" = "%@ 当前没有可下载的构建，可能已过期或该 Apple ID 无权下载。";
+"testflight_login_required" = "请先登录 TestFlight。";
+"testflight_downloading" = "下载中";
+"testflight_history_builds" = "历史 Build";
+"testflight_history_loading" = "正在加载 Build…";
+"testflight_no_builds" = "没有历史 Build。";
+"testflight_expired" = "已过期";
+"testflight_bundle_missing" = "无法解析这个 App 的 Bundle ID。";
+"sign_install_failed_message" = "签名已完成，但安装没有完成。请检查证书和描述文件后重试。";
+"sign_install_handed_off" = "已交给 iOS，请查看主屏幕。";
+"testflight_builds_unit" = "个 Build";
+"tab_testflight_short" = "TF";
+"testflight_ipa_install_hint" = "TestFlight IPA 不能直接 OTA 安装。请先分享并签名，或用 TestFlight 安装。";
+"testflight_login_failed" = "TestFlight 登录失败，请重试。";
+"testflight_sign_to_install" = "TestFlight IPA 需要先签名才能安装，请选择证书和描述文件。";
+"testflight_sign_required_title" = "需要签名";
+"sign_now" = "去签名";

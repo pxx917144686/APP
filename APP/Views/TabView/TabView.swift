@@ -4,7 +4,7 @@ import UIKit
 enum TabEnum: String, CaseIterable, Hashable {
     case settings
     case downloads
-    case decrypt
+    case testflight
     case sign
     case search
 
@@ -12,7 +12,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "tab_settings".localized
         case .downloads:  return "tab_downloads".localized
-        case .decrypt:    return "tab_decrypt".localized
+        case .testflight: return "tab_testflight_short".localized
         case .sign:       return "tab_sign".localized
         case .search:     return "tab_search".localized
         }
@@ -22,7 +22,7 @@ enum TabEnum: String, CaseIterable, Hashable {
         switch self {
         case .settings:  return "gearshape.fill"
         case .downloads:  return "arrow.down.circle.fill"
-        case .decrypt:    return "lock.open.fill"
+        case .testflight: return "paperplane.fill"
         case .sign:       return "signature"
         case .search:     return "magnifyingglass.circle.fill"
         }
@@ -41,11 +41,10 @@ enum TabEnum: String, CaseIterable, Hashable {
                     .environmentObject(themeManager)
                     .environmentObject(tabBarStyleManager)
             }
-        case .decrypt:
+        case .testflight:
             NavigationStack {
-                DecryptView()
+                TestFlightDownloadView(showsCloseButton: false, showsNavigationStack: false)
                     .environmentObject(themeManager)
-                    .environmentObject(tabBarStyleManager)
             }
         case .sign:
             NavigationStack {
@@ -76,13 +75,17 @@ struct TabbarView: View {
 
     private static let floatingTabMinWidth: CGFloat = 44
 
+    private var usesFloatingTabBar: Bool {
+        tabBarStyleManager.currentStyle == .floatingCard
+    }
+
     var body: some View {
         ZStack {
             LiquidGlassBackdrop()
                 .environmentObject(themeManager)
             Group {
                 if #available(iOS 18.0, *) {
-                    if tabBarStyleManager.currentStyle == .floatingCard {
+                    if usesFloatingTabBar {
                         floatingCardTabView
                     } else {
                         systemTabView
@@ -184,18 +187,13 @@ struct TabbarView: View {
                     .environmentObject(themeManager)
                     .ignoresSafeArea()
 
-                TabView(selection: $selectedTab) {
-                    ForEach(tabOrder.order, id: \.self) { tab in
-                        tabContent(for: tab)
-                            // 用 safeAreaInset 而不是 padding：只把内容顶起来，
-                            // 页面背景仍然铺到屏幕最底，不会留黑带
-                            .safeAreaInset(edge: .bottom, spacing: 0) {
-                                Color.clear
-                                    .frame(height: tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
-                            }
-                            .tag(tab)
+                tabContent(for: selectedTab)
+                    // 用 safeAreaInset 而不是 padding：只把内容顶起来，
+                    // 页面背景仍然铺到屏幕最底，不会留黑带
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        Color.clear
+                            .frame(height: tabBarStyleManager.floatingConfig.height + tabBarStyleManager.floatingConfig.bottomOffset)
                     }
-                }
         
                 floatingTabBarContent
                     .padding(.horizontal, floatingHorizontalPadding(for: geo.size.width))
@@ -213,7 +211,7 @@ struct TabbarView: View {
         TabEnum.view(for: tab, themeManager: themeManager, tabBarStyleManager: tabBarStyleManager)
             // 悬浮模式下系统自带的 tab bar 会留一条空白矩形，这里彻底藏掉
             .toolbar(
-                tabBarStyleManager.currentStyle == .floatingCard ? .hidden : .visible,
+                usesFloatingTabBar ? .hidden : .visible,
                 for: .tabBar
             )
             // iOS 26 的玻璃 tab bar 不吃 UITabBarAppearance，必须显式隐藏背景
@@ -308,10 +306,14 @@ struct TabbarView: View {
 
     private func updateTabBarAppearance() {
         let appearance = UITabBarAppearance()
-        let style = tabBarStyleManager.currentStyle
 
-        switch style {
-        case .systemDefault:
+        if usesFloatingTabBar {
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundColor = .clear
+            appearance.shadowImage = UIImage()
+            appearance.backgroundImage = UIImage()
+            UITabBar.appearance().isHidden = true
+        } else {
             if themeManager.liquidGlassEnabled {
                 appearance.configureWithTransparentBackground()
                 appearance.backgroundColor = .clear
@@ -321,12 +323,6 @@ struct TabbarView: View {
                 appearance.configureWithOpaqueBackground()
             }
             UITabBar.appearance().isHidden = false
-        case .floatingCard:
-            appearance.configureWithTransparentBackground()
-            appearance.backgroundColor = .clear
-            appearance.shadowImage = UIImage()
-            appearance.backgroundImage = UIImage()
-            UITabBar.appearance().isHidden = true
         }
 
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(themeManager.accentColor)
@@ -337,7 +333,7 @@ struct TabbarView: View {
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }
 
-        let hidden = style == .floatingCard
+        let hidden = usesFloatingTabBar
         DispatchQueue.main.async {
             for bar in Self.liveTabBars() {
                 bar.standardAppearance = appearance

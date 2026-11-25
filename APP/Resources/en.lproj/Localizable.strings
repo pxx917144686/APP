@@ -106,6 +106,7 @@
 
 "download_title" = "Downloads";
 "downloading" = "Downloading";
+"download_processing" = "Processing…";
 "download_paused" = "Paused";
 "download_pause" = "Pause";
 "download_resume" = "Resume";
@@ -291,7 +292,7 @@
 "hide_password" = "Hide Password";
 "show_password" = "Show Password";
 "two_factor_code_intro" = "Please check your trusted Apple device or SMS, then enter the 6-digit verification code below to continue.";
-"tab_purchased" = "Purchased";
+"tab_purchased" = "Purchase History";
 "purchased_search_placeholder" = "Search purchased apps";
 "purchased_syncing" = "Syncing purchases…";
 "purchased_empty" = "No purchased items yet";
@@ -524,7 +525,7 @@
 "dc_err_cancelled" = "Decryption cancelled";
 "dc_cancel" = "Cancel";
 "dc_share_decrypted" = "Share decrypted package";
-"purchased" = "Purchased";
+"purchased" = "Purchase History";
 "dc_group_wildcard" = "App ID is a wildcard (TEAMID.*); wildcard App IDs cannot carry App Groups";
 "dc_group_none" = "No App Group in the signature";
 "dc_group_notgranted" = "App Group is declared but no container was granted";
@@ -1050,6 +1051,7 @@
 "dc_reason_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not decrypt any page. Re-sign the app with a developer certificate that carries it";
 "dc_failed_title" = "Decryption failed";
 "dc_reason_ticket" = "This build has decryption permission, but the FairPlay ticket in this IPA does not match this device — usually because it was downloaded with a different Apple ID. Re-download it with the account signed in on this device";
+"dc_err_tf_no_sinf" = "This TestFlight package has no SC_Info/sinf ticket, so it cannot be decrypted. Sign in on the TestFlight page and download it again with the same Apple ID";
 "dc_reason_enomem" = "The kernel refused to create the decryption mapping (ENOMEM): the ticket may be damaged or the file was repacked";
 "dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
 Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
@@ -1085,3 +1087,72 @@ Re-sign the app with a developer certificate that carries it (free certificates 
 "sign_certificate_id_hint" = "Same value as Bundle ID. Enter the App ID from the certificate/profile, or fill it from the selected profile.";
 "sign_fill_from_profile" = "Fill from Profile";
 "sign_certificate_id_wildcard" = "This profile is a wildcard. Enter a concrete App ID manually.";
+
+"testflight_title" = "TestFlight Downloads";
+"testflight_warning_title" = "Private TestFlight protocol";
+"testflight_warning" = "Uses TestFlight's non-public client protocol. Download only betas you are already authorized to test. The IPA remains FairPlay-encrypted.";
+"testflight_session_title" = "TestFlight Session";
+"testflight_session_imported" = "Session imported";
+"testflight_session_missing" = "No session imported";
+"testflight_import" = "Import Session";
+"testflight_clear" = "Clear";
+"testflight_loading" = "Loading catalog...";
+"testflight_catalog" = "Beta Apps";
+"testflight_catalog_count" = "%d apps";
+"testflight_no_apps" = "No downloadable apps in this catalog.";
+"testflight_manual" = "Manual Bundle ID";
+"testflight_manual_placeholder" = "com.example.app";
+"testflight_download" = "Download";
+"testflight_downloaded" = "Downloaded";
+"testflight_downloaded_format" = "%@ · %.1f MB";
+"testflight_howto" = "How to get a session";
+"testflight_instructions" = "Sign in with your Apple ID below, or import a session JSON generated on Mac with apple-auth / IPA-Decrypt. The password is used only for this sign-in and is never stored.";
+"testflight_step_1" = "Sign in with your Apple ID and complete two-factor authentication.";
+"testflight_step_2" = "If Apple rejects the sign-in, import a Mac-generated tf-session.json as a fallback.";
+"testflight_step_3" = "Refresh the catalog, pick a beta app, and download.";
+"testflight_encrypted" = "The downloaded IPA is FairPlay-encrypted. A matching FairPlay credential is required to decrypt it.";
+"testflight_error" = "TestFlight Error";
+
+"testflight_login" = "Sign in";
+"testflight_email" = "Apple ID";
+"testflight_password" = "Password";
+"testflight_login_hint" = "Password is used only for this sign-in and is never saved. 2FA is requested by Apple.";
+"testflight_logging_in" = "Signing in...";
+"testflight_2fa_title" = "Two-Factor Authentication";
+"testflight_2fa_message" = "Enter the verification code sent by Apple.";
+"testflight_2fa_placeholder" = "123456";
+"testflight_login_empty" = "Enter your Apple ID and password.";
+"tab_testflight" = "TestFlight";
+
+"testflight_appleid_logged_in" = "Apple ID signed in";
+"testflight_testflight_pending" = "Apple ID is signed in, but the TestFlight session has not been created. Tap retry; if it fails, share diagnostics.";
+"testflight_retry_session" = "Retry TestFlight";
+"testflight_error_appleid" = "Apple ID sign-in failed: %@";
+"testflight_error_store" = "Store session failed: %@";
+"testflight_error_session" = "TestFlight session failed: %@";
+"testflight_store_missing" = "Store session is missing";
+"testflight_diagnostics_title" = "Diagnostics";
+"testflight_diagnostics" = "Share Diagnostics";
+"testflight_diagnostics_hint" = "Contains request URLs, HTTP status codes and redacted headers. Do not share publicly without checking.";
+
+"testflight_error_settings" = "Setting Apple ID session failed to create a TestFlight session: %@";
+"testflight_use_settings" = "Use Apple ID from Settings";
+"testflight_local_catalog_loaded" = "Loaded %d TestFlight apps from the local catalog.";
+"testflight_download_unavailable" = "TestFlight download is not available yet.";
+"testflight_no_build" = "%@ has no downloadable build right now. It may have expired or be unavailable for this Apple ID.";
+"testflight_login_required" = "Sign in to TestFlight first.";
+"testflight_downloading" = "Downloading";
+"testflight_history_builds" = "Previous Builds";
+"testflight_history_loading" = "Loading builds…";
+"testflight_no_builds" = "No previous builds.";
+"testflight_expired" = "Expired";
+"testflight_bundle_missing" = "Could not resolve this app's bundle ID.";
+"sign_install_failed_message" = "Signing completed, but installation did not finish. Check the certificate and provisioning profile, then try again.";
+"sign_install_handed_off" = "Delivered to iOS. Check the Home Screen.";
+"testflight_builds_unit" = "Builds";
+"tab_testflight_short" = "TF";
+"testflight_ipa_install_hint" = "TestFlight IPAs cannot be installed directly over the air. Share it and sign it first, or install it from TestFlight.";
+"testflight_login_failed" = "TestFlight sign-in failed. Please try again.";
+"testflight_sign_to_install" = "TestFlight IPA requires signing before installation. Select a certificate and profile.";
+"testflight_sign_required_title" = "Signing Required";
+"sign_now" = "Go to Sign";

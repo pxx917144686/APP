@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		06CC9CAA43BDDCF70A8E6E82 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
 		21C6E9C6D08C32F3C8B536C6 /* IslandActivityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D2CC66CF54D893E941BEA7 /* IslandActivityTypes.swift */; };
+		3C360D069E1903A6A0AA2DDB /* AppleAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8BE6990CEB031658612F1949 /* AppleAuth */; };
 		681E98F3353E3F41694CB729 /* APPWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 939B39DEA649D26C724F3B39 /* APPWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		850E83352FEDA2C30047BDF8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 850E83342FEDA2C30047BDF8 /* Alamofire */; };
 		851F44E62FDDECA400574B00 /* Vapor in Frameworks */ = {isa = PBXBuildFile; productRef = 851F44E52FDDECA400574B00 /* Vapor */; };
 		A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */ = {isa = PBXBuildFile; productRef = A1C000000000000000000002 /* AsyncHTTPClient */; };
 		A1D100000000000000000002 /* APP/InAppPurchase.dylib in Copy InAppPurchase.dylib */ = {isa = PBXBuildFile; fileRef = A1D100000000000000000001 /* APP/InAppPurchase.dylib */; };
+		AE5FDED1F0200FEC6690DD60 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 24F694E244D3E899EB98A2A6 /* ZIPFoundation */; };
 		D50DBD7A600A5337B02DD11E /* SRP in Frameworks */ = {isa = PBXBuildFile; productRef = E2BFBE6BCBC4081A86D24867 /* SRP */; };
 		D5A1B2C3D4E5F60718293010 /* ZsignSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D5A1B2C3D4E5F60718293011 /* ZsignSwift */; };
 		D6A1B2C3D4E5F60718293001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D6A1B2C3D4E5F60718293002 /* GRDB */; };
@@ -129,6 +131,8 @@
 				D5A1B2C3D4E5F60718293010 /* ZsignSwift in Frameworks */,
 				D50DBD7A600A5337B02DD11E /* SRP in Frameworks */,
 				A1C000000000000000000001 /* AsyncHTTPClient in Frameworks */,
+				3C360D069E1903A6A0AA2DDB /* AppleAuth in Frameworks */,
+				AE5FDED1F0200FEC6690DD60 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,6 +248,8 @@
 				D6A1B2C3D4E5F60718293002 /* GRDB */,
 				D5A1B2C3D4E5F60718293011 /* ZsignSwift */,
 				E2BFBE6BCBC4081A86D24867 /* SRP */,
+				8BE6990CEB031658612F1949 /* AppleAuth */,
+				24F694E244D3E899EB98A2A6 /* ZIPFoundation */,
 			);
 			productName = APP;
 			productReference = 851FD95F2E578774002136BA /* APP.app */;
@@ -311,8 +317,10 @@
 				850E83332FEDA2C30047BDF8 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				955DE4CABD7624367200C85A /* XCRemoteSwiftPackageReference "swift-srp" */,
 				A1C000000000000000000003 /* XCRemoteSwiftPackageReference "async-http-client" */,
-				D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */,
+				9B589897381099888265D01D /* XCLocalSwiftPackageReference "Vendor/AppleAuth" */,
+				BC3A2481B613E932AD09F8D2 /* XCLocalSwiftPackageReference "Vendor/ZIPFoundation" */,
+				D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 851FD9602E578774002136BA /* Products */;
@@ -507,7 +515,7 @@
 				CODE_SIGN_ENTITLEMENTS = APP/Resources/APP.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -538,7 +546,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.8.0;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -568,7 +576,7 @@
 				CODE_SIGN_ENTITLEMENTS = APP/Resources/APP.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -599,7 +607,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.8.0;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -626,7 +634,7 @@
 				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = APPWidget/Info.plist;
@@ -658,7 +666,7 @@
 				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = APPWidget/Info.plist;
@@ -714,9 +722,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		9B589897381099888265D01D /* XCLocalSwiftPackageReference "Vendor/AppleAuth" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/AppleAuth;
+		};
+		BC3A2481B613E932AD09F8D2 /* XCLocalSwiftPackageReference "Vendor/ZIPFoundation" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/ZIPFoundation;
+		};
 		D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Zsign;
+		};
+		D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/GRDB.swift;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -753,17 +773,14 @@
 				minimumVersion = 1.25.0;
 			};
 		};
-		D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/groue/GRDB.swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.12.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		24F694E244D3E899EB98A2A6 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC3A2481B613E932AD09F8D2 /* XCLocalSwiftPackageReference "Vendor/ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
 		850E83342FEDA2C30047BDF8 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 850E83332FEDA2C30047BDF8 /* XCRemoteSwiftPackageReference "Alamofire" */;
@@ -773,6 +790,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 851F44E42FDDECA400574B00 /* XCRemoteSwiftPackageReference "vapor" */;
 			productName = Vapor;
+		};
+		8BE6990CEB031658612F1949 /* AppleAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B589897381099888265D01D /* XCLocalSwiftPackageReference "Vendor/AppleAuth" */;
+			productName = AppleAuth;
 		};
 		A1C000000000000000000002 /* AsyncHTTPClient */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -786,7 +808,7 @@
 		};
 		D6A1B2C3D4E5F60718293002 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D6A1B2C3D4E5F60718293003 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			package = D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 		E2BFBE6BCBC4081A86D24867 /* SRP */ = {

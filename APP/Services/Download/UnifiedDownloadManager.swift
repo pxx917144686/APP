@@ -330,12 +330,14 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         iconURL: String? = nil,
         versionId: String? = nil,
         price: Double? = nil,
-        currency: String? = nil
+        currency: String? = nil,
+        isTestFlight: Bool = false
     ) -> UUID {
 
         if let existing = downloadRequests.first(where: {
             $0.bundleIdentifier == bundleIdentifier
                 && $0.version == version
+                && $0.package.isTestFlight == isTestFlight
                 && (bundleIdentifier.isEmpty ? $0.name == name : true)
         }) {
             return existing.id
@@ -348,7 +350,8 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             identifier: identifier,
             iconURL: iconURL,
             price: price,
-            currency: currency
+            currency: currency,
+            isTestFlight: isTestFlight
         )
 
         let request = DownloadRequest(
@@ -707,12 +710,19 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
         waitingDownloads.remove(request.id)
 
         if activeDownloads.contains(request.id) {
-            downloadManager.cancelDownload(downloadId: request.id.uuidString)
+            if request.package.isTestFlight {
+                TestFlightDownloadManager.shared.cancelUnifiedDownload(taskID: request.id)
+            } else {
+                downloadManager.cancelDownload(downloadId: request.id.uuidString)
+            }
             activeDownloads.remove(request.id)
             processNextInQueue()
         } else {
-
-            downloadManager.cancelDownload(downloadId: request.id.uuidString)
+            if request.package.isTestFlight {
+                TestFlightDownloadManager.shared.cancelUnifiedDownload(taskID: request.id)
+            } else {
+                downloadManager.cancelDownload(downloadId: request.id.uuidString)
+            }
         }
 
         request.runtime.status = DownloadStatus.cancelled
@@ -731,6 +741,17 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             }
             waitingDownloads.remove(request.id)
             request.runtime.status = DownloadStatus.paused
+            reportIslandProgress(request)
+            saveDownloadTasks()
+            syncIslandLifecycle()
+            return
+        }
+
+        if request.package.isTestFlight {
+            guard request.runtime.status == DownloadStatus.downloading else { return }
+            TestFlightDownloadManager.shared.pauseUnifiedDownload(taskID: request.id)
+            request.runtime.status = DownloadStatus.paused
+            activeDownloads.remove(request.id)
             reportIslandProgress(request)
             saveDownloadTasks()
             syncIslandLifecycle()
@@ -756,7 +777,47 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
         request.runtime.error = nil
         request.runtime.isAuthFailure = false
+        if request.package.isTestFlight {
+            request.runtime.status = .downloading
+            activeDownloads.insert(request.id)
+            reportIslandProgress(request)
+            syncIslandLifecycle()
+            TestFlightDownloadManager.shared.resumeUnifiedDownload(
+                taskID: request.id,
+                bundle: request.package.bundleIdentifier
+            )
+            return
+        }
         startDownload(for: request)
+    }
+
+    func beginTestFlightIsland(taskID: UUID) {
+        guard let request = downloadRequests.first(where: { $0.id == taskID }) else { return }
+        activeDownloads.insert(taskID)
+        IslandActivityManager.shared.allowRecreate(key: islandKey(for: request))
+        reportIslandProgress(request)
+        syncIslandLifecycle()
+    }
+
+    func updateTestFlightIsland(taskID: UUID) {
+        guard let request = downloadRequests.first(where: { $0.id == taskID }) else { return }
+        reportIslandProgress(request)
+    }
+
+    func finishTestFlightIsland(taskID: UUID) {
+        guard let request = downloadRequests.first(where: { $0.id == taskID }) else { return }
+        activeDownloads.remove(taskID)
+        reportIslandFinish(request)
+        syncIslandLifecycle()
+        processNextInQueue()
+    }
+
+    func failTestFlightIsland(taskID: UUID, cancelled: Bool = false) {
+        guard let request = downloadRequests.first(where: { $0.id == taskID }) else { return }
+        activeDownloads.remove(taskID)
+        reportIslandFail(request, cancelled: cancelled)
+        syncIslandLifecycle()
+        processNextInQueue()
     }
 
     private func reportIslandProgress(_ request: DownloadRequest) {
@@ -893,10 +954,11 @@ struct DownloadArchive {
     let description: String?
     let price: Double?
     let currency: String?
+    let isTestFlight: Bool
 
     var isFree: Bool { (price ?? 0.0) == 0.0 }
 
-    init(bundleIdentifier: String, name: String, version: String, identifier: Int = 0, iconURL: String? = nil, description: String? = nil, price: Double? = nil, currency: String? = nil) {
+    init(bundleIdentifier: String, name: String, version: String, identifier: Int = 0, iconURL: String? = nil, description: String? = nil, price: Double? = nil, currency: String? = nil, isTestFlight: Bool = false) {
         self.bundleIdentifier = bundleIdentifier
         self.name = name
         self.version = version
@@ -905,6 +967,7 @@ struct DownloadArchive {
         self.description = description
         self.price = price
         self.currency = currency
+        self.isTestFlight = isTestFlight
     }
 }
 
@@ -964,6 +1027,12 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
 
     var iconURL: String? {
         return package.iconURL
+    }
+
+    var isTestFlight: Bool {
+        package.isTestFlight
+            || localFilePath?.contains("/TestFlight/") == true
+            || localFilePath?.hasPrefix("TestFlight/") == true
     }
 
     var identifier: Int {
@@ -1390,6 +1459,7 @@ struct DownloadRequestSaveData: Codable {
     let packageIconURL: String?
     let packagePrice: Double?
     let packageCurrency: String?
+    var packageIsTestFlight: Bool?
     let versionId: String?
     let runtime: DownloadRuntimeSaveData
     var createdAt: Date
@@ -1403,6 +1473,7 @@ struct DownloadRequestSaveData: Codable {
         self.packageIconURL = package.iconURL
         self.packagePrice = package.price
         self.packageCurrency = package.currency
+        self.packageIsTestFlight = package.isTestFlight
         self.versionId = versionId
         self.runtime = runtime
         self.createdAt = createdAt
@@ -1416,7 +1487,8 @@ struct DownloadRequestSaveData: Codable {
             identifier: packageIdentifier,
             iconURL: packageIconURL,
             price: packagePrice,
-            currency: packageCurrency
+            currency: packageCurrency,
+            isTestFlight: packageIsTestFlight ?? false
         )
     }
 }

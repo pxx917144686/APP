@@ -698,7 +698,7 @@ extension SettingsView {
                 VStack(spacing: 0) {
                     Spacer()
                     HStack(spacing: 0) {
-                        ForEach(TabEnum.allCases, id: \.self) { tab in
+                        ForEach(TabOrderStore.reorderable, id: \.self) { tab in
                             VStack(spacing: 3) {
                                 Image(systemName: tab.icon)
                                     .font(.system(size: 13))
@@ -721,7 +721,7 @@ extension SettingsView {
                     Spacer()
                     HStack(spacing: 6) {
                         HStack(spacing: 0) {
-                            ForEach([TabEnum.settings, .downloads, .decrypt, .sign], id: \.self) { tab in
+                            ForEach(TabOrderStore.reorderable.filter { $0 != .search }, id: \.self) { tab in
                                 VStack(spacing: 1) {
                                     Image(systemName: tab.icon)
                                         .font(.system(size: 10))

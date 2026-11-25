@@ -78,7 +78,8 @@ enum IslandDeepLink {
         if key.hasPrefix("sign-") {
             TabRouter.shared.select(.sign)
         } else if key.hasPrefix("decrypt-") {
-            TabRouter.shared.select(.decrypt)
+            TabRouter.shared.select(.downloads)
+            NotificationCenter.default.post(name: Notification.Name("OpenDecryptTool"), object: nil)
         } else {
             TabRouter.shared.select(.downloads)
         }

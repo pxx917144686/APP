@@ -106,6 +106,7 @@
 
 "download_title" = "下載";
 "downloading" = "下載中";
+"download_processing" = "處理中…";
 "download_paused" = "已暫停";
 "download_pause" = "暫停";
 "download_resume" = "繼續";
@@ -291,7 +292,7 @@
 
 "hide_password" = "隱藏密碼";
 "show_password" = "顯示密碼";
-"tab_purchased" = "已購";
+"tab_purchased" = "已購記錄";
 "purchased_search_placeholder" = "搜尋已購 App";
 "purchased_syncing" = "正在同步購買記錄…";
 "purchased_empty" = "暫無已購項目";
@@ -524,7 +525,7 @@
 "dc_err_cancelled" = "已取消脫殼";
 "dc_cancel" = "取消脫殼";
 "dc_share_decrypted" = "分享脫殼後的包";
-"purchased" = "已購";
+"purchased" = "已購記錄";
 "dc_group_wildcard" = "App ID 是通配符（TEAMID.*），通配符 App ID 不支援 App Group";
 "dc_group_none" = "簽名里沒有 App Group 聲明";
 "dc_group_notgranted" = "聲明瞭 App Group，但系統沒有分配容器";
@@ -540,7 +541,7 @@
 "tab_order_hint" = "拖動右側把手調整順序。";
 "tab_order_reset" = "恢復預設順序";
 "tab_order_search_hint" = "懸浮樣式下固定在右側";
-"delisted_apps_short" = "下架應用";
+"delisted_apps_short" = "下架";
 "legacy_apps_delisted" = "下架應用";
 "install_failed_title" = "安裝失敗";
 "install_dns_failed_title" = "網域名稱解析被攔截";
@@ -1050,6 +1051,7 @@
 "dc_reason_entitlement" = "本應用目前簽名缺少 dynamic-codesigning 權限，核心不會解密任何頁面。請用帶該權限的開發者憑證重簽本應用";
 "dc_failed_title" = "脫殼失敗";
 "dc_reason_ticket" = "本應用有解密權限，但該安裝包的 FairPlay 票據對不上目前裝置：通常是用別的 Apple ID 下載的。請用裝置已登入的帳號重新下載後再脫殼";
+"dc_err_tf_no_sinf" = "該 TestFlight 包缺少 SC_Info/sinf 票據，無法脫殼。請在 TestFlight 頁登入後用同一 Apple ID 重新下載";
 "dc_reason_enomem" = "核心拒絕建立解密映射（ENOMEM），可能是票據損壞或檔案被重新打包過";
 "dc_err_no_entitlement" = "目前簽名的 App 沒有 dynamic-codesigning 權限，系統核心不會執行 FairPlay 解密。
 請用帶該權限的開發者憑證重新簽名本應用（免費憑證、部分簽名工具簽出來的包不具備此權限）。";
@@ -1085,3 +1087,72 @@
 "sign_certificate_id_hint" = "與 Bundle ID 同步；可直接填憑證/描述檔的 App ID，或從描述檔填入。";
 "sign_fill_from_profile" = "從描述檔填入";
 "sign_certificate_id_wildcard" = "該描述檔是通配符，請手動填入具體的 App ID。";
+
+"testflight_title" = "TestFlight 下載";
+"testflight_warning_title" = "TestFlight 非公開協定";
+"testflight_warning" = "使用 TestFlight 非公開客戶端協定。僅下載你已有測試權限的 Beta；下載到的 IPA 仍是 FairPlay 加密包。";
+"testflight_session_title" = "TestFlight 工作階段";
+"testflight_session_imported" = "已匯入工作階段";
+"testflight_session_missing" = "未匯入工作階段";
+"testflight_import" = "匯入工作階段";
+"testflight_clear" = "清除";
+"testflight_loading" = "正在讀取目錄…";
+"testflight_catalog" = "Beta App";
+"testflight_catalog_count" = "%d 個 App";
+"testflight_no_apps" = "目錄裡沒有可下載的 App。";
+"testflight_manual" = "手動 Bundle ID";
+"testflight_manual_placeholder" = "com.example.app";
+"testflight_download" = "下載";
+"testflight_downloaded" = "已下載";
+"testflight_downloaded_format" = "%@ · %.1f MB";
+"testflight_howto" = "如何取得工作階段";
+"testflight_instructions" = "可以直接用下方 Apple ID 登入；也可以在 Mac 上用 apple-auth / IPA-Decrypt 產生工作階段 JSON 匯入。密碼只用於本次登入，不會儲存。";
+"testflight_step_1" = "用 Apple ID 登入並完成雙重驗證。";
+"testflight_step_2" = "如果 Apple 拒絕登入，匯入 Mac 產生的 tf-session.json 作為備用。";
+"testflight_step_3" = "重新整理目錄，選擇 Beta App 下載。";
+"testflight_encrypted" = "下載到的 IPA 是 FairPlay 加密包，需要匹配的 FairPlay 憑證才能解密。";
+"testflight_error" = "TestFlight 錯誤";
+
+"testflight_login" = "登入";
+"testflight_email" = "Apple ID";
+"testflight_password" = "密碼";
+"testflight_login_hint" = "密碼只用於本次登入，不會儲存。驗證碼由 Apple 發送。";
+"testflight_logging_in" = "登入中…";
+"testflight_2fa_title" = "雙重驗證";
+"testflight_2fa_message" = "輸入 Apple 傳送的驗證碼。";
+"testflight_2fa_placeholder" = "123456";
+"testflight_login_empty" = "請輸入 Apple ID 和密碼。";
+"tab_testflight" = "TestFlight";
+
+"testflight_appleid_logged_in" = "Apple ID 已登入";
+"testflight_testflight_pending" = "Apple ID 已登入，但 TestFlight 工作階段還沒建立。可以重試；仍失敗就匯出診斷。";
+"testflight_retry_session" = "重試 TestFlight";
+"testflight_error_appleid" = "Apple ID 登入失敗：%@";
+"testflight_error_store" = "Store 工作階段失敗：%@";
+"testflight_error_session" = "TestFlight 工作階段失敗：%@";
+"testflight_store_missing" = "Store 工作階段不存在";
+"testflight_diagnostics_title" = "診斷";
+"testflight_diagnostics" = "匯出診斷";
+"testflight_diagnostics_hint" = "包含請求 URL、HTTP 狀態碼和去識別化請求標頭；分享前請檢查。";
+
+"testflight_error_settings" = "使用設定裡的 Apple ID 建立 TestFlight 工作階段失敗：%@";
+"testflight_use_settings" = "使用設定裡的 Apple ID";
+"testflight_local_catalog_loaded" = "已從本機目錄載入 %d 個 TestFlight App。";
+"testflight_download_unavailable" = "TestFlight 下載暫不可用。";
+"testflight_no_build" = "%@ 目前沒有可下載的組建，可能已過期或該 Apple ID 無權下載。";
+"testflight_login_required" = "請先登入 TestFlight。";
+"testflight_downloading" = "下載中";
+"testflight_history_builds" = "歷史 Build";
+"testflight_history_loading" = "正在載入 Build…";
+"testflight_no_builds" = "沒有歷史 Build。";
+"testflight_expired" = "已過期";
+"testflight_bundle_missing" = "無法解析這個 App 的 Bundle ID。";
+"sign_install_failed_message" = "簽名已完成，但安裝沒有完成。請檢查憑證和描述檔後重試。";
+"sign_install_handed_off" = "已交給 iOS，請查看主畫面。";
+"testflight_builds_unit" = "個 Build";
+"tab_testflight_short" = "TF";
+"testflight_ipa_install_hint" = "TestFlight IPA 不能直接 OTA 安裝。請先分享並簽名，或用 TestFlight 安裝。";
+"testflight_login_failed" = "TestFlight 登入失敗，請重試。";
+"testflight_sign_to_install" = "TestFlight IPA 需要先簽名才能安裝，請選擇憑證和描述檔。";
+"testflight_sign_required_title" = "需要簽名";
+"sign_now" = "去簽名";

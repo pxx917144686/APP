@@ -321,7 +321,7 @@ struct AddAccountView: View {
         }
     }
 }
-private struct AppleLoginTextField: UIViewRepresentable {
+struct AppleLoginTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
     let tag: Int
@@ -471,7 +471,7 @@ private struct AppleLoginTextField: UIViewRepresentable {
     }
 }
 
-private final class LoginTextFieldWrapper: UITextField {
+final class LoginTextFieldWrapper: UITextField {
     private let insets: UIEdgeInsets
     private let nominalHeight: CGFloat = 52
 

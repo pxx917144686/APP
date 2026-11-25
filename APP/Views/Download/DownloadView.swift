@@ -875,6 +875,7 @@ class SimpleHTTPServer: NSObject, @unchecked Sendable {
 enum DownloadSheet: Identifiable {
     case details(DownloadRequest)
     case decryptedFiles
+    case decryptTool
 
     var id: String {
         switch self {
@@ -882,6 +883,8 @@ enum DownloadSheet: Identifiable {
             return "details-\(request.id.uuidString)"
         case .decryptedFiles:
             return "decrypted-files"
+        case .decryptTool:
+            return "decrypt-tool"
         }
     }
 }
@@ -892,6 +895,7 @@ struct DownloadView: SwiftUI.View {
     @State private var showSafariWebView = false
     @State private var safariURL: URL? = nil
     @State private var showThemeSelector = false
+    @State private var showFloatingDecryptMenu = false
     @StateObject private var scrollTracker = ScrollVelocityTracker()
     @State private var decryptedCount = 0
     @State private var activeSheet: DownloadSheet?
@@ -952,7 +956,15 @@ struct DownloadView: SwiftUI.View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DecryptedFilesChanged"))) { _ in
             refreshDecryptedCount()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenDecryptTool"))) { _ in
+            activeSheet = .decryptTool
+        }
         .environmentObject(GlobalInstallationManager.shared)
+        .overlay {
+            if showFloatingDecryptMenu {
+                decryptFullScreenMenu
+            }
+        }
         .overlay(alignment: .bottomTrailing) {
             decryptedFilesButton
         }
@@ -994,6 +1006,19 @@ struct DownloadView: SwiftUI.View {
         case .decryptedFiles:
             DecryptedFilesView()
                 .environmentObject(themeManager)
+        case .decryptTool:
+            NavigationStack {
+                DecryptView()
+                    .environmentObject(themeManager)
+                    .environmentObject(tabBarStyleManager)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("close".localized) {
+                                activeSheet = nil
+                            }
+                        }
+                    }
+            }
         }
     }
 
@@ -1082,15 +1107,92 @@ struct DownloadView: SwiftUI.View {
         #endif
     }
 
+    private var decryptFullScreenMenu: some SwiftUI.View {
+        VStack(spacing: 0) {
+            Button {
+                SoundEffects.play(.tap)
+                showFloatingDecryptMenu = false
+                activeSheet = .decryptedFiles
+            } label: {
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            themeManager.accentColor.opacity(0.22),
+                            themeManager.accentColor.opacity(0.06)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    VStack(spacing: 14) {
+                        Image(systemName: "folder.fill")
+                            .font(.system(size: 42, weight: .semibold))
+                        Text("decrypted_files_title".localized)
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                        if decryptedCount > 0 {
+                            Text(decryptedCount > 99 ? "99+" : "\(decryptedCount)")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .frame(minWidth: 24, minHeight: 24)
+                                .background(Capsule().fill(Color.red))
+                        }
+                    }
+                    .foregroundStyle(themeManager.accentColor)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Rectangle()
+                .fill(Color.white.opacity(0.16))
+                .frame(height: 0.5)
+
+            Button {
+                SoundEffects.play(.tap)
+                showFloatingDecryptMenu = false
+                activeSheet = .decryptTool
+            } label: {
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            themeManager.accentColor.opacity(0.06),
+                            themeManager.accentColor.opacity(0.22)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    VStack(spacing: 14) {
+                        Image(systemName: "lock.open.fill")
+                            .font(.system(size: 42, weight: .semibold))
+                        Text("tab_decrypt".localized)
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                    }
+                    .foregroundStyle(themeManager.accentColor)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .background(Color.black.opacity(0.72).ignoresSafeArea())
+        .ignoresSafeArea()
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.22), value: showFloatingDecryptMenu)
+    }
+
     private var decryptedFilesButton: some SwiftUI.View {
         Button {
-            activeSheet = .decryptedFiles
+            SoundEffects.play(.tap)
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                showFloatingDecryptMenu.toggle()
+            }
         } label: {
             ZStack(alignment: .topTrailing) {
                 Image("XcodeIcon")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 52, height: 52)
+                    .frame(width: 54, height: 54)
                     .shadow(color: Color.black.opacity(0.28), radius: 10, y: 4)
 
                 if decryptedCount > 0 {
@@ -1098,24 +1200,19 @@ struct DownloadView: SwiftUI.View {
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
-                        .frame(minWidth: 18, minHeight: 18)
+                        .frame(minWidth: 19, minHeight: 19)
                         .background(
-                            Circle()
+                            Capsule()
                                 .fill(Color.red)
-                                .overlay(
-                                    Circle()
-                                        .strokeBorder(Color.white, lineWidth: 1.5)
-                                )
-                                .shadow(color: Color.black.opacity(0.2), radius: 3, y: 1)
+                                .overlay(Capsule().strokeBorder(Color.white, lineWidth: 1.5))
                         )
-                        .offset(x: 4, y: -4)
-                        .transition(.scale(scale: 0.4).combined(with: .opacity))
+                        .offset(x: 5, y: -5)
                 }
             }
         }
         .buttonStyle(.plain)
         .padding(.trailing, 18)
-        .padding(.bottom, tabBarStyleManager.currentStyle == .floatingCard ? 96 : 24)
+        .padding(.bottom, tabBarStyleManager.currentStyle == .floatingCard ? 112 : 24)
     }
 
     private func refreshDecryptedCount() {
@@ -1538,9 +1635,26 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
+    private var resolvedIconURL: String? {
+        let appID = request.identifier > 0 ? String(request.identifier) : nil
+        let storedURL = request.package.iconURL.flatMap { URL(string: $0) }
+        return TFIcon.resolvedURL(storedURL: storedURL, appID: appID)?.absoluteString
+    }
+
     private var appIconView: some SwiftUI.View {
         Group {
-            if let iconURL = request.package.iconURL, let url = URL(string: iconURL) {
+            if let iconURL = resolvedIconURL, let url = URL(string: iconURL), url.isFileURL,
+               let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 52, height: 52)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+                    )
+            } else if let iconURL = resolvedIconURL, let url = URL(string: iconURL) {
                 ResourceImage(
                     url: url,
                     pointSize: CGSize(width: 52, height: 52),
@@ -1680,6 +1794,25 @@ struct DownloadCardView: SwiftUI.View {
         }
 
         let task = Task {
+            if request.isTestFlight {
+                let appID = request.identifier > 0 ? String(request.identifier) : ""
+                if await TestFlightDownloadManager.shared.ensureSinf(ipaPath: path, appID: appID) != true {
+                    await MainActor.run {
+                        if backgroundTask != UIBackgroundTaskIdentifier.invalid {
+                            UIApplication.shared.endBackgroundTask(backgroundTask)
+                        }
+                        decryptMessage = "dc_err_tf_no_sinf".localized
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                            isDecrypting = false
+                            decryptOutcome = .failed
+                        }
+                        log.append("sinf  missing", level: .failure)
+                        log.finish()
+                        DecryptCoordinator.shared.finish(requestID: request.id)
+                    }
+                    return
+                }
+            }
             let record = await DecryptService.decryptFull(ipaPath: path, cancelToken: token) { event in
                 log.consume(event)
             }
@@ -1963,6 +2096,23 @@ struct DownloadCardView: SwiftUI.View {
 
         Task {
             do {
+                let ipaURL = URL(fileURLWithPath: localFilePath)
+                let hasSinf = TFSINF.members(ipa: ipaURL).contains {
+                    $0.contains("/SC_Info/") && $0.hasSuffix(".sinf")
+                }
+                if !hasSinf {
+                    var skipped: [String] = []
+                    if TFSINF.encryptedMachOCount(ipa: ipaURL, skipped: &skipped) > 0 {
+                        let appID = request.identifier > 0 ? String(request.identifier) : ""
+                        guard await TestFlightDownloadManager.shared.ensureSinf(
+                            ipaPath: localFilePath,
+                            appID: appID
+                        ) == true else {
+                            throw PackageInstallationError.installationFailed("dc_err_tf_no_sinf".localized)
+                        }
+                    }
+                }
+
                 let ipaMetadata = readIPAInfo(at: localFilePath)
                 var bundleIdentifier = ipaMetadata?.bundleIdentifier ?? request.bundleIdentifier
                 var version = ipaMetadata?.version ?? request.version

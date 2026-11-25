@@ -26,10 +26,10 @@ struct SigningOptionsCard: SwiftUI.View {
     let accent: Color
     let colorScheme: ColorScheme
     let effectiveExtensionID: (SigningTarget) -> String
-    let onFillCertificateID: () -> Void
     let onShowExtensionCredentials: () -> Void
     let onShowDeviceSheet: () -> Void
     let onShowEntitlements: () -> Void
+    let onFillCertificateID: () -> Void
 
     var body: some SwiftUI.View {
         SigningSectionCard(title: "sign_options_section".localized, icon: "slider.horizontal.3", accent: accent) {

@@ -294,7 +294,7 @@ enum SigningEngine {
             throw SigningEngineError.outputMissing
         }
 
-        let stem = task.ipa.url.deletingPathExtension().lastPathComponent
+        let stem = Self.cleanedStem(task.ipa.url.deletingPathExtension().lastPathComponent)
         var outputURL = task.outputDirectory.appendingPathComponent("\(stem)-signed.ipa")
         if fileManager.fileExists(atPath: outputURL.path) {
             outputURL = task.outputDirectory.appendingPathComponent("\(stem)-signed-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8)).ipa")
@@ -496,6 +496,13 @@ enum SigningEngine {
         }
     }
 
+
+    private static func cleanedStem(_ stem: String) -> String {
+        let pattern = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}-"
+        let cleaned = stem.replacingOccurrences(of: pattern, with: "", options: .regularExpression)
+        let trimmed = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? stem : trimmed
+    }
 
     private static func rewriteTargetReferences(
         at targetURL: URL,

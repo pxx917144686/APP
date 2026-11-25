@@ -266,107 +266,129 @@ struct SignView: SwiftUI.View {
         certificate != nil && profile != nil && selectedIPA != nil && certificatePassword != nil && !hasBlockingIssues && !session.isRunning
     }
 
-    var body: some SwiftUI.View {
+    private var signingFormStack: some SwiftUI.View {
+        VStack(spacing: 14) {
+            signingSetupStack
+            if !canSign && !session.isRunning {
+                signingPreflight
+            }
+            signActionView
+            signingSessionStack
+            historyCardView
+        }
+    }
+
+    private var signingSetupStack: some SwiftUI.View {
+        Group {
+            heroCard
+            identityCardView
+            SigningIPACard(
+                selectedIPA: selectedIPA,
+                isLoading: isLoadingIPA,
+                accent: accent,
+                colorScheme: colorScheme,
+                onPick: { showIPAPicker = true },
+                onImportFiles: { showIPAImporter = true },
+                onClear: {
+                    selectedIPA = nil
+                    bundleID = ""
+                    extensionChoices = [:]
+                    displayName = ""
+                    version = ""
+                }
+            )
+            if selectedIPA != nil {
+                ipaPreflightCard
+            }
+            if selectedIPA != nil, profile != nil {
+                provisioningAuditCard
+            }
+            optionsCardView
+            extensionCardView
+        }
+    }
+
+    private var signingSessionStack: some SwiftUI.View {
+        Group {
+            if session.isActive {
+                SigningConsoleView(
+                    session: session,
+                    certificateName: certificate?.commonName ?? "—",
+                    profileName: profile?.displayName ?? "—",
+                    onCancel: { session.cancel() },
+                    onShare: { shareOutput() },
+                    onInstall: { installOutput() }
+                )
+                .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .top)), removal: .opacity))
+            }
+            if session.outcome == .completed, let output = session.outputURL {
+                SigningResultCard(
+                    output: output,
+                    onShare: { shareOutput() },
+                    onInstall: { installOutput() }
+                )
+            }
+            if installPhase != .idle {
+                SigningInstallCard(phase: installPhase, accent: accent)
+            }
+        }
+    }
+
+    var body: some SwiftUI.View { signingPage }
+
+    private var signingPageContent: some SwiftUI.View {
         ZStack {
             LiquidGlassBackdrop()
                 .environmentObject(themeManager)
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 14) {
-                    heroCard
-                    identityCardView
-                    SigningIPACard(
-                        selectedIPA: selectedIPA,
-                        isLoading: isLoadingIPA,
-                        accent: accent,
-                        colorScheme: colorScheme,
-                        onPick: { showIPAPicker = true },
-                        onImportFiles: { showIPAImporter = true },
-                        onClear: {
-                            selectedIPA = nil
-                            bundleID = ""
-                            extensionChoices = [:]
-                            displayName = ""
-                            version = ""
-                        }
-                    )
-                    if selectedIPA != nil {
-                        ipaPreflightCard
-                    }
-                    if selectedIPA != nil, profile != nil {
-                        provisioningAuditCard
-                    }
-                    optionsCardView
-                    extensionCardView
-                    if !canSign && !session.isRunning {
-                        signingPreflight
-                    }
-                    signActionView
-
-                    if session.isActive {
-                        SigningConsoleView(
-                            session: session,
-                            certificateName: certificate?.commonName ?? "—",
-                            profileName: profile?.displayName ?? "—",
-                            onCancel: { session.cancel() },
-                            onShare: { shareOutput() },
-                            onInstall: { installOutput() }
-                        )
-                        .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .top)), removal: .opacity))
-                    }
-
-                    if session.outcome == .completed, let output = session.outputURL {
-                        SigningResultCard(
-                            output: output,
-                            onShare: { shareOutput() },
-                            onInstall: { installOutput() }
-                        )
-                    }
-
-                    if installPhase != .idle {
-                        SigningInstallCard(phase: installPhase, accent: accent)
-                    }
-
-                    historyCardView
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, tabBarStyleManager.currentStyle == .floatingCard ? 110 : 28)
+                signingFormStack
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, tabBarStyleManager.currentStyle == .floatingCard ? 110 : 28)
             }
         }
         .navigationTitle("tab_sign".localized)
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showCertificateImporter) {
-            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
-                showCertificateImporter = false
-                handleIdentityImport(urls)
+    }
+
+    private var signingPageImportSheets: some SwiftUI.View {
+        signingPageContent
+            .sheet(isPresented: $showCertificateImporter) {
+                DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                    showCertificateImporter = false
+                    handleIdentityImport(urls)
+                }
             }
-        }
-        .sheet(isPresented: $showProfileImporter) {
-            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
-                showProfileImporter = false
-                handleIdentityImport(urls)
+            .sheet(isPresented: $showProfileImporter) {
+                DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                    showProfileImporter = false
+                    handleIdentityImport(urls)
+                }
             }
-        }
-        .onAppear { consumeSigningHandoff() }
-        .onChange(of: handoff.pendingIPA) { _, _ in consumeSigningHandoff() }
-        .sheet(isPresented: $showIPAImporter) {
-            DocumentPicker(types: [.item]) { urls in
-                showIPAImporter = false
-                if let url = urls.first { handlePickedIPA(url) }
+            .onAppear { consumeSigningHandoff() }
+            .onChange(of: handoff.pendingIPA) { _, _ in consumeSigningHandoff() }
+            .sheet(isPresented: $showIPAImporter) {
+                DocumentPicker(types: [.item]) { urls in
+                    showIPAImporter = false
+                    if let url = urls.first { handlePickedIPA(url) }
+                }
             }
-        }
-        .sheet(isPresented: $showDylibImporter) {
-            DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
-                showDylibImporter = false
-                handleDylibImport(.success(urls))
+            .sheet(isPresented: $showDylibImporter) {
+                DocumentPicker(types: [.item], allowsMultipleSelection: true) { urls in
+                    showDylibImporter = false
+                    handleDylibImport(.success(urls))
+                }
             }
-        }
-        .fileImporter(isPresented: $showFrameworkImporter, allowedContentTypes: [.folder], allowsMultipleSelection: true) { result in
-            handleFrameworkImport(result)
-        }
-        .sheet(isPresented: $showCertificateSheet, onDismiss: {
+            .fileImporter(isPresented: $showFrameworkImporter, allowedContentTypes: [.folder], allowsMultipleSelection: true) { result in
+                handleFrameworkImport(result)
+            }
+    }
+
+    private var signingPageSheets: some SwiftUI.View {
+        signingPageImportSheets
+            .sheet(isPresented: $showCertificateSheet, onDismiss: {
             pendingCertificateData = nil
             pendingCertificateName = ""
             advanceCertificateQueue()
@@ -485,7 +507,19 @@ struct SignView: SwiftUI.View {
             resetEntitlementSelection()
         }
         .overlay {
-            if showInjectionMenu {
+            signingMenuOverlayContent
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showInjectionMenu)
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showIdentityImportMenu)
+    }
+
+    private var signingPage: some SwiftUI.View {
+        signingPageSheets
+    }
+
+    @ViewBuilder
+    private var signingMenuOverlayContent: some SwiftUI.View {
+        if showInjectionMenu {
                 CenteredChoicePopup(
                     title: "sign_injection_add".localized,
                     subtitle: "sign_injection_add_hint".localized,
@@ -545,9 +579,6 @@ struct SignView: SwiftUI.View {
                 }
                 .zIndex(20)
             }
-        }
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showInjectionMenu)
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showIdentityImportMenu)
     }
 
     private var heroCard: some SwiftUI.View {
@@ -903,8 +934,12 @@ struct SignView: SwiftUI.View {
             guard target.kind != .main else { return nil }
             if removeWatchApp && target.kind == .watchApp { return nil }
             if removedPaths.contains(target.bundlePath) { return nil }
-            let matched = independentProfile(for: target) ?? mainProfile
-            let selectedCertificate = certificateForChoice(choice(for: target)) ?? certificate
+            let matched = mainProfile.isWildcard
+                ? (independentProfile(for: target) ?? mainProfile)
+                : mainProfile
+            let selectedCertificate = mainProfile.isWildcard
+                ? (certificateForChoice(choice(for: target)) ?? certificate)
+                : certificate
             guard let selectedCertificate,
                   let password = store.password(for: selectedCertificate) else { return nil }
             let entitlements: Data?
@@ -930,6 +965,9 @@ struct SignView: SwiftUI.View {
     }
 
     private func extensionEntitlements(for target: SigningTarget, profile targetProfile: SigningProfile) -> Data? {
+        if !targetProfile.isWildcard {
+            return signingEntitlementsPlist ?? targetProfile.entitlementsData
+        }
         var dictionary: [String: Any] = [:]
         if let data = signingEntitlementsPlist,
            let parsed = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
@@ -1335,7 +1373,7 @@ struct SignView: SwiftUI.View {
                 if let index = injections.firstIndex(where: { $0.id == id }) {
                     injections[index].weak = weak
                 }
-            }
+            },
         )
     }
 
@@ -1366,10 +1404,10 @@ struct SignView: SwiftUI.View {
             accent: accent,
             colorScheme: colorScheme,
             effectiveExtensionID: { effectiveExtensionID(for: $0) },
-            onFillCertificateID: { fillCertificateIDFromProfile() },
             onShowExtensionCredentials: { showExtensionCredentials = true },
             onShowDeviceSheet: { showDeviceSheet = true },
-            onShowEntitlements: { showEntitlements = true }
+            onShowEntitlements: { showEntitlements = true },
+            onFillCertificateID: { fillCertificateIDFromProfile() }
         )
     }
 
@@ -1612,7 +1650,7 @@ struct SignView: SwiftUI.View {
         }
         let finalBundleID = trimmedBundleID.isEmpty ? ipa.bundleIdentifier : trimmedBundleID
         let finalName = trimmedDisplayName.isEmpty ? ipa.displayName : trimmedDisplayName
-        let finalVersion = trimmedVersion.isEmpty ? ipa.version : trimmedVersion
+        let finalVersion = trimmedVersion.isEmpty ? (ipa.build.isEmpty ? ipa.version : ipa.build) : trimmedVersion
         let isSigningSelf = finalBundleID == Bundle.main.bundleIdentifier
         let effectiveInjections = injections.map { item in
             var copy = item
@@ -1772,11 +1810,13 @@ struct SignView: SwiftUI.View {
                 ))
             } catch {
                 guard self.tasks.isCurrent(token, for: "install") else { return }
+                print("[SignInstall] \(error.localizedDescription)")
                 self.isInstalling = false
-                self.installPhase = .failed(error.localizedDescription)
+                let localizedFailure = "sign_install_failed_message".localized
+                self.installPhase = .failed(localizedFailure)
                 AppPresenter.shared.present(alert: AppAlert(
                     title: "sign_error_title".localized,
-                    message: error.localizedDescription
+                    message: localizedFailure
                 ))
             }
         }
@@ -1876,6 +1916,17 @@ struct SignView: SwiftUI.View {
         }
     }
 
+    private func fillCertificateIDFromProfile() {
+        guard let profile else { return }
+        let raw = profile.applicationIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty, !raw.contains("*") else {
+            presentError(message: "sign_certificate_id_wildcard".localized)
+            return
+        }
+        let normalized = normalizedCertificateID(raw)
+        bundleID = normalized.isEmpty ? raw : normalized
+    }
+
     private func normalizedCertificateID(_ raw: String) -> String {
         var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else { return "" }
@@ -1887,20 +1938,6 @@ struct SignView: SwiftUI.View {
             }
         }
         return value
-    }
-
-    private func fillCertificateIDFromProfile() {
-        guard let profile else {
-            presentError(message: "sign_hint_select_all".localized)
-            return
-        }
-        let raw = profile.applicationIdentifier.isEmpty ? profile.bundleIDPattern : profile.applicationIdentifier
-        let normalized = normalizedCertificateID(raw)
-        guard !normalized.isEmpty, !normalized.contains("*") else {
-            presentError(message: "sign_certificate_id_wildcard".localized)
-            return
-        }
-        bundleID = normalized
     }
 
     private func handleIdentityImport(_ urls: [URL]) {

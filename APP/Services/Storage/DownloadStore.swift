@@ -22,6 +22,7 @@ struct DownloadTaskRecord: Codable, FetchableRecord, PersistableRecord {
     var isCompleted: Bool
     var isActive: Bool
     var isWaiting: Bool
+    var isTestFlight: Bool
     var queuePosition: Int?
 }
 
@@ -79,6 +80,14 @@ final class DownloadStore {
                 columns: ["queuePosition"]
             )
         }
+        migrator.registerMigration("v2_isTestFlight") { db in
+            guard try db.tableExists("download_task") else { return }
+            let hasColumn = try db.columns(in: "download_task").contains { $0.name == "isTestFlight" }
+            guard !hasColumn else { return }
+            try db.alter(table: "download_task") { table in
+                table.add(column: "isTestFlight", .boolean).notNull().defaults(to: false)
+            }
+        }
         return migrator
     }
 
@@ -134,6 +143,7 @@ final class DownloadStore {
                 isCompleted: completed.contains(request.id),
                 isActive: active.contains(request.id),
                 isWaiting: waiting.contains(request.id),
+                isTestFlight: request.packageIsTestFlight ?? false,
                 queuePosition: positions[request.id]
             )
         }
@@ -160,7 +170,8 @@ final class DownloadStore {
                     identifier: record.packageIdentifier,
                     iconURL: record.packageIconURL,
                     price: record.packagePrice,
-                    currency: record.packageCurrency
+                    currency: record.packageCurrency,
+                    isTestFlight: record.isTestFlight
                 ),
                 versionId: record.versionId,
                 runtime: DownloadRuntimeSaveData(

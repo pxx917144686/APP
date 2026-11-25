@@ -450,6 +450,7 @@ struct SearchView: SwiftUI.View {
                     }
                     .accessibilityLabel("clear".localized)
                 }
+
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -466,6 +467,7 @@ struct SearchView: SwiftUI.View {
             )
             .padding(.top, 8)
 
+            ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
 
                 Menu {
@@ -502,8 +504,6 @@ struct SearchView: SwiftUI.View {
                     )
                 }
 
-                Spacer()
-
                 Button(action: {
                     showDirectSheet = true
                 }) {
@@ -518,8 +518,6 @@ struct SearchView: SwiftUI.View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("legacy_apps_delisted".localized)
-
-                Spacer()
 
                 Button(action: {
                     showPurchasedSheet = true
@@ -539,8 +537,10 @@ struct SearchView: SwiftUI.View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("tab_purchased".localized)
+
             }
             .padding(.horizontal, 16)
+            }
             .padding(.bottom, 8)
         }
         .padding(.top, 8)
@@ -1950,6 +1950,7 @@ struct SearchView: SwiftUI.View {
 
         if let request = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == downloadId }) {
             UnifiedDownloadManager.shared.startDownload(for: request)
+            TabRouter.shared.select(.downloads)
         } else {
         }
     }
@@ -2132,8 +2133,7 @@ struct SearchView: SwiftUI.View {
                                     openTrackId(Int(entry.id) ?? 0)
                                 } label: {
                                     HStack(spacing: 10) {
-                                        Image(systemName: "archivebox")
-                                            .foregroundColor(.secondary)
+                                        LegacyStoreAppIcon(trackID: Int(entry.id), bundleID: nil)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(entry.name).foregroundColor(.primary).lineLimit(1)
                                             Text("ID \(entry.id)").font(.caption).foregroundColor(.secondary).lineLimit(1)
@@ -2155,8 +2155,7 @@ struct SearchView: SwiftUI.View {
                                     resolveDirect()
                                 } label: {
                                     HStack(spacing: 10) {
-                                        Image(systemName: "app.gift")
-                                            .foregroundColor(.secondary)
+                                        LegacyStoreAppIcon(trackID: nil, bundleID: entry.bundleId)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(entry.name).foregroundColor(.primary).lineLimit(1)
                                             Text(entry.bundleId).font(.caption).foregroundColor(.secondary).lineLimit(1)
@@ -2175,8 +2174,8 @@ struct SearchView: SwiftUI.View {
             .navigationTitle("legacy_apps_delisted".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("close".localized) { showDirectSheet = false }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("done".localized) { showDirectSheet = false }
                         .foregroundColor(themeManager.accentColor)
                 }
             }
@@ -2249,5 +2248,55 @@ struct SearchView: SwiftUI.View {
         })
         guard let result, case .success(let owned) = result else { return false }
         return owned
+    }
+}
+
+
+private struct LegacyStoreAppIcon: View {
+    let trackID: Int?
+    let bundleID: String?
+    @State private var iconURL: URL?
+
+    private var key: String {
+        trackID.map(String.init) ?? bundleID ?? ""
+    }
+
+    var body: some View {
+        Group {
+            if let iconURL {
+                AsyncImage(url: iconURL) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(Color(.systemGray6))
+                }
+            } else {
+                RoundedRectangle(cornerRadius: 9)
+                    .fill(Color(.systemGray6))
+                    .overlay(
+                        Image(systemName: "app.fill")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                    )
+            }
+        }
+        .frame(width: 38, height: 38)
+        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .task(id: key) {
+            guard iconURL == nil,
+                  let url = URL(string: "https://itunes.apple.com/lookup?"
+                                + (trackID.map { "id=\($0)" } ?? "bundleId=\(bundleID ?? "")")
+                                + "&country=us") else { return }
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 10
+            guard let (data, response) = try? await URLSession.shared.data(for: request),
+                  let http = response as? HTTPURLResponse, http.statusCode == 200,
+                  let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let results = root["results"] as? [[String: Any]],
+                  let first = results.first,
+                  let raw = (first["artworkUrl100"] as? String) ?? (first["artworkUrl60"] as? String),
+                  let finalURL = URL(string: raw) else { return }
+            await MainActor.run { iconURL = finalURL }
+        }
     }
 }
