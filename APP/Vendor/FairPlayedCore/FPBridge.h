@@ -20,7 +20,6 @@ int fp_zip_pack(const char *srcDir, const char *outPath, char *err, int errlen);
 
 int fp_count_targets(const char *appDir, int64_t *bytes);
 
-/// 1 = 能创建可执行内存（签名带 dynamic-codesigning），0 = 不能
 int fp_exec_memory_available(void);
 
 int fp_decrypt_tree(const char *appDir,

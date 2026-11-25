@@ -39,8 +39,6 @@ final class ContinuedProcessing {
         request.strategy = .fail
         request.requiredResources = []
 
-        // 用 submit(_:) 而不是 iOS 27 才有的 async submitTaskRequest：
-        // CI 上的 Xcode 只有 iOS 26 SDK，后者在那里会被重命名成 submit(_:) 而编译失败。
         do {
             try BGTaskScheduler.shared.submit(request)
         } catch {

@@ -207,8 +207,11 @@ struct DecryptView: SwiftUI.View {
                     onRemove: { store.remove(job) },
                     onShare: { url in shareItem = ShareFile(url: url) },
                     onSign: { url in
+                        NotificationCenter.default.post(name: NSNotification.Name("CloseDecryptSheet"), object: nil)
                         SigningHandoff.shared.send(url)
-                        TabRouter.shared.select(.sign)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            TabRouter.shared.select(.sign)
+                        }
                     },
                     onLog: { logJob = job }
                 )

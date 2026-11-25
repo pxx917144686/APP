@@ -1,16 +1,7 @@
 import AppleAuth
 import Foundation
 
-/// Bridges the system Apple ID login to a TestFlight session.
-///
-/// The chain is the one the working probe proved on this device: Mac device first
-/// (its `headers()` carry the User-Agent Apple's GSA routes on), iPhone device built
-/// with that User-Agent, GSA login with two-factor, the Mac device imports the PET,
-/// the PET buys a Store session, and the Store session mints the TestFlight context.
-/// Nothing is written to disk except AppleAuth's own device state; the password never
-/// leaves the caller, and no cookie or session id is ever logged.
 public enum TFLogin {
-    /// Masked trusted phone number offered by Apple's GSA SMS challenge.
     public struct TrustedPhone: Identifiable, Sendable, Equatable {
         public let id: Int64
         public let displayNumber: String
@@ -21,13 +12,11 @@ public enum TFLogin {
         }
     }
 
-    /// Which 2FA delivery channel Apple selected for the active login attempt.
     public enum VerificationChannel: Sendable, Equatable {
         case trustedDevice
         case sms(phoneDisplay: String?)
     }
 
-    /// Hands a multi-phone SMS selection prompt to the UI and waits for the chosen phone ID.
     public actor PhoneRelay {
         private var waiting: CheckedContinuation<Int64, Error>?
         private var cancelled = false
@@ -73,7 +62,6 @@ public enum TFLogin {
         }
     }
 
-    /// Hands a 2FA prompt to the UI and waits for the code.
     public actor CodeRelay {
         private var waiting: CheckedContinuation<String, Error>?
         private var pending: String?
@@ -129,7 +117,6 @@ public enum TFLogin {
         }
     }
 
-    /// Per-sign-in capture of redacted Apple `/auth` error codes and post-2FA state (never holds secrets).
     private final class AuthDiagnosticBox: @unchecked Sendable {
         private let lock = NSLock()
         private var lastSummary: String?
@@ -169,22 +156,14 @@ public enum TFLogin {
                               phoneRelay: PhoneRelay? = nil,
                               onChallenge: (@Sendable (VerificationChannel) -> Void)? = nil,
                               log: @escaping @Sendable (String) -> Void) async throws -> TFContext {
-        // Four routing values first: nothing leaves the device until they match.
         try TFInvariants.check(log: log)
         let root = try supportDirectory()
         log("sign-in: prepare device identities")
-        // A jar that still holds an earlier run's X-Token/X-Dsid makes the service reject
-        // the whole credential set ("The credentials for this app are invalid"), and the
-        // duplicates also block the cookies this run sets. Start from empty.
         let stale = HTTPCookieStorage.shared.cookies?.count ?? 0
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
         TFStoreCapture.reset()
         log("sign-in: cleared " + String(stale) + " stored cookies")
 
-        // Mac identity first. Its headers() carry the User-Agent Apple's GSA expects;
-        // presenting the iPhone identity with our own TestFlight user agent makes the
-        // provisioning lookup answer 404 with an empty body, which reads exactly like a
-        // blocked network. Same order and headers as the working probe.
         let diagnostics = AuthDiagnosticBox()
         let mac = try makeMacDevice(root: root, diagnostics: diagnostics, onChallenge: onChallenge, log: log)
         try await mac.provision()
@@ -232,13 +211,8 @@ public enum TFLogin {
         }
         log("sign-in: PET dsid …" + String(accountDsid.suffix(4)))
 
-        // Switch jars before the store exchange: the exchange writes the cookies this
-        // account owns, so a foreign snapshot must be gone first.
         AccountScope.activate(dsid: accountDsid, log: log)
 
-        // The store exchange is called as instructed; its parse of the new
-        // `/auth/v1/native/fast` response may throw, and the Set-Cookie headers have
-        // already reached URLSession's jar, which is what the context is built from.
         log("sign-in: exchange PET for a store session (a throw here is tolerated)")
         do {
             let store = try await mac.loginStoreWithPET(email: email, account: account)
@@ -249,7 +223,6 @@ public enum TFLogin {
 
         let context = try StoreContextBuilder.contextFromCookies(dsid: accountDsid,
                                                                  macHeaders: macHeaders, log: log)
-        // Snapshot from the auth response's Set-Cookie (never re-read from the shared jar).
         do {
             try AccountScope.store(dsid: accountDsid, wireCookies: TFStoreCapture.cookies, log: log)
         } catch {
@@ -259,18 +232,12 @@ public enum TFLogin {
         return context
     }
 
-    /// Rebuilds a `TFContext` strictly from this account's persisted 10-cookie snapshot
-    /// (`AccountScope.cookies(for:)`) and stored Mac Store headers, passing through
-    /// `TFInvariants.check()` and the single `StoreContextBuilder.contextFromCookies` entry.
-    /// Never calls GSA and never touches another account's jar.
     public static func restoreContextFromSnapshot(dsid: String,
                                                   currentDsid: String? = nil,
                                                   amdm: String,
                                                   storeFront: String?,
                                                   log: @escaping @Sendable (String) -> Void) throws -> TFContext {
         try TFInvariants.check(log: log)
-        // Always flush prior account cookies before validating the target snapshot so a missing
-        // snapshot can never leave account A's cookies in HTTPCookieStorage.shared.
         if let currentDsid, currentDsid != dsid {
             AccountScope.writeBack(dsid: currentDsid)
         }
@@ -292,9 +259,6 @@ public enum TFLogin {
         return context
     }
 
-    /// The PET carries the authoritative DSID for this login (`DsPrsId`, e.g.
-    /// "19318358872"). The cookie jar can hold several accounts at once, so this value —
-    /// not a guess over X-Dsid cookies — decides which cookies belong to the session.
     static func dsid(from account: AccountSession) -> String? {
         guard let plist = try? PropertyListSerialization.propertyList(from: account.plist, format: nil),
               let fields = plist as? [String: Any] else { return nil }
@@ -305,17 +269,12 @@ public enum TFLogin {
         return nil
     }
 
-    /// True when the cookie carries no dsid suffix at all, or the suffix is this account's.
-    /// Only a cookie bound to a *different* dsid is treated as foreign — dropping the
-    /// unsuffixed ones (hsaccnt, X-Token, geo …) makes the install POST answer 500.
     static func cookieBelongs(_ name: String, dsid: String) -> Bool {
         let tail = name.split(separator: "-").last.map(String.init) ?? ""
         guard tail.count >= 6, tail.allSatisfy(\.isNumber) else { return true }
         return tail == dsid
     }
 
-    /// Drops every apple.com cookie that belongs to a different account, both from the
-    /// set we send and from the shared jar (so the next run cannot pick them up again).
     static func purgeForeignCookies(dsid: String, log: @escaping @Sendable (String) -> Void) {
         let all = HTTPCookieStorage.shared.cookies ?? []
         var dropped = 0
@@ -331,19 +290,12 @@ public enum TFLogin {
         if dropped > 0 { log("sign-in: dropped " + String(dropped) + " cookie(s) from another account") }
     }
 
-    /// Assembles the authenticate body from the store cookies of *this* dsid instead of
-    /// asking the native store session for it: a PET session has no `myacinfo`, so
-    /// `testFlightContext` refuses, while these cookies are what the service consumes.
-    /// Retired entry point. The body was moved to `StoreContextBuilder`, which also owns
-    /// the cookie whitelist, the numeric `dsId` and the identity check.
     @available(*, unavailable, message: "唯一入口是 StoreContextBuilder.contextFromCookies")
     static func legacyContextFromCookies(dsid: String,
                                          macHeaders: [String: String],
                                          log: @escaping @Sendable (String) -> Void) throws -> TFContext {
         throw TFError.malformed("retired: use StoreContextBuilder.contextFromCookies")
     }
-
-    // MARK: - devices
 
     private static func supportDirectory() throws -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
@@ -353,12 +305,6 @@ public enum TFLogin {
         return directory
     }
 
-    /// The system hands a fresh anonymous device state per directory; a handful of them
-    /// is enough to dodge a rate-limited one (`67437824`).
-    ///
-    /// `model` and `iOSVersion` are deliberately left to AppleAuth's defaults, and the
-    /// user agent comes from the mac identity: a self-chosen pair is what turned the
-    /// provisioning lookup into a bare 404.
     private static func makeIPhoneDevice(root: URL, userAgent: String?,
                                          diagnostics: AuthDiagnosticBox,
                                          onChallenge: (@Sendable (VerificationChannel) -> Void)?,
@@ -386,8 +332,6 @@ public enum TFLogin {
                 var rinfo = headers["X-Apple-I-MD-RINFO"] ?? "?"
                 log("sign-in: iphone identity attempt " + String(index) + ", rinfo " + rinfo)
                 if rinfo == "67437824", hadCachedState {
-                    // Cached provisioning state on disk already has the throttled rinfo; wipe the
-                    // slot and re-provision once so retries actually obtain fresh state from Apple.
                     try? FileManager.default.removeItem(at: directory)
                     device = try createDevice(in: directory)
                     try await device.provision()
@@ -425,14 +369,6 @@ public enum TFLogin {
                           clientInfo: TFConstants.authClientInfo)
     }
 
-    // MARK: - transport
-
-    /// Logs method/host/path/status only: request bodies carry credentials.
-    ///
-    /// For `/grandslam/` calls it also prints the identity headers Apple routes on —
-    /// user agent, client info, client app name, time zone, RINFO, locale — plus the
-    /// body's byte count. Those are device fingerprints, never secrets; the body itself
-    /// is hashed by length only, so an SRP mismatch shows up as a size delta.
     private static func transport(diagnostics: AuthDiagnosticBox,
                                   onChallenge: (@Sendable (VerificationChannel) -> Void)?,
                                   log: @escaping @Sendable (String) -> Void) -> HTTPTransport {
@@ -481,8 +417,6 @@ public enum TFLogin {
                     && (path == "/auth/verify/phone/securitycode" || path.contains("validateCode"))
                 if is2FAConfirm {
                     diagnostics.mark2FAConfirmed()
-                    // Drop web `/auth` cookies so the follow-up SRP handshake matches native curl
-                    // transport, and give Apple's GSA backend a brief moment to propagate 2FA trust.
                     for cookie in HTTPCookieStorage.shared.cookies ?? []
                     where cookie.domain.contains("gsa.apple.com") {
                         HTTPCookieStorage.shared.deleteCookie(cookie)
@@ -495,8 +429,6 @@ public enum TFLogin {
                 guard let key = key as? String else { return nil }
                 return HTTPHeader(key, String(describing: value))
             }
-            // Cookie *names* only: proves whether the store login delivered root cookies
-            // (myacinfo/dsid/…) without ever writing their values.
             if path.contains("/auth/v1/") {
                 if let amdm = request.value(forHTTPHeaderField: "X-Apple-AMD-M"), !amdm.isEmpty {
                     TFStoreCapture.amdm = amdm
@@ -506,8 +438,6 @@ public enum TFLogin {
                     TFStoreCapture.storeFront = front
                     log("    captured store front " + front)
                 }
-                // Parse Set-Cookie from the wire, not from the shared jar: the jar
-                // silently drops several of them on this OS.
                 let raw = http.value(forHTTPHeaderField: "Set-Cookie") ?? ""
                 for pair in raw.split(separator: ",") {
                     let head = pair.split(separator: ";").first.map(String.init) ?? ""
@@ -529,9 +459,6 @@ public enum TFLogin {
         }
     }
 
-    /// Extracts strictly non-sensitive diagnostic fields (`serviceErrors` codes, boolean rate-limit
-    /// flags, trusted phone count) from Apple's GSA `/auth` JSON responses without ever logging
-    /// phone numbers, tokens, cookies, or verification codes.
     private static func inspectGSAAuthResponse(data: Data,
                                                status: Int,
                                                method: String,

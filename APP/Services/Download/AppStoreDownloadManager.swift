@@ -1025,8 +1025,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         cleanupDownload(downloadId: downloadId)
     }
 
-    /// 有**运行中**任务的下载 id 集合。已暂停（任务挂起）的下载不算活动，
-    /// 否则 syncDownloadStatus 的对账会把暂停状态错误翻回“下载中”
     var activeDownloadIds: Set<String> {
         get async {
             let tasks = await urlSession.allTasks
@@ -1042,7 +1040,6 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 result.subtract(suspendedTaskIds)
                 return Set(segmentedDownloadIds)
             }
-            // 已暂停的分段下载同样排除（挂起状态记录在分段下载器内）
             let pausedSegmented = segmentedIds.filter { SegmentedIPADownloader.shared.isPaused(downloadId: $0) }
             result.subtract(pausedSegmented)
             return result

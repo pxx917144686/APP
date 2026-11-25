@@ -1053,17 +1053,17 @@
 "dc_reason_ticket" = "本應用有解密權限，但該安裝包的 FairPlay 票據對不上目前裝置：通常是用別的 Apple ID 下載的。請用裝置已登入的帳號重新下載後再脫殼";
 "dc_err_tf_no_sinf" = "該 TestFlight 包缺少 SC_Info/sinf 票據，無法脫殼。請在 TestFlight 頁登入後用同一 Apple ID 重新下載";
 "dc_reason_enomem" = "核心拒絕建立解密映射（ENOMEM），可能是票據損壞或檔案被重新打包過";
-"dc_err_no_entitlement" = "目前簽名的 App 沒有 dynamic-codesigning 權限，系統核心不會執行 FairPlay 解密。
-請用帶該權限的開發者憑證重新簽名本應用（免費憑證、部分簽名工具簽出來的包不具備此權限）。";
-"dc_err_no_entitlement" = "目前簽名的 App 沒有 dynamic-codesigning 權限，系統核心不會執行 FairPlay 解密。
-請用帶該權限的開發者憑證重新簽名本應用（免費憑證、部分簽名工具簽出來的包不具備此權限）。";
+"dc_err_no_entitlement" = "目前簽名的 App 沒有 dynamic-codesigning 權限，系統核心不會執行 FairPlay 解密。 請用帶該權限的開發者憑證重新簽名本應用（免費憑證、部分簽名工具簽出來的包不具備此權限）。";
 
 "live_island" = "靈動島";
-"live_island_desc" = "在靈動島顯示任務進度";
+"live_island_desc" = "在靈動島顯示任務進度和背景狀態";
 "live_island_download" = "下載任務";
 "live_island_sign" = "簽名任務";
 "live_island_decrypt" = "解密任務";
 "live_island_install" = "安裝任務";
+"live_island_app" = "背景顯示 APP";
+"island_app_phase" = "在背景執行";
+"island_app_tap_to_open" = "輕點靈動島返回 APP";
 
 
 "sign_extension_ids" = "擴展 Bundle ID";
@@ -1145,6 +1145,7 @@
 "testflight_history_builds" = "歷史 Build";
 "testflight_history_loading" = "正在載入 Build…";
 "testflight_no_builds" = "沒有歷史 Build。";
+"testflight_history_limit" = "TestFlight 只向測試者提供目前活躍的 build，過期版本無法回溯。這裡的列表 = 目前各平台 build + 本機下載過的 build，下載越多列表越長。";
 "testflight_expired" = "已過期";
 "testflight_bundle_missing" = "無法解析這個 App 的 Bundle ID。";
 "sign_install_failed_message" = "簽名已完成，但安裝沒有完成。請檢查憑證和描述檔後重試。";

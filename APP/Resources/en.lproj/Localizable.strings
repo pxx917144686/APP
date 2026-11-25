@@ -1053,17 +1053,17 @@
 "dc_reason_ticket" = "This build has decryption permission, but the FairPlay ticket in this IPA does not match this device — usually because it was downloaded with a different Apple ID. Re-download it with the account signed in on this device";
 "dc_err_tf_no_sinf" = "This TestFlight package has no SC_Info/sinf ticket, so it cannot be decrypted. Sign in on the TestFlight page and download it again with the same Apple ID";
 "dc_reason_enomem" = "The kernel refused to create the decryption mapping (ENOMEM): the ticket may be damaged or the file was repacked";
-"dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
-Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
-"dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption.
-Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
+"dc_err_no_entitlement" = "This build lacks the dynamic-codesigning entitlement, so the kernel will not perform FairPlay decryption. Re-sign the app with a developer certificate that carries it (free certificates and some signing services do not).";
 
 "live_island" = "Dynamic Island";
-"live_island_desc" = "Show task progress in the Dynamic Island";
+"live_island_desc" = "Show task progress and background status in the Dynamic Island";
 "live_island_download" = "Downloads";
 "live_island_sign" = "Signing";
 "live_island_decrypt" = "Decryption";
 "live_island_install" = "Installation";
+"live_island_app" = "App in background";
+"island_app_phase" = "Running in background";
+"island_app_tap_to_open" = "Tap the island to return";
 
 
 "sign_extension_ids" = "Extension Bundle IDs";
@@ -1145,6 +1145,7 @@ Re-sign the app with a developer certificate that carries it (free certificates 
 "testflight_history_builds" = "Previous Builds";
 "testflight_history_loading" = "Loading builds…";
 "testflight_no_builds" = "No previous builds.";
+"testflight_history_limit" = "TestFlight only exposes the currently active build to testers; expired builds cannot be retrieved. This list = active builds for every platform + builds downloaded on this device, and grows as you download more.";
 "testflight_expired" = "Expired";
 "testflight_bundle_missing" = "Could not resolve this app's bundle ID.";
 "sign_install_failed_message" = "Signing completed, but installation did not finish. Check the certificate and provisioning profile, then try again.";

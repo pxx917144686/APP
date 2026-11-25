@@ -1,6 +1,5 @@
 import Foundation
 
-// C shims from the apple_auth archive (same symbols the probe links).
 @_silgen_name("tf_add_sinf")
 private func tf_add_sinf_c(_ ipa: UnsafePointer<CChar>?,
                            _ entry: UnsafePointer<CChar>?,
@@ -31,18 +30,12 @@ private func tf_free_c(_ pointer: UnsafeMutableRawPointer?)
 @_silgen_name("tf_last_error")
 private func tf_last_error_c() -> UnsafePointer<CChar>?
 
-/// Writes `Payload/<App>.app/SC_Info/<name>.sinf` into a finished IPA.
-///
-/// The blobs come from the install metadata's `sinf` plist; the member names come from
-/// the app's own `SC_Info/Manifest.plist` (`SinfPaths`), or from `CFBundleExecutable`
-/// when that manifest is absent. The archive rewrite is the linked libzip shim.
 public enum TFSINF {
 
     public struct Report: Sendable {
         public var paths: [String] = []
         public var sizes: [Int] = []
         public var members: Int = 0
-        /// Number of SINF entries newly added (not replacing an existing member of the same path).
         public var addedCount: Int = 0
     }
 
@@ -97,7 +90,6 @@ public enum TFSINF {
         return report
     }
 
-    /// Reads every member, which makes libzip verify each CRC: a cheap `testzip`.
     public static func verifyArchive(ipa: URL) throws -> Int {
         guard let handle = ipa.path.withCString({ tf_zip_open_read_c($0) }) else {
             throw TFError.malformed("testzip: cannot open \(ipa.lastPathComponent): \(lastError())")
@@ -128,7 +120,6 @@ public enum TFSINF {
         return names(of: handle)
     }
 
-    /// `CFBundleIdentifier` of the single top-level `Payload/<App>.app` in the archive.
     public static func bundleID(ipa: URL) -> String? {
         guard let root = appRoot(in: members(ipa: ipa)),
               let data = read(ipa: ipa, entry: root + "Info.plist"),
@@ -149,10 +140,6 @@ public enum TFSINF {
         return root + exe
     }
 
-    /// Counts Mach-O images whose `LC_ENCRYPTION_INFO*` still says encrypted (cryptid != 0).
-    /// Reads only a 256 KiB header prefix via streaming decompression first so multi-hundred-MB
-    /// game binaries (Unity/Unreal) are inspected without hitting RAM limits; falls back to full
-    /// member reads up to `limit` only for FAT binaries whose slices start past the prefix.
     public static func encryptedMachOCount(ipa: URL, limit: Int = 96 << 20,
                                           skipped: inout [String]) -> Int {
         var count = 0
@@ -211,12 +198,9 @@ public enum TFSINF {
         guard let lastSub = parts.last, !lastSub.isEmpty else { return false }
         let last = String(lastSub)
         if last.hasPrefix(".") { return false }
-        // Payload/<App>.app/Frameworks/<lib>.dylib
         if parts.count == 4, parts[2] == "Frameworks", last.lowercased().hasSuffix(".dylib") {
             return true
         }
-        // Payload/<App>.app/<exe>, Payload/<App>.app/PlugIns/<X>.appex/<exe>,
-        // Payload/<App>.app/Frameworks/<Y>.framework/<binary>
         guard parts.count == 3 || parts.count == 5 else { return false }
         if parts.count == 5 {
             let parent = parts[2]
@@ -235,9 +219,6 @@ public enum TFSINF {
         case needsFullSlice
     }
 
-    /// Reads the `LC_ENCRYPTION_INFO*` cryptid of a thin or FAT Mach-O binary.
-    /// Returns a non-zero cryptid if any slice is encrypted, 0 if slices have cryptid == 0,
-    /// or `nil` if the bytes are not a Mach-O with encryption info.
     static func cryptid(of data: Data) -> Int32? {
         switch inspectCryptid(of: data) {
         case .found(let cid): return cid
@@ -253,7 +234,6 @@ public enum TFSINF {
             if let cid = thinCryptid(of: data, at: 0) { return .found(cid) }
             return .notMachO
         case 0xBEBAFECA, 0xCAFEBABE, 0xBFBAFECA, 0xCAFEBABF:
-            // FAT Mach-O (32-bit or 64-bit, big-endian on disk -> 0xBEBAFECA / 0xBFBAFECA in LE).
             let isBigEndian = (magic == 0xBEBAFECA || magic == 0xBFBAFECA)
             let isFat64 = (magic == 0xBFBAFECA || magic == 0xCAFEBABF)
             let rawCount = data.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 4, as: UInt32.self) }
@@ -310,7 +290,6 @@ public enum TFSINF {
             let commandSize = Int(size)
             guard commandSize >= 8 else { return nil }
             if cmd == 0x21 || cmd == 0x2C {
-                // encryption_info_command(_64): cmd(0), cmdsize(4), cryptoff(8), cryptsize(12), cryptid(16).
                 if offset + 20 <= data.count {
                     return data.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: offset + 16, as: Int32.self) }
                 }
@@ -321,12 +300,8 @@ public enum TFSINF {
         return nil
     }
 
-    // MARK: metadata
-
     private static func records(fromMetadata metadata: Data) throws -> [Data]? {
         guard let root = try? JSONSerialization.jsonObject(with: metadata) else { return nil }
-        // `sinf` is not top level: it lives at `data.sinf`, and `packages.full.sinf` carries a
-        // copy. Search for the first string that parses as a `sinfs` plist.
         var candidates: [String] = []
         func walk(_ node: Any) {
             if let dictionary = node as? [String: Any] {
@@ -383,8 +358,6 @@ public enum TFSINF {
         }
         return records
     }
-
-    // MARK: archive inspection
 
     private static func names(of handle: OpaquePointer) -> [String] {
         let count = Int(tf_zip_count_c(handle))

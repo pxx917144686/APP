@@ -1,6 +1,5 @@
 import Foundation
 
-/// How TestFlight traffic leaves the device.
 public enum TFNetworkMode: String, CaseIterable, Identifiable {
     case auto, direct, proxy
 
@@ -18,13 +17,6 @@ public enum TFNetworkMode: String, CaseIterable, Identifiable {
 public enum TFError2 {}
 extension TFError {}
 
-/// Session factory and the "bypass the proxy" retry rule.
-///
-/// Rule: when the system configuration cannot reach Apple (HTTP 000, timeout, 404 on a
-/// path that must answer, or DNS resolving into 198.18.0.0/15), retry once with an empty
-/// `connectionProxyDictionary`; if that answers, the session sticks to direct and the log
-/// records `proxy bypass`. Routing is never guessed: the user's mode wins when it is not
-/// `.auto`.
 public enum TFNet {
     private static let modeKey = "tf.network.mode"
 
@@ -47,7 +39,6 @@ public enum TFNet {
         let acceptCookies: Bool
     }
 
-    /// Set when `.auto` falls back to a direct request for the current session.
     public static var didBypassProxy: Bool {
         get {
             stateLock.lock()
@@ -61,8 +52,6 @@ public enum TFNet {
         }
     }
 
-    /// A configuration for the current mode. `.direct` pins an empty proxy dictionary,
-    /// which is the only supported way to ignore a system HTTP proxy.
     public static func configuration(mode: TFNetworkMode = TFNet.mode,
                                      direct: Bool = false,
                                      cookieStorage: HTTPCookieStorage? = nil) -> URLSessionConfiguration {
@@ -120,9 +109,6 @@ public enum TFNet {
         return (URLSession(configuration: cfg), true)
     }
 
-    /// Executes one HTTP request obeying `TFNet.mode` and the single direct-bypass rule:
-    /// under `.auto`, if the system proxy fails (transport error or 5xx/000) it retries once
-    /// with `connectionProxyDictionary = [:]`; on success the session sticks to direct.
     public static func data(for request: URLRequest,
                             cookieStorage: HTTPCookieStorage? = .shared,
                             acceptCookies: Bool = true) async throws -> (Data, HTTPURLResponse) {
@@ -170,7 +156,6 @@ public enum TFNet {
         return (data, http)
     }
 
-    /// A response that means "the transport, not the service, is the problem".
     public static func looksBlocked(status: Int?, error: Error?, hosts: [String]) -> Bool {
         if let error {
             let code = (error as NSError).code
@@ -183,9 +168,6 @@ public enum TFNet {
     }
 }
 
-/// Minimal DoH resolver used for reporting only: it says which path resolved
-/// `apple.com` / `mzstatic.com`, and falls back to the system resolver. It never rewrites
-/// a request target, so it cannot make a blocked host reachable by itself.
 public enum TFDoh {
     private struct Entry { let source: String; let date: Date }
     private static let lock = NSLock()
@@ -206,11 +188,6 @@ public enum TFDoh {
         lock.unlock()
     }
 
-    /// Returns "DoH" when a public resolver answered, "系统 DNS" otherwise. Addresses are
-    /// deliberately not returned or logged.
-    ///
-    /// Probes all resolvers concurrently with a short bounded timeout on an isolated ephemeral
-    /// session so unreachable DoH endpoints never stall sign-in or flip `TFNet.didBypassProxy`.
     public static func probe(_ host: String,
                              log: @escaping @Sendable (String) -> Void) async -> String {
         if let hit = cached(host) {
@@ -266,7 +243,6 @@ public enum TFDoh {
     }
 }
 
-/// The one sentence the UI shows when both transports fail, plus the facts behind it.
 public struct TFNetDiagnosis {
     public var summary: String
     public var facts: [String]

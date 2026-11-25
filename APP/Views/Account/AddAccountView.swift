@@ -312,7 +312,7 @@ struct AddAccountView: View {
                 focusTag = 2
             }
         } else {
-            
+
             errorMessage = ""
             infoMessage = "two_factor_code_intro".localized
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

@@ -1411,7 +1411,6 @@ struct SignView: SwiftUI.View {
         )
     }
 
-
     private var signingPreflight: some SwiftUI.View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 6) {
@@ -1519,7 +1518,6 @@ struct SignView: SwiftUI.View {
         }
         return nil
     }
-
 
     private func sectionCard<Content: SwiftUI.View>(
         title: String,

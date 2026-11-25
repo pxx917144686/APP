@@ -2,7 +2,6 @@ import SwiftUI
 import Combine
 
 struct PurchasedView: View {
-    /// 非空时表示以 sheet 形式呈现：保留导航栏，由外层放关闭按钮。
     var onClose: (() -> Void)? = nil
 
     @EnvironmentObject var appStore: AppStore

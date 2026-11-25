@@ -2251,7 +2251,6 @@ struct SearchView: SwiftUI.View {
     }
 }
 
-
 private struct LegacyStoreAppIcon: View {
     let trackID: Int?
     let bundleID: String?

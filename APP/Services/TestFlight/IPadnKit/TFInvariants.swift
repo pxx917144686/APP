@@ -1,8 +1,5 @@
 import Foundation
 
-/// The four routing values Apple's auth host keys on. Any deviation silently changes
-/// behaviour (a `404 · 0 B` lookup that looks like a blocked network), so they are
-/// checked before a single request leaves the device.
 public enum TFInvariants {
 
     public static let expectedUserAgent =
@@ -12,7 +9,6 @@ public enum TFInvariants {
     public static let expectedPlatform = "iphone"
     public static let expectedAppName = "akd"
 
-    /// One mismatch reports which item, its expected value and the actual one.
     public static func check(userAgent: String = TFConstants.effectiveUserAgent,
                              clientInfo: String = TFConstants.authClientInfo,
                              platform: String = TFConstants.storePlatform,

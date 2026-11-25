@@ -13,6 +13,7 @@ final class IslandSettings: ObservableObject {
         static let sign = "APP.island.sign"
         static let decrypt = "APP.island.decrypt"
         static let install = "APP.island.install"
+        static let app = "APP.island.app"
     }
 
     @Published var isEnabled: Bool {
@@ -50,6 +51,13 @@ final class IslandSettings: ObservableObject {
         }
     }
 
+    @Published var showsApp: Bool {
+        didSet {
+            persist()
+            notify()
+        }
+    }
+
     private let defaults = UserDefaults.standard
 
     private init() {
@@ -58,6 +66,7 @@ final class IslandSettings: ObservableObject {
         showsSign = defaults.object(forKey: Key.sign) as? Bool ?? true
         showsDecrypt = defaults.object(forKey: Key.decrypt) as? Bool ?? true
         showsInstall = defaults.object(forKey: Key.install) as? Bool ?? true
+        showsApp = defaults.object(forKey: Key.app) as? Bool ?? true
     }
 
     func isVisible(_ kind: String) -> Bool {
@@ -71,6 +80,8 @@ final class IslandSettings: ObservableObject {
             return showsDecrypt
         case IslandTaskKind.install:
             return showsInstall
+        case IslandTaskKind.app:
+            return showsApp
         default:
             return true
         }
@@ -82,6 +93,7 @@ final class IslandSettings: ObservableObject {
         defaults.set(showsSign, forKey: Key.sign)
         defaults.set(showsDecrypt, forKey: Key.decrypt)
         defaults.set(showsInstall, forKey: Key.install)
+        defaults.set(showsApp, forKey: Key.app)
     }
 
     private func notify() {

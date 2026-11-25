@@ -17,36 +17,9 @@ struct SettingsView: View {
     @State private var iconErrorMessage = ""
     @State private var showAccountSheet = false
     @State private var showingColorPicker = false
+    @State private var cachedIcons: [AltIcon] = []
 
-    var allIcons: [AltIcon] {
-        let allIcons = AppIconView.getAllIconsFromFolder()
-
-        if !allIcons.isEmpty {
-            return allIcons.sorted { icon1, icon2 in
-                if icon1.key == "app" { return true }
-                if icon2.key == "app" { return false }
-                return icon1.key ?? "" < icon2.key ?? ""
-            }
-        }
-
-        return [
-            AltIcon(
-                displayName: "icon_default".localized,
-                author: "icon_author".localized,
-                key: "app"
-            ),
-            AltIcon(
-                displayName: "icon_love".localized,
-                author: "icon_author".localized,
-                key: "kana_love"
-            ),
-            AltIcon(
-                displayName: "icon_peek".localized,
-                author: "icon_author".localized,
-                key: "kana_peek"
-            )
-        ]
-    }
+    private var allIcons: [AltIcon] { cachedIcons }
 
     private let presetColorHexes: [String] = [
         "#B496DC", "#848ef9", "#ff7a83", "#4161F1", "#FF00FF",
@@ -73,15 +46,11 @@ struct SettingsView: View {
                         appearanceRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         colorRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         languageRow
@@ -92,52 +61,38 @@ struct SettingsView: View {
                         tabOrderRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         tabBarRowContent
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     if tabBarStyleManager.currentStyle == .floatingCard {
                         VStack(spacing: 0) {
                             floatingTabBarSettingsContent
                         }
                         .liquidGlassSurface(cornerRadius: 16)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
                     }
 
                     VStack(spacing: 0) {
                         soundRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         islandSettingsContent
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         iconGridContent
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     VStack(spacing: 0) {
                         updateRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
 
                     versionFooter
                 }
@@ -152,6 +107,14 @@ struct SettingsView: View {
             .onAppear {
                 selectedColor = Color(hex: selectedColorHex)
                 currentIcon = AppIconManager.shared.currentAlternateIconName
+                if cachedIcons.isEmpty {
+                    let icons = AppIconView.getAllIconsFromFolder()
+                    cachedIcons = icons.sorted { icon1, icon2 in
+                        if icon1.key == "app" { return true }
+                        if icon2.key == "app" { return false }
+                        return icon1.key ?? "" < icon2.key ?? ""
+                    }
+                }
             }
             .onChange(of: selectedColorHex) { _, newValue in
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
@@ -159,7 +122,6 @@ struct SettingsView: View {
                         window.tintColor = UIColor(Color(hex: newValue))
                     }
                 }
-                themeManager.objectWillChange.send()
             }
             .sheet(isPresented: $showAccountSheet) {
                 AccountSheetView()
@@ -253,8 +215,6 @@ struct SettingsView: View {
         }
         .buttonStyle(ScaleButtonStyle())
         .liquidGlassSurface(cornerRadius: 16)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
     }
 
     private func flag(country: String) -> String {
@@ -462,6 +422,12 @@ extension SettingsView {
                     icon: "shippingbox",
                     title: "live_island_install".localized,
                     isOn: $islandSettings.showsInstall
+                )
+                Divider().padding(.leading, 56)
+                islandToggleRow(
+                    icon: "app.badge",
+                    title: "live_island_app".localized,
+                    isOn: $islandSettings.showsApp
                 )
             }
             .disabled(!islandSettings.isEnabled)

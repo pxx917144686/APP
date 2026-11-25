@@ -75,6 +75,7 @@ enum IslandTaskKind {
     static let sign = "sign"
     static let decrypt = "decrypt"
     static let install = "install"
+    static let app = "app"
 }
 
 enum IslandTaskKey {
@@ -82,6 +83,7 @@ enum IslandTaskKey {
     static func sign(_ id: UUID) -> String { "sign-\(id.uuidString)" }
     static func decrypt(_ id: UUID) -> String { "decrypt-\(id.uuidString)" }
     static func install(_ id: UUID) -> String { "install-\(id.uuidString)" }
+    static let app = "app-presence"
 
     static func id(from key: String, prefix: String) -> UUID? {
         guard key.hasPrefix(prefix + "-") else { return nil }

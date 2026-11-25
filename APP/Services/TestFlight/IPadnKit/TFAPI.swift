@@ -2,12 +2,7 @@ import CryptoKit
 import Foundation
 import AppleAuth
 
-/// TestFlight's HTTP surface: session handshake + app catalog.
-///
-/// Only what S1 needs. Downloads, `SINF` injection and installation belong to S2 and
-/// deliberately have no entry point here yet.
 public enum TFAPI {
-    // MARK: - session
 
     public static func authenticate(context: TFContext,
                                     log: @escaping @Sendable (String) -> Void) async throws -> TFSession {
@@ -18,10 +13,7 @@ public enum TFAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue(TFConstants.agent, forHTTPHeaderField: "User-Agent")
-        // Mac path marker; without it the service treats the call as an iOS client.
         request.setValue("0", forHTTPHeaderField: "X-Apple-TestFlight-iOS")
-        // Identity headers from the store login: a missing one is a 401 regardless of how
-        // correct the cookies are, so they are applied verbatim and logged by name.
         for (name, value) in context.headers {
             request.setValue(value, forHTTPHeaderField: name)
         }
@@ -47,24 +39,17 @@ public enum TFAPI {
               !sessionID.isEmpty else {
             throw TFError.malformed("authenticate: 没有 sessionId（键：\(payload.keys.sorted().joined(separator: ","))）")
         }
-        // The response's dsid is authoritative; the body's is the fallback.
         let dsid = firstString(in: payload, keys: ["dsid", "dsId", "DSID"]) ?? context.dsid
-        // The catalog is keyed by TestFlight's account id, not the Store dsid.
         let account = firstString(in: payload, keys: ["accountId", "accountID", "account_id"]) ?? ""
         log("authenticate: response keys [" + payload.keys.sorted().joined(separator: ",") + "]")
         log("authenticate: account " + (account.isEmpty ? "-" : String(account.prefix(8)) + "…")
             + " dsid " + String(dsid.count) + " digits")
-        // Session id is bearer-like: log only its length.
         log("authenticate: ok, sessionId \(sessionID.count) chars")
         return TFSession(id: sessionID, dsid: dsid, account: account, baseHeaders: context.headers)
     }
 
-    // MARK: - catalog
-
     public static func catalog(session: TFSession,
                                log: @escaping @Sendable (String) -> Void) async throws -> [TFBetaApp] {
-        // The catalog is keyed by TestFlight's account id (a UUID from the authenticate
-        // response); the Store dsid only works as a fallback.
         let account = session.account.isEmpty ? session.dsid : session.account
         let path = "/v4/accounts/\(account)/apps?allDetailsCount=10000"
         let data = try await signedGET(path: path, session: session, log: log)
@@ -81,7 +66,6 @@ public enum TFAPI {
             let developer = firstString(in: item, keys: ["developerName", "providerName"]).map(TFAppDetail.cleanDeveloperName)
             let versions = (item["versions"] as? [[String: Any]]) ?? (item["builds"] as? [[String: Any]]) ?? []
             let latest = versions.compactMap { firstString(in: $0, keys: ["version", "shortVersion", "versionString"]) }.first
-            // Logged so a download can be started without guessing ids.
             log("  app " + name + " | id " + appID + " | bundle " + bundle
                 + " | builds " + String(versions.count) + " | keys "
                 + item.keys.sorted().joined(separator: ","))
@@ -93,27 +77,16 @@ public enum TFAPI {
         return apps
     }
 
-
-    // MARK: - icon & v3 detail
-
-    /// The iOS build carries its icon as a templated URL under `iconSet`; `iconUrl` exists
-    /// only on the macOS/tvOS platform entries (`deviceFamilyInfo`), which iOS does not use.
     public static func iconTemplate(appID: String, session: TFSession,
                                     log: @escaping @Sendable (String) -> Void) async -> String? {
         await iconAsset(appID: appID, session: session, log: log)?.urlTemplate
     }
 
-    /// Fetches the iOS build's `iconSet` template, placeholder colors (`bg`/`gradient`), and
-    /// build id (for cache invalidation when an app changes its icon).
     public static func iconAsset(appID: String, session: TFSession,
                                  log: @escaping @Sendable (String) -> Void) async -> TFIconAsset? {
         await appDetailV3(appID: appID, session: session, log: log)?.iconAsset
     }
 
-    /// Parses the full v3 per-app payload in a single signed request, including accurate
-    /// classification into `testing` (active iOS build), `incompatible` (only macOS/tvOS/visionOS/watchOnly
-    /// or iPad-only builds on iPhone), and `previouslyTested` (build removed/expired or 404 on server,
-    /// still preserving icon/name/developer info).
     public static func appDetailV3(appID: String, session: TFSession,
                                    log: @escaping @Sendable (String) -> Void) async -> TFAppDetail? {
         await appDetailV3(appID: appID, fallbackName: nil, fallbackDeveloper: nil,
@@ -174,11 +147,6 @@ public enum TFAPI {
         }
     }
 
-    /// Fetches all available v3 app details in a single bulk request
-    /// (`GET /v3/accounts/{account}/apps?allDetailsCount=10000`, ~0.6s for 20+ apps).
-    /// Any catalog app absent from the v3 array has no active or archived build record on
-    /// Apple's server (would return HTTP 404 on `/v3/.../apps/{id}`) and is synthesized directly
-    /// as `.previouslyTested` without firing per-app 404 requests.
     public static func allAppDetailsV3(for catalogApps: [TFBetaApp],
                                        isPhone: Bool = true,
                                        session: TFSession,
@@ -215,7 +183,6 @@ public enum TFAPI {
                 )
                 results[id] = detail
             }
-            // Any catalog app missing from the v3 bulk response is a retired 404 app.
             for app in catalogApps where results[app.id] == nil {
                 let publicIcon = await TFIcon.publicArtworkAsset(appID: app.id, log: log)
                 results[app.id] = TFAppDetail(
@@ -250,8 +217,6 @@ public enum TFAPI {
         return results
     }
 
-    /// Picks the best localized string from an Apple multilingual dictionary
-    /// (e.g. `{"zh-Hans": "两仪", "en-US": "twoyi"}`) matching `preferredLanguages`.
     public static func localizedValue(from raw: Any?,
                                       preferredLanguages: [String] = Locale.preferredLanguages) -> String? {
         if let text = raw as? String {
@@ -303,7 +268,6 @@ public enum TFAPI {
         public var bundleID: String?
     }
 
-    /// Extracts localized display name & test notes from `installMetadata` JSON (`data.framework`).
     public static func extractLocalizedMetadata(from data: Data) -> LocalizedInstallMeta? {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         let payload = (root["data"] as? [String: Any]) ?? root
@@ -325,10 +289,6 @@ public enum TFAPI {
         )
     }
 
-    /// Reads previously saved `installMetadata` for a bundle from
-    /// `Documents/TestFlight/<bundle>/<buildId>/metadata.json`,
-    /// `Documents/TestFlight/<bundle>/metadata.json`, or
-    /// `Documents/TestFlight/debug/metadata-<bundle>.json`.
     public static func cachedInstallMetadata(bundle: String) -> LocalizedInstallMeta? {
         let trimmed = bundle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
@@ -485,8 +445,6 @@ public enum TFAPI {
         } else {
             availability = .previouslyTested
             incompatiblePlatforms = nil
-            // Always prefer the iOS build over macOS/tvOS when a multi-platform app's build was removed,
-            // so we pick the full-bleed iOS icon instead of a padded macOS squircle icon.
             chosenBuild = iosFallbackBuild ?? anyFallbackBuild
         }
 
@@ -549,7 +507,6 @@ public enum TFAPI {
             return text.replacingOccurrences(of: "@@developerName@@", with: dev)
         }
 
-        // Recover icon asset from chosen build, any platform build, payload iconSet/iconAsset, or direct URL.
         var iconAsset = (build["iconSet"] as? [[String: Any]]).flatMap { TFIcon.pickAsset(from: $0, buildID: buildID) }
         if iconAsset == nil {
             for p in platforms {
@@ -599,11 +556,6 @@ public enum TFAPI {
         )
     }
 
-
-    // MARK: - app detail
-
-    /// The apps list only carries name/appId, so the bundle id and build ids come from the
-    /// per-app endpoint. Returns the bundle id and every build id found, recursively.
     public static func appDetail(appID: String, session: TFSession,
                                  log: @escaping @Sendable (String) -> Void) async throws -> (bundle: String, builds: [String]) {
         let account = session.account.isEmpty ? session.dsid : session.account
@@ -643,10 +595,6 @@ public enum TFAPI {
         return (bundle, builds)
     }
 
-    // MARK: - bundle resolution
-
-    /// TestFlight's catalog carries no bundle id, so it comes from the public lookup
-    /// service (`id=<appId>`). This is metadata only; no credentials are sent.
     public static func publicBundleID(appID: String,
                                       log: @escaping @Sendable (String) -> Void) async throws -> String {
         guard let url = URL(string: "https://itunes.apple.com/lookup?id=" + appID) else {
@@ -667,12 +615,9 @@ public enum TFAPI {
         return bundle
     }
 
-    /// Fallback for builds that are not on the public store: walks the candidate account
-    /// endpoints and returns the first bundle id found, logging every attempt.
     public static func resolveBundle(appID: String, session: TFSession,
                                      log: @escaping @Sendable (String) -> Void) async -> String {
         let account = session.account.isEmpty ? session.dsid : session.account
-        // v3 is the endpoint that exists for a single app (v4 has no such sub-path).
         let paths = [
             "/v3/accounts/\(account)/apps/\(appID)?allDetailsCount=10000",
             "/v2/accounts/\(account)/apps/\(appID)/builds",
@@ -721,23 +666,15 @@ public enum TFAPI {
         return error.localizedDescription
     }
 
-    /// Writes a response into `Documents/TestFlight/debug` for offline shape analysis.
-// MARK: - build selection / install
-
-    /// Picks the build the same way the probe does: non-expired builds for `platform` (default `"ios"`),
-    /// then the largest numeric id. A mismatch between appId and buildId is what makes install
-    /// answer `500 {"data":null,"error":null}`.
     public static func buildID(appID: String, platform targetPlatform: String = "ios", session: TFSession,
                                log: @escaping @Sendable (String) -> Void) async throws -> String {
         let account = session.account.isEmpty ? session.dsid : session.account
         let path = "/v3/accounts/\(account)/apps/\(appID)"
         let data = try await signedGET(path: path, session: session, log: log)
-        // Kept for offline inspection of the real shape (metadata only; no cookies).
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw TFError.malformed("builds: response is not a JSON object")
         }
         let payload = (root["data"] as? [String: Any]) ?? root
-        // Builds live under `platforms[].build`, one entry per platform (appletvos / ios / osx / xros).
         let platforms = (payload["platforms"] as? [[String: Any]]) ?? []
         let target = targetPlatform.lowercased()
         var best = 0
@@ -758,14 +695,51 @@ public enum TFAPI {
         log("builds: " + String(platforms.count) + " platform(s), target " + target + ", picked " + (chosen.isEmpty ? "-" : chosen))
         guard !chosen.isEmpty else {
             let label = target == "ios" ? "iOS" : target
-            throw TFError.malformed("builds: 没有可用的 \(label) build")
+            throw TFError.noBuild(label)
         }
         return chosen
     }
 
-    /// POSTs the install request ourselves so the build id is the one we selected.
-    /// The body mirrors what the native client sends (same five keys); `kbSync` is
-    /// generated for this dsid and this 40-hex udid, which must be the same identity.
+    /// The tester API exposes the currently active build per platform only; expired builds are
+    /// not listed for testers. One signed request replaces the old v1…v4 probing.
+    public static func buildHistory(appID: String, session: TFSession,
+                                    log: @escaping @Sendable (String) -> Void) async throws -> [TFBuild] {
+        let account = session.account.isEmpty ? session.dsid : session.account
+        let path = "/v3/accounts/\(account)/apps/\(appID)?allDetailsCount=10000"
+        let data = try await signedGET(path: path, session: session, log: log)
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw TFError.malformed("history: response is not a JSON object")
+        }
+        let payload = (root["data"] as? [String: Any]) ?? root
+        let platforms = (payload["platforms"] as? [[String: Any]]) ?? []
+        let framework = payload["framework"] as? [String: Any]
+        let fallbackNotes = localizedValue(from: framework?["testNotes"])
+
+        var builds: [TFBuild] = []
+        for platform in platforms {
+            guard let build = platform["build"] as? [String: Any] else { continue }
+            let raw = (build["id"] as? NSNumber)?.stringValue ?? (build["id"] as? String) ?? ""
+            guard !raw.isEmpty else { continue }
+            let notes = localizedValue(from: build["testNotes"]) ?? fallbackNotes
+            builds.append(TFBuild(
+                id: raw,
+                shortVersion: firstString(in: build, keys: ["cfBundleShortVersion", "shortVersion"]) ?? "",
+                buildVersion: firstString(in: build, keys: ["cfBundleVersion", "version"]) ?? "",
+                platform: (platform["name"] as? String) ?? "ios",
+                expirationISO: firstString(in: build, keys: ["expiration", "expirationDate"]),
+                releaseDateISO: firstString(in: build, keys: ["releaseDate", "lastModified"]),
+                fileSizeBytes: (build["fileSize"] as? NSNumber)?.int64Value,
+                whatsNew: notes,
+                expired: (build["expired"] as? Bool) ?? false
+            ))
+        }
+        log("history: \(builds.count) platform build(s)")
+        guard !builds.isEmpty else { throw TFError.noBuild("history") }
+        return builds.sorted {
+            (Int64($0.id) ?? 0, $0.buildVersion) > (Int64($1.id) ?? 0, $1.buildVersion)
+        }
+    }
+
     public static func installMetadata(appID: String, buildID: String, session: TFSession,
                                        headers: [String: String], dsid: String, hardware20: Data,
                                        storefront: String,
@@ -816,13 +790,8 @@ public enum TFAPI {
         return data
     }
 
-    // MARK: - signed request
-
     private static func signedGET(path: String, session: TFSession,
                                   log: @escaping @Sendable (String) -> Void) async throws -> Data {
-        // SHA1(sessionId + requestId + dsid + salt), lowercase hex, and the same request
-        // id must also travel in `X-Request-Id` — without that header the service cannot
-        // verify the digest and answers 401 no matter how correct the rest is.
         let requestID = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
         var request = URLRequest(url: URL(string: TFConstants.host + path)!)
         request.httpMethod = "GET"
@@ -856,130 +825,6 @@ public enum TFAPI {
         return uppercase ? raw.uppercased() : raw.lowercased()
     }
 
-    // MARK: - historical builds
-
-    public static func historicalBuilds(appID: String, session: TFSession,
-                                        log: @escaping @Sendable (String) -> Void) async throws -> [TFBuild] {
-        let account = session.account.isEmpty ? session.dsid : session.account
-        let bases = [
-            "/v1/accounts/\(account)/apps/\(appID)/builds",
-            "/v2/accounts/\(account)/apps/\(appID)/builds",
-            "/v3/accounts/\(account)/apps/\(appID)/builds",
-            "/v4/accounts/\(account)/apps/\(appID)/builds",
-            "/v2/accounts/\(account)/apps/\(appID)/builds?allDetailsCount=10000",
-            "/v3/accounts/\(account)/apps/\(appID)?allDetailsCount=10000",
-            "/v4/accounts/\(account)/apps/\(appID)",
-        ]
-        var found: [String: TFBuild] = [:]
-        var lastError: Error?
-        var visited = Set<String>()
-        for base in bases {
-            var pending = [base + (base.contains("?") ? "&" : "?") + "limit=1000"]
-            var pages = 0
-            while let path = pending.popLast(), !visited.contains(path), pages < 10 {
-                visited.insert(path)
-                pages += 1
-                do {
-                    let data = try await signedGET(path: path, session: session, log: log)
-                    let builds = parseBuilds(data, appID: appID)
-                    log("history: " + path + " -> " + String(builds.count) + " build(s)")
-                    for build in builds { found[build.id] = build }
-                    if let next = nextPagePath(in: data, current: path) {
-                        pending.append(next)
-                    }
-                } catch {
-                    lastError = error
-                    log("history: " + path + " -> " + shortText(error))
-                }
-            }
-        }
-        if found.isEmpty {
-            if let detail = try? await appDetail(appID: appID, session: session, log: log) {
-                for id in detail.builds where found[id] == nil {
-                    found[id] = TFBuild(id: id, shortVersion: "", buildVersion: "",
-                                        platform: "ios", expirationISO: nil,
-                                        releaseDateISO: nil, fileSizeBytes: nil,
-                                        whatsNew: nil, expired: false)
-                }
-            }
-        }
-        if found.isEmpty {
-            throw lastError ?? TFError.malformed("history: 没有可用的 build")
-        }
-        return found.values.sorted {
-            (Int64($0.id) ?? 0, $0.buildVersion) > (Int64($1.id) ?? 0, $1.buildVersion)
-        }
-    }
-
-    private static func nextPagePath(in data: Data, current: String) -> String? {
-        guard let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
-        var candidate: String?
-        func walk(_ node: Any) {
-            guard candidate == nil else { return }
-            if let dictionary = node as? [String: Any] {
-                for key in ["next", "nextPage", "nextURL", "nextUrl", "nextCursor", "next_cursor"] {
-                    if let value = dictionary[key] as? String, !value.isEmpty {
-                        candidate = value
-                        return
-                    }
-                    if let nested = dictionary[key] as? [String: Any],
-                       let value = nested["href"] as? String, !value.isEmpty {
-                        candidate = value
-                        return
-                    }
-                }
-                for value in dictionary.values { walk(value) }
-            } else if let array = node as? [Any] {
-                for value in array { walk(value) }
-            }
-        }
-        walk(root)
-        guard var next = candidate else { return nil }
-        if let url = URL(string: next), url.scheme != nil {
-            next = url.path + (url.query.map { "?" + $0 } ?? "")
-        }
-        guard next.hasPrefix("/") else { return nil }
-        if next == current { return nil }
-        return next
-    }
-
-    private static func parseBuilds(_ data: Data, appID: String) -> [TFBuild] {
-        guard let root = try? JSONSerialization.jsonObject(with: data) else { return [] }
-        var found: [String: TFBuild] = [:]
-
-        func walk(_ node: Any, parent: String) {
-            if let dictionary = node as? [String: Any] {
-                let id = firstString(in: dictionary, keys: ["id", "buildId", "buildID"]) ?? ""
-                let version = firstString(in: dictionary, keys: ["cfBundleShortVersion", "shortVersion", "version"]) ?? ""
-                let build = firstString(in: dictionary, keys: ["cfBundleVersion", "buildVersion", "buildNumber"]) ?? ""
-                let marker = parent == "builds" || parent == "build" || parent == "platforms"
-                    || dictionary["expirationDate"] != nil || dictionary["expirationISO"] != nil
-                    || dictionary["cfBundleShortVersion"] != nil || dictionary["cfBundleVersion"] != nil
-                if marker, !id.isEmpty, id != appID,
-                   (!version.isEmpty || !build.isEmpty || dictionary["expirationDate"] != nil) {
-                    let platform = firstString(in: dictionary, keys: ["platform", "platformName", "name"]) ?? "ios"
-                    let expiration = firstString(in: dictionary, keys: ["expirationDate", "expirationISO", "expires"])
-                    let release = firstString(in: dictionary, keys: ["releaseDate", "releaseDateISO", "createdDate", "uploadDate"])
-                    let size = (dictionary["fileSize"] as? NSNumber)?.int64Value
-                        ?? (dictionary["fileSizeBytes"] as? NSNumber)?.int64Value
-                    let notes = firstString(in: dictionary, keys: ["whatsNew", "testNotes", "description"])
-                    let expired = (dictionary["expired"] as? Bool) ?? false
-                    found[id] = TFBuild(id: id, shortVersion: version, buildVersion: build,
-                                        platform: platform, expirationISO: expiration,
-                                        releaseDateISO: release, fileSizeBytes: size,
-                                        whatsNew: notes, expired: expired)
-                }
-                for (key, value) in dictionary { walk(value, parent: key) }
-            } else if let array = node as? [Any] {
-                for value in array { walk(value, parent: parent) }
-            }
-        }
-        walk(root, parent: "")
-        return Array(found.values)
-    }
-
-    // MARK: - transport
-
     private static func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         var request = request
         request.timeoutInterval = 30
@@ -1002,7 +847,6 @@ public enum TFAPI {
         return nil
     }
 }
-
 
 public struct TFBuild: Identifiable, Hashable, Codable, Sendable {
     public let id: String
@@ -1040,6 +884,13 @@ public struct TFBuild: Identifiable, Hashable, Codable, Sendable {
         if expired { return true }
         guard let expirationISO, let date = ISO8601DateFormatter().date(from: expirationISO) else { return false }
         return date < Date()
+    }
+
+    public func markingExpired() -> TFBuild {
+        TFBuild(id: id, shortVersion: shortVersion, buildVersion: buildVersion,
+                platform: platform, expirationISO: expirationISO,
+                releaseDateISO: releaseDateISO, fileSizeBytes: fileSizeBytes,
+                whatsNew: whatsNew, expired: true)
     }
 
     public var releaseDate: Date? {

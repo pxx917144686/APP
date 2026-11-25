@@ -14,6 +14,9 @@ ipa:
 	cd build && zip -qry APP.ipa Payload
 	mv build/APP.ipa ./
 
+l10n:
+	@python3 Tools/l10n_audit.py
+
 clean:
 	rm -rf build APP.ipa
 

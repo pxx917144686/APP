@@ -959,6 +959,9 @@ struct DownloadView: SwiftUI.View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenDecryptTool"))) { _ in
             activeSheet = .decryptTool
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("CloseDecryptSheet"))) { _ in
+            activeSheet = nil
+        }
         .environmentObject(GlobalInstallationManager.shared)
         .overlay {
             if showFloatingDecryptMenu {
@@ -1408,7 +1411,6 @@ struct DownloadScrollOffsetPreferenceKey: PreferenceKey {
         value = nextValue()
     }
 }
-
 
 struct DownloadCardView: SwiftUI.View {
     @ObservedObject var request: DownloadRequest
@@ -1941,7 +1943,9 @@ struct DownloadCardView: SwiftUI.View {
             .accessibilityLabel("retry".localized)
 
         case .completed:
-            if request.localFilePath != nil {
+            if request.isTestFlight {
+                EmptyView()
+            } else if request.localFilePath != nil {
                 Button {
                     guard !isInstalling else { return }
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()

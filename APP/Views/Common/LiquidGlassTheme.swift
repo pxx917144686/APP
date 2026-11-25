@@ -78,7 +78,6 @@ struct LiquidGlassBackdrop: View {
             .accessibilityHidden(true)
     }
 
-    /// 纯色静态背景：不做渐变、不跑 TimelineView、没有水波，避免持续重绘。
     private var solid: Color {
         colorScheme == .dark
             ? Color(red: 0.086, green: 0.094, blue: 0.118)
@@ -120,7 +119,6 @@ extension View {
         }
     }
 }
-
 
 struct LiquidWaterLayer: View {
     @EnvironmentObject private var themeManager: ThemeManager

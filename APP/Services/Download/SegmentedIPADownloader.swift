@@ -20,7 +20,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     private struct Segment {
         let index: Int
         var start: Int64
-        var end: Int64 
+        var end: Int64
         var received: Int64 = 0
         var retries: Int = 0
         var finished: Bool = false
@@ -29,7 +29,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         var activeTask: URLSessionDataTask?
         var fileHandle: FileHandle?
     }
-
 
     private struct ResumeSegment: Codable {
         var start: Int64
@@ -52,9 +51,9 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     private struct State {
         var url: URL
         var tempFileURL: URL
-        var totalSize: Int64 
+        var totalSize: Int64
         var rangeSupported: Bool
-        var allowFullResponse: Bool 
+        var allowFullResponse: Bool
         var segments: [Segment]
         let handler: DownloadHandler
         var userCancelled = false
@@ -74,9 +73,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
 
     override init() {
         super.init()
-        // 回前台时重置停滞基线：后台挂起期间任务冻结、无数据是正常现象，
-        // 不能把后台时长计入看门狗的停滞判定（否则回前台瞬间误报超时）。
-        // 用通知名字符串注册，避免引入 UIKit 依赖（回归工具需在 macOS 编译本文件）。
         foregroundObserver = NotificationCenter.default.addObserver(
             forName: NSNotification.Name("UIApplicationWillEnterForegroundNotification"),
             object: nil,
@@ -105,7 +101,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         defer { lock.unlock() }
         return body()
     }
-
 
     func start(
         downloadId: String,
@@ -216,7 +211,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             return
         }
 
-        // 探测期间用户已按暂停 → 延迟发起各段，等 resume 再真正启动
         var deferredByPause = false
         locked {
             if let state = states[downloadId], !state.finished, !state.userCancelled, state.paused {
@@ -238,7 +232,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         }
         NSLog("[SegmentedDownloader] \(downloadId) start, size=\(totalSize), range=\(rangeSupported), segments=\(segments.count), resume=\(isResume), resumedBytes=\(segments.reduce(0) { $0 + $1.received })")
     }
-
 
     func discard(downloadId: String) {
         let tasks: [URLSessionTask]? = locked {
@@ -265,7 +258,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         let tasks: [URLSessionTask]? = locked {
             guard var state = states[downloadId], !state.finished, !state.paused else { return nil }
             state.paused = true
-            // 暂停期间无数据流动，停掉看门狗定时器（避免每 5s 的空转唤醒）；resume 时重启
             state.stallTimer?.cancel()
             state.stallTimer = nil
             let tasks = state.segments.compactMap { $0.activeTask }
@@ -288,7 +280,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             guard var state = states[downloadId], !state.finished, state.paused else { return nil }
             state.paused = false
             let tasks = state.segments.compactMap { $0.activeTask }
-            // 没有任何运行中任务但有未完成段（探测期暂停延迟发起 / 竞态滞留）→ 重新发起
             if tasks.isEmpty, !state.segments.isEmpty,
                state.segments.contains(where: { !$0.finished }) {
                 for index in state.segments.indices where !state.segments[index].finished {
@@ -306,7 +297,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         for index in launchIndices {
             launchSegment(downloadId: downloadId, index: index)
         }
-        // 暂停期间看门狗已被停掉，恢复时统一重启（内部会重置停滞基线）
         startStallWatchdog(downloadId: downloadId)
         if !launchIndices.isEmpty, let onProgress {
             onProgress(resumedBytes, totalSize)
@@ -320,7 +310,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             state.userCancelled = true
             let tasks = state.segments.compactMap { $0.activeTask }
             if tasks.isEmpty, !state.segments.isEmpty {
-                // 探测/延迟启动阶段：没有可取消的任务，直接结束（否则完成回调永不触发、状态泄漏）
                 state.finished = true
                 for index in state.segments.indices {
                     try? state.segments[index].fileHandle?.close()
@@ -339,7 +328,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             emitFinish(downloadId: downloadId, outcome: .failure(.unknownError("download_cancelled".localized)), cleanup: .keepAll)
         }
     }
-
 
     private func launchSegment(downloadId: String, index: Int) {
         let captured: (url: URL, start: Int64, end: Int64, rangeSupported: Bool, session: URLSession?, handler: DownloadHandler)? = locked {
@@ -364,7 +352,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         let task = session.dataTask(with: request)
         task.taskDescription = "\(downloadId)#\(index)"
 
-        // 落库时校验状态：期间被暂停/取消/结束则不启动新任务（避免 paused 与运行中任务错位）
         var shouldLaunch = false
         locked {
             if var state = states[downloadId], index < state.segments.count,
@@ -384,7 +371,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             }
         }
     }
-
 
     fileprivate func handleSegmentResponse(
         downloadId: String,
@@ -497,7 +483,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
 
             let nsError = error as NSError?
             if error != nil, nsError?.code == NSURLErrorCancelled {
-                // 任务已终结，清空引用（cancel/对账以 activeTask 判定存活，滞留旧引用会误判）
                 state.segments[index].activeTask = nil
                 if let pending = state.segments[index].pendingFailure {
                     state.segments[index].pendingFailure = nil
@@ -627,10 +612,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         }
     }
 
-    // MARK: - 传输停滞看门狗
-
-    /// 各段启动后开启：传输中所有段持续 stallTimeout 无数据则判定失败（保留断点，可重试续传）。
-    /// 兜底 waitsForConnectivity 带来的"失效 URL 静默等待最长 2 小时"问题。
     private func startStallWatchdog(downloadId: String) {
         locked {
             guard var state = states[downloadId], !state.finished else { return }
@@ -689,7 +670,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             state.segments[index].session = nil
         }
     }
-
 
     private static func makeSessionConfiguration() -> URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
@@ -801,7 +781,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         return .success(tempFileURL: tempFileURL, totalBytes: received)
     }
 
-
     private static func resumeFilePath(for tempFileURL: URL) -> URL {
         URL(fileURLWithPath: tempFileURL.path + ".segresume")
     }
@@ -878,7 +857,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     }
 }
 
-
 private final class DownloadHandler: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     let downloadId: String
     private weak var owner: SegmentedIPADownloader?
@@ -913,7 +891,6 @@ private final class DownloadHandler: NSObject, URLSessionDataDelegate, @unchecke
         owner.handleSegmentCompletion(downloadId: downloadId, index: index, error: error)
     }
 }
-
 
 private final class HeaderProbe: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     private let lock = NSLock()

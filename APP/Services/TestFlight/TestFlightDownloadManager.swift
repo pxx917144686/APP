@@ -432,13 +432,13 @@ final class TestFlightDownloadManager: ObservableObject {
                 let betaApps = try await TFAPI.catalog(session: session, log: { [weak self] line in
                     self?.transport.logStage(line)
                 })
-                apps = betaApps.map { app in
-                TestFlightApp(bundle: app.bundleID, name: app.name, appID: app.id,
-                              version: app.latestVersion, iconURL: TFIcon.cached(appID: app.id))
-            }
-                transport.logStage("iPadn catalog: \(apps.count) apps")
+                let mapped = betaApps.map { app in
+                    TestFlightApp(bundle: app.bundleID, name: app.name, appID: app.id,
+                                  version: app.latestVersion, iconURL: TFIcon.cached(appID: app.id))
+                }
+                apps = await filteredApps(mapped, session: session)
+                transport.logStage("iPadn catalog: \(apps.count)/\(mapped.count) apps")
                 saveStoredSession()
-                Task { await self.filterUnavailableApps() }
                 return
             }
             let data: Data
@@ -472,23 +472,53 @@ final class TestFlightDownloadManager: ObservableObject {
         }
         var serverBuilds: [TFBuild] = []
         do {
-            serverBuilds = try await TFAPI.historicalBuilds(appID: appID, session: session) { [weak self] line in
+            serverBuilds = try await TFAPI.buildHistory(appID: appID, session: session) { [weak self] line in
                 self?.transport.logStage(line)
             }
         } catch {
             transport.logStage("history unavailable for \(appID): \(error.localizedDescription)")
             guard generation == buildsGeneration else { return }
-            if savedBuilds(appID: appID).isEmpty {
+            if savedBuilds(appID: appID).isEmpty, downloadedBuilds(bundle: app.bundle).isEmpty {
                 buildError = error.localizedDescription
                 return
             }
         }
         guard generation == buildsGeneration else { return }
-        let merged = mergeBuilds(serverBuilds, appID: appID)
-        builds = merged
-        if merged.isEmpty {
+        let serverIDs = Set(serverBuilds.map(\.id))
+        let merged = mergeBuilds(serverBuilds + downloadedBuilds(bundle: app.bundle), appID: appID)
+        builds = serverIDs.isEmpty ? merged : merged.map { serverIDs.contains($0.id) ? $0 : $0.markingExpired() }
+        if builds.isEmpty {
             buildError = "testflight_no_builds".localized
         }
+    }
+
+    private func downloadedBuilds(bundle: String) -> [TFBuild] {
+        guard !bundle.isEmpty else { return [] }
+        let folder = outputDirectory.appendingPathComponent(bundle, isDirectory: true)
+        guard let items = try? FileManager.default.contentsOfDirectory(
+            at: folder,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return [] }
+        var result: [TFBuild] = []
+        for item in items {
+            let product = item.appendingPathComponent("product.json")
+            guard let data = try? Data(contentsOf: product),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let buildID = json["buildId"] as? String, !buildID.isEmpty else { continue }
+            result.append(TFBuild(
+                id: buildID,
+                shortVersion: (json["version"] as? String) ?? "",
+                buildVersion: "",
+                platform: (json["platform"] as? String) ?? "ios",
+                expirationISO: nil,
+                releaseDateISO: json["downloadedAt"] as? String,
+                fileSizeBytes: (json["bytes"] as? NSNumber)?.int64Value,
+                whatsNew: nil,
+                expired: false
+            ))
+        }
+        return result
     }
 
     func loadIcon(for app: TestFlightApp) async {
@@ -631,8 +661,6 @@ final class TestFlightDownloadManager: ObservableObject {
         transferHandles[taskID]?.cancel()
     }
 
-    /// TestFlight 包必须带 `SC_Info/<name>.sinf` 才能做 FairPlay 脱壳；旧版本下载的包可能缺失。
-    /// 返回 true 表示已具备（或补写成功），nil 表示缺失且无法补齐（未登录 / 构建过期）。
     func ensureSinf(ipaPath: String, appID: String, buildID: String? = nil) async -> Bool? {
         let url = URL(fileURLWithPath: ipaPath)
         let members = TFSINF.members(ipa: url)
@@ -1046,44 +1074,37 @@ final class TestFlightDownloadManager: ObservableObject {
     private func filterUnavailableApps() async {
         guard !isValidatingCatalog, let session = tfSession else { return }
         isValidatingCatalog = true
-        let snapshot = apps
-        var available: Set<String> = []
-        let chunkSize = 6
-        var index = 0
-        while index < snapshot.count {
-            let chunk = Array(snapshot[index..<min(index + chunkSize, snapshot.count)])
-            await withTaskGroup(of: (String, Bool).self) { group in
-                for app in chunk {
-                    group.addTask {
-                        guard let appID = app.appID else { return (app.id, false) }
-                        do {
-                            _ = try await TFAPI.buildID(appID: appID, platform: "ios",
-                                                        session: session) { _ in }
-                            return (app.id, true)
-                        } catch let TFError.http(status, _, _) where status == 404 || status == 410 {
-                            return (app.id, false)
-                        } catch TFError.appUnavailable(_) {
-                            return (app.id, false)
-                        } catch let TFError.malformed(message) where message.contains("没有可用的 ios build") {
-                            return (app.id, false)
-                        } catch {
-                            return (app.id, true)
-                        }
-                    }
-                }
-                for await (id, ok) in group where ok {
-                    available.insert(id)
-                }
-            }
-            index += chunkSize
-        }
-        let filtered = snapshot.filter { available.contains($0.id) }
-        isValidatingCatalog = false
-        if filtered.count != apps.count {
-            transport.logStage("availability: kept \(filtered.count)/\(apps.count) apps")
-            apps = filtered
+        defer { isValidatingCatalog = false }
+        let kept = await filteredApps(apps, session: session)
+        if kept.count != apps.count {
+            transport.logStage("availability: kept \(kept.count)/\(apps.count) apps")
+            apps = kept
             saveStoredSession()
         }
+    }
+
+    private func filteredApps(_ list: [TestFlightApp], session: TFSession) async -> [TestFlightApp] {
+        var seen = Set<String>()
+        let catalog = list.compactMap { app -> TFBetaApp? in
+            guard let appID = app.appID, !appID.isEmpty, seen.insert(appID).inserted else { return nil }
+            return TFBetaApp(id: appID, name: app.name, bundleID: app.bundle,
+                             latestVersion: app.version, buildCount: 0)
+        }
+        guard !catalog.isEmpty else { return list }
+        let details = await TFAPI.allAppDetailsV3(for: catalog, session: session) { [weak self] line in
+            self?.transport.logStage(line)
+        }
+        guard !details.isEmpty else {
+            transport.logStage("availability: bulk detail empty, keep all \(list.count)")
+            return list
+        }
+        let kept = list.filter { app in
+            guard let appID = app.appID, let detail = details[appID] else { return false }
+            let builds = detail.platformBuilds ?? []
+            return builds.contains { $0.platform.lowercased().contains("ios") }
+        }
+        transport.logStage("availability: \(kept.count)/\(list.count) apps have an iOS build")
+        return kept
     }
 
     private func normalizeIconURLs() {

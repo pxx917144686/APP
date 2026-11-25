@@ -1,7 +1,5 @@
 import Foundation
 
-/// Color palette extracted from `iconSet[].iconAsset.colors` for placeholder rendering
-/// when a TestFlight-only app has no downloadable icon or while an icon is loading.
 public struct TFIconColors: Codable, Equatable, Sendable {
     public var bgHex: String?
     public var gradientHexes: [String]
@@ -16,8 +14,6 @@ public struct TFIconColors: Codable, Equatable, Sendable {
     }
 }
 
-/// Icon metadata from `platforms[ios].build.iconSet[]`, including the URL template,
-/// placeholder colors, build id, and cache timestamp for staleness invalidation.
 public struct TFIconAsset: Codable, Equatable, Sendable {
     public var urlTemplate: String?
     public var colors: TFIconColors?
@@ -33,21 +29,13 @@ public struct TFIconAsset: Codable, Equatable, Sendable {
     }
 }
 
-/// Icon plumbing: turn the v3 `iconSet` template into a fetchable URL, parse
-/// `iconAsset.colors` for placeholder gradients, and keep a fresh local cache under
-/// `Documents/TestFlight/icons/<appId>.png`.
 public enum TFIcon {
-    /// Cached icons expire after 7 days unless refreshed earlier by a build/template change.
     public static let cacheTTL: TimeInterval = 7 * 24 * 3600
 
-    /// `iconSet[].iconAsset.URLTemplate` looks like
-    /// `https://is1-ssl.mzstatic.com/image/thumb/…/{w}x{h}{c}.{f}`. The largest `largeApp`
-    /// entry wins; `appStore` is the fallback.
     public static func pickTemplate(from iconSet: [[String: Any]]) -> String? {
         pickAsset(from: iconSet)?.urlTemplate
     }
 
-    /// Extracts both the preferred `URLTemplate` and `iconAsset.colors` (`bg` / `gradient`).
     public static func pickAsset(from iconSet: [[String: Any]], buildID: String? = nil) -> TFIconAsset? {
         let ordered = iconSet.sorted { lhs, rhs in
             (lhs["iconType"] as? String) == "largeApp" && (rhs["iconType"] as? String) != "largeApp"
@@ -114,8 +102,6 @@ public enum TFIcon {
         text = text.replacingOccurrences(of: "{h}", with: String(side))
         text = text.replacingOccurrences(of: "{c}", with: "bb")
         text = text.replacingOccurrences(of: "{f}", with: "png")
-        // Any leftover brace placeholder means we guessed the shape wrong; do not ship a
-        // URL that would 404.
         guard !text.contains("{"), !text.contains("}") else { return nil }
         return URL(string: text)
     }
@@ -161,8 +147,6 @@ public enum TFIcon {
         try? data.write(to: metaURL(appID: appID), options: .atomic)
     }
 
-    /// True when the local PNG exists, has not exceeded `cacheTTL`, and matches the known
-    /// build id / URL template (so an app icon update invalidates the old PNG).
     public static func isCacheFresh(appID: String, buildID: String? = nil, template: String? = nil,
                                     now: Date = Date()) -> Bool {
         guard let png = cached(appID: appID) else { return false }
@@ -180,8 +164,6 @@ public enum TFIcon {
         return true
     }
 
-    /// Downloads once; a fresh copy is reused. Returns nil when there is no source,
-    /// which is the documented case for TestFlight-only apps.
     @discardableResult
     public static func cache(appID: String, template: String?,
                              log: @escaping @Sendable (String) -> Void) async -> URL? {
@@ -189,8 +171,6 @@ public enum TFIcon {
         return await cache(appID: appID, asset: asset, force: false, log: log)
     }
 
-    /// Caches icon metadata (colors/build/template) and refreshes the PNG whenever the build
-    /// or URL template changed or the 7-day TTL expired.
     @discardableResult
     public static func cache(appID: String, asset: TFIconAsset?, force: Bool = false,
                              log: @escaping @Sendable (String) -> Void) async -> URL? {
@@ -228,8 +208,6 @@ public enum TFIcon {
         return target
     }
 
-    /// Last-resort public App Store artwork lookup across common storefronts (metadata only,
-    /// no credentials sent) when an app's TestFlight detail endpoint returns 404.
     public static func publicArtworkAsset(appID: String, country: String? = nil,
                                           log: @escaping @Sendable (String) -> Void) async -> TFIconAsset? {
         var countries = ["cn", "us", "hk", "jp", "tw"]

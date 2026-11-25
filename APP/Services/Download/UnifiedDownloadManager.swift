@@ -1379,8 +1379,6 @@ extension UnifiedDownloadManager {
             for request in downloadRequests {
                 let hasActiveTask = activeIds.contains(request.id.uuidString)
 
-                // 仅对孤儿状态（App 重启后恢复的 .downloading 且本会话未启动）判暂停；
-                // 本会话已启动、正走前置链路（购买/版本解析/取地址）的下载不受对账影响
                 if request.runtime.status == .downloading && !hasActiveTask && !activeDownloads.contains(request.id) {
                     request.runtime.status = .paused
                     activeDownloads.remove(request.id)

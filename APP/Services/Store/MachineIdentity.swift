@@ -36,7 +36,7 @@ enum MachineIdentityProvider {
 
     #if os(iOS)
     private static func persistentWiFiAddress() -> [UInt8]? {
-        
+
         if let cached = UserDefaults.standard.string(forKey: "sap_mac_address_v2") {
             return parseMAC(cached)
         }
@@ -81,7 +81,7 @@ enum MachineIdentityProvider {
         for i in 0..<6 {
             addr[i] = UInt8.random(in: 0...255)
         }
-        
+
         addr[0] &= 0xFC
         return addr
     }

@@ -76,6 +76,9 @@ final class IslandActivityManager {
         loggedDisabled = false
         guard !dismissed.contains(key) else { return }
         guard IslandSettings.shared.isVisible(kind) else { return }
+        if kind != IslandTaskKind.app {
+            AppPresenceActivityManager.shared.end()
+        }
 
         if resolve(key) != nil {
             update(

@@ -44,6 +44,7 @@ final class DecryptActivityManager {
     func start(key: String, title: String, step: String, detail: String = "") {
         guard ActivityAuthorizationInfo().areActivitiesEnabled,
               IslandSettings.shared.isVisible(IslandTaskKind.decrypt) else { return }
+        AppPresenceActivityManager.shared.end()
         if activities[key] != nil {
             update(key: key, step: step, detail: detail)
             return
@@ -224,6 +225,7 @@ final class InstallActivityManager {
     func start(key: String, title: String, step: String, detail: String = "") {
         guard ActivityAuthorizationInfo().areActivitiesEnabled,
               IslandSettings.shared.isVisible(IslandTaskKind.install) else { return }
+        AppPresenceActivityManager.shared.end()
         if activities[key] != nil {
             update(key: key, step: step, detail: detail)
             return

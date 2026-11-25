@@ -6,7 +6,10 @@ struct APPWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: IslandAttributes.self) { context in
             Group {
-                if context.attributes.kind == "sign" {
+                if context.attributes.kind == IslandTaskKind.app {
+                    AppPresenceLockCard(state: context.state)
+                        .widgetURL(URL(string: "appisland://app"))
+                } else if context.attributes.kind == "sign" {
                     LockScreenCard(state: context.state, kind: context.attributes.kind)
                 } else {
                     PlayerCard(state: context.state, startedAt: context.attributes.startedAt)
@@ -20,6 +23,47 @@ struct APPWidgetLiveActivity: Widget {
             let taskKey = context.attributes.taskKey
             let keyEncoded = taskKey.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
             let isPlayer = kind != "sign"
+
+            if kind == IslandTaskKind.app {
+                return DynamicIsland {
+                    DynamicIslandExpandedRegion(.leading) {
+                        HStack(spacing: 9) {
+                            AppGlyph(size: 32)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(state.title)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                Text(state.phase)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                    DynamicIslandExpandedRegion(.trailing) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .padding(.trailing, 4)
+                    }
+                    DynamicIslandExpandedRegion(.bottom) {
+                        Text(state.detail)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } compactLeading: {
+                    AppGlyph(size: 18)
+                } compactTrailing: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.secondary)
+                } minimal: {
+                    AppGlyph(size: 20)
+                }
+                .widgetURL(URL(string: "appisland://app"))
+                .keylineTint(.blue)
+            }
 
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -140,6 +184,51 @@ private func progressLabel(for state: IslandAttributes.ContentState) -> String {
     case "failed": return "!"
     case "cancelled": return "×"
     default: return state.progress <= 0 ? "…" : "\(Int(state.progress * 100))%"
+    }
+}
+
+private struct AppGlyph: View {
+    var size: CGFloat
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.24, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color(red: 0.20, green: 0.45, blue: 1.0), Color(red: 0.24, green: 0.78, blue: 0.98)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            Image(systemName: "app.fill")
+                .font(.system(size: size * 0.44, weight: .bold))
+                .foregroundStyle(.white)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+private struct AppPresenceLockCard: View {
+    let state: IslandAttributes.ContentState
+
+    var body: some View {
+        HStack(spacing: 12) {
+            AppGlyph(size: 44)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(state.title)
+                    .font(.headline)
+                    .lineLimit(1)
+                Text(state.phase)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
     }
 }
 

@@ -1,13 +1,6 @@
 import Foundation
 import AppleAuth
 
-/// TestFlight download chain: install metadata -> CDN fetch -> transport unwrap ->
-/// applezip -> SINF splice -> finished encrypted IPA.
-///
-/// The heavy lifting (stream decipher, AES members, archive rewrite) is the native
-/// implementation in AppleAuth, reached through `TestFlightClient` / `StoreSupport`,
-/// which is the same code path the reference probe uses. Everything here is staging,
-/// verification and logging; the product stays an *encrypted* IPA (cryptid=1).
 public enum TFDownload {
 
     public struct Report: Sendable {
@@ -25,7 +18,6 @@ public enum TFDownload {
         public var output: URL
     }
 
-    /// Context envelope the native client expects (not the authenticate body).
     public static func envelope(dsid: String, headers: [String: String],
                                 storeCookies: [String: String], udid: String) throws -> Data {
         let payload: [String: Any] = [
@@ -51,7 +43,6 @@ public enum TFDownload {
         return value
     }
 
-    /// Read-only path to `<Documents>/TestFlight/<bundle>` (never creates directories on disk).
     public static func directoryURL(bundle: String) -> URL? {
         guard let safe = try? safeSegment(bundle),
               let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -61,7 +52,6 @@ public enum TFDownload {
             .appendingPathComponent(safe, isDirectory: true)
     }
 
-    /// Bundle-level directory; products live one level deeper, per build.
     public static func directory(bundle: String) throws -> URL {
         let safe = try safeSegment(bundle)
         let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
@@ -72,7 +62,6 @@ public enum TFDownload {
         return root
     }
 
-    /// `<bundle>/<buildId>/` — the same bundle downloaded twice cannot overwrite the first.
     public static func buildDirectory(bundle: String, buildID: String) throws -> URL {
         let safeBuild = try safeSegment(buildID, fallback: "unknown")
         let root = try directory(bundle: bundle)
@@ -81,8 +70,6 @@ public enum TFDownload {
         return root
     }
 
-
-    /// Small sidecar so a directory can be identified without unpacking the IPA.
     static func writeProductMeta(directory: URL, bundle: String, buildID: String,
                                  versionLabel: String?, bytes: Int, platform: String? = nil) {
         var payload: [String: Any] = [
@@ -118,8 +105,6 @@ public enum TFDownload {
         try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: work) }
 
-        // 1) install metadata: supplied by the caller when the build was selected
-        // explicitly (the only reliable way to pair appId with buildId).
         let metadataData: Data
         if let metadata {
             metadataData = metadata
@@ -134,8 +119,6 @@ public enum TFDownload {
             log("install: metadata " + String(metadataData.count) + " B")
         }
 
-        // Keep only non-sensitive display metadata (`data.framework`) alongside the product;
-        // never persist `dpInfo`, `sinf`, or signed CDN URLs in the Files-shared Documents folder.
         if let sanitized = sanitizedDisplayMetadata(from: metadataData) {
             try? sanitized.write(to: root.appendingPathComponent("metadata.json"), options: .atomic)
         }
@@ -155,8 +138,6 @@ public enum TFDownload {
             + (dpInfo.map { String($0.count) + " B" } ?? "null")
             + " size=" + (declaredSize.map(String.init) ?? "-"))
 
-        // 2) CDN download: fresh, then resume, then one full retry. A rotated URL means the
-        //    accessKey expired, which only a fresh download can survive.
         if handle.isPaused {
             try await handle.waitWhilePaused()
             if handle.isCancelled { throw TFError.cancelled }
@@ -186,9 +167,6 @@ public enum TFDownload {
         }
         stage?("verifying")
 
-        // 3) transport -> applezip, when the metadata supplies a dpInfo. A build whose
-        //    metadata has `dpInfo: null` (variant compressionMethod DEFLATE) ships a plain
-        //    zip over CDN, so the file itself is already the archive.
         let appleZipBytes: Int
         let base: URL
         var baseMembers = 0
@@ -236,10 +214,6 @@ public enum TFDownload {
             }
         }
 
-        // 5) SINF splice. A TestFlight package ships `SC_Info/Manifest.plist` plus the
-        //    supf/supp blobs but *no* `.sinf`; the encrypted image cannot install without it,
-        //    and `CodeResources` lists `SC_Info/*.sinf` as excluded, so adding it keeps the
-        //    signature valid. Only skip when a `.sinf` is really there.
         let shippedSinf = TFSINF.members(ipa: base).filter {
             $0.contains("/SC_Info/") && $0.hasSuffix(".sinf")
         }
@@ -258,7 +232,6 @@ public enum TFDownload {
             log("sinf: skipped (unencrypted build without SC_Info)")
         }
         let addedSinfCount = sinf.addedCount
-        // Recount instead of trusting the installer's own tally.
         let finalMembers = TFSINF.memberCount(ipa: base)
         log("sinf: after install members " + String(finalMembers)
             + " (base " + String(baseMembers) + " + " + String(addedSinfCount) + ")")
@@ -272,7 +245,6 @@ public enum TFDownload {
             throw TFError.cancelled
         }
 
-        // 6) hard validation: a written file is not proof of a correct download.
         let output = root.appendingPathComponent(bundle + ".ipa")
         try? FileManager.default.removeItem(at: output)
         try FileManager.default.moveItem(at: base, to: output)
@@ -305,7 +277,6 @@ public enum TFDownload {
                       encryptedImages: encryptedImages, clearImages: clearImages,
                       sinfPaths: sinf.paths, sinfSizes: sinf.sizes, output: output)
     }
-
 
     static func iTunesMetadataPlist(metadata: Data, bundle: String, version: String?) -> Data? {
         var title = bundle
@@ -359,8 +330,6 @@ public enum TFDownload {
         return try? PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
     }
 
-    /// Hard checks after assembly. Any mismatch deletes the product: a file on disk is not
-    /// evidence that the right archive came down.
     static func validate(output: URL, bundle: String, transportBytes: Int, declaredSize: Int?,
                          baseMembers: Int, addedSinfCount: Int,
                          normalizedEncryptedImages: Int = 0,
@@ -378,7 +347,6 @@ public enum TFDownload {
             throw TFError.malformed("产物 bundle 与请求不一致")
         }
         let members = TFSINF.memberCount(ipa: output)
-        // Relative assertion: the archive grew by exactly the newly added SINF members.
         guard members == baseMembers + addedSinfCount else {
             dumpPackages(metadata: metadata, log: log)
             throw TFError.malformed("成员数 " + String(members) + " != base " + String(baseMembers)
@@ -417,8 +385,6 @@ public enum TFDownload {
         }
     }
 
-    /// Strips sensitive fields (`dpInfo`, `sinf`, signed CDN `url`/`packages`) from `installMetadata`,
-    /// preserving only `data.framework` needed for localized `displayName` / `testNotes`.
     static func sanitizedDisplayMetadata(from data: Data) -> Data? {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         let payload = (root["data"] as? [String: Any]) ?? root
@@ -438,8 +404,6 @@ public enum TFDownload {
                                            options: [.sortedKeys])
     }
 
-    /// Prints the metadata `packages` tree keys and non-secret metrics only (never logs
-    /// raw `dpInfo`, `sinf`, or signed CDN query strings).
     static func dumpPackages(metadata: Data, log: @escaping @Sendable (String) -> Void) {
         guard let root = try? JSONSerialization.jsonObject(with: metadata) as? [String: Any] else { return }
         let payload = (root["data"] as? [String: Any]) ?? root
@@ -471,11 +435,6 @@ public enum TFDownload {
         }
     }
 
-    // MARK: helpers
-
-    /// The native client signs its own calls, but it must carry the same Store identity
-    /// headers the session was created with — without `X-Apple-AMD-M` the install POST
-    /// answers `500 {"data":null,"error":null}` with no explanation.
     static func options(headers: [String: String]) -> TestFlightOptions {
         var merged = headers
         merged["User-Agent"] = TFConstants.storeUserAgent
@@ -496,15 +455,11 @@ public enum TFDownload {
             let path = request.url?.path ?? "/"
             log("  request " + (request.httpMethod ?? "GET") + " " + host + path
                 + " -> " + String(status) + ", " + String(data.count) + " B")
-            // Shape check for the install POST: Apple answers a bare 500 when the body is
-            // missing keys, so the key list (never the values) is worth logging.
             if request.httpMethod == "POST", let body = request.httpBody,
                let object = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any] {
                 log("    body " + String(body.count) + " B keys "
                     + object.keys.sorted().joined(separator: ","))
             }
-            // A failure body is the only description Apple gives for a 5xx; it is short and
-            // carries no credentials, so it is worth showing (truncated).
             if status >= 400, !data.isEmpty {
                 let text = String(decoding: data.prefix(200), as: UTF8.self)
                     .replacingOccurrences(of: "\n", with: " ")
@@ -518,10 +473,6 @@ public enum TFDownload {
         }
     }
 
-    /// Deterministically extracts a coherent `(url, dpInfo, packageSize)` tuple from install
-    /// metadata. When `packages` contains multiple variants (e.g. `full` and thinned builds),
-    /// reads all three fields from the same chosen package dictionary instead of mixing fields
-    /// across arbitrary dictionary iteration order.
     static func walkMetadata(_ data: Data, url: inout String?, dpInfo: inout Data?, size: inout Int?,
                              log: (@Sendable (String) -> Void)? = nil) {
         guard let root = try? JSONSerialization.jsonObject(with: data) else { return }
@@ -545,7 +496,6 @@ public enum TFDownload {
             return nil
         }
 
-        // 1) Prefer coherent extraction from `data.packages.<variant>` (choosing `full` first).
         if let rootDict = root as? [String: Any] {
             let payload = (rootDict["data"] as? [String: Any]) ?? rootDict
             let payloadTrail = (rootDict["data"] as? [String: Any]) != nil ? "/data" : ""
@@ -571,7 +521,6 @@ public enum TFDownload {
             }
         }
 
-        // 2) Fallback: deterministic sorted-key walk for flat or non-standard metadata layouts.
         func walk(_ node: Any, _ trail: String) {
             if let dictionary = node as? [String: Any] {
                 let hasURLHere: Bool = {

@@ -320,7 +320,7 @@
 				D5A1B2C3D4E5F60718293012 /* XCLocalSwiftPackageReference "Zsign" */,
 				9B589897381099888265D01D /* XCLocalSwiftPackageReference "Vendor/AppleAuth" */,
 				BC3A2481B613E932AD09F8D2 /* XCLocalSwiftPackageReference "Vendor/ZIPFoundation" */,
-				D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */,
+				D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "Vendor/GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 851FD9602E578774002136BA /* Products */;
@@ -546,7 +546,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.8.0;
+				MARKETING_VERSION = 2.8.1;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -607,7 +607,7 @@
 					"$(PROJECT_DIR)/APP/Resources",
 					"$(PROJECT_DIR)/APP",
 				);
-				MARKETING_VERSION = 2.8.0;
+				MARKETING_VERSION = 2.8.1;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -634,7 +634,7 @@
 				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = APPWidget/Info.plist;
@@ -644,7 +644,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App.APPWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -666,7 +666,7 @@
 				CODE_SIGN_ENTITLEMENTS = APPWidget/APPWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = APPWidget/Info.plist;
@@ -676,7 +676,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pxx917144686.App.APPWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -734,7 +734,7 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Zsign;
 		};
-		D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */ = {
+		D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "Vendor/GRDB.swift" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Vendor/GRDB.swift;
 		};
@@ -808,7 +808,7 @@
 		};
 		D6A1B2C3D4E5F60718293002 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "GRDB.swift" */;
+			package = D6A1B2C3D4E5F60718293003 /* XCLocalSwiftPackageReference "Vendor/GRDB.swift" */;
 			productName = GRDB;
 		};
 		E2BFBE6BCBC4081A86D24867 /* SRP */ = {

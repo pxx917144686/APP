@@ -1,7 +1,5 @@
 import Foundation
 
-/// Products live at `Documents/TestFlight/<bundle>/<buildId>/<bundle>.ipa`, so two builds of
-/// the same app can coexist. This type is the only place that knows the layout.
 public enum TFProducts {
 
     public struct Product {
@@ -13,13 +11,10 @@ public enum TFProducts {
         public let downloadedAt: Date?
     }
 
-    /// Newest product for a bundle: numeric buildId first, `legacy` last.
     public static func newest(bundle: String) -> Product? {
         all(bundle: bundle).first
     }
 
-    /// Newest product matching a specific platform (for `"ios"`, also accepts legacy products
-    /// whose `product.json` predates the `platform` field).
     public static func newest(bundle: String, matchingPlatform platform: String) -> Product? {
         let target = platform.lowercased()
         return all(bundle: bundle).first { product in
@@ -30,7 +25,6 @@ public enum TFProducts {
         }
     }
 
-    /// Product for a specific `buildID` inside `<bundle>/<buildID>/`.
     public static func product(bundle: String, buildID: String) -> Product? {
         guard !buildID.isEmpty else { return newest(bundle: bundle) }
         return all(bundle: bundle).first { $0.buildID == buildID }
@@ -66,8 +60,6 @@ public enum TFProducts {
         return payload
     }
 
-    /// One-time: a product sitting directly in `<bundle>/` moves into `<bundle>/legacy/`.
-    /// Runs on every launch and is a no-op once done.
     @discardableResult
     public static func migrateFlatLayout() -> Int {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -78,7 +70,6 @@ public enum TFProducts {
             let bundleDir = root.appendingPathComponent(bundle, isDirectory: true)
             let flat = bundleDir.appendingPathComponent(bundle + ".ipa")
             guard FileManager.default.fileExists(atPath: flat.path) else {
-                // Prune empty ghost directories created by earlier builds.
                 if let contents = try? FileManager.default.contentsOfDirectory(atPath: bundleDir.path),
                    contents.isEmpty {
                     try? FileManager.default.removeItem(at: bundleDir)

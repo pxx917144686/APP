@@ -1,39 +1,24 @@
 import Foundation
 
-/// Constants decoded from the TestFlight binary. Values, not secrets.
 public enum TFConstants {
-    /// The `User-Agent` TestFlight itself sends; the service rejects unknown agents.
     public static let agent =
         "Oasis/4.3.0 OasisBuild/659.1 iOS/17.6.1 model/iPhone12,1 hwp/t8030 build/21G101 (6; dt:189) AMS/1 TSE/0"
-    /// Salt mixed into `X-Session-Digest`: SHA1(sessionId + requestId + dsid + salt).
     public static let sessionSalt =
         "LWzxL71nAUJTbK9X54DDQU5KC6oTcBFuibEJXIZglPRkhCSmh68PREebiNDZXctOKXpIcOfbnndI2FjMveKfRYOLPfYFRTgua1vg"
     public static let host = "https://testflight.apple.com"
-    /// TestFlight's own client info; only the final TestFlight calls use it.
     public static let clientInfo = "OS=27.0.1;model=iPhone16,1;hwp=t8130"
 
-    // GSA/Store identity. These are the values the working probe presents, and the
-    // reason they matter: Apple's auth host routes by client info and User-Agent, so
-    // an invented pair makes the provisioning lookup answer `404 · 0 B`.
     public static let macModel = "MacBookPro18,3"
     public static let macOSVersion = "15.6"
     public static let macOSBuild = "24G84"
     public static let authClientInfo =
         "<MacBookPro18,3> <macOS;15.6;24G84> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
-    /// The Store/TestFlight user agent for the auth calls.
-    ///
-    /// Apple routes GrandSlam by user agent: presenting a TestFlight-on-iOS agent
-    /// (`Oasis/…`) together with a Mac client-info is treated as an illegal pair and the
-    /// SRP step answers `503`. This is the exact line a working Store login sends.
     public static let storeUserAgent =
         "MacAppStore/3.0 TestFlight/4.4.0 (Macintosh; OS X 15.6; 24G84) AppleWebKit/8614.3.7.1.5 AMS/1 (dt:1)"
 
-    /// Platform and client-app name are part of the routing contract, not decoration.
     public static let storePlatform = "iphone"
     public static let clientAppName = "akd"
 
-    /// Diagnostic override for the invariant self-test: `--tf-bad-ua` presents a wrong
-    /// user agent on purpose so the check can be seen failing instead of being trusted.
     public static var effectiveUserAgent: String {
         #if DEBUG
         return ProcessInfo.processInfo.arguments.contains("--tf-bad-ua")
@@ -45,21 +30,12 @@ public enum TFConstants {
     }
 }
 
-/// The Store context that `testflight.apple.com` accepts.
-///
-/// `StoreSession.testFlightContext(hardware20:headers:)` builds this natively; it is
-/// posted verbatim, so the layer never has to re-derive Apple's schema.
 public struct TFContext: Sendable {
     public let body: Data
     public let hardware20: Data
     public let storefront: String
-    /// Identity headers that must ride on the authenticate request itself.
     public let headers: [String: String]
-    /// The Store DSID this context belongs to; carried explicitly because the body may
-    /// hold it as a JSON number, which a string-only read would miss.
     public let dsid: String
-    /// The cookie set sent to the service; the download chain needs the same values in
-    /// the envelope form the native client takes.
     public let storeCookies: [String: String]
 
     public init(body: Data, hardware20: Data, storefront: String,
@@ -73,7 +49,6 @@ public struct TFContext: Sendable {
         self.storeCookies = storeCookies
     }
 
-    /// Field names only: logging must never expose a token or cookie value.
     public var summary: String {
         let names = (try? JSONSerialization.jsonObject(with: body))
             .flatMap { $0 as? [String: Any] }?.keys.sorted() ?? []
@@ -81,15 +56,10 @@ public struct TFContext: Sendable {
     }
 }
 
-/// An authenticated TestFlight session. `id` is a bearer-like value: never logged.
 public struct TFSession: Sendable {
     public let id: String
     public let dsid: String
-    /// TestFlight's own account id (a UUID), which is *not* the Store dsid and is what
-    /// the catalog path is keyed by.
     public let account: String
-    /// Store identity headers (AMD-M, store front, device model) that every signed call
-    /// also has to carry.
     public let baseHeaders: [String: String]
     public init(id: String, dsid: String, account: String = "", baseHeaders: [String: String] = [:]) {
         self.id = id
@@ -105,8 +75,6 @@ public struct TFBetaApp: Identifiable, Sendable, Hashable, Codable {
     public let bundleID: String
     public let latestVersion: String?
     public let buildCount: Int
-    /// Templated icon URL (`…/{w}x{h}{c}.{f}`) from `build.iconSet`; nil for TestFlight-only
-    /// apps that publish no icon of their own.
     public let iconTemplate: String?
     public let developerName: String?
 
@@ -122,17 +90,13 @@ public struct TFBetaApp: Identifiable, Sendable, Hashable, Codable {
     }
 }
 
-/// Official TestFlight availability bucket matching the three sections on the home list:
-/// `正在测试` (`testing`), `不兼容` (`incompatible`), and `以前测试过` (`previouslyTested`).
 public enum TFAppAvailability: String, Codable, Equatable, Sendable {
     case testing
     case incompatible
     case previouslyTested
 }
 
-/// Active per-platform build returned inside `/v3/accounts/{account}/apps/{appID}` `platforms[]`.
 public struct TFPlatformBuild: Codable, Equatable, Hashable, Sendable, Identifiable {
-    /// Canonical platform key from Apple TestFlight API: `"ios"`, `"appletvos"`, `"xros"`, `"osx"`, `"watchos"`.
     public let platform: String
     public let buildID: String
     public let shortVersion: String
@@ -167,13 +131,11 @@ public struct TFPlatformBuild: Codable, Equatable, Hashable, Sendable, Identifia
 
     public var id: String { "\(platform):\(buildID)" }
 
-    /// Platforms whose TestFlight package is an IPA (`Payload/<App>.app`).
     public var supportsIPADownload: Bool {
         let p = platform.lowercased()
         return (p == "ios" && !isWatchOnly) || p == "appletvos" || p == "xros"
     }
 
-    /// True when the build can run natively on iPhone (not Apple TV, visionOS, macOS, watchOS, or iPad-only).
     public var isNativeToPhone: Bool {
         platform.lowercased() == "ios" && !isIPadOnly && !isWatchOnly
     }
@@ -208,8 +170,6 @@ public struct TFPlatformBuild: Codable, Equatable, Hashable, Sendable, Identifia
     }
 }
 
-/// Rich per-app metadata from `/v3/accounts/{account}/apps/{appID}`, matching the official
-/// TestFlight list subtitle (`1.1.0 (931) · 90 天`) and detail page fields.
 public struct TFAppDetail: Codable, Equatable, Sendable {
     public let appID: String
     public var name: String
@@ -231,9 +191,7 @@ public struct TFAppDetail: Codable, Equatable, Sendable {
     public let supportedDevices: [String]?
     public let termsOfService: String?
     public let availability: TFAppAvailability?
-    /// Human platform names when `availability == .incompatible` (e.g. `["macOS"]`, `["Apple TV"]`).
     public let incompatiblePlatforms: [String]?
-    /// All active platform builds advertised for this app (e.g. iOS + Apple TV + visionOS + macOS).
     public let platformBuilds: [TFPlatformBuild]?
     public let iconAsset: TFIconAsset?
     public let cachedAt: Date
@@ -276,12 +234,10 @@ public struct TFAppDetail: Codable, Equatable, Sendable {
         self.cachedAt = cachedAt
     }
 
-    /// Downloadable IPA platform builds (native iOS first, then iPad, Apple TV, visionOS).
     public var downloadablePlatformBuilds: [TFPlatformBuild] {
         (platformBuilds ?? []).filter(\.supportsIPADownload)
     }
 
-    /// Strips Apple's internal `|<teamId>|<flag>` suffix from developer names when present.
     public static func cleanDeveloperName(_ raw: String) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let pipe = trimmed.firstIndex(of: "|") else { return trimmed }
@@ -289,7 +245,6 @@ public struct TFAppDetail: Codable, Equatable, Sendable {
         return head.isEmpty ? trimmed : head
     }
 
-    /// Version string in TestFlight style, e.g. `1.1.0 (931)`.
     public var versionSummary: String {
         if !shortVersion.isEmpty && !buildVersion.isEmpty {
             return "\(shortVersion) (\(buildVersion))"
@@ -297,7 +252,6 @@ public struct TFAppDetail: Codable, Equatable, Sendable {
         return !shortVersion.isEmpty ? shortVersion : buildVersion
     }
 
-    /// Remaining test days derived from `expirationISO` (clamped at 0 when expired).
     public func daysRemaining(from now: Date = Date()) -> Int? {
         guard let expiration = Self.parseISO8601(expirationISO) else { return nil }
         let seconds = expiration.timeIntervalSince(now)
@@ -336,9 +290,8 @@ public enum TFError: LocalizedError {
     case noAccount
     case cancelled
     case appUnavailable(String)
-    /// All transfer attempts failed: the UI words this as a network interruption.
+    case noBuild(String)
     case networkLost
-    /// A routing value differs from what Apple expects; names item, expected and actual.
     case invariant(String, expected: String, actual: String)
 
     public var errorDescription: String? {
@@ -359,6 +312,8 @@ public enum TFError: LocalizedError {
             return "请先在「账号」里登录 Apple 账号，TestFlight 会复用它"
         case let .appUnavailable(name):
             return "\(name) 在 TestFlight 上已失效或不可用，无法下载"
+        case let .noBuild(platform):
+            return "没有可用的 \(platform) build"
         case .cancelled:
             return "已取消"
         case .networkLost:
@@ -369,10 +324,6 @@ public enum TFError: LocalizedError {
     }
 }
 
-/// Per-install device identity (40 hex chars).
-///
-/// Persisted because TestFlight binds a session to the device it was created on;
-/// it is not a credential and never leaves the app except as part of the context.
 public enum TFIdentity {
     private static let key = "tf.hardware20"
 
@@ -388,10 +339,6 @@ public enum TFIdentity {
     }
 }
 
-/// Append-only log for the TestFlight page.
-///
-/// Every line goes through `TFRedaction`, so a stray cookie or token can never
-/// reach the file even if a caller formats one by accident.
 public enum TFLog {
     private static let lock = NSLock()
     private static let maxBytes = 256 * 1024
@@ -403,7 +350,6 @@ public enum TFLog {
         return f
     }()
 
-    /// Self-contained on purpose: the kit must not reach into app types.
     public static var fileURL: URL {
         let base = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)

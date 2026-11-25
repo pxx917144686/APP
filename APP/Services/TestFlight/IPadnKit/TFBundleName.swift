@@ -1,13 +1,5 @@
 import Foundation
 
-// 已实现，等待包列表接线：PackagesView 显示本地化名（iTunesMetadata.itemName > lproj > Info.plist）时调用。
-
-/// The name a bundle shows on device, independent of the storefront's `name` field.
-///
-/// Order: `iTunesMetadata.plist["itemName"]` → `*.lproj/InfoPlist.strings` for the running
-/// language → root `Info.plist` (`CFBundleDisplayName`, then `CFBundleName`).
-/// A localized value wins; a pure-ASCII fallback never overwrites a non-ASCII name that we
-/// already have (that is how "快手" degraded to "Kwai").
 public enum TFBundleName {
 
     public struct Resolution {
@@ -15,7 +7,6 @@ public enum TFBundleName {
         public let source: String
     }
 
-    /// Reads the metadata straight out of the IPA; no unzip to disk.
     public static func resolve(ipa: URL, language: String? = nil) -> Resolution? {
         guard let archive = try? ZipReader(url: ipa) else { return nil }
         let lang = language ?? Locale.preferredLanguages.first ?? "en"
@@ -32,7 +23,6 @@ public enum TFBundleName {
         }) else { return nil }
         let prefix = String(appPath.dropLast("Info.plist".count))
 
-        // Localized strings: the language itself first, then a prefix match (zh-Hans → zh).
         let candidates = archive.entire.filter {
             $0.hasPrefix(prefix) && $0.hasSuffix(".lproj/InfoPlist.strings")
         }
@@ -74,7 +64,6 @@ public enum TFBundleName {
         return 3
     }
 
-    /// True when `new` is a degradation of `old`: ASCII fallback replacing a localized name.
     public static func isDegraded(_ new: String, over old: String) -> Bool {
         guard !old.isEmpty else { return false }
         let newIsASCII = new.allSatisfy { $0.isASCII }

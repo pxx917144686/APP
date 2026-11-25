@@ -1,19 +1,8 @@
 import Foundation
 
-/// Per-account cookie jars, stored as files and swapped on account switch.
-///
-/// Why not `HTTPCookieStorage.shared` alone: the shared jar is process-wide and keyed by
-/// domain, so two Apple accounts overwrite each other, and a context built from it can
-/// carry account A's `mz_at_ssl` into account B's request (401 / code 102). The snapshot is
-/// written from the auth response's own `Set-Cookie` pairs, never re-read from the shared
-/// jar, and `cookies(for:)` is the only read point.
 public enum AccountScope {
     private static let lock = NSLock()
 
-    /// Group container when the signing grants one, otherwise the app's own
-    /// Application Support (never Documents: a downgraded jar must not sit next to
-    /// user-visible files), created with the strongest protection level that still works
-    /// before first unlock.
     public static func directory() -> URL {
         if let resolved = SigningCapability.resolved {
             let root = resolved.url.appendingPathComponent("tf-jars", isDirectory: true)
@@ -64,7 +53,6 @@ public enum AccountScope {
         return directory().appendingPathComponent(safe + ".json")
     }
 
-    /// Persists the cookies of one account, taken from the auth response's `Set-Cookie`.
     public static func store(dsid: String, wireCookies: [String: String],
                              log: @escaping @Sendable (String) -> Void) throws {
         guard let safe = safeDsid(dsid) else {
@@ -81,7 +69,6 @@ public enum AccountScope {
         log("jar: 写入 …" + String(safe.suffix(4)) + " 快照 " + String(data.count) + " B（" + String(cookies.count) + " 个 cookie）")
     }
 
-    /// The only read point. Missing snapshot means "this account never logged in here".
     public static func cookies(for dsid: String) -> [String: String]? {
         guard let safe = safeDsid(dsid) else { return nil }
         lock.lock()
@@ -93,7 +80,6 @@ public enum AccountScope {
         return payload
     }
 
-    /// Deletes a persisted jar snapshot when an account or TestFlight session is removed.
     public static func remove(dsid: String) {
         guard let safe = safeDsid(dsid) else { return }
         lock.lock()
@@ -101,13 +87,10 @@ public enum AccountScope {
         try? FileManager.default.removeItem(at: snapshotURL(dsid: safe))
     }
 
-    /// Clears all Apple cookies from `HTTPCookieStorage.shared` to prevent cross-account leakage.
     public static func clearSharedCookies() {
         clearAppleCookies()
     }
 
-    /// Switch: write the current jar back to its own snapshot, clear the shared jar, then
-    /// load the target account's snapshot into it.
     public static func activate(dsid: String, currentDsid: String? = nil,
                                 log: @escaping @Sendable (String) -> Void) {
         if let currentDsid, currentDsid != dsid {
@@ -123,7 +106,6 @@ public enum AccountScope {
         inventory(log: log)
     }
 
-    /// Snapshot of whatever the shared jar holds right now, for this dsid only.
     public static func writeBack(dsid: String) {
         guard let safe = safeDsid(dsid) else { return }
         var cookies: [String: String] = [:]
@@ -161,8 +143,6 @@ public enum AccountScope {
             }
         }
     }
-    /// Names and sizes only, so a regression can prove the other account's snapshot did not
-    /// move. Cookie values never appear.
     public static func inventory(log: @escaping @Sendable (String) -> Void) {
         let manager = FileManager.default
         guard let names = try? manager.contentsOfDirectory(atPath: directory().path) else { return }

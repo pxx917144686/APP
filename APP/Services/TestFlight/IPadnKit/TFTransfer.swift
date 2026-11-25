@@ -1,6 +1,5 @@
 import Foundation
 
-/// Cancellation and pause/resume handle shared between the UI and the transfer in flight.
 public final class TFTransferHandle: @unchecked Sendable {
     private let lock = NSLock()
     private var task: URLSessionDownloadTask?
@@ -128,10 +127,6 @@ private struct TFTransferPausedError: Error {
 
 private struct TFBackgroundFallbackError: Error {}
 
-/// Process-wide background `URLSession` hub for TestFlight CDN downloads so transfers
-/// keep running in `nsurlsessiond` when iPadn moves to the background or the screen locks.
-/// Falls back cleanly to foreground `TFNet.configuration()` on `-3000` / permission errors
-/// or when direct proxy-bypass mode is requested.
 final class TFBackgroundSessionHub: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
     static let shared = TFBackgroundSessionHub()
 
@@ -176,10 +171,8 @@ final class TFBackgroundSessionHub: NSObject, URLSessionDownloadDelegate, @unche
         }
         let idle = attempts.isEmpty
         lock.unlock()
-        // Touch the lazy session so iOS delivers pending delegate events for this identifier.
         _ = session
         if idle {
-            // Wait for urlSessionDidFinishEvents(forBackgroundURLSession:) from UIKit/CFNetwork.
         }
     }
 
@@ -242,12 +235,6 @@ final class TFBackgroundSessionHub: NSObject, URLSessionDownloadDelegate, @unche
     }
 }
 
-/// CDN transfer with progress, pause/resume, cancellation and a bounded retry policy.
-///
-/// Attempt 1 is fresh. On failure the caller re-reads the install metadata: a changed URL
-/// means the `accessKey` rotated, so the file is fetched again from scratch; an unchanged
-/// URL falls back to `resumeData`. One more full retry is allowed, then the failure is final.
-/// User-initiated pauses suspend using `resumeData` without consuming retry attempts.
 public enum TFTransfer {
 
     public static var backgroundSessionIdentifier: String {
@@ -388,7 +375,6 @@ public enum TFTransfer {
     }
 }
 
-/// One download attempt with `didWriteData` progress, throttled to 4 Hz.
 final class TFTransferAttempt: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
     private let handle: TFTransferHandle
     private let progress: @Sendable (Int64, Int64) -> Void
@@ -443,8 +429,6 @@ final class TFTransferAttempt: NSObject, URLSessionDownloadDelegate, @unchecked 
         }
     }
 
-    // MARK: URLSessionDownloadDelegate (foreground session)
-
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
                     didWriteData bytesWritten: Int64, totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64) {
@@ -459,8 +443,6 @@ final class TFTransferAttempt: NSObject, URLSessionDownloadDelegate, @unchecked 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         handleDidComplete(error: error)
     }
-
-    // MARK: Shared delegate handlers
 
     func handleDidWriteData(totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let now = CFAbsoluteTimeGetCurrent()

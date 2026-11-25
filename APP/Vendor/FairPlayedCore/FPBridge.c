@@ -162,8 +162,6 @@ int fp_decrypt_tree(const char *appDir,
     return done;
 }
 
-// 探针：能申请到可执行匿名内存，说明签名带 dynamic-codesigning / JIT 权限。
-// mremap_encrypted 需要的正是同一个权限，缺了它就只会返回 ENOMEM。
 int fp_exec_memory_available(void) {
     void *p = mmap(NULL, 0x4000, PROT_READ | PROT_WRITE | PROT_EXEC,
                    MAP_PRIVATE | MAP_ANON, -1, 0);

@@ -34,6 +34,8 @@ enum IslandDeepLink {
         let name = items.first(where: { $0.name == "name" })?.value ?? ""
 
         switch url.host {
+        case "app":
+            break
         case "tab":
             openTab(named: name)
         case "detail":

@@ -1,10 +1,6 @@
 import Foundation
 import Compression
 
-// TFBundleName 的只读 ZIP 依赖，同为待接线状态；不要单独删除。
-
-/// Read-only ZIP access by name. Products are already on disk, so entries are located
-/// through the central directory and inflated on demand instead of extracting the archive.
 struct ZipReader {
     let entire: [String]
     private let url: URL
@@ -15,7 +11,6 @@ struct ZipReader {
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
         let size = try handle.seekToEnd()
-        // Locate the end-of-central-directory record within the last 64 KiB.
         let tailLength = min(65_536, Int(size))
         try handle.seek(toOffset: UInt64(Int(size) - tailLength))
         let tail = try handle.read(upToCount: tailLength) ?? Data()
@@ -63,8 +58,6 @@ struct ZipReader {
         entries[name]?.size
     }
 
-    /// Reads at most `maxBytes` uncompressed bytes from the start of a member without
-    /// inflating multi-hundred-MB game executables into memory.
     func prefix(named name: String, maxBytes: Int) -> Data? {
         guard maxBytes > 0, let entry = entries[name], entry.size > 0, entry.compressed >= 0 else { return nil }
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
@@ -153,7 +146,6 @@ struct ZipReader {
 }
 
 private extension Data {
-    /// Raw DEFLATE (zip entries carry no zlib header), inflated with the system API.
     func inflate(to size: Int) -> Data? {
         guard size > 0, size <= 8 << 20 else { return nil }
         var output = Data(count: size)

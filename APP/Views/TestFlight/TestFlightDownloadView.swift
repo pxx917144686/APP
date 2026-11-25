@@ -428,7 +428,7 @@ struct TestFlightDownloadView: View {
     }
 
     private var catalogActions: some View {
-        VStack(spacing: 12) {
+        Group {
             if let url = manager.lastOutput {
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
@@ -448,23 +448,9 @@ struct TestFlightDownloadView: View {
                         .fill(Color(.secondarySystemBackground))
                 )
                 .padding(.horizontal, 16)
+                .padding(.top, 20)
             }
-
-            Button(role: .destructive) {
-                Task { await manager.clearSession() }
-            } label: {
-                Text("testflight_clear".localized)
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.red.opacity(0.1))
-                    )
-            }
-            .padding(.horizontal, 16)
         }
-        .padding(.top, 20)
     }
 
     private func displayResult(for app: TestFlightApp) -> iTunesSearchResult {
@@ -573,6 +559,7 @@ private struct TestFlightBuildsSheet: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         appHeader
+                        historyHint
                         content
                     }
                     .padding(.horizontal, 16)
@@ -643,6 +630,27 @@ private struct TestFlightBuildsSheet: View {
         )
     }
 
+    private var historyHint: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.top, 1)
+
+            Text("testflight_history_limit".localized)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemGroupedBackground).opacity(0.55))
+        )
+    }
+
     @ViewBuilder
     private var content: some View {
         if manager.isLoadingBuilds && manager.builds.isEmpty {
@@ -708,7 +716,7 @@ private struct TestFlightBuildsSheet: View {
                     .buttonStyle(.borderedProminent)
                     .tint(themeManager.accentColor)
                     .controlSize(.small)
-                    .disabled(build.isExpired || manager.downloadingBuildID == build.id)
+                    .disabled(build.isExpired || !build.platform.lowercased().contains("ios") || manager.downloadingBuildID == build.id)
                 }
             }
 

@@ -6,10 +6,6 @@ enum FairPlayDecryptor {
         AppGroupDiagnostics.candidateGroups()
     }
 
-    /// 工作目录顺序（按历史验证过的优先级）：
-    /// 1. App Group 容器 —— 之前一直能解密，FairPlay 在这里工作正常
-    /// 2. Documents —— 同样受数据保护，group 不可写时用
-    /// 3. Caches —— 最后兜底（实测这里 mremap_encrypted 会返回 ENOMEM，尽量别用）
     static func containerURL() -> URL? {
         if let group = firstWritableGroup() { return group }
 
@@ -29,7 +25,6 @@ enum FairPlayDecryptor {
         return dir
     }
 
-    /// 拿到第一个真的能写进去的 group 容器。
     private static func firstWritableGroup() -> URL? {
         let manager = FileManager.default
         for group in candidateGroups {
@@ -179,7 +174,6 @@ enum FairPlayDecryptor {
         var skippedCount: Int32 = 0
         let box = EventBox(emit, cancelToken: cancelToken)
         box.onFailureDetail = { detail in
-            // 只留第一条，够定位就行
             if Self.firstFailure == nil { Self.firstFailure = detail }
         }
 
@@ -306,12 +300,9 @@ enum FairPlayDecryptor {
         }
     }
 
-    /// C 核心每次尝试都会打一行 "R/cryptid1: sig=.. mmap=.. mremap=.. pages=x/y ..."，
-    /// 留下第一条失败的，用来告诉用户为什么没解出来。
     nonisolated(unsafe) private static var firstFailure: String?
 
     private static func humanReason(for raw: String) -> String {
-        // 探针能申请到可执行内存 = 签名带 dynamic-codesigning，权限没问题
         let hasEntitlement = fp_exec_memory_available() == 1
         guard !raw.isEmpty else {
             return hasEntitlement ? "" : "dc_reason_entitlement".localized
@@ -320,7 +311,6 @@ enum FairPlayDecryptor {
         if !hasEntitlement {
             return "dc_reason_entitlement".localized
         }
-        // 有权限却被拒（EPERM）：是这个包的 FairPlay 票据对不上当前设备/账号
         if lower.contains("errno 1 ") || lower.contains("operation not permitted") {
             return "dc_reason_ticket".localized
         }

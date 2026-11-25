@@ -1,7 +1,6 @@
 import Foundation
 import UIKit
 
-/// 查 GitHub Releases 上有没有比当前更新的版本。
 @MainActor
 final class UpdateChecker: ObservableObject {
     static let shared = UpdateChecker()
@@ -16,8 +15,6 @@ final class UpdateChecker: ObservableObject {
 
     @Published private(set) var state: State = .idle
 
-    /// 不用 GitHub API（未认证会被 403 限流），直接跟随 releases/latest 的 302，
-    /// 从落地地址 /releases/tag/<version> 里读版本号。
     private let latestPage = URL(string: "https://github.com/pxx917144686/APP/releases/latest")!
     private let releasesPage = URL(string: "https://github.com/pxx917144686/APP/releases")!
 
@@ -65,7 +62,6 @@ final class UpdateChecker: ObservableObject {
         }
     }
 
-    /// 按点分数字比较：2.7.10 > 2.7.9。
     static func isNewer(_ candidate: String, than current: String) -> Bool {
         func parts(_ v: String) -> [Int] {
             v.split(separator: ".").map { Int($0.prefix(while: \.isNumber)) ?? 0 }

@@ -156,7 +156,6 @@ struct ImagePicker: UIViewControllerRepresentable {
         .environmentObject(ThemeManager.shared)
 }
 
-
 private extension UIImage {
     func normalizedUpright() -> UIImage {
         guard imageOrientation != .up else { return self }

@@ -1,11 +1,5 @@
 import Foundation
 
-/// One diagnostic look at `gsa.apple.com` before the login chain starts.
-///
-/// It never gates anything: a failed probe is logged, surfaced on the page, and the
-/// login still runs. The point is to tell "the network is intercepting Apple's auth
-/// host" apart from "the account is limited", which look identical in the login log
-/// (both end as `Provisioning HTTP 404`).
 public struct TFGSAProbe: Sendable {
     public let host: String
     public let addresses: [String]
@@ -33,10 +27,6 @@ public struct TFGSAProbe: Sendable {
         self.sanityStatus = sanityStatus
     }
 
-    /// Reachability is judged by a plain Apple HTTPS fetch, not by the GSA lookup:
-    /// Apple answers a bare `GET …/GsService2/lookup` with `404 · 0 B` even on a
-    /// perfectly working network, because the provisioning call must carry the
-    /// Store identity's User-Agent. Only a broken network fails `sanity`.
     public var reachable: Bool {
         guard fakeIP == nil else { return false }
         if let sanityStatus { return sanityStatus == 200 }
@@ -52,7 +42,6 @@ public struct TFGSAProbe: Sendable {
         return "网络异常"
     }
 
-    /// Exactly one line so it reads well in the log next to the login steps.
     public var summary: String {
         let dns = addresses.isEmpty ? "解析失败" : addresses.joined(separator: ",")
         let fake = fakeIP == nil ? "" : " fake-ip✓"
@@ -69,8 +58,6 @@ public enum TFGSA {
     public static let url = URL(string: "https://gsa.apple.com/grandslam/GsService2/lookup")!
     static let fakeRange = "198.18.0.0/15"
 
-    /// One request through a chosen session shape. Used to bisect "the network is
-    /// fine but our client is wrong" without touching any business logic.
     struct Attempt: Sendable {
         let label: String
         let urlString: String
@@ -88,9 +75,6 @@ public enum TFGSA {
         }
     }
 
-    /// Who answered: Akamai sends `server: AkamaiGHost` plus `x-cache`/`via`, while a
-    /// local stub sends almost nothing. This is what separates "Apple said 404" from
-    /// "something inside the app answered".
     static func responseNote(_ response: HTTPURLResponse?) -> String {
         guard let response else { return "" }
         var parts: [String] = []
@@ -102,19 +86,14 @@ public enum TFGSA {
         return parts.joined(separator: " ")
     }
 
-    /// The A/B control the investigation calls for: `URLSession.shared`, a literal
-    /// URL, no custom headers, no proxy, no cache policy.
     static func control() async -> Attempt {
         await attempt(label: "control(shared,literal)", session: .shared, extraHeaders: false)
     }
 
-    /// The real path after the fix: shared session, our headers.
     static func probeRequest() async -> Attempt {
         await attempt(label: "probe(shared+headers)", session: .shared, extraHeaders: true)
     }
 
-    /// Kept as a regression marker only: this is what used to run, and it answers
-    /// `404 · 0 B` on this device while the shared session answers `200`.
     static func ephemeralWithHeaders() async -> Attempt {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
@@ -154,22 +133,17 @@ public enum TFGSA {
         }
     }
 
-    /// Control target that must answer 200 from anywhere with working HTTPS; if this
-    /// one passes while GSA 404s, the block is specific to Apple's auth host.
     static let sanityURL = URL(string: "https://www.apple.com/library/test/success.html")!
 
     static func sanity() async -> Attempt {
         await attempt(label: "sanity(apple.com)", session: .shared, extraHeaders: false, url: sanityURL)
     }
 
-    /// Probe once, and retry at most once, and only when nothing answered at all.
     public static func probe(log: @escaping @Sendable (String) -> Void) async -> TFGSAProbe {
         let started = Date()
         let addresses = resolve("gsa.apple.com")
         let fake = addresses.first(where: isFakeIP)
 
-        // Reference requests. A bare GET on the GSA lookup is expected to 404; the
-        // network verdict comes from the plain Apple fetch instead.
         let control = await control()
         log(control.line)
         let sanity = await sanity()
@@ -233,7 +207,6 @@ public enum TFGSA {
         return addresses
     }
 
-    /// True for 198.18.0.0/15 — the benchmarking range proxies use for fake-IP DNS.
     public static func isFakeIP(_ text: String) -> Bool {
         let parts = text.split(separator: ".").compactMap { Int($0) }
         guard parts.count == 4 else { return false }
