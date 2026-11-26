@@ -773,6 +773,7 @@ public enum TFAPI {
             if let value = headers[key] { request.setValue(value, forHTTPHeaderField: key) }
         }
         let summary = "install: app " + appID + " build " + buildID
+            + " storefront " + shortFront
             + " body " + String(body.count) + " B kbsync " + String(kbsync.count)
             + " B dsid ..." + String(dsid.suffix(4))
         log(summary)
@@ -780,6 +781,7 @@ public enum TFAPI {
         let (data, response) = try await send(request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? -1
         guard (200..<300).contains(status) else {
+            log("install: HTTP \(status) app \(appID) build \(buildID) storefront \(shortFront)")
             let text = String(decoding: data.prefix(200), as: UTF8.self)
             if status == 404 || status == 410 {
                 throw TFError.appUnavailable(appID)

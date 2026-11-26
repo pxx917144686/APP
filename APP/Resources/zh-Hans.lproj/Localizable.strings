@@ -1094,6 +1094,8 @@
 "testflight_manual" = "手动 Bundle ID";
 "testflight_manual_placeholder" = "com.example.app";
 "testflight_download" = "下载";
+"testflight_download_region" = "下载地区";
+"testflight_account_region" = "账号地区";
 "testflight_downloaded" = "已下载";
 "testflight_downloaded_format" = "%@ · %.1f MB";
 "testflight_howto" = "如何获取会话";

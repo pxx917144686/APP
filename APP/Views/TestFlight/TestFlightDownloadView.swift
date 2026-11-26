@@ -549,6 +549,7 @@ private struct TestFlightBuildsSheet: View {
     var onDownloadStarted: (() -> Void)? = nil
     @EnvironmentObject private var themeManager: ThemeManager
     @Environment(\.dismiss) private var dismiss
+    @State private var downloadRegion: String?
 
     var body: some View {
         NavigationStack {
@@ -559,6 +560,7 @@ private struct TestFlightBuildsSheet: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         appHeader
+                        downloadRegionPicker
                         historyHint
                         content
                     }
@@ -581,6 +583,27 @@ private struct TestFlightBuildsSheet: View {
                 await manager.loadBuilds(for: app)
             }
         }
+    }
+
+    private var downloadRegionPicker: some View {
+        HStack {
+            Label("testflight_download_region".localized, systemImage: "globe")
+            Spacer()
+            Picker("testflight_download_region".localized, selection: $downloadRegion) {
+                Text("testflight_account_region".localized).tag(nil as String?)
+                ForEach(["CN", "US", "HK", "JP", "KR"], id: \.self) { region in
+                    Text(RegionNames.localizedName(for: region)).tag(Optional(region))
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .tint(themeManager.accentColor)
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var appHeader: some View {
@@ -707,7 +730,7 @@ private struct TestFlightBuildsSheet: View {
                         .frame(width: 32, height: 28)
                 } else {
                     Button {
-                        manager.startDownloadFromUI(app: app, buildID: build.id)
+                        manager.startDownloadFromUI(app: app, buildID: build.id, downloadRegion: downloadRegion)
                         onDownloadStarted?()
                     } label: {
                         Label("testflight_download".localized, systemImage: "arrow.down.circle.fill")
