@@ -810,6 +810,12 @@ struct DownloadArchive {
 }
 
 class DownloadRuntime: ObservableObject {
+    struct SpeedSample: Sendable {
+        let time: TimeInterval
+        let bytes: Int64
+        let speed: Double
+    }
+
     @Published var status: DownloadStatus = DownloadStatus.waiting
     @Published var progress: Progress = Progress(totalUnitCount: 0)
     @Published var speed: String = ""
@@ -820,6 +826,10 @@ class DownloadRuntime: ObservableObject {
     @Published var totalBytes: Int64 = 0
     @Published var bytesPerSecond: Double = 0
     @Published var remainingTime: TimeInterval = 0
+
+    private(set) var speedSamples: [SpeedSample] = []
+    private var lastSampleTime: TimeInterval = 0
+    private var lastSampleBytes: Int64 = 0
 
     init() {
 
@@ -836,8 +846,29 @@ class DownloadRuntime: ObservableObject {
         totalBytes = total
         bytesPerSecond = speed
         self.remainingTime = remainingTime
+        recordSample(completed: completed, speed: speed)
 
         objectWillChange.send()
+    }
+
+    private func recordSample(completed: Int64, speed: Double) {
+        let now = Date().timeIntervalSince1970
+        if lastSampleTime == 0 {
+            lastSampleTime = now
+            lastSampleBytes = completed
+            speedSamples.append(SpeedSample(time: now, bytes: completed, speed: max(0, speed)))
+            return
+        }
+        let dt = now - lastSampleTime
+        guard dt >= 0.2 || completed != lastSampleBytes else { return }
+        let delta = Double(max(0, completed - lastSampleBytes))
+        let measured = dt > 0 ? delta / dt : 0
+        speedSamples.append(SpeedSample(time: now, bytes: completed, speed: speed > 0 ? speed : measured))
+        lastSampleTime = now
+        lastSampleBytes = completed
+        if speedSamples.count > 4000 {
+            speedSamples.removeFirst(speedSamples.count - 4000)
+        }
     }
 }
 

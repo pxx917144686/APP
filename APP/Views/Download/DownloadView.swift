@@ -1552,7 +1552,7 @@ struct DownloadCardView: SwiftUI.View {
             topSection
 
             if shouldShowProgress {
-                WindowsTransferProgressView(
+                KLineDownloadProgressView(
                     progress: progress,
                     status: status,
                     error: request.runtime.error,
@@ -1561,7 +1561,7 @@ struct DownloadCardView: SwiftUI.View {
                     completedBytes: request.runtime.completedBytes,
                     totalBytes: request.runtime.totalBytes,
                     remainingTime: request.runtime.remainingTime,
-                    isPreview: isPreview
+                    samples: request.runtime.speedSamples
                 )
             }
 
