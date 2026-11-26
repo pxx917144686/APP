@@ -1091,77 +1091,194 @@ struct DownloadView: SwiftUI.View {
     }
 
     private var decryptFullScreenMenu: some SwiftUI.View {
-        VStack(spacing: 0) {
-            Button {
-                SoundEffects.play(.tap)
-                showFloatingDecryptMenu = false
-                activeSheet = .decryptedFiles
-            } label: {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            themeManager.accentColor.opacity(0.22),
-                            themeManager.accentColor.opacity(0.06)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    VStack(spacing: 14) {
-                        Image(systemName: "folder.fill")
-                            .font(.system(size: 42, weight: .semibold))
-                        Text("decrypted_files_title".localized)
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
-                        if decryptedCount > 0 {
-                            Text(decryptedCount > 99 ? "99+" : "\(decryptedCount)")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .frame(minWidth: 24, minHeight: 24)
-                                .background(Capsule().fill(Color.red))
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                        showFloatingDecryptMenu = false
+                    }
+                }
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                HStack(spacing: Spacing.xl) {
+                    decryptOptionCard(
+                        title: "decrypted_files_title".localized,
+                        badge: decryptedCount,
+                        preview: { decryptedFilesPreview },
+                        action: {
+                            showFloatingDecryptMenu = false
+                            activeSheet = .decryptedFiles
                         }
-                    }
-                    .foregroundStyle(themeManager.accentColor)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            Rectangle()
-                .fill(Color.white.opacity(0.16))
-                .frame(height: 0.5)
-
-            Button {
-                SoundEffects.play(.tap)
-                showFloatingDecryptMenu = false
-                activeSheet = .decryptTool
-            } label: {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            themeManager.accentColor.opacity(0.06),
-                            themeManager.accentColor.opacity(0.22)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
                     )
-                    VStack(spacing: 14) {
-                        Image(systemName: "lock.open.fill")
-                            .font(.system(size: 42, weight: .semibold))
-                        Text("tab_decrypt".localized)
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
-                    }
-                    .foregroundStyle(themeManager.accentColor)
+
+                    decryptOptionCard(
+                        title: "tab_decrypt".localized,
+                        badge: 0,
+                        preview: { decryptToolPreview },
+                        action: {
+                            showFloatingDecryptMenu = false
+                            activeSheet = .decryptTool
+                        }
+                    )
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Rectangle())
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, 80)
             }
-            .buttonStyle(.plain)
         }
-        .background(Color.black.opacity(0.72).ignoresSafeArea())
-        .ignoresSafeArea()
         .transition(.opacity)
-        .animation(.easeInOut(duration: 0.22), value: showFloatingDecryptMenu)
+    }
+
+    private func decryptOptionCard<Preview: SwiftUI.View>(title: String, badge: Int,
+                                                          @ViewBuilder preview: () -> Preview,
+                                                          action: @escaping () -> Void) -> some SwiftUI.View {
+        Button {
+            SoundEffects.play(.tap)
+            action()
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: 10) {
+                    preview()
+                        .frame(width: 88, height: 60)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            themeManager.accentColor.opacity(0.16),
+                                            themeManager.accentColor.opacity(0.05)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(themeManager.accentColor.opacity(0.22), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                    Text(title)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(themeManager.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 14)
+                .frame(width: 112)
+                .background(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [themeManager.surfacePrimary, themeManager.surfaceSecondary],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    themeManager.accentColor,
+                                    themeManager.accentColor.opacity(0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+                .shadow(color: themeManager.accentColor.opacity(0.35), radius: 14, x: 0, y: 8)
+
+                if badge > 0 {
+                    Text(badge > 99 ? "99+" : "\(badge)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .frame(minWidth: 20, minHeight: 20)
+                        .background(
+                            Capsule()
+                                .fill(Color.red)
+                                .overlay(Capsule().strokeBorder(Color.white, lineWidth: 1.5))
+                        )
+                        .offset(x: 6, y: -6)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var decryptedFilesPreview: some SwiftUI.View {
+        ZStack(alignment: .bottomTrailing) {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(0..<3, id: \.self) { index in
+                    HStack(spacing: 4) {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(themeManager.accentColor.opacity(0.55))
+                            .frame(width: 11, height: 11)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Capsule()
+                                .fill(Color.primary.opacity(0.30))
+                                .frame(width: 34 - CGFloat(index) * 7, height: 3)
+                            Capsule()
+                                .fill(Color.primary.opacity(0.14))
+                                .frame(width: 24 - CGFloat(index) * 5, height: 2)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .padding(.leading, 8)
+            .padding(.vertical, 7)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color.green)
+                .background(Circle().fill(Color(.systemBackground)).frame(width: 14, height: 14))
+                .padding(.trailing, 6)
+                .padding(.bottom, 5)
+        }
+    }
+
+    private var decryptToolPreview: some SwiftUI.View {
+        ZStack(alignment: .trailing) {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(0..<4, id: \.self) { index in
+                    Capsule()
+                        .fill(themeManager.accentColor.opacity(index == 3 ? 0.16 : 0.30))
+                        .frame(width: index == 3 ? 26 : 40 - CGFloat(index) * 5, height: 3)
+                }
+            }
+            .padding(.leading, 9)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Image(systemName: "lock.open.fill")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle().fill(
+                        LinearGradient(
+                            colors: [
+                                themeManager.accentColor,
+                                themeManager.accentColor.opacity(0.65)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                )
+                .shadow(color: themeManager.accentColor.opacity(0.45), radius: 6, x: 0, y: 2)
+                .padding(.trailing, 7)
+        }
     }
 
     private var decryptedFilesButton: some SwiftUI.View {
