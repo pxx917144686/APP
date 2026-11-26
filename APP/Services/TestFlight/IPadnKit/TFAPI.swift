@@ -804,7 +804,7 @@ public enum TFAPI {
         request.setValue(digest(sessionID: session.id, requestID: requestID, dsid: session.dsid),
                          forHTTPHeaderField: "X-Session-Digest")
         for key in ["X-Apple-AMD-M", "X-Apple-Store-Front", "X-Apple-Device-Model", "X-Apple-TA-Device"] {
-            if let value = session.baseHeaders[key] { request.setValue(value, forHTTPHeaderField: key) }
+            if let value = session.effectiveHeaders[key] { request.setValue(value, forHTTPHeaderField: key) }
         }
         log("GET " + (request.url?.absoluteString ?? path) + " · digest ok · req "
             + String(requestID.count) + " hex")

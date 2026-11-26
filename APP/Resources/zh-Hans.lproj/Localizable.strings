@@ -1139,6 +1139,9 @@
 "testflight_history_limit" = "TestFlight 只向测试者提供当前活跃的 build，过期版本无法回溯。这里的列表 = 当前各平台 build + 本机下载过的 build，下载越多列表越长。";
 "testflight_expired" = "已过期";
 "testflight_bundle_missing" = "无法解析这个 App 的 Bundle ID。";
+"testflight_region" = "地区";
+"testflight_region_auto" = "跟随账号";
+"testflight_region_hint" = "国区 TestFlight 账号无法安装未上架国区 App Store 的 App（如 Surge）。在这里选择该 App 所在的商店地区即可安装。";
 "sign_install_failed_message" = "签名已完成，但安装没有完成。请检查证书和描述文件后重试。";
 "sign_install_handed_off" = "已交给 iOS，请查看主屏幕。";
 "testflight_builds_unit" = "个 Build";

@@ -1139,6 +1139,9 @@
 "testflight_history_limit" = "TestFlight only exposes the currently active build to testers; expired builds cannot be retrieved. This list = active builds for every platform + builds downloaded on this device, and grows as you download more.";
 "testflight_expired" = "Expired";
 "testflight_bundle_missing" = "Could not resolve this app's bundle ID.";
+"testflight_region" = "Region";
+"testflight_region_auto" = "Account Region";
+"testflight_region_hint" = "A China-region TestFlight account cannot install apps that are not listed in the China App Store (e.g. Surge). Pick the app's store region here to install it.";
 "sign_install_failed_message" = "Signing completed, but installation did not finish. Check the certificate and provisioning profile, then try again.";
 "sign_install_handed_off" = "Delivered to iOS. Check the Home Screen.";
 "testflight_builds_unit" = "Builds";

@@ -61,11 +61,21 @@ public struct TFSession: Sendable {
     public let dsid: String
     public let account: String
     public let baseHeaders: [String: String]
-    public init(id: String, dsid: String, account: String = "", baseHeaders: [String: String] = [:]) {
+    public let storefrontOverride: String?
+    public init(id: String, dsid: String, account: String = "", baseHeaders: [String: String] = [:],
+                storefrontOverride: String? = nil) {
         self.id = id
         self.dsid = dsid
         self.account = account
         self.baseHeaders = baseHeaders
+        self.storefrontOverride = storefrontOverride
+    }
+
+    public var effectiveHeaders: [String: String] {
+        guard let storefrontOverride, !storefrontOverride.isEmpty else { return baseHeaders }
+        var headers = baseHeaders
+        headers["X-Apple-Store-Front"] = storefrontOverride
+        return headers
     }
 }
 

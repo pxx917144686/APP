@@ -18,6 +18,7 @@ struct TestFlightDownloadView: View {
     @State private var didAutoLogin = false
     @State private var metadata: [String: iTunesSearchResult] = [:]
     @State private var showAccounts = false
+    @State private var showRegions = false
     @State private var showTFAppsWeb = false
 
     var body: some View {
@@ -351,6 +352,10 @@ struct TestFlightDownloadView: View {
             TestFlightAccountsSheet(manager: manager)
                 .environmentObject(themeManager)
         }
+        .sheet(isPresented: $showRegions) {
+            TestFlightRegionSheet(manager: manager)
+                .environmentObject(themeManager)
+        }
         .task {
             await manager.revalidateCatalog()
         }
@@ -377,6 +382,34 @@ struct TestFlightDownloadView: View {
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(.secondary)
                 }
+            }
+            .buttonStyle(.plain)
+            Button {
+                showRegions = true
+            } label: {
+                HStack(spacing: 4) {
+                    if manager.preferredRegion.isEmpty {
+                        Image(systemName: "globe")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text("testflight_region_auto".localized)
+                            .font(.system(size: 11, weight: .semibold))
+                            .lineLimit(1)
+                    } else {
+                        Text(CountryHelpers.flag(country: manager.preferredRegion))
+                            .font(.system(size: 11))
+                        Text(RegionNames.localizedName(for: manager.preferredRegion))
+                            .font(.system(size: 11, weight: .semibold))
+                            .lineLimit(1)
+                    }
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 8, weight: .semibold))
+                }
+                .foregroundStyle(themeManager.accentColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule().fill(themeManager.accentColor.opacity(0.12))
+                )
             }
             .buttonStyle(.plain)
             Spacer(minLength: 8)
@@ -498,7 +531,7 @@ struct TestFlightDownloadView: View {
 
     private func loadMetadata(for app: TestFlightApp) async {
         guard metadata[app.id] == nil else { return }
-        let region = AppStore.this.selectedAccount?.countryCode ?? "US"
+        let region = manager.metadataRegion
         let result: iTunesSearchResult?
         if !app.bundle.isEmpty {
             result = try? await iTunesClient.shared.lookup(bundleIdentifier: app.bundle, countryCode: region)
@@ -753,6 +786,92 @@ private struct TestFlightBuildsSheet: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.05), lineWidth: 0.5)
         )
+    }
+}
+
+private struct TestFlightRegionSheet: View {
+    @ObservedObject var manager: TestFlightDownloadManager
+    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var query = ""
+
+    private var allRegions: [String] {
+        Apple.storeFrontCodeMap.keys.sorted {
+            CountryHelpers.countryName($0).localizedStandardCompare(CountryHelpers.countryName($1)) == .orderedAscending
+        }
+    }
+
+    private var filteredRegions: [String] {
+        let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !keyword.isEmpty else { return allRegions }
+        return allRegions.filter { code in
+            code.localizedCaseInsensitiveContains(keyword)
+                || CountryHelpers.countryName(code).localizedCaseInsensitiveContains(keyword)
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            List {
+                Section {
+                    Button {
+                        manager.setPreferredRegion("")
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "globe")
+                                .foregroundStyle(themeManager.accentColor)
+                            Text("testflight_region_auto".localized)
+                                .foregroundStyle(.primary)
+                            Spacer(minLength: 6)
+                            if manager.preferredRegion.isEmpty {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(themeManager.accentColor)
+                            }
+                        }
+                    }
+                } footer: {
+                    Text("testflight_region_hint".localized)
+                }
+
+                Section {
+                    ForEach(filteredRegions, id: \.self) { code in
+                        Button {
+                            manager.setPreferredRegion(code)
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 10) {
+                                Text(CountryHelpers.flag(country: code))
+                                Text(CountryHelpers.countryName(code))
+                                    .foregroundStyle(.primary)
+                                Spacer(minLength: 6)
+                                Text(code)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                if code == manager.preferredRegion {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(themeManager.accentColor)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("testflight_region".localized)
+                }
+            }
+            .listStyle(.insetGrouped)
+            .searchable(text: $query)
+            .navigationTitle("testflight_region".localized)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("back".localized) {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 

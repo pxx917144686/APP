@@ -60,6 +60,7 @@ final class TestFlightDownloadManager: ObservableObject {
     @Published private(set) var appleIDLoggedIn = false
     @Published private(set) var accountEmail: String?
     @Published private(set) var settingsAccountEmail: String?
+    @Published private(set) var preferredRegion: String = ""
     @Published var requiresCode = false
     @Published var error: String?
 
@@ -92,6 +93,47 @@ final class TestFlightDownloadManager: ObservableObject {
     }
 
     private var lastAccountKey: String { "testflight_last_account" }
+    private var regionKey: String { "testflight_region" }
+
+    var effectiveStorefront: String? {
+        let code = preferredRegion.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard code.count == 2, let front = Apple.storeFrontCodeMap[code] else { return nil }
+        return "\(front)-1,29"
+    }
+
+    var metadataRegion: String {
+        preferredRegion.isEmpty ? (AppStore.this.selectedAccount?.countryCode ?? "US") : preferredRegion
+    }
+
+    private func storeFront(for context: TFContext) -> String {
+        effectiveStorefront ?? context.storefront
+    }
+
+    private func storeHeaders(for context: TFContext) -> [String: String] {
+        guard let override = effectiveStorefront else { return context.headers }
+        var headers = context.headers
+        headers["X-Apple-Store-Front"] = override
+        return headers
+    }
+
+    func setPreferredRegion(_ code: String) {
+        let normalized = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let resolved = Apple.storeFrontCodeMap[normalized] != nil ? normalized : ""
+        guard resolved != preferredRegion else { return }
+        preferredRegion = resolved
+        UserDefaults.standard.set(resolved, forKey: regionKey)
+        applyRegionToSession()
+        transport.logStage("region: \(resolved.isEmpty ? "auto" : resolved) front \(effectiveStorefront ?? "-")")
+        if imported, tfSession != nil {
+            Task { await refreshCatalog() }
+        }
+    }
+
+    private func applyRegionToSession() {
+        guard let session = tfSession else { return }
+        tfSession = TFSession(id: session.id, dsid: session.dsid, account: session.account,
+                              baseHeaders: session.baseHeaders, storefrontOverride: effectiveStorefront)
+    }
 
     @Published private(set) var savedAccountEmails: [String] = []
 
@@ -128,6 +170,7 @@ final class TestFlightDownloadManager: ObservableObject {
     }
 
     private init() {
+        preferredRegion = UserDefaults.standard.string(forKey: "testflight_region") ?? ""
         Task { await restoreSession() }
     }
 
@@ -185,6 +228,7 @@ final class TestFlightDownloadManager: ObservableObject {
                 self?.transport.logStage(line)
             })
             tfSession = session
+            applyRegionToSession()
             transport.logStage("iPadn TestFlight session ready")
             if let features = try? StoreSupport.features() {
                 transport.logStage("AppleAuth features: \(features)")
@@ -556,7 +600,7 @@ final class TestFlightDownloadManager: ObservableObject {
         let missing = apps.filter { $0.iconURL == nil && $0.appID != nil }
         guard !missing.isEmpty else { return }
         let transport = self.transport
-        let region = AppStore.this.selectedAccount?.countryCode ?? "us"
+        let region = metadataRegion
         let log: @Sendable (String) -> Void = { line in transport.logStage(line) }
 
         var resolved: [(id: String, url: URL)] = []
@@ -683,8 +727,8 @@ final class TestFlightDownloadManager: ObservableObject {
         do {
             let metadata = try await TFAPI.installMetadata(
                 appID: appID, buildID: resolvedBuild, session: session,
-                headers: context.headers, dsid: context.dsid,
-                hardware20: context.hardware20, storefront: context.storefront,
+                headers: storeHeaders(for: context), dsid: context.dsid,
+                hardware20: context.hardware20, storefront: storeFront(for: context),
                 log: log
             )
             let report = try TFSINF.install(metadata: metadata, ipa: url)
@@ -780,12 +824,12 @@ final class TestFlightDownloadManager: ObservableObject {
                 }
                 let metadata = try await TFAPI.installMetadata(
                     appID: appID, buildID: buildID, session: session,
-                    headers: context.headers, dsid: context.dsid,
-                    hardware20: context.hardware20, storefront: context.storefront,
+                    headers: storeHeaders(for: context), dsid: context.dsid,
+                    hardware20: context.hardware20, storefront: storeFront(for: context),
                     log: log
                 )
                 let envelope = try TFDownload.envelope(
-                    dsid: context.dsid, headers: context.headers,
+                    dsid: context.dsid, headers: storeHeaders(for: context),
                     storeCookies: context.storeCookies,
                     udid: context.hardware20.map { String(format: "%02x", $0) }.joined()
                 )
@@ -793,7 +837,7 @@ final class TestFlightDownloadManager: ObservableObject {
                     bundle: bundle,
                     context: envelope,
                     hardware20: context.hardware20,
-                    identity: context.headers,
+                    identity: storeHeaders(for: context),
                     metadata: metadata,
                     buildID: buildID,
                     versionLabel: versionLabel ?? app.version,
@@ -1181,7 +1225,8 @@ final class TestFlightDownloadManager: ObservableObject {
                               storefront: stored.storefront, headers: stored.headers,
                               dsid: stored.dsid, storeCookies: stored.storeCookies)
         tfSession = TFSession(id: stored.sessionID, dsid: stored.sessionDsid,
-                              account: stored.account, baseHeaders: stored.baseHeaders)
+                              account: stored.account, baseHeaders: stored.baseHeaders,
+                              storefrontOverride: effectiveStorefront)
         apps = stored.apps
         normalizeIconURLs()
     }
