@@ -314,33 +314,42 @@ struct DecryptConsoleView: SwiftUI.View {
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 0.5)
                 ScrollViewReader { proxy in
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(alignment: .leading, spacing: 3) {
-                            if log.lines.isEmpty {
-                                Text("dc_console_waiting".localized)
-                                    .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(.white.opacity(0.35))
-                            } else {
-                                ForEach(Array(log.lines.suffix(400))) { line in
-                                    logRow(line)
+                    ZStack(alignment: .top) {
+                        ScrollView(.vertical, showsIndicators: false) {
+                            LazyVStack(alignment: .leading, spacing: 3) {
+                                if log.lines.isEmpty {
+                                    Text("dc_console_waiting".localized)
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundStyle(.white.opacity(0.35))
+                                } else {
+                                    ForEach(Array(log.lines.suffix(400))) { line in
+                                        logRow(line)
+                                    }
                                 }
+                                Color.clear
+                                    .frame(height: 1)
+                                    .id(bottomAnchor)
                             }
-                            Color.clear
-                                .frame(height: 1)
-                                .id(bottomAnchor)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                    }
-                    .frame(height: 170)
-                    .onChange(of: log.lines.count) { _, _ in
-                        withAnimation(.easeOut(duration: 0.12)) {
+                        .frame(height: 170)
+                        .onChange(of: log.lines.count) { _, _ in
+                            withAnimation(.easeOut(duration: 0.12)) {
+                                proxy.scrollTo(bottomAnchor, anchor: .bottom)
+                            }
+                        }
+                        .onAppear {
                             proxy.scrollTo(bottomAnchor, anchor: .bottom)
                         }
+
+                        if log.lines.count > 12 {
+                            ProgressiveBlur(edge: .top, maxRadius: 3)
+                                .frame(height: 20)
+                                .allowsHitTesting(false)
+                        }
                     }
-                    .onAppear {
-                        proxy.scrollTo(bottomAnchor, anchor: .bottom)
-                    }
+                    .frame(height: 170)
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }

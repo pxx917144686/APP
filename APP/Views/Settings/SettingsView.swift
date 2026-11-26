@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showingIconError = false
     @State private var iconErrorMessage = ""
     @State private var showAccountSheet = false
+    @State private var showUpdateSheet = false
     @State private var showingColorPicker = false
     @State private var cachedIcons: [AltIcon] = []
 
@@ -132,6 +133,10 @@ struct SettingsView: View {
             .sheet(isPresented: $showAccountSheet) {
                 AccountSheetView()
                     .environmentObject(appStore)
+                    .environmentObject(themeManager)
+            }
+            .sheet(isPresented: $showUpdateSheet) {
+                UpdateSheet(checker: updateChecker)
                     .environmentObject(themeManager)
             }
             .alert("icon_set_success".localized, isPresented: $showingIconSuccess) {
@@ -278,11 +283,15 @@ extension SettingsView {
 
     private var updateRow: some View {
         Button {
-            switch updateChecker.state {
-            case .available(_, let url):
-                UIApplication.shared.open(url)
-            default:
-                Task { await updateChecker.check() }
+            if updateChecker.hasUpdate {
+                showUpdateSheet = true
+                return
+            }
+            Task {
+                await updateChecker.check()
+                if updateChecker.hasUpdate {
+                    showUpdateSheet = true
+                }
             }
         } label: {
             HStack(spacing: 12) {

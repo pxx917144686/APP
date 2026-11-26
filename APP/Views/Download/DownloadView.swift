@@ -1434,57 +1434,111 @@ struct DownloadView: SwiftUI.View {
     }
 
     private var emptyStateView: some SwiftUI.View {
-        VStack(spacing: 32) {
+        VStack(spacing: 22) {
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [themeManager.accentColor.opacity(0.16), .clear],
+                            center: .center,
+                            startRadius: 8,
+                            endRadius: 68
+                        )
+                    )
+                    .frame(width: 136, height: 136)
 
-            Image("AppLogo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 120, height: 120)
-                .cornerRadius(24)
-                .scaleEffect(animateCards ? 1.1 : 1)
-                .opacity(animateCards ? 1 : 0.7)
-                .animation(
-                    Animation.easeInOut(duration: 2).repeatForever(autoreverses: true),
-                    value: animateCards
-                )
+                Circle()
+                    .strokeBorder(
+                        AngularGradient(
+                            colors: [
+                                themeManager.accentColor.opacity(0),
+                                themeManager.accentColor.opacity(0.55),
+                                themeManager.accentColor.opacity(0)
+                            ],
+                            center: .center
+                        ),
+                        lineWidth: 1.2
+                    )
+                    .frame(width: 132, height: 132)
+                    .rotationEffect(.degrees(animateCards ? 360 : 0))
+                    .animation(
+                        .linear(duration: 9).repeatForever(autoreverses: false),
+                        value: animateCards
+                    )
 
-            Button(action: {
+                Circle()
+                    .strokeBorder(themeManager.accentColor.opacity(0.10), lineWidth: 0.8)
+                    .frame(width: 104, height: 104)
+
+                Image(systemName: "arrow.down.app.fill")
+                    .font(.system(size: 44, weight: .regular))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.65)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .scaleEffect(animateCards ? 1.04 : 0.96)
+                    .animation(
+                        .easeInOut(duration: 2.4).repeatForever(autoreverses: true),
+                        value: animateCards
+                    )
+            }
+
+            VStack(spacing: 6) {
+                Text("no_downloads".localized)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
+
+                Text("no_downloads_hint".localized)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 40)
+            }
+
+            Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                guard let url = URL(string: "https://github.com/pxx917144686"),
-                    UIApplication.shared.canOpenURL(url) else {
-                    return
+                TabRouter.shared.select(.search)
+            } label: {
+                HStack(spacing: 7) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("no_downloads_action".localized)
+                        .font(.system(size: 15, weight: .semibold))
                 }
-                UIApplication.shared.open(url)
-            }) {
-                HStack(spacing: 16) {
-                    Text("view_source_code".localized)
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(.white)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .foregroundColor(.white)
+                .padding(.horizontal, 22)
+                .padding(.vertical, 11)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    Capsule(style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.75)],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                                colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.78)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
                         )
                 )
-                .shadow(color: themeManager.accentColor.opacity(colorScheme == .dark ? 0.5 : 0.3), radius: colorScheme == .dark ? 12 : 8, x: 0, y: 4)
+                .shadow(color: themeManager.accentColor.opacity(colorScheme == .dark ? 0.45 : 0.28), radius: 14, x: 0, y: 6)
             }
             .buttonStyle(ScaleButtonStyle())
 
-            .frame(maxWidth: 200)
-            .padding(.horizontal, 8)
-
-            VStack(spacing: 8) {
-                Text("no_downloads".localized)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(.primary)
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                guard let url = URL(string: "https://github.com/pxx917144686"),
+                      UIApplication.shared.canOpenURL(url) else {
+                    return
+                }
+                UIApplication.shared.open(url)
+            } label: {
+                Text("view_source_code".localized)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
             }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 32)
@@ -1660,14 +1714,16 @@ struct DownloadCardView: SwiftUI.View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(.ultraThinMaterial)
-                .shadow(
-                    color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08),
-                    radius: colorScheme == .dark ? 10 : 6,
-                    x: 0,
-                    y: 2
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.primary.opacity(colorScheme == .dark ? 0.05 : 0.03))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(
+                    Color.primary.opacity(colorScheme == .dark ? 0.07 : 0.05),
+                    lineWidth: 0.5
                 )
+                .allowsHitTesting(false)
         )
         .onAppear {
             loadExistingDecrypted()

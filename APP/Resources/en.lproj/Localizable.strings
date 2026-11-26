@@ -121,6 +121,8 @@
 "download_connections_effective" = "%@ · about %d connections in use (2 MB per segment minimum)";
 "all_start" = "Start All";
 "no_downloads" = "No Downloads";
+"no_downloads_hint" = "Search an app in the store, or import an IPA to get started";
+"no_downloads_action" = "Browse the store";
 
 "account" = "Account";
 "apple_id" = "Apple ID";
@@ -1049,6 +1051,21 @@
 "check_updates" = "Check for Updates";
 "update_latest" = "Up to date";
 "update_failed" = "Check failed, tap to retry";
+"update_title" = "Update Available";
+"update_current_version" = "Current version %@";
+"update_changelog" = "What's New";
+"update_no_notes" = "No release notes for this version";
+"update_download" = "Download Update";
+"update_downloading" = "Downloading %d%%";
+"update_cancel" = "Cancel Download";
+"update_install_trollstore" = "Install via TrollStore";
+"update_go_sign" = "Sign & Install";
+"update_share" = "Share Package";
+"update_view_github" = "View all releases on GitHub";
+"update_trollstore_hint" = "TrollStore installs the update over the current app; the app restarts when it finishes.";
+"update_sign_hint" = "This build cannot overwrite itself. Download the package first, then sign and install it with your certificate on the signing page.";
+"update_downloaded" = "Saved %@ (Files / APP / Updates)";
+"update_install_failed" = "Update failed: %@";
 "dc_reason_eperm" = "This build has no decryption permission: re-sign the app with a developer certificate that carries dynamic-codesigning";
 "dc_reason_pages" = "The kernel refused every page (mremap returned 0 but all pages failed) — usually the same signing permission problem";
 "dc_reason_unchanged" = "The content did not change after decryption: this binary may already be decrypted or malformed";

@@ -89,6 +89,7 @@
 	<array>
 		<string>itms-services</string>
 		<string>itms-apps</string>
+		<string>apple-magnifier</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

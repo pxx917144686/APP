@@ -17,9 +17,8 @@ struct SigningIPACard: SwiftUI.View {
             action: onPick
         ) {
             if isLoading {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .scaleEffect(0.8)
+                HStack(spacing: 10) {
+                    DoubleHelixIndicator(color: accent, amplitude: 6)
                     Text("sign_loading_ipa".localized)
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
@@ -49,22 +48,33 @@ struct SigningIPACard: SwiftUI.View {
                             }
                         }
                         Spacer(minLength: 4)
-                        Menu {
-                            Button(action: onPick) {
-                                Label("sign_from_downloads".localized, systemImage: "arrow.down.circle")
-                            }
-                            Button(action: onImportFiles) {
-                                Label("sign_from_files".localized, systemImage: "doc.badge.plus")
-                            }
-                            Divider()
-                            Button(role: .destructive, action: onClear) {
-                                Label("sign_clear".localized, systemImage: "xmark.circle")
-                            }
+                        Button {
+                            ActionMenuPresenter.shared.present(
+                                ActionMenuRequest(items: [
+                                    ActionMenuItem(
+                                        title: "sign_from_downloads".localized,
+                                        icon: "arrow.down.circle",
+                                        action: onPick
+                                    ),
+                                    ActionMenuItem(
+                                        title: "sign_from_files".localized,
+                                        icon: "doc.badge.plus",
+                                        action: onImportFiles
+                                    ),
+                                    ActionMenuItem(
+                                        title: "sign_clear".localized,
+                                        icon: "xmark.circle",
+                                        role: .destructive,
+                                        action: onClear
+                                    )
+                                ])
+                            )
                         } label: {
                             Image(systemName: "ellipsis.circle.fill")
                                 .font(.system(size: 18))
                                 .foregroundStyle(.secondary)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(11)

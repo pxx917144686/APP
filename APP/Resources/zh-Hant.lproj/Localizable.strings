@@ -121,6 +121,8 @@
 "download_connections_effective" = "%@ · 預計實際使用 %d 條連線（每段至少 2 MB）";
 "all_start" = "全部開始";
 "no_downloads" = "暫無下載";
+"no_downloads_hint" = "去商店搜尋應用，或匯入一個 IPA 開始";
+"no_downloads_action" = "去商店看看";
 
 "account" = "帳戶";
 "apple_id" = "Apple ID";
@@ -1049,6 +1051,21 @@
 "check_updates" = "檢查更新";
 "update_latest" = "已是最新";
 "update_failed" = "檢查失敗，點擊重試";
+"update_title" = "發現新版本";
+"update_current_version" = "目前版本 %@";
+"update_changelog" = "更新內容";
+"update_no_notes" = "此版本未填寫更新說明";
+"update_download" = "下載更新包";
+"update_downloading" = "下載中 %d%%";
+"update_cancel" = "取消下載";
+"update_install_trollstore" = "透過 TrollStore 安裝";
+"update_go_sign" = "去簽名安裝";
+"update_share" = "分享安裝包";
+"update_view_github" = "在 GitHub 查看全部版本";
+"update_trollstore_hint" = "TrollStore 會直接覆蓋安裝，完成後 APP 會自動重新啟動。";
+"update_sign_hint" = "目前環境無法直接覆蓋安裝：先下載更新包，再跳到簽名頁用你的憑證簽名安裝。";
+"update_downloaded" = "已儲存 %@（檔案 App / APP / Updates）";
+"update_install_failed" = "更新失敗：%@";
 "dc_reason_eperm" = "目前簽名沒有解密權限：需要用帶 dynamic-codesigning 的開發者憑證重簽本應用";
 "dc_reason_pages" = "核心拒絕解密任何一頁（mremap 回傳 0 但頁面全失敗），通常仍是簽名權限問題";
 "dc_reason_unchanged" = "解密後內容沒有變化，這個二進位可能本身已解密或結構異常";

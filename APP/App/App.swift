@@ -45,6 +45,7 @@ struct App: SwiftUI.App {
                             languageToggle.toggle()
                         }
                         .appPresentationHost()
+                        .actionMenuHost()
                 } else {
                     LaunchScreenView()
                         .environmentObject(themeManager)
@@ -95,6 +96,12 @@ struct App: SwiftUI.App {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task { @MainActor in
                 _ = UnifiedDownloadManager.shared
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            Task { @MainActor in
+                await UpdateChecker.shared.autoCheckIfNeeded()
             }
         }
 
