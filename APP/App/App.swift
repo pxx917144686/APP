@@ -8,6 +8,7 @@ struct App: SwiftUI.App {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var tabBarStyleManager = TabBarStyleManager.shared
     @StateObject private var languageManager = LanguageManager.shared
+    @Environment(\.scenePhase) private var scenePhase
     @State private var languageToggle = false
     @State private var isAppInitialized = false
 
@@ -52,6 +53,19 @@ struct App: SwiftUI.App {
             .preferredColorScheme(colorScheme)
             .onOpenURL { url in
                 AppDeepLink.handle(url)
+                IslandDeepLink.handle(url)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                switch phase {
+                case .active:
+                    AppPresenceActivityManager.shared.sceneDidBecomeActive()
+                case .inactive:
+                    AppPresenceActivityManager.shared.sceneWillResignActive()
+                case .background:
+                    break
+                @unknown default:
+                    break
+                }
             }
             .onAppear {
                 performDelayedInitialization()

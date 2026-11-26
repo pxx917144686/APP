@@ -49,18 +49,38 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
         guard !isAnyInstalling else { return false }
         isAnyInstalling = true
         currentInstallingRequestId = requestId
+        InstallActivityManager.shared.start(
+            key: IslandTaskKey.install(requestId),
+            title: title.isEmpty ? "install".localized : title,
+            step: "install_stage_preparing".localized
+        )
         return true
     }
 
+    func updateInstallationStep(for requestId: UUID, step: String) {
+        InstallActivityManager.shared.update(key: IslandTaskKey.install(requestId), step: step)
+    }
+
     func finishInstallation() {
+        let pending = currentInstallingRequestId
         isAnyInstalling = false
         currentInstallingRequestId = nil
+        if let pending {
+            InstallActivityManager.shared.finish(
+                key: IslandTaskKey.install(pending),
+                detail: "install_handed_off".localized
+            )
+        }
     }
 
     func finishInstallation(for requestId: UUID) {
         if currentInstallingRequestId == requestId || currentInstallingRequestId == nil {
             isAnyInstalling = false
             currentInstallingRequestId = nil
+            InstallActivityManager.shared.finish(
+                key: IslandTaskKey.install(requestId),
+                detail: "install_handed_off".localized
+            )
         }
     }
 
@@ -69,6 +89,10 @@ class GlobalInstallationManager: ObservableObject, @unchecked Sendable {
             isAnyInstalling = false
             currentInstallingRequestId = nil
         }
+        InstallActivityManager.shared.fail(
+            key: IslandTaskKey.install(requestId),
+            reason: reason
+        )
     }
 }
 
@@ -1529,6 +1553,7 @@ struct DownloadCardView: SwiftUI.View {
     @State private var fileSizeText: String?
     @State private var decryptOutcome: DecryptConsoleOutcome = .idle
     @State private var isConsoleCollapsed = false
+    @State private var showConnectionsSheet = false
     @StateObject private var decryptLog = DecryptLog()
 
     private var progress: Double {
@@ -1658,6 +1683,14 @@ struct DownloadCardView: SwiftUI.View {
         .onDisappear {
             expandedRequestIDs.remove(request.id)
         }
+        .sheet(isPresented: $showConnectionsSheet) {
+            connectionSheet
+        }
+        .onChange(of: showConnectionsSheet) { _, presented in
+            if !presented {
+                UnifiedDownloadManager.shared.saveDownloadTasks()
+            }
+        }
         .id(request.id)
     }
 
@@ -1723,10 +1756,6 @@ struct DownloadCardView: SwiftUI.View {
         request.runtime.progressValue >= 0
     }
 
-    private var connectionOptions: [Int] {
-        [1, 2, 4, 6, 8, 12, 16]
-    }
-
     private var connectionEditable: Bool {
         switch request.runtime.status {
         case .waiting, .failed, .cancelled:
@@ -1736,9 +1765,21 @@ struct DownloadCardView: SwiftUI.View {
         }
     }
 
+    private var connectionLimit: Int {
+        DownloadConnectionSettings.clamp(request.maxConnections)
+    }
+
+    private var connectionDisplay: String {
+        let active = request.runtime.activeConnections
+        if status == .downloading, active > 0 {
+            return "\(active)/\(connectionLimit)"
+        }
+        return "\(connectionLimit)"
+    }
+
     @ViewBuilder
     private var connectionRow: some SwiftUI.View {
-        if request.runtime.status != .completed {
+        if request.runtime.status != .completed, !request.isTestFlight {
             HStack(spacing: 6) {
                 Image(systemName: "bolt.horizontal.circle.fill")
                     .font(.system(size: 11, weight: .semibold))
@@ -1748,22 +1789,11 @@ struct DownloadCardView: SwiftUI.View {
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 4)
                 if connectionEditable {
-                    Menu {
-                        ForEach(connectionOptions, id: \.self) { value in
-                            Button {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                request.maxConnections = value
-                                UnifiedDownloadManager.shared.saveDownloadTasks()
-                            } label: {
-                                if request.maxConnections == value {
-                                    Label("\(value)", systemImage: "checkmark")
-                                } else {
-                                    Text("\(value)")
-                                }
-                            }
-                        }
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        showConnectionsSheet = true
                     } label: {
-                        Text("\(request.maxConnections)")
+                        Text(connectionDisplay)
                             .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
                             .foregroundStyle(themeManager.accentColor)
                             .padding(.horizontal, 8)
@@ -1772,16 +1802,67 @@ struct DownloadCardView: SwiftUI.View {
                                 Capsule().fill(themeManager.accentColor.opacity(0.15))
                             )
                     }
+                    .buttonStyle(.plain)
                 } else {
-                    Text("\(request.maxConnections)")
+                    Text(connectionDisplay)
                         .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(status == .downloading ? themeManager.accentColor : .secondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.primary.opacity(0.06)))
+                        .background(
+                            Capsule().fill(
+                                status == .downloading
+                                    ? themeManager.accentColor.opacity(0.15)
+                                    : Color.primary.opacity(0.06)
+                            )
+                        )
                 }
             }
         }
+    }
+
+    private var connectionSheet: some SwiftUI.View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(spacing: 10) {
+                    Image(systemName: "bolt.horizontal.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(themeManager.accentColor))
+
+                    Text("download_connections".localized)
+                        .font(.system(size: 16))
+                        .foregroundColor(.primary)
+
+                    Spacer()
+
+                    Text("\(connectionLimit)")
+                        .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(themeManager.accentColor)
+                }
+
+                ConnectionLimitControl(
+                    value: $request.maxConnections,
+                    accent: themeManager.accentColor,
+                    totalBytes: request.runtime.totalBytes
+                )
+
+                Spacer(minLength: 0)
+            }
+            .padding(20)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("done".localized) {
+                        UnifiedDownloadManager.shared.saveDownloadTasks()
+                        showConnectionsSheet = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.height(320)])
+        .presentationDragIndicator(.visible)
     }
 
     private var topSection: some SwiftUI.View {
@@ -2420,6 +2501,11 @@ struct DownloadCardView: SwiftUI.View {
                 await MainActor.run {
                     installationProgress = 0.8
                     installationMessage = "opening_install_page".localized
+                    GlobalInstallationManager.shared.updateInstallationStep(
+                        for: request.id,
+                        step: "install_stage_opening_system".localized
+                    )
+
                     let itmsURLString = "itms-services://?action=download-manifest&url=" + queryEncoded(manifestURL)
 
                     guard let itmsURL = URL(string: itmsURLString) else {

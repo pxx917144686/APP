@@ -654,6 +654,10 @@ final class SigningSession: ObservableObject {
     private var ticker: Timer?
     private var startedAt: Date?
     private var cancelled = false
+    private var islandKey: String?
+    private var islandTitle = ""
+    private var islandPercent = -1
+    private var islandPhase = ""
 
     var isActive: Bool {
         phase != .idle || !lines.isEmpty
@@ -672,6 +676,14 @@ final class SigningSession: ObservableObject {
         append("cert  \(taskRequest.certificate.commonName)  \(taskRequest.certificate.teamID)", level: .info)
         append("profile  \(taskRequest.profile.displayName)  \(taskRequest.profile.applicationIdentifier)", level: .info)
         append("bundle  \(taskRequest.bundleIdentifier)", level: .detail)
+
+        let key = IslandTaskKey.sign(UUID())
+        islandKey = key
+        islandTitle = taskRequest.displayName.isEmpty ? taskRequest.ipa.displayName : taskRequest.displayName
+        SigningCancelCenter.shared.register(key) { [weak self] in
+            self?.cancel()
+        }
+        reportIsland(progress: 0.04, phase: SigningPhase.preparing.title, detail: taskRequest.certificate.commonName)
 
         tasks.replace(key: signingTaskKey) { [weak self] token in
             guard let self else { return }
@@ -706,6 +718,23 @@ final class SigningSession: ObservableObject {
         if let text = update.text {
             append(text, level: update.level)
         }
+        reportIsland(progress: progress, phase: phase.title, detail: update.text ?? "")
+    }
+
+    private func reportIsland(progress: Double, phase: String, detail: String) {
+        guard let key = islandKey else { return }
+        let percent = Int((min(max(progress, 0), 1) * 100).rounded())
+        guard percent != islandPercent || phase != islandPhase else { return }
+        islandPercent = percent
+        islandPhase = phase
+        IslandActivityManager.shared.start(
+            key: key,
+            kind: IslandTaskKind.sign,
+            title: islandTitle,
+            phase: phase,
+            detail: String(detail.prefix(80)),
+            progress: min(max(progress, 0), 1)
+        )
     }
 
     private func finish(output: URL?, error: Error?) {
@@ -715,6 +744,7 @@ final class SigningSession: ObservableObject {
         if let startedAt {
             elapsed = Date().timeIntervalSince(startedAt)
         }
+        let key = islandKey
         if let output, !cancelled {
             SoundEffects.play(.success)
             phase = .completed
@@ -722,6 +752,9 @@ final class SigningSession: ObservableObject {
             outcome = .completed
             outputURL = output
             append("done  \(output.lastPathComponent)", level: .success)
+            if let key {
+                IslandActivityManager.shared.finish(key: key, detail: output.lastPathComponent)
+            }
         } else {
             let message = error?.localizedDescription ?? "sign_err_unknown".localized
             errorMessage = message
@@ -734,7 +767,16 @@ final class SigningSession: ObservableObject {
             }
             SoundEffects.play(cancelled ? .fall : .error)
             append("failed  \(message)", level: .failure)
+            if let key {
+                IslandActivityManager.shared.fail(
+                    key: key,
+                    reason: message,
+                    cancelled: outcome == .cancelled
+                )
+            }
         }
+        SigningCancelCenter.shared.unregister(key)
+        islandKey = nil
     }
 
     private func append(_ text: String, level: DecryptLogLevel) {
@@ -750,6 +792,11 @@ final class SigningSession: ObservableObject {
         tasks.cancel(key: signingTaskKey)
         ticker?.invalidate()
         ticker = nil
+        SigningCancelCenter.shared.unregister(islandKey)
+        islandKey = nil
+        islandTitle = ""
+        islandPercent = -1
+        islandPhase = ""
         phase = .idle
         outcome = .idle
         progress = 0

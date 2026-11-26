@@ -117,6 +117,8 @@
 "download_waiting_sample" = "正在采集速度数据";
 "chart_hud_detail" = "剩余 %@ · 已用 %@";
 "download_connections" = "每个下载任务的最大连接数";
+"download_connections_hint" = "1–64 档可调。实际并发受文件大小与服务器分段能力限制，每段至少 2 MB。";
+"download_connections_effective" = "%@ · 预计实际使用 %d 条连接（每段至少 2 MB）";
 "all_start" = "全部开始";
 "no_downloads" = "暂无下载";
 
@@ -1154,3 +1156,12 @@
 "testflight_sign_to_install" = "TestFlight IPA 需要先签名才能安装，请选择证书和描述文件。";
 "testflight_sign_required_title" = "需要签名";
 "sign_now" = "去签名";
+"live_island" = "灵动岛";
+"live_island_desc" = "在灵动岛显示任务进度和后台状态";
+"live_island_download" = "下载任务";
+"live_island_sign" = "签名任务";
+"live_island_decrypt" = "解密任务";
+"live_island_install" = "安装任务";
+"live_island_app" = "后台显示 APP";
+"island_app_phase" = "在后台运行";
+"island_app_tap_to_open" = "轻点灵动岛返回 APP";

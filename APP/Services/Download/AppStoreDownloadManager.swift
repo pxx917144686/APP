@@ -870,8 +870,13 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             url: downloadURL,
             tempFileURL: tempFileURL,
             maxConnections: maxConnections,
-            onProgress: { [weak self] bytesDownloaded, totalBytes in
-                self?.handleSegmentedProgress(downloadId: downloadId, bytesDownloaded: bytesDownloaded, totalBytes: totalBytes)
+            onProgress: { [weak self] bytesDownloaded, totalBytes, activeConnections in
+                self?.handleSegmentedProgress(
+                    downloadId: downloadId,
+                    bytesDownloaded: bytesDownloaded,
+                    totalBytes: totalBytes,
+                    activeConnections: activeConnections
+                )
             },
             onFinish: { [weak self] result in
                 self?.handleSegmentedCompletion(downloadId: downloadId, result: result)
@@ -879,8 +884,13 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         )
     }
 
-    private func handleSegmentedProgress(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64) {
-        let captured = buildProgressUpdate(downloadId: downloadId, bytesDownloaded: bytesDownloaded, totalBytes: totalBytes)
+    private func handleSegmentedProgress(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64, activeConnections: Int) {
+        let captured = buildProgressUpdate(
+            downloadId: downloadId,
+            bytesDownloaded: bytesDownloaded,
+            totalBytes: totalBytes,
+            activeConnections: activeConnections
+        )
         guard let captured, captured.shouldUpdate else { return }
         DispatchQueue.main.async {
             captured.handler(captured.progress)
@@ -1682,7 +1692,7 @@ extension AppStoreDownloadManager {
         completionHandler(.allow)
     }
 
-    private func buildProgressUpdate(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64) -> (progress: DownloadProgress, handler: @Sendable (DownloadProgress) -> Void, shouldUpdate: Bool)? {
+    private func buildProgressUpdate(downloadId: String, bytesDownloaded: Int64, totalBytes: Int64, activeConnections: Int = 1) -> (progress: DownloadProgress, handler: @Sendable (DownloadProgress) -> Void, shouldUpdate: Bool)? {
         guard let progressHandler = progressHandlers[downloadId],
               downloadStartTimes[downloadId] != nil else {
             return nil
@@ -1717,7 +1727,8 @@ extension AppStoreDownloadManager {
             progress: progressValue,
             speed: speed,
             remainingTime: remainingTime,
-            status: .downloading
+            status: .downloading,
+            activeConnections: activeConnections
         )
 
         let lastUIUpdateTime = lastUIUpdate[downloadId] ?? Date.distantPast
@@ -2117,6 +2128,7 @@ struct DownloadProgress {
     let speed: Double
     let remainingTime: TimeInterval
     let status: DownloadStatus
+    var activeConnections: Int = 0
     var formattedProgress: String {
         return String(format: "%.1f%%", progress * 100)
     }

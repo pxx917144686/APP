@@ -3,8 +3,10 @@ import Foundation
 enum DownloadConnectionSettings {
     static let key = "download_max_connections"
     static let minimum = 1
-    static let maximum = 16
+    static let maximum = 64
     static let fallback = 8
+    static let presets = [1, 2, 4, 8, 16, 32, 64]
+    static let minSegmentSize: Int64 = 2 * 1024 * 1024
     static let dynamicSplitMinimum: Int64 = 8 * 1024 * 1024
 
     static var defaultValue: Int {
@@ -15,17 +17,24 @@ enum DownloadConnectionSettings {
     static func clamp(_ value: Int) -> Int {
         min(maximum, max(minimum, value))
     }
+
+    static func effectiveLimit(_ limit: Int, totalBytes: Int64) -> Int {
+        let capped = clamp(limit)
+        guard totalBytes > 0 else { return capped }
+        let possible = Int((totalBytes + minSegmentSize - 1) / minSegmentSize)
+        return max(minimum, min(capped, possible))
+    }
 }
 
 final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     static let shared = SegmentedIPADownloader()
 
-    static let minSegmentSize: Int64 = 2 * 1024 * 1024
+    static let minSegmentSize: Int64 = DownloadConnectionSettings.minSegmentSize
     static let maxSegmentRetries = 2
     static var stallTimeout: TimeInterval = 45
     static private let stallCheckInterval: TimeInterval = 5
 
-    typealias ProgressHandler = @Sendable (Int64, Int64) -> Void
+    typealias ProgressHandler = @Sendable (Int64, Int64, Int) -> Void
     typealias FinishHandler = @Sendable (Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>) -> Void
 
     enum Outcome {
@@ -258,7 +267,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         startStallWatchdog(downloadId: downloadId)
         if isResume {
             let resumedBytes = segments.reduce(0) { $0 + $1.received }
-            onProgress(resumedBytes, totalSize)
+            onProgress(resumedBytes, totalSize, segments.filter { !$0.finished }.count)
         }
         NSLog("[SegmentedDownloader] \(downloadId) start, size=\(totalSize), range=\(rangeSupported), segments=\(segments.count), resume=\(isResume), resumedBytes=\(segments.reduce(0) { $0 + $1.received })")
     }
@@ -329,7 +338,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         }
         startStallWatchdog(downloadId: downloadId)
         if !launchIndices.isEmpty, let onProgress {
-            onProgress(resumedBytes, totalSize)
+            onProgress(resumedBytes, totalSize, launchIndices.count)
         }
     }
 
@@ -447,6 +456,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         var shouldReport = false
         var totalReceived: Int64 = 0
         var totalSize: Int64 = 0
+        var activeConnections = 0
         var onProgress: ProgressHandler?
 
         locked {
@@ -476,6 +486,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             if now.timeIntervalSince(last) >= 0.1 || done {
                 state.lastProgressAt = now
                 shouldReport = true
+                activeConnections = state.segments.filter { !$0.finished && $0.activeTask != nil }.count
                 if state.rangeSupported, now.timeIntervalSince(state.lastResumeWriteAt) >= 1.0 {
                     state.lastResumeWriteAt = now
                     Self.writeResumeState(tempFileURL: state.tempFileURL, url: state.url, totalSize: state.totalSize, segments: state.segments)
@@ -486,7 +497,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         }
 
         if shouldReport, let onProgress {
-            onProgress(totalReceived, totalSize)
+            onProgress(totalReceived, totalSize, activeConnections)
         }
     }
 
@@ -696,7 +707,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         let progress = captured.onProgress
         let finish = captured.onFinish
         DispatchQueue.global(qos: .userInitiated).async {
-            progress(captured.received, captured.total)
+            progress(captured.received, captured.total, 0)
             finish(result)
         }
     }

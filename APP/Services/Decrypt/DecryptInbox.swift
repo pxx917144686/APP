@@ -363,6 +363,12 @@ final class DecryptInboxStore: ObservableObject {
         job.log.isExpanded = true
         job.resetFailures()
 
+        DecryptActivityManager.shared.start(
+            key: IslandTaskKey.decrypt(job.id),
+            title: job.displayName,
+            step: "preparing".localized
+        )
+
         beginBackgroundAssertion()
 
         Task { @MainActor in
@@ -371,6 +377,14 @@ final class DecryptInboxStore: ObservableObject {
                 cancelToken: token,
                 onEvent: { event in
                     job.log.consume(event)
+                    if case .phase(let phase) = event {
+                        Task { @MainActor in
+                            DecryptActivityManager.shared.update(
+                                key: IslandTaskKey.decrypt(job.id),
+                                step: phase
+                            )
+                        }
+                    }
                     if case .entry(let relativePath, let status, _) = event, status < 0 {
                         Task { @MainActor in job.recordFailure(relativePath) }
                     }
@@ -400,6 +414,19 @@ final class DecryptInboxStore: ObservableObject {
                     ? job.displayName
                     : "\(job.displayName)\n\n\(reason)"
                 SoundEffects.play(.error)
+            }
+
+            if job.state == .completed {
+                DecryptActivityManager.shared.finish(
+                    key: IslandTaskKey.decrypt(job.id),
+                    detail: job.outputSizeText ?? ""
+                )
+            } else {
+                DecryptActivityManager.shared.fail(
+                    key: IslandTaskKey.decrypt(job.id),
+                    reason: job.message ?? "",
+                    cancelled: job.state == .cancelled
+                )
             }
 
             pump()

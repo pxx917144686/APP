@@ -117,6 +117,8 @@
 "download_waiting_sample" = "正在擷取速度資料";
 "chart_hud_detail" = "剩餘 %@ · 已用 %@";
 "download_connections" = "每個下載任務的最大連線數";
+"download_connections_hint" = "1–64 檔可調。實際並發受檔案大小與伺服器分段能力限制，每段至少 2 MB。";
+"download_connections_effective" = "%@ · 預計實際使用 %d 條連線（每段至少 2 MB）";
 "all_start" = "全部開始";
 "no_downloads" = "暫無下載";
 
@@ -1154,3 +1156,12 @@
 "testflight_sign_to_install" = "TestFlight IPA 需要先簽名才能安裝，請選擇憑證和描述檔。";
 "testflight_sign_required_title" = "需要簽名";
 "sign_now" = "去簽名";
+"live_island" = "靈動島";
+"live_island_desc" = "在靈動島顯示任務進度和背景狀態";
+"live_island_download" = "下載任務";
+"live_island_sign" = "簽名任務";
+"live_island_decrypt" = "解密任務";
+"live_island_install" = "安裝任務";
+"live_island_app" = "背景顯示 APP";
+"island_app_phase" = "在背景執行";
+"island_app_tap_to_open" = "輕點靈動島返回 APP";
