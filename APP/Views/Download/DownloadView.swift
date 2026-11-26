@@ -1563,6 +1563,8 @@ struct DownloadCardView: SwiftUI.View {
                     remainingTime: request.runtime.remainingTime,
                     samples: request.runtime.speedSamples
                 )
+
+                connectionRow
             }
 
             if status == DownloadStatus.completed {
@@ -1719,6 +1721,67 @@ struct DownloadCardView: SwiftUI.View {
         request.runtime.status == DownloadStatus.waiting ||
         request.runtime.status == DownloadStatus.paused ||
         request.runtime.progressValue >= 0
+    }
+
+    private var connectionOptions: [Int] {
+        [1, 2, 4, 6, 8, 12, 16]
+    }
+
+    private var connectionEditable: Bool {
+        switch request.runtime.status {
+        case .waiting, .failed, .cancelled:
+            return true
+        default:
+            return false
+        }
+    }
+
+    @ViewBuilder
+    private var connectionRow: some SwiftUI.View {
+        if request.runtime.status != .completed {
+            HStack(spacing: 6) {
+                Image(systemName: "bolt.horizontal.circle.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(themeManager.accentColor.opacity(0.85))
+                Text("download_connections".localized)
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 4)
+                if connectionEditable {
+                    Menu {
+                        ForEach(connectionOptions, id: \.self) { value in
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                request.maxConnections = value
+                                UnifiedDownloadManager.shared.saveDownloadTasks()
+                            } label: {
+                                if request.maxConnections == value {
+                                    Label("\(value)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(value)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Text("\(request.maxConnections)")
+                            .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(themeManager.accentColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule().fill(themeManager.accentColor.opacity(0.15))
+                            )
+                    }
+                } else {
+                    Text("\(request.maxConnections)")
+                        .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.primary.opacity(0.06)))
+                }
+            }
+        }
     }
 
     private var topSection: some SwiftUI.View {

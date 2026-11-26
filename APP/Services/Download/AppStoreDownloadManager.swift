@@ -561,6 +561,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         appVersion: String? = nil,
         downloadId: String? = nil,
         prefetchedSongList: [[String: Any]]? = nil,
+        maxConnections: Int = DownloadConnectionSettings.defaultValue,
         progressHandler: @escaping @Sendable (DownloadProgress) -> Void,
         completion: @escaping @Sendable (Result<DownloadResult, DownloadError>) -> Void
     ) {
@@ -636,6 +637,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                     downloadId: downloadId,
                     storeItem: storeItem,
                     destinationURL: destinationURL,
+                    maxConnections: maxConnections,
                     progressHandler: progressHandler,
                     completion: completion
                 )
@@ -755,6 +757,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         downloadId: String,
         storeItem: DownloadStoreItem,
         destinationURL: URL,
+        maxConnections: Int,
         progressHandler: @escaping @Sendable (DownloadProgress) -> Void,
         completion: @escaping @Sendable (Result<DownloadResult, DownloadError>) -> Void
     ) async {
@@ -775,6 +778,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
                 downloadId: downloadId,
                 storeItem: storeItem,
                 destinationURL: destinationURL,
+                maxConnections: maxConnections,
                 progressHandler: progressHandler,
                 completion: completion
             )
@@ -823,6 +827,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
         downloadId: String,
         storeItem: DownloadStoreItem,
         destinationURL: URL,
+        maxConnections: Int,
         progressHandler: @escaping @Sendable (DownloadProgress) -> Void,
         completion: @escaping @Sendable (Result<DownloadResult, DownloadError>) -> Void
     ) async {
@@ -864,6 +869,7 @@ class AppStoreDownloadManager: NSObject, ObservableObject, URLSessionDownloadDel
             downloadId: downloadId,
             url: downloadURL,
             tempFileURL: tempFileURL,
+            maxConnections: maxConnections,
             onProgress: { [weak self] bytesDownloaded, totalBytes in
                 self?.handleSegmentedProgress(downloadId: downloadId, bytesDownloaded: bytesDownloaded, totalBytes: totalBytes)
             },
@@ -1898,6 +1904,7 @@ extension AppStoreDownloadManager {
                 downloadId: downloadId,
                 storeItem: storeItem,
                 destinationURL: destination,
+                maxConnections: DownloadConnectionSettings.defaultValue,
                 progressHandler: progressHandler,
                 completion: completion
             )

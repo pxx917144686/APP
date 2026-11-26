@@ -572,6 +572,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             appVersion: request.versionId,
             downloadId: request.id.uuidString,
             prefetchedSongList: prefetchedSongList,
+            maxConnections: request.maxConnections,
             progressHandler: { downloadProgress in
                 Task { @MainActor in
 
@@ -810,13 +811,15 @@ struct DownloadArchive {
 }
 
 class DownloadRuntime: ObservableObject {
-    struct SpeedSample: Sendable {
+    struct SpeedSample: Sendable, Codable {
         let time: TimeInterval
         let bytes: Int64
         let speed: Double
     }
 
-    @Published var status: DownloadStatus = DownloadStatus.waiting
+    @Published var status: DownloadStatus = DownloadStatus.waiting {
+        didSet { if oldValue != status { persistCurve(force: true) } }
+    }
     @Published var progress: Progress = Progress(totalUnitCount: 0)
     @Published var speed: String = ""
     @Published var error: String?
@@ -827,13 +830,25 @@ class DownloadRuntime: ObservableObject {
     @Published var bytesPerSecond: Double = 0
     @Published var remainingTime: TimeInterval = 0
 
+    var curveIdentifier: String?
     private(set) var speedSamples: [SpeedSample] = []
     private var lastSampleTime: TimeInterval = 0
     private var lastSampleBytes: Int64 = 0
+    private var samplesSincePersist = 0
 
     init() {
 
         progress.completedUnitCount = 0
+    }
+
+    func applyStoredSamples(_ list: [SpeedSample]) {
+        guard speedSamples.isEmpty, !list.isEmpty else { return }
+        speedSamples = list
+        if let last = list.last {
+            lastSampleTime = last.time
+            lastSampleBytes = last.bytes
+        }
+        objectWillChange.send()
     }
 
     @MainActor
@@ -857,6 +872,7 @@ class DownloadRuntime: ObservableObject {
             lastSampleTime = now
             lastSampleBytes = completed
             speedSamples.append(SpeedSample(time: now, bytes: completed, speed: max(0, speed)))
+            persistCurve()
             return
         }
         let dt = now - lastSampleTime
@@ -868,6 +884,18 @@ class DownloadRuntime: ObservableObject {
         lastSampleBytes = completed
         if speedSamples.count > 4000 {
             speedSamples.removeFirst(speedSamples.count - 4000)
+        }
+        persistCurve()
+    }
+
+    private func persistCurve(force: Bool = false) {
+        guard let curveIdentifier, !speedSamples.isEmpty else { return }
+        samplesSincePersist += 1
+        guard force || samplesSincePersist >= 20 else { return }
+        samplesSincePersist = 0
+        let snapshot = speedSamples
+        Task.detached(priority: .utility) {
+            await SpeedCurveStore.shared.save(id: curveIdentifier, samples: snapshot)
         }
     }
 }
@@ -890,6 +918,7 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
     let package: DownloadArchive
     var versionId: String?
     @Published var localFilePath: String?
+    @Published var maxConnections: Int
 
     private var cancellables: Set<AnyCancellable> = []
     @Published var runtime: DownloadRuntime { didSet { bindRuntime() } }
@@ -908,7 +937,8 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
         return package.identifier
     }
 
-    init(id: UUID = UUID(), bundleIdentifier: String, version: String, name: String, package: DownloadArchive, versionId: String? = nil) {
+    init(id: UUID = UUID(), bundleIdentifier: String, version: String, name: String, package: DownloadArchive,
+         versionId: String? = nil, maxConnections: Int? = nil) {
         self.id = id
         self.bundleIdentifier = bundleIdentifier
         self.version = version
@@ -916,7 +946,15 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
         self.createdAt = Date()
         self.package = package
         self.versionId = versionId
+        self.maxConnections = DownloadConnectionSettings.clamp(maxConnections ?? DownloadConnectionSettings.defaultValue)
         self.runtime = DownloadRuntime()
+        self.runtime.curveIdentifier = id.uuidString
+        let curveID = id.uuidString
+        let runtime = self.runtime
+        Task { @MainActor in
+            let stored = await SpeedCurveStore.shared.load(id: curveID)
+            runtime.applyStoredSamples(stored)
+        }
 
         bindRuntime()
     }
@@ -986,7 +1024,8 @@ extension UnifiedDownloadManager {
                         speed: request.runtime.speed,
                         localFilePath: request.localFilePath.map { relativePath(for: $0) }
                     ),
-                    createdAt: request.createdAt
+                    createdAt: request.createdAt,
+                    maxConnections: request.maxConnections
                 )
             },
             completedRequests: Array(completedRequests),
@@ -1174,7 +1213,8 @@ extension UnifiedDownloadManager {
                 version: saveRequest.version,
                 name: saveRequest.name,
                 package: saveRequest.package,
-                versionId: saveRequest.versionId
+                versionId: saveRequest.versionId,
+                maxConnections: saveRequest.maxConnections
             )
 
             request.runtime.status = saveRequest.runtime.status
@@ -1324,8 +1364,9 @@ struct DownloadRequestSaveData: Codable {
     let versionId: String?
     let runtime: DownloadRuntimeSaveData
     var createdAt: Date
+    var maxConnections: Int?
 
-    init(id: UUID, bundleIdentifier: String, version: String, name: String, package: DownloadArchive, versionId: String?, runtime: DownloadRuntimeSaveData, createdAt: Date) {
+    init(id: UUID, bundleIdentifier: String, version: String, name: String, package: DownloadArchive, versionId: String?, runtime: DownloadRuntimeSaveData, createdAt: Date, maxConnections: Int? = nil) {
         self.id = id
         self.bundleIdentifier = bundleIdentifier
         self.version = version
@@ -1338,6 +1379,7 @@ struct DownloadRequestSaveData: Codable {
         self.versionId = versionId
         self.runtime = runtime
         self.createdAt = createdAt
+        self.maxConnections = maxConnections
     }
 
     var package: DownloadArchive {

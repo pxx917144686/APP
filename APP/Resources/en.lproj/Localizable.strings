@@ -114,6 +114,9 @@
 "download_failed" = "Download Failed";
 "download_cancelled" = "Cancelled";
 "download_waiting" = "Waiting";
+"download_waiting_sample" = "Collecting speed samples";
+"chart_hud_detail" = "Remaining %@ · Elapsed %@";
+"download_connections" = "Max Connections per Task";
 "all_start" = "Start All";
 "no_downloads" = "No Downloads";
 

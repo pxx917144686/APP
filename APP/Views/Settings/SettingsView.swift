@@ -29,6 +29,7 @@ struct SettingsView: View {
     ]
 
     @AppStorage(SoundEffects.enabledKey) private var soundEffects = true
+    @AppStorage(DownloadConnectionSettings.key) private var downloadConnections = DownloadConnectionSettings.fallback
 
     var body: some View {
         NavigationStack {
@@ -75,6 +76,11 @@ struct SettingsView: View {
 
                     VStack(spacing: 0) {
                         soundRow
+                    }
+                    .liquidGlassSurface(cornerRadius: 16)
+
+                    VStack(spacing: 0) {
+                        connectionsRow
                     }
                     .liquidGlassSurface(cornerRadius: 16)
 
@@ -360,6 +366,50 @@ extension SettingsView {
             Toggle("", isOn: $soundEffects)
                 .labelsHidden()
                 .toggleStyle(SoundingToggleStyle())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private var connectionsRow: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "bolt.horizontal.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(themeManager.accentColor))
+
+                Text("download_connections".localized)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Text("\(DownloadConnectionSettings.clamp(downloadConnections))")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: 8) {
+                ForEach([4, 6, 8, 12, 16], id: \.self) { value in
+                    Button(action: {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        downloadConnections = value
+                    }) {
+                        Text("\(value)")
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
+                            .foregroundColor(downloadConnections == value ? .white : .primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(downloadConnections == value ? themeManager.accentColor : Color(.systemGray5))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)

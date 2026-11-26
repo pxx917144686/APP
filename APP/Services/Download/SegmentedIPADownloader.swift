@@ -1,10 +1,26 @@
 import Foundation
 
+enum DownloadConnectionSettings {
+    static let key = "download_max_connections"
+    static let minimum = 1
+    static let maximum = 16
+    static let fallback = 8
+    static let dynamicSplitMinimum: Int64 = 8 * 1024 * 1024
+
+    static var defaultValue: Int {
+        let stored = UserDefaults.standard.integer(forKey: key)
+        return stored == 0 ? fallback : clamp(stored)
+    }
+
+    static func clamp(_ value: Int) -> Int {
+        min(maximum, max(minimum, value))
+    }
+}
+
 final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     static let shared = SegmentedIPADownloader()
 
-    static let maxSegments = 6
-    static let minSegmentSize: Int64 = 32 * 1024 * 1024
+    static let minSegmentSize: Int64 = 2 * 1024 * 1024
     static let maxSegmentRetries = 2
     static var stallTimeout: TimeInterval = 45
     static private let stallCheckInterval: TimeInterval = 5
@@ -24,8 +40,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         var received: Int64 = 0
         var retries: Int = 0
         var finished: Bool = false
+        var superseded: Bool = false
         var pendingFailure: Error?
-        var session: URLSession?
         var activeTask: URLSessionDataTask?
         var fileHandle: FileHandle?
     }
@@ -54,12 +70,15 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         var totalSize: Int64
         var rangeSupported: Bool
         var allowFullResponse: Bool
+        var maxConnections: Int
+        var session: URLSession?
         var segments: [Segment]
         let handler: DownloadHandler
         var userCancelled = false
         var paused = false
         var finished = false
         var lastDataAt = Date()
+        var lastResumeWriteAt = Date.distantPast
         var stallTimer: DispatchSourceTimer?
         var lastProgressAt: Date?
         var onProgress: ProgressHandler
@@ -106,6 +125,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         downloadId: String,
         url: URL,
         tempFileURL: URL,
+        maxConnections: Int = DownloadConnectionSettings.defaultValue,
         onProgress: @escaping ProgressHandler,
         onFinish: @escaping FinishHandler
     ) async {
@@ -120,6 +140,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             return
         }
 
+        let connectionLimit = DownloadConnectionSettings.clamp(maxConnections)
         let handler = DownloadHandler(downloadId: downloadId, owner: self)
         let placeholder = State(
             url: url,
@@ -127,6 +148,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             totalSize: 0,
             rangeSupported: false,
             allowFullResponse: true,
+            maxConnections: connectionLimit,
+            session: nil,
             segments: [],
             handler: handler,
             onProgress: onProgress,
@@ -181,15 +204,22 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                 tempFileURL: tempFileURL,
                 totalSize: totalSize,
                 rangeSupported: rangeSupported,
-                resumeSegments: resumeSegments
+                resumeSegments: resumeSegments,
+                maxConnections: connectionLimit
             ) else {
                 setupFailed = true
                 state.finished = true
                 states.removeValue(forKey: downloadId)
                 return
             }
+            let session = URLSession(
+                configuration: Self.makeSessionConfiguration(maxConnections: connectionLimit),
+                delegate: handler,
+                delegateQueue: nil
+            )
             segments = prepared
             state.segments = prepared
+            state.session = session
             state.totalSize = totalSize
             state.rangeSupported = rangeSupported
             state.allowFullResponse = !rangeSupported
@@ -245,9 +275,9 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                 try? state.segments[index].fileHandle?.close()
                 state.segments[index].fileHandle = nil
                 state.segments[index].activeTask = nil
-                state.segments[index].session?.invalidateAndCancel()
-                state.segments[index].session = nil
             }
+            state.session?.invalidateAndCancel()
+            state.session = nil
             states.removeValue(forKey: downloadId)
             return tasks
         }
@@ -315,9 +345,9 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                     try? state.segments[index].fileHandle?.close()
                     state.segments[index].fileHandle = nil
                     state.segments[index].activeTask = nil
-                    state.segments[index].session?.invalidateAndCancel()
-                    state.segments[index].session = nil
                 }
+                state.session?.invalidateAndCancel()
+                state.session = nil
                 immediateFinish = true
             }
             states[downloadId] = state
@@ -330,19 +360,14 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
     }
 
     private func launchSegment(downloadId: String, index: Int) {
-        let captured: (url: URL, start: Int64, end: Int64, rangeSupported: Bool, session: URLSession?, handler: DownloadHandler)? = locked {
+        let captured: (url: URL, start: Int64, end: Int64, rangeSupported: Bool, session: URLSession?)? = locked {
             guard let state = states[downloadId], !state.finished, index < state.segments.count else { return nil }
             let segment = state.segments[index]
             let resumeStart = segment.start + segment.received
-            return (state.url, resumeStart, segment.end, state.rangeSupported, segment.session, state.handler)
+            return (state.url, resumeStart, segment.end, state.rangeSupported, state.session)
         }
-        guard let captured else { return }
+        guard let captured, let session = captured.session else { return }
 
-        let session = captured.session ?? URLSession(
-            configuration: Self.makeSessionConfiguration(),
-            delegate: captured.handler,
-            delegateQueue: nil
-        )
         let request = Self.makeRequest(
             url: captured.url,
             start: captured.start,
@@ -356,7 +381,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         locked {
             if var state = states[downloadId], index < state.segments.count,
                !state.finished, !state.userCancelled, !state.paused {
-                state.segments[index].session = session
                 state.segments[index].activeTask = task
                 states[downloadId] = state
                 shouldLaunch = true
@@ -366,9 +390,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             task.resume()
         } else {
             task.cancel()
-            if captured.session == nil {
-                session.finishTasksAndInvalidate()
-            }
         }
     }
 
@@ -455,7 +476,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             if now.timeIntervalSince(last) >= 0.1 || done {
                 state.lastProgressAt = now
                 shouldReport = true
-                if state.rangeSupported {
+                if state.rangeSupported, now.timeIntervalSince(state.lastResumeWriteAt) >= 1.0 {
+                    state.lastResumeWriteAt = now
                     Self.writeResumeState(tempFileURL: state.tempFileURL, url: state.url, totalSize: state.totalSize, segments: state.segments)
                 }
             }
@@ -470,6 +492,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
 
     fileprivate func handleSegmentCompletion(downloadId: String, index: Int, error: Error?) {
         var action: SegmentAction = .none
+        var needsSplit = false
+        var relaunchAfterSupersede = false
 
         locked {
             guard var state = states[downloadId], !state.finished, index < state.segments.count else { return }
@@ -478,6 +502,14 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                 action = .finish(.failure(.unknownError("download_cancelled".localized)), cleanup: .keepAll)
                 cleanupState(&state, cancelledRemainder: true)
                 states[downloadId] = state
+                return
+            }
+
+            if state.segments[index].superseded {
+                state.segments[index].superseded = false
+                state.segments[index].activeTask = nil
+                states[downloadId] = state
+                relaunchAfterSupersede = true
                 return
             }
 
@@ -519,6 +551,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                     states[downloadId] = state
                 } else {
                     states[downloadId] = state
+                    needsSplit = true
                 }
             } else {
                 states[downloadId] = state
@@ -535,12 +568,68 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
 
         switch action {
         case .none:
-            break
+            if relaunchAfterSupersede {
+                launchSegment(downloadId: downloadId, index: index)
+            }
+            if needsSplit {
+                for splitIndex in splitLargestSegment(downloadId: downloadId) {
+                    launchSegment(downloadId: downloadId, index: splitIndex)
+                }
+            }
         case .retry(let index, let error):
             processSegmentFailure(downloadId: downloadId, index: index, error: error)
         case .finish(let outcome, let cleanup):
             emitFinish(downloadId: downloadId, outcome: outcome, cleanup: cleanup)
         }
+    }
+
+    private func splitLargestSegment(downloadId: String) -> [Int] {
+        var launchIndices: [Int] = []
+        locked {
+            guard var state = states[downloadId], !state.finished,
+                  !state.userCancelled, !state.paused, state.rangeSupported else { return }
+            let unfinishedCount = state.segments.filter { !$0.finished }.count
+            guard unfinishedCount > 0, unfinishedCount < state.maxConnections else { return }
+
+            var targetIndex: Int?
+            var largestRemaining: Int64 = 0
+            for index in state.segments.indices where !state.segments[index].finished {
+                let segment = state.segments[index]
+                let remaining = segment.end - (segment.start + segment.received) + 1
+                if remaining > largestRemaining {
+                    largestRemaining = remaining
+                    targetIndex = index
+                }
+            }
+            guard let target = targetIndex, largestRemaining >= DownloadConnectionSettings.dynamicSplitMinimum,
+                  largestRemaining >= 2 else { return }
+
+            let segment = state.segments[target]
+            let cursor = segment.start + segment.received
+            let splitPoint = cursor + largestRemaining / 2
+            guard splitPoint > cursor, splitPoint <= segment.end else { return }
+
+            guard let handle = try? FileHandle(forWritingTo: state.tempFileURL) else { return }
+            handle.seek(toFileOffset: UInt64(splitPoint))
+
+            var newSegment = Segment(index: state.segments.count, start: splitPoint, end: segment.end)
+            newSegment.fileHandle = handle
+            state.segments[target].end = splitPoint - 1
+            state.segments[target].superseded = true
+            let activeTask = state.segments[target].activeTask
+            state.segments[target].activeTask = nil
+            state.segments.append(newSegment)
+            states[downloadId] = state
+
+            let hadActiveTask = activeTask != nil
+            activeTask?.cancel()
+            launchIndices = [newSegment.index]
+            if !hadActiveTask {
+                launchIndices.append(target)
+            }
+            NSLog("[SegmentedDownloader] \(downloadId) dynamic split segment \(target) at \(splitPoint), now \(state.segments.count) segments")
+        }
+        return launchIndices
     }
 
     private enum SegmentAction {
@@ -662,16 +751,16 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             try? state.segments[index].fileHandle?.close()
             state.segments[index].fileHandle = nil
             state.segments[index].activeTask = nil
-            if cancelledRemainder {
-                state.segments[index].session?.invalidateAndCancel()
-            } else {
-                state.segments[index].session?.finishTasksAndInvalidate()
-            }
-            state.segments[index].session = nil
         }
+        if cancelledRemainder {
+            state.session?.invalidateAndCancel()
+        } else {
+            state.session?.finishTasksAndInvalidate()
+        }
+        state.session = nil
     }
 
-    private static func makeSessionConfiguration() -> URLSessionConfiguration {
+    private static func makeSessionConfiguration(maxConnections: Int) -> URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
         config.connectionProxyDictionary = [
             "HTTPEnable": 0,
@@ -681,6 +770,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
             "HTTPSProxy": "",
             "SOCKSProxy": ""
         ]
+        config.httpMaximumConnectionsPerHost = max(1, maxConnections)
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 7200
         config.allowsCellularAccess = true
@@ -703,7 +793,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         return request
     }
 
-    private static func prepareSegments(tempFileURL: URL, totalSize: Int64, rangeSupported: Bool, resumeSegments: [ResumeSegment]?) -> [Segment]? {
+    private static func prepareSegments(tempFileURL: URL, totalSize: Int64, rangeSupported: Bool,
+                                        resumeSegments: [ResumeSegment]?, maxConnections: Int) -> [Segment]? {
         let fileManager = FileManager.default
         let isResume = rangeSupported && totalSize > 0 && resumeSegments != nil
         if !isResume {
@@ -720,31 +811,37 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         }
 
         var segments: [Segment] = []
-        if rangeSupported, totalSize > 0 {
-            let count = max(1, min(maxSegments, Int((totalSize + minSegmentSize - 1) / minSegmentSize)))
-            let base = totalSize / Int64(count)
-            let remainder = totalSize % Int64(count)
-            var offset: Int64 = 0
-            for index in 0..<count {
-                let length = base + (Int64(index) < remainder ? 1 : 0)
-                let start = offset
-                let end = offset + length - 1
-                offset = end + 1
-                var segment = Segment(index: index, start: start, end: end)
-                if let resumeSegments, index < resumeSegments.count,
-                   resumeSegments[index].start == start, resumeSegments[index].end == end {
-                    segment.received = resumeSegments[index].received
-                    if segment.received == length {
-                        segment.finished = true
-                    }
+        if rangeSupported, totalSize > 0, let resumeSegments {
+            for (index, resume) in resumeSegments.enumerated() {
+                var segment = Segment(index: index, start: resume.start, end: resume.end)
+                segment.received = resume.received
+                let length = resume.end - resume.start + 1
+                if segment.received == length {
+                    segment.finished = true
                 }
                 guard let handle = try? FileHandle(forWritingTo: tempFileURL) else { return nil }
                 if segment.finished {
                     try? handle.close()
                 } else {
-                    handle.seek(toFileOffset: UInt64(start + segment.received))
+                    handle.seek(toFileOffset: UInt64(segment.start + segment.received))
                     segment.fileHandle = handle
                 }
+                segments.append(segment)
+            }
+        } else if rangeSupported, totalSize > 0 {
+            let connectionCount = max(1, min(maxConnections, Int((totalSize + minSegmentSize - 1) / minSegmentSize)))
+            let base = totalSize / Int64(connectionCount)
+            let remainder = totalSize % Int64(connectionCount)
+            var offset: Int64 = 0
+            for index in 0..<connectionCount {
+                let length = base + (Int64(index) < remainder ? 1 : 0)
+                let start = offset
+                let end = offset + length - 1
+                offset = end + 1
+                var segment = Segment(index: index, start: start, end: end)
+                guard let handle = try? FileHandle(forWritingTo: tempFileURL) else { return nil }
+                handle.seek(toFileOffset: UInt64(start))
+                segment.fileHandle = handle
                 segments.append(segment)
             }
         } else {

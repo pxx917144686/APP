@@ -114,6 +114,9 @@
 "download_failed" = "下载失败";
 "download_cancelled" = "已取消";
 "download_waiting" = "等待中";
+"download_waiting_sample" = "正在采集速度数据";
+"chart_hud_detail" = "剩余 %@ · 已用 %@";
+"download_connections" = "每个下载任务的最大连接数";
 "all_start" = "全部开始";
 "no_downloads" = "暂无下载";
 
