@@ -1094,6 +1094,8 @@
 "testflight_manual" = "Manual Bundle ID";
 "testflight_manual_placeholder" = "com.example.app";
 "testflight_download" = "Download";
+"testflight_download_region" = "Download Region";
+"testflight_account_region" = "Account Region";
 "testflight_downloaded" = "Downloaded";
 "testflight_downloaded_format" = "%@ · %.1f MB";
 "testflight_howto" = "How to get a session";

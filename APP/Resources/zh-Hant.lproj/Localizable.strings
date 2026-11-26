@@ -1094,6 +1094,8 @@
 "testflight_manual" = "手動 Bundle ID";
 "testflight_manual_placeholder" = "com.example.app";
 "testflight_download" = "下載";
+"testflight_download_region" = "下載地區";
+"testflight_account_region" = "帳號地區";
 "testflight_downloaded" = "已下載";
 "testflight_downloaded_format" = "%@ · %.1f MB";
 "testflight_howto" = "如何取得工作階段";

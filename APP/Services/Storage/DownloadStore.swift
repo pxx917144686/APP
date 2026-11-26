@@ -13,6 +13,7 @@ struct DownloadTaskRecord: Codable, FetchableRecord, PersistableRecord {
     var packagePrice: Double?
     var packageCurrency: String?
     var versionId: String?
+    var testFlightRegion: String?
     var status: String
     var progress: Double
     var error: String?
@@ -88,6 +89,11 @@ final class DownloadStore {
                 table.add(column: "isTestFlight", .boolean).notNull().defaults(to: false)
             }
         }
+        migrator.registerMigration("v3_testFlightRegion") { db in
+            try db.alter(table: "download_task") { table in
+                table.add(column: "testFlightRegion", .text)
+            }
+        }
         return migrator
     }
 
@@ -134,6 +140,7 @@ final class DownloadStore {
                 packagePrice: request.packagePrice,
                 packageCurrency: request.packageCurrency,
                 versionId: request.versionId,
+                testFlightRegion: request.testFlightRegion,
                 status: request.runtime.status.rawValue,
                 progress: request.runtime.progressValue,
                 error: request.runtime.error,
@@ -174,6 +181,7 @@ final class DownloadStore {
                     isTestFlight: record.isTestFlight
                 ),
                 versionId: record.versionId,
+                testFlightRegion: record.testFlightRegion,
                 runtime: DownloadRuntimeSaveData(
                     status: status,
                     progressValue: record.progress,

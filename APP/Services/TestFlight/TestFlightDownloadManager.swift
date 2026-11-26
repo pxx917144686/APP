@@ -599,14 +599,15 @@ final class TestFlightDownloadManager: ObservableObject {
         saveStoredSession()
     }
 
-    func startDownloadFromUI(app: TestFlightApp, buildID: String? = nil) {
+    func startDownloadFromUI(app: TestFlightApp, buildID: String? = nil, downloadRegion: String? = nil) {
         SoundEffects.play(.press)
         let version = buildID.flatMap { id in builds.first(where: { $0.id == id })?.versionSummary } ?? app.version
         transport.logStage("UI download button tapped app=\(app.appID ?? "-") bundled=\(app.bundle) build=\(buildID ?? "latest") version=\(version ?? "-")")
-        Task { await download(app: app, buildID: buildID, versionLabel: version) }
+        Task { await download(app: app, buildID: buildID, versionLabel: version, downloadRegion: downloadRegion) }
     }
 
-    func download(app: TestFlightApp, buildID: String? = nil, versionLabel: String? = nil) async {
+    func download(app: TestFlightApp, buildID: String? = nil, versionLabel: String? = nil,
+                  downloadRegion: String? = nil) async {
         guard let appID = app.appID, let session = tfSession else {
             error = "testflight_login_required".localized
             return
@@ -637,7 +638,7 @@ final class TestFlightDownloadManager: ObservableObject {
         if app.iconURL == nil {
             await loadIcon(for: app)
         }
-        await download(bundle: bundle, buildID: buildID, versionLabel: versionLabel)
+        await download(bundle: bundle, buildID: buildID, versionLabel: versionLabel, downloadRegion: downloadRegion)
     }
 
     func startDownloadFromUI(bundle: String, buildID: String? = nil) {
@@ -649,12 +650,16 @@ final class TestFlightDownloadManager: ObservableObject {
         transferHandles[taskID]?.pause()
     }
 
-    func resumeUnifiedDownload(taskID: UUID, bundle: String) {
-        if let handle = transferHandles[taskID] {
+    func resumeUnifiedDownload(request: DownloadRequest) {
+        if let handle = transferHandles[request.id] {
             handle.resume()
             return
         }
-        Task { await download(bundle: bundle) }
+        Task {
+            await download(bundle: request.bundleIdentifier, buildID: request.versionId,
+                           versionLabel: request.version, downloadRegion: request.testFlightRegion,
+                           resuming: request)
+        }
     }
 
     func cancelUnifiedDownload(taskID: UUID) {
@@ -696,30 +701,35 @@ final class TestFlightDownloadManager: ObservableObject {
         }
     }
 
-    func download(bundle: String, buildID requestedBuildID: String? = nil, versionLabel: String? = nil) async {
+    func download(bundle: String, buildID requestedBuildID: String? = nil, versionLabel: String? = nil,
+                  downloadRegion: String? = nil, resuming request: DownloadRequest? = nil) async {
         let bundle = bundle.trimmingCharacters(in: .whitespacesAndNewlines)
         transport.logStage("download call bundle=\(bundle) build=\(requestedBuildID ?? "latest") tfContext=\(tfContext != nil) tfSession=\(tfSession != nil)")
         guard !bundle.isEmpty else {
-            error = "testflight_bundle_missing".localized
+            rejectDownload("testflight_bundle_missing".localized, resuming: request)
             return
         }
         transport.logStage("download tap bundle=\(bundle) build=\(requestedBuildID ?? "latest") tfContext=\(tfContext != nil) tfSession=\(tfSession != nil) swiftSession=\(swiftSession != nil) client=\(client != nil)")
         guard tfContext != nil || tfSession != nil || swiftSession != nil || client != nil else {
-            error = "testflight_login_required".localized
+            rejectDownload("testflight_login_required".localized, resuming: request)
             return
         }
 
         if let context = tfContext, let session = tfSession {
             guard let app = apps.first(where: { $0.bundle == bundle }), let appID = app.appID else {
-                error = "testflight_download_unavailable".localized
+                rejectDownload("testflight_download_unavailable".localized, resuming: request)
                 return
             }
-            downloadingBundle = bundle
-            downloadingBuildID = requestedBuildID
-            lastOutput = nil
-            status = nil
-            downloadProgress = 0
-            showsErrorAlert = false
+            var storefront = context.storefront
+            var downloadHeaders = context.headers
+            if let downloadRegion, let regionID = Apple.storeFrontCodeMap[downloadRegion] {
+                // Keep the suffix from this session and override the storefront for this download only.
+                let accountFront = storefront.isEmpty ? TFStoreCapture.defaultStoreFront : storefront
+                let suffix = accountFront.drop(while: { $0.isNumber })
+                storefront = regionID + suffix
+                downloadHeaders["X-Apple-Store-Front"] = storefront
+                transport.logStage("download storefront override: region=\(downloadRegion) account=\(accountFront) request=\(storefront)")
+            }
             if app.iconURL == nil {
                 await loadIcon(for: app)
             }
@@ -744,21 +754,30 @@ final class TestFlightDownloadManager: ObservableObject {
                     }
                 }
             }
-            let unifiedTaskID = UnifiedDownloadManager.shared.addDownload(
+            let unifiedTaskID = request?.id ?? UnifiedDownloadManager.shared.addDownload(
                 bundleIdentifier: bundle,
                 name: app.name,
                 version: resolvedVersion,
                 identifier: Int(appID) ?? 0,
                 iconURL: iconURLString,
+                versionId: requestedBuildID,
                 isTestFlight: true
             )
+            guard transferHandles[unifiedTaskID] == nil,
+                  let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) else { return }
             let transferHandle = TFTransferHandle()
             transferHandles[unifiedTaskID] = transferHandle
             defer { transferHandles[unifiedTaskID] = nil }
-            if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) {
-                task.runtime.status = .downloading
-                task.runtime.error = nil
-            }
+            downloadingBundle = bundle
+            downloadingBuildID = requestedBuildID
+            lastOutput = nil
+            status = nil
+            downloadProgress = 0
+            showsErrorAlert = false
+            task.versionId = requestedBuildID
+            task.testFlightRegion = downloadRegion
+            task.runtime.status = .downloading
+            task.runtime.error = nil
             UnifiedDownloadManager.shared.saveDownloadTasks()
             UnifiedDownloadManager.shared.beginTestFlightTask(taskID: unifiedTaskID)
             defer {
@@ -777,15 +796,17 @@ final class TestFlightDownloadManager: ObservableObject {
                     buildID = try await TFAPI.buildID(appID: appID, platform: "ios",
                                                      session: session, log: log)
                     downloadingBuildID = buildID
+                    task.versionId = buildID
+                    UnifiedDownloadManager.shared.saveDownloadTasks()
                 }
                 let metadata = try await TFAPI.installMetadata(
                     appID: appID, buildID: buildID, session: session,
-                    headers: context.headers, dsid: context.dsid,
-                    hardware20: context.hardware20, storefront: context.storefront,
+                    headers: downloadHeaders, dsid: context.dsid,
+                    hardware20: context.hardware20, storefront: storefront,
                     log: log
                 )
                 let envelope = try TFDownload.envelope(
-                    dsid: context.dsid, headers: context.headers,
+                    dsid: context.dsid, headers: downloadHeaders,
                     storeCookies: context.storeCookies,
                     udid: context.hardware20.map { String(format: "%02x", $0) }.joined()
                 )
@@ -793,7 +814,7 @@ final class TestFlightDownloadManager: ObservableObject {
                     bundle: bundle,
                     context: envelope,
                     hardware20: context.hardware20,
-                    identity: context.headers,
+                    identity: downloadHeaders,
                     metadata: metadata,
                     buildID: buildID,
                     versionLabel: versionLabel ?? app.version,
@@ -870,12 +891,12 @@ final class TestFlightDownloadManager: ObservableObject {
             return
         }
 
-        if swiftSession != nil {
-            error = "testflight_download_unavailable".localized
+        if swiftSession != nil || downloadRegion != nil {
+            rejectDownload("testflight_download_unavailable".localized, resuming: request)
             return
         }
         guard let client else {
-            error = "testflight_login_required".localized
+            rejectDownload("testflight_login_required".localized, resuming: request)
             return
         }
         downloadingBundle = bundle
@@ -894,8 +915,17 @@ final class TestFlightDownloadManager: ObservableObject {
             let megabytes = Double(result.downloadedBytes) / 1_048_576.0
             status = String(format: "testflight_downloaded_format".localized, output.lastPathComponent, megabytes)
         } catch {
-            self.error = error.localizedDescription
+            rejectDownload(error.localizedDescription, resuming: request)
         }
+    }
+
+    private func rejectDownload(_ message: String, resuming request: DownloadRequest?) {
+        error = message
+        guard let request else { return }
+        request.runtime.status = .failed
+        request.runtime.error = message
+        UnifiedDownloadManager.shared.saveDownloadTasks()
+        UnifiedDownloadManager.shared.failTestFlightTask(taskID: request.id)
     }
 
     func switchAccount(email: String, saveCurrent: Bool = true) async {

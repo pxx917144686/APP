@@ -735,10 +735,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             request.runtime.status = .downloading
             activeDownloads.insert(request.id)
             syncBackgroundKeepAlive()
-            TestFlightDownloadManager.shared.resumeUnifiedDownload(
-                taskID: request.id,
-                bundle: request.package.bundleIdentifier
-            )
+            TestFlightDownloadManager.shared.resumeUnifiedDownload(request: request)
             return
         }
         startDownload(for: request)
@@ -858,6 +855,7 @@ class DownloadRequest: Identifiable, ObservableObject, Equatable, @unchecked Sen
     var createdAt: Date
     let package: DownloadArchive
     var versionId: String?
+    var testFlightRegion: String?
     @Published var localFilePath: String?
 
     private var cancellables: Set<AnyCancellable> = []
@@ -948,6 +946,7 @@ extension UnifiedDownloadManager {
                     name: request.name,
                     package: request.package,
                     versionId: request.versionId,
+                    testFlightRegion: request.testFlightRegion,
                     runtime: DownloadRuntimeSaveData(
                         status: request.runtime.status,
                         progressValue: request.runtime.progressValue,
@@ -1151,6 +1150,7 @@ extension UnifiedDownloadManager {
             request.runtime.error = saveRequest.runtime.error
             request.runtime.speed = saveRequest.runtime.speed
             request.createdAt = saveRequest.createdAt
+            request.testFlightRegion = saveRequest.testFlightRegion
 
             if let resolved = resolvedPaths[saveRequest.id], let path = resolved {
                 request.localFilePath = path
@@ -1291,10 +1291,12 @@ struct DownloadRequestSaveData: Codable {
     let packageCurrency: String?
     var packageIsTestFlight: Bool?
     let versionId: String?
+    let testFlightRegion: String?
     let runtime: DownloadRuntimeSaveData
     var createdAt: Date
 
-    init(id: UUID, bundleIdentifier: String, version: String, name: String, package: DownloadArchive, versionId: String?, runtime: DownloadRuntimeSaveData, createdAt: Date) {
+    init(id: UUID, bundleIdentifier: String, version: String, name: String, package: DownloadArchive,
+         versionId: String?, testFlightRegion: String?, runtime: DownloadRuntimeSaveData, createdAt: Date) {
         self.id = id
         self.bundleIdentifier = bundleIdentifier
         self.version = version
@@ -1305,6 +1307,7 @@ struct DownloadRequestSaveData: Codable {
         self.packageCurrency = package.currency
         self.packageIsTestFlight = package.isTestFlight
         self.versionId = versionId
+        self.testFlightRegion = testFlightRegion
         self.runtime = runtime
         self.createdAt = createdAt
     }
