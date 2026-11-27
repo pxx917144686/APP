@@ -802,7 +802,7 @@
 "sign_target_coverage_matched" = "Profile matched";
 "sign_target_coverage_wildcard" = "Wildcard profile";
 "sign_target_coverage_missing" = "No matching profile";
-"sign_target_profile_warning" = "Extensions %@ have no usable independent profile and will be signed with the main profile; installation may fail. Import a matching extension profile or remove the extensions.";
+"sign_target_profile_warning" = "Extensions %@ have no matching provisioning profile and will be signed with the main profile; installation may fail. Enable \"Remove uncovered extensions\" or import a matching profile for them.";
 "sign_injection_builtin" = "BUILT-IN";
 "sign_ipa_encrypted" = "This IPA's main executable is still encrypted (FairPlay). Re-signing it will not make it launch. Use a decrypted IPA.";
 "sign_ipa_encrypted_tag" = "Encrypted";
@@ -1005,7 +1005,8 @@
 "sign_history_auth_failed_hint" = "Could not unlock the hidden vault.";
 "sign_history_hidden_auth_reason" = "Unlock hidden signing records";
 "dl_transfer_left" = "%@";
-"sign_profile_fallback_warning" = "Profile App ID is %@, which does not cover this IPA. Signing will continue with the selected profile; the installation may be rejected if the profile cannot be applied.";
+"sign_profile_fallback_warning" = "The profile only authorizes App ID %@. Signing with the original Bundle ID makes the application-identifier mismatch the app, so iOS will reject the install. You can still sign, but switching to that App ID or importing a wildcard (*) profile is recommended.";
+"sign_use_profile_id" = "Use the profile's App ID: %@ (replaces any app with the same ID on this device and removes extensions without a matching profile)";
 "sign_team_mismatch_warning" = "The certificate and profile belong to different teams. Signing will be attempted, but installation will probably fail; choose a certificate and profile from the same team.";
 "sign_import_wrong_type" = "Choose an .ipa or .zip file.";
 "sign_target_control_center" = "Control Center";

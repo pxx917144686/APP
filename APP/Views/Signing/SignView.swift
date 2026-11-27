@@ -1280,6 +1280,36 @@ struct SignView: SwiftUI.View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
+
+                    if let profile,
+                       !profile.isWildcard,
+                       !profile.bundleIDPattern.isEmpty,
+                       !profile.covers(bundleID: targetAppBundleID) {
+                        Button {
+                            bundleID = profile.bundleIDPattern
+                            if extensionCount > 0 {
+                                removeUncoveredExtensions = true
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "wand.and.stars")
+                                    .font(.system(size: 9))
+                                Text(String(format: "sign_use_profile_id".localized, profile.bundleIDPattern))
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer(minLength: 0)
+                            }
+                            .foregroundStyle(accent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(accent.opacity(0.12))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.top, 1)
             }

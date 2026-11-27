@@ -802,7 +802,7 @@
 "sign_target_coverage_matched" = "已符合描述檔";
 "sign_target_coverage_wildcard" = "萬用描述檔涵蓋";
 "sign_target_coverage_missing" = "缺少符合的描述檔";
-"sign_target_profile_warning" = "擴充功能 %@ 沒有可用的獨立描述檔，會用主描述檔簽名，安裝可能失敗。請匯入符合的擴充功能描述檔，或移除擴充功能。";
+"sign_target_profile_warning" = "擴充功能 %@ 沒有相符的描述檔，會用主描述檔簽名，安裝可能失敗。請勾選「移除未涵蓋擴充功能」，或為擴充功能匯入相符的描述檔。";
 "sign_injection_builtin" = "內建";
 "sign_ipa_encrypted" = "此 IPA 主程式仍是加密狀態（FairPlay），重簽後無法啟動。請使用已解密的 IPA。";
 "sign_ipa_encrypted_tag" = "已加密";
@@ -1005,7 +1005,8 @@
 "sign_history_auth_failed_hint" = "無法解鎖隱藏區。";
 "sign_history_hidden_auth_reason" = "解鎖隱藏的簽名記錄";
 "dl_transfer_left" = "剩餘 %@";
-"sign_profile_fallback_warning" = "描述檔 App ID 為 %@，不涵蓋這個 IPA。將繼續用目前描述檔簽名；如果描述檔無法套用，安裝可能被拒絕。";
+"sign_profile_fallback_warning" = "描述檔只授權 App ID %@。用原始 Bundle ID 簽名時 application-identifier 與 App 不相符，iOS 會拒絕安裝。仍可繼續簽名，但建議改用該 App ID，或匯入萬用字元（*）描述檔。";
+"sign_use_profile_id" = "改用描述檔的 App ID：%@（會替換裝置上同 ID 的應用程式，並移除沒有相符描述檔的擴充功能）";
 "sign_team_mismatch_warning" = "憑證與描述檔不屬於同一個 Team。仍會嘗試簽名，但安裝很可能失敗；請選擇同 Team 的憑證和描述檔。";
 "sign_import_wrong_type" = "請選擇 .ipa 或 .zip 檔案。";
 "sign_target_control_center" = "控制中心";

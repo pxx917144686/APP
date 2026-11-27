@@ -802,7 +802,7 @@
 "sign_target_coverage_matched" = "已匹配描述文件";
 "sign_target_coverage_wildcard" = "通配描述文件覆盖";
 "sign_target_coverage_missing" = "缺少匹配描述文件";
-"sign_target_profile_warning" = "扩展 %@ 没有可用的独立描述文件，会用主描述文件签名，安装可能失败。请导入匹配的扩展描述文件，或移除扩展。";
+"sign_target_profile_warning" = "扩展 %@ 没有匹配的描述文件，会用主描述文件签名，安装可能失败。请勾选「移除未覆盖扩展」，或为扩展导入匹配的描述文件。";
 "sign_injection_builtin" = "内置";
 "sign_ipa_encrypted" = "此 IPA 主程序仍是加密状态（FairPlay），重签后无法启动。请使用已解密的 IPA。";
 "sign_ipa_encrypted_tag" = "已加密";
@@ -1005,7 +1005,8 @@
 "sign_history_auth_failed_hint" = "无法解锁隐藏区。";
 "sign_history_hidden_auth_reason" = "解锁隐藏的签名记录";
 "dl_transfer_left" = "剩余 %@";
-"sign_profile_fallback_warning" = "描述文件 App ID 为 %@，不覆盖这个 IPA。将继续用当前描述文件签名；如果描述文件无法应用，安装可能被拒绝。";
+"sign_profile_fallback_warning" = "描述文件只授权 App ID %@。用原 Bundle ID 签名时 application-identifier 与 App 不匹配，iOS 会拒绝安装。仍可继续签名，但建议改用该 App ID，或导入通配符（*）描述文件。";
+"sign_use_profile_id" = "改用描述文件的 App ID：%@（会替换设备上同 ID 的应用，并移除无匹配描述文件的扩展）";
 "sign_team_mismatch_warning" = "证书与描述文件不属于同一个 Team。仍会尝试签名，但安装很可能失败；请选择同 Team 的证书和描述文件。";
 "sign_import_wrong_type" = "请选择 .ipa 或 .zip 文件。";
 "sign_target_control_center" = "控制中心";

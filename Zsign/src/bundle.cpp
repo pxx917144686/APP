@@ -624,34 +624,45 @@ bool ZBundle::SignFolder(ZSignAsset* pSignAsset,
 	ZLog::PrintV(">>> ReadCache: \t%s\n", m_bForceSign ? "NO" : "YES");
 	ZLog::PrintV(">>> Exclude MobileProvision: \t%s\n", excludeProvisioning ? "NO" : "YES");
 
-	if (SignNode(jvRoot)) {
-		// sign bare .dylib files (zsign's GetObjectsToSign only walks .app/.appex/.framework/.xctest)
-		std::function<void(const string&)> signBareDylibs = [&](const string& strDylibFolder) {
-			vector<string> arrDylibs;
-			ZFile::EnumFolder(strDylibFolder.c_str(), false, NULL, [&](bool bFolder, const string& strPath) {
-				if (!bFolder && ZFile::IsPathSuffix(strPath, ".dylib")) {
-					arrDylibs.push_back(strPath);
-				}
-				return false;
-			});
-			for (const string& strDylib : arrDylibs) {
-				ZMachO machoDylib;
-				if (machoDylib.Init(strDylib.c_str())) {
-					if (machoDylib.Sign(m_pSignAsset, true, "", "", "", "")) {
-						ZLog::PrintV(">>> Sign dylib: %s\n", strDylib.c_str());
-					} else {
-						ZLog::ErrorV(">>> Sign dylib failed: %s\n", strDylib.c_str());
-					}
-				}
-			}
-		};
-		signBareDylibs(m_strAppFolder + "/Frameworks");
-		ZFile::EnumFolder(m_strAppFolder.c_str(), true, NULL, [&](bool bFolder, const string& strPath) {
-			if (bFolder && ZFile::IsPathSuffix(strPath, ".appex")) {
-				signBareDylibs(strPath + "/Frameworks");
+	// sign bare .dylib files before SignNode so CodeResources seals their final bytes
+	std::function<string(const string&)> relativePath = [&](const string& strPath) -> string {
+		if (strPath.size() <= m_strAppFolder.size()) return "";
+		return strPath.substr(m_strAppFolder.size() + 1);
+	};
+	std::function<void(const string&)> signBareDylibs = [&](const string& strDylibFolder) {
+		vector<string> arrDylibs;
+		ZFile::EnumFolder(strDylibFolder.c_str(), false, NULL, [&](bool bFolder, const string& strPath) {
+			if (!bFolder && ZFile::IsPathSuffix(strPath, ".dylib")) {
+				arrDylibs.push_back(strPath);
 			}
 			return false;
 		});
+		for (const string& strDylib : arrDylibs) {
+			if (ZBundle::IsSignPathSkipped(relativePath(strDylib))) {
+				ZLog::PrintV(">>> Skip independently signed dylib: \t%s\n", strDylib.c_str());
+				continue;
+			}
+			ZMachO machoDylib;
+			if (machoDylib.Init(strDylib.c_str())) {
+				if (machoDylib.Sign(m_pSignAsset, true, "", "", "", "")) {
+					ZLog::PrintV(">>> Sign dylib: %s\n", strDylib.c_str());
+				} else {
+					ZLog::ErrorV(">>> Sign dylib failed: %s\n", strDylib.c_str());
+				}
+			}
+		}
+	};
+	signBareDylibs(m_strAppFolder + "/Frameworks");
+	ZFile::EnumFolder(m_strAppFolder.c_str(), true, NULL, [&](bool bFolder, const string& strPath) {
+		if (bFolder && ZFile::IsPathSuffix(strPath, ".appex")) {
+			if (!ZBundle::IsSignPathSkipped(relativePath(strPath))) {
+				signBareDylibs(strPath + "/Frameworks");
+			}
+		}
+		return false;
+	});
+
+	if (SignNode(jvRoot)) {
 		if (bEnableCache) {
 			ZFile::CreateFolder("./.zsign_cache");
 			jvRoot.style_write_to_file("./.zsign_cache/%s.json", strCacheName.c_str());
