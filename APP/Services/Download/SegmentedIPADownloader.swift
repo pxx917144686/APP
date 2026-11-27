@@ -135,6 +135,7 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         url: URL,
         tempFileURL: URL,
         maxConnections: Int = DownloadConnectionSettings.defaultValue,
+        allowsSystemProxy: Bool = false,
         onProgress: @escaping ProgressHandler,
         onFinish: @escaping FinishHandler
     ) async {
@@ -172,7 +173,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                 "Accept-Encoding": "identity",
                 "Accept": "*/*",
                 "Range": "bytes=0-0"
-            ]
+            ],
+            allowsSystemProxy: allowsSystemProxy
         )
 
         var totalSize: Int64 = 0
@@ -222,7 +224,8 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
                 return
             }
             let session = URLSession(
-                configuration: Self.makeSessionConfiguration(maxConnections: connectionLimit),
+                configuration: Self.makeSessionConfiguration(maxConnections: connectionLimit,
+                                                              allowsSystemProxy: allowsSystemProxy),
                 delegate: handler,
                 delegateQueue: nil
             )
@@ -771,16 +774,18 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
         state.session = nil
     }
 
-    private static func makeSessionConfiguration(maxConnections: Int) -> URLSessionConfiguration {
+    private static func makeSessionConfiguration(maxConnections: Int, allowsSystemProxy: Bool) -> URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
-        config.connectionProxyDictionary = [
-            "HTTPEnable": 0,
-            "HTTPSEnable": 0,
-            "SOCKSEnable": 0,
-            "HTTPProxy": "",
-            "HTTPSProxy": "",
-            "SOCKSProxy": ""
-        ]
+        if !allowsSystemProxy {
+            config.connectionProxyDictionary = [
+                "HTTPEnable": 0,
+                "HTTPSEnable": 0,
+                "SOCKSEnable": 0,
+                "HTTPProxy": "",
+                "HTTPSProxy": "",
+                "SOCKSProxy": ""
+            ]
+        }
         config.httpMaximumConnectionsPerHost = max(1, maxConnections)
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 7200
@@ -899,8 +904,11 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
               let state = try? JSONDecoder().decode(ResumeState.self, from: data) else {
             return nil
         }
+        // Compare host+path only: CDNs rotate access tokens in the query string
+        // (e.g. TestFlight accessKey), which must not invalidate resume points.
         guard state.version == 1,
-              state.url == url.absoluteString,
+              let savedURL = URL(string: state.url),
+              savedURL.host == url.host, savedURL.path == url.path,
               state.totalSize == probeTotalSize,
               !state.segments.isEmpty else {
             return nil
@@ -1004,15 +1012,17 @@ private final class HeaderProbe: NSObject, URLSessionDataDelegate, @unchecked Se
     private let lock = NSLock()
     private var continuation: CheckedContinuation<HTTPURLResponse?, Never>?
 
-    func probe(url: URL, headers: [String: String]) async -> HTTPURLResponse? {
+    func probe(url: URL, headers: [String: String], allowsSystemProxy: Bool = false) async -> HTTPURLResponse? {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
-        config.connectionProxyDictionary = [
-            "HTTPEnable": 0,
-            "HTTPSEnable": 0,
-            "SOCKSEnable": 0
-        ]
+        if !allowsSystemProxy {
+            config.connectionProxyDictionary = [
+                "HTTPEnable": 0,
+                "HTTPSEnable": 0,
+                "SOCKSEnable": 0
+            ]
+        }
         let session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
         defer { session.finishTasksAndInvalidate() }
 

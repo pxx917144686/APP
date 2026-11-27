@@ -103,8 +103,15 @@
 "download_failed" = "Pobieranie nie powiodło się";
 "download_cancelled" = "Anulowano";
 "download_waiting" = "Oczekiwanie";
+"download_waiting_sample" = "Zbieranie próbek prędkości";
+"chart_hud_detail" = "Pozostało %@ · Upłynęło %@";
+"download_connections" = "Maks. połączeń na zadanie";
+"download_connections_hint" = "Regulowane od 1 do 64. Rzeczywista równoległość jest ograniczona rozmiarem pliku i obsługą zakresów przez serwer, co najmniej 2 MB na segment.";
+"download_connections_effective" = "%@ · używane ok. %d połączeń (minimum 2 MB na segment)";
 "all_start" = "Rozpocznij wszystko";
 "no_downloads" = "Brak pobrań";
+"no_downloads_hint" = "Wyszukaj aplikację w sklepie lub zaimportuj plik IPA, aby zacząć";
+"no_downloads_action" = "Przeglądaj sklep";
 
 "account" = "Konto";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Nie utworzono podpisanego IPA.";
 "sign_err_unknown" = "Nieznany błąd podpisywania.";
 "sign_install_self_warning" = "Podpisany pakiet ma ten sam Bundle ID co ta aplikacja. Jego instalacja nadpisałaby narzędzie do podpisywania. Udostępnij IPA i zainstaluj go z pasującym Bundle ID/profilem albo na innym urządzeniu.";
+"sign_install_self_confirm" = "Ten pakiet ma ten sam Bundle ID co bieżąca aplikacja. Instalacja nadpisze i zamknie aplikację; otwórz ją ponownie z ekranu głównego po zakończeniu. Podczas instalacji nie blokuj ekranu.";
+"sign_install_continue" = "Zainstaluj mimo to";
+"sign_install_self_trollstore" = "Przekazano do TrollStore w celu instalacji z nadpisaniem";
 "sign_cert_detail_title" = "Szczegóły certyfikatu";
 "sign_cert_detail_from_profile" = "Szczegóły pochodzą z DeveloperCertificates w profilu.";
 "sign_cert_detail_unavailable" = "Starszy format .p12; framework Security nie może go odczytać. Wybierz profil, aby zobaczyć szczegóły jego certyfikatu.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Odblokuj ukryte rekordy podpisywania";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profilu to %@, które nie obejmuje tego IPA. Podpisywanie będzie kontynuowane z wybranym profilem; instalacja może zostać odrzucona, jeśli profil nie da się zastosować.";
+"sign_use_profile_id" = "Użyj App ID profilu: %@ (zastąpi każdą aplikację o tym samym ID na tym urządzeniu i usunie rozszerzenia bez pasującego profilu)";
 "sign_team_mismatch_warning" = "Certyfikat i profil należą do różnych teamów. Podpisywanie zostanie podjęte, ale instalacja prawdopodobnie się nie powiedzie; wybierz certyfikat i profil z tego samego teamu.";
 "sign_import_wrong_type" = "Wybierz plik .ipa lub .zip.";
 "sign_target_control_center" = "Centrum sterowania";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Sprawdź aktualizacje";
 "update_latest" = "Aktualne";
 "update_failed" = "Sprawdzenie nie powiodło się, dotknij, aby ponowić";
+"update_title" = "Dostępna aktualizacja";
+"update_current_version" = "Bieżąca wersja %@";
+"update_changelog" = "Co nowego";
+"update_no_notes" = "Brak informacji o wydaniu dla tej wersji";
+"update_download" = "Pobierz aktualizację";
+"update_downloading" = "Pobieranie %d%%";
+"update_cancel" = "Anuluj pobieranie";
+"update_share" = "Udostępnij pakiet";
+"update_view_github" = "Zobacz wszystkie wersje na GitHubie";
+"update_share_hint" = "Po zakończeniu pobierania automatycznie otworzy się arkusz udostępniania — pakiet można wysłać na inne urządzenie, aby go podpisać i zainstalować.";
+"update_incremental" = "Aktualizacja przyrostowa";
+"update_incremental_hint" = "Znaleziono lokalną kopię poprzedniego pakietu, więc pobierane są tylko zmienione części.";
+"update_incremental_progress" = "Pobieranie przyrostowe %@ / %@";
+"update_preparing" = "Przygotowywanie…";
+"update_preparing_hint" = "Odczytywanie katalogu pakietu w celu ustalenia, które części pobrać.";
+"update_downloaded" = "Zapisano %@ (Pliki / APP / Updates)";
+"update_install_failed" = "Niepowodzenie aktualizacji: %@";
 "dc_reason_eperm" = "Ta kompilacja nie ma uprawnienia do odszyfrowywania: podpisz aplikację ponownie certyfikatem deweloperskim z dynamic-codesigning";
 "dc_reason_pages" = "Jądro odrzuciło każdą stronę (mremap zwrócił 0, ale wszystkie strony zawiodły) — zwykle ten sam problem z uprawnieniem do podpisywania";
 "dc_reason_unchanged" = "Zawartość nie zmieniła się po odszyfrowaniu: ten plik binarny może być już odszyfrowany lub uszkodzony";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Przejdź do podpisywania";
 
 "testflight_history_limit" = "TestFlight pokazuje testerom tylko aktualnie aktywną kompilację; wygasłych kompilacji nie można odzyskać. Ta lista = aktywne kompilacje każdej platformy + kompilacje pobrane na tym urządzeniu, i rośnie wraz z liczbą pobrań.";
+"testflight_region" = "Region";
+"testflight_region_auto" = "Region konta";
+"testflight_region_hint" = "Konto TestFlight z regionu Chin nie może instalować aplikacji, których nie ma w chińskim App Store (np. Surge). Wybierz tutaj region sklepu aplikacji, aby ją zainstalować.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Pokazuj postęp zadań i stan w tle w Dynamic Island";
+"live_island_download" = "Pobieranie";
+"live_island_sign" = "Podpisywanie";
+"live_island_decrypt" = "Odszyfrowywanie";
+"live_island_install" = "Instalacja";
+"live_island_app" = "Aplikacja w tle";
+"island_app_phase" = "Działa w tle";
+"island_app_tap_to_open" = "Dotknij Dynamic Island, aby wrócić";

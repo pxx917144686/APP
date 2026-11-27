@@ -103,8 +103,15 @@
 "download_failed" = "فشل التنزيل";
 "download_cancelled" = "تم الإلغاء";
 "download_waiting" = "في انتظار";
+"download_waiting_sample" = "جمع عينات السرعة";
+"chart_hud_detail" = "المتبقي %@ · المنقضي %@";
+"download_connections" = "أقصى اتصالات لكل مهمة";
+"download_connections_hint" = "قابل للضبط من 1 إلى 64. التزامن الفعلي محدود بحجم الملف ودعم الخادم للنطاقات، بحد أدنى 2 MB لكل جزء.";
+"download_connections_effective" = "%@ · حوالي %d اتصالات قيد الاستخدام (حد أدنى 2 MB لكل جزء)";
 "all_start" = "بدء الكل";
 "no_downloads" = "لا توجد تنزيلات";
+"no_downloads_hint" = "ابحث عن تطبيق في المتجر أو استورد ملف IPA للبدء";
+"no_downloads_action" = "تصفح المتجر";
 
 "account" = "الحساب";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "لم يتم إنشاء ملف IPA الموقّع.";
 "sign_err_unknown" = "خطأ توقيع غير معروف.";
 "sign_install_self_warning" = "تحتوي الحزمة الموقعة على الـBundle ID نفسه مثل هذا التطبيق. تثبيتها سيستبدل أداة التوقيع. شارك الـIPA وثبّته بملف توفير مطابق، أو ثبّته على جهاز آخر.";
+"sign_install_self_confirm" = "هذه الحزمة لها نفس Bundle ID الخاص بالتطبيق الحالي. سيؤدي تثبيتها إلى استبدال التطبيق وإغلاقه؛ أعد فتحه من الشاشة الرئيسية بعد الانتهاء. أبقِ الشاشة غير مقفلة أثناء التثبيت.";
+"sign_install_continue" = "التثبيت على أي حال";
+"sign_install_self_trollstore" = "تم التسليم إلى TrollStore للتثبيت بالاستبدال";
 "sign_cert_detail_title" = "تفاصيل الشهادة";
 "sign_cert_detail_from_profile" = "التفاصيل تأتي من DeveloperCertificates في الملف.";
 "sign_cert_detail_unavailable" = "ملف .p12 قديم؛ لا يستطيع Security قراءته. اختر ملف توفير لعرض تفاصيل شهادته.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "فتح سجلات التوقيع المخفية";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "الـApp ID في الملف هو %@، وهو لا يغطي هذا الـIPA. سيستمر التوقيع بالملف المحدد؛ قد يُرفض التثبيت إذا تعذر تطبيق الملف.";
+"sign_use_profile_id" = "استخدام App ID الخاص بالملف الشخصي: %@ (يستبدل أي تطبيق بنفس المعرف على هذا الجهاز ويزيل الإضافات بدون ملف تعريف مطابق)";
 "sign_team_mismatch_warning" = "الشهادة والملف ينتميان إلى Team مختلفين. سيُحاول التوقيع على أي حال، لكن التثبيت سيفشل على الأرجح؛ اختر شهادة وملفًا من الـTeam نفسه.";
 "sign_import_wrong_type" = "اختر ملف .ipa أو .zip.";
 "sign_target_control_center" = "مركز التحكم";
@@ -1043,6 +1054,23 @@
 "check_updates" = "التحقق من التحديثات";
 "update_latest" = "محدث";
 "update_failed" = "فشل التحقق، اضغط لإعادة المحاولة";
+"update_title" = "يتوفر تحديث";
+"update_current_version" = "الإصدار الحالي %@";
+"update_changelog" = "الجديد";
+"update_no_notes" = "لا توجد ملاحظات إصدار لهذا الإصدار";
+"update_download" = "تنزيل التحديث";
+"update_downloading" = "جارٍ التنزيل %d%%";
+"update_cancel" = "إلغاء التنزيل";
+"update_share" = "مشاركة الحزمة";
+"update_view_github" = "عرض جميع الإصدارات على GitHub";
+"update_share_hint" = "تفتح لوحة المشاركة تلقائيًا عند اكتمال التنزيل، لتتمكن من إرسال الحزمة إلى جهاز آخر للتوقيع والتثبيت.";
+"update_incremental" = "تحديث تزايدي";
+"update_incremental_hint" = "وُجدت نسخة محلية من الحزمة السابقة، لذا يتم تنزيل الأجزاء المتغيرة فقط.";
+"update_incremental_progress" = "تنزيل تزايدي %@ / %@";
+"update_preparing" = "جارٍ التحضير…";
+"update_preparing_hint" = "قراءة دليل الحزمة لتحديد الأجزاء التي يلزم تنزيلها.";
+"update_downloaded" = "تم حفظ %@ (الملفات / APP / Updates)";
+"update_install_failed" = "فشل التحديث: %@";
 "dc_reason_eperm" = "هذا البناء ليس لديه إذن فك التشفير: أعد توقيع التطبيق بشهادة مطور تحمل dynamic-codesigning";
 "dc_reason_pages" = "رفض النواة كل الصفحات (أعاد mremap القيمة 0 لكن كل الصفحات فشلت) — عادةً تكون المشكلة نفسها في إذن التوقيع";
 "dc_reason_unchanged" = "لم يتغير المحتوى بعد فك التشفير: قد يكون هذا الملف الثنائي مفكوكًا بالفعل أو تالفًا";
@@ -1138,3 +1166,15 @@
 "sign_now" = "الانتقال إلى التوقيع";
 
 "testflight_history_limit" = "يعرض TestFlight للمختبِرين البناء النشط حاليًا فقط؛ لا يمكن استرجاع عمليات البناء منتهية الصلاحية. هذه القائمة = عمليات البناء النشطة لكل نظام أساسي + عمليات البناء المنزّلة على هذا الجهاز، وتزداد كلما نزّلت المزيد.";
+"testflight_region" = "المنطقة";
+"testflight_region_auto" = "منطقة الحساب";
+"testflight_region_hint" = "لا يمكن لحساب TestFlight في منطقة الصين تثبيت التطبيقات غير المدرجة في متجر التطبيقات الصيني (مثل Surge). اختر هنا منطقة متجر التطبيق لتثبيته.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "عرض تقدم المهام وحالة الخلفية في Dynamic Island";
+"live_island_download" = "التنزيلات";
+"live_island_sign" = "التوقيع";
+"live_island_decrypt" = "فك التشفير";
+"live_island_install" = "التثبيت";
+"live_island_app" = "التطبيق في الخلفية";
+"island_app_phase" = "يعمل في الخلفية";
+"island_app_tap_to_open" = "انقر على Dynamic Island للعودة";

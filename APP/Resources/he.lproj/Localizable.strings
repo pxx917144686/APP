@@ -103,8 +103,15 @@
 "download_failed" = "הורדה נכשלה";
 "download_cancelled" = "בוטל";
 "download_waiting" = "ממתין";
+"download_waiting_sample" = "אוסף דגימות מהירות";
+"chart_hud_detail" = "נותרו %@ · חלפו %@";
+"download_connections" = "חיבורים מרביים למשימה";
+"download_connections_hint" = "ניתן לכוון מ-1 עד 64. המקביליות בפועל מוגבלת על ידי גודל הקובץ ותמיכת הטווחים של השרת, עם 2 MB לפחות למקטע.";
+"download_connections_effective" = "%@ · כ-%d חיבורים בשימוש (2 MB לפחות למקטע)";
 "all_start" = "התחל הכל";
 "no_downloads" = "אין הורדות";
+"no_downloads_hint" = "חפשו אפליקציה בחנות או ייבאו IPA כדי להתחיל";
+"no_downloads_action" = "עיינו בחנות";
 
 "account" = "חשבון";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "ה-IPA החתום לא נוצר.";
 "sign_err_unknown" = "שגיאת חתימה לא ידועה.";
 "sign_install_self_warning" = "לחבילה החתומה יש את אותו Bundle ID כמו לאפליקציה הזאת. התקנתה תדרוס את כלי החתימה. שתפו את ה-IPA והתקינו אותו עם Bundle ID/פרופיל תואמים, או התקינו אותו במכשיר אחר.";
+"sign_install_self_confirm" = "לחבילה זו אותו Bundle ID כמו לאפליקציה הנוכחית. ההתקנה תחליף את האפליקציה ותסגור אותה; לאחר הסיום פתחו אותה מחדש ממסך הבית. יש להשאיר את המסך לא נעול במהלך ההתקנה.";
+"sign_install_continue" = "להתקין בכל זאת";
+"sign_install_self_trollstore" = "הועבר ל-TrollStore להתקנת החלפה";
 "sign_cert_detail_title" = "פרטי התעודה";
 "sign_cert_detail_from_profile" = "הפרטים מגיעים מה-DeveloperCertificates של הפרופיל.";
 "sign_cert_detail_unavailable" = "קובץ .p12 ישן; Security אינו מסוגל לקרוא אותו. בחרו פרופיל כדי לראות את פרטי התעודה שלו.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "פתיחת רשומות חתימה מוסתרות";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "ה-App ID בפרופיל הוא %@, שאינו מכסה את ה-IPA הזה. החתימה תמשיך עם הפרופיל הנבחר; ההתקנה עלולה להידחות אם לא ניתן להחיל את הפרופיל.";
+"sign_use_profile_id" = "להשתמש ב-App ID של הפרופיל: %@ (מחליף כל אפליקציה עם אותו ID במכשיר זה ומסיר הרחבות ללא פרופיל תואם)";
 "sign_team_mismatch_warning" = "התעודה והפרופיל שייכים ל-Teams שונים. החתימה תנוסה בכל זאת, אך ההתקנה כנראה תיכשל; בחרו תעודה ופרופיל מאותו Team.";
 "sign_import_wrong_type" = "בחרו קובץ .ipa או .zip.";
 "sign_target_control_center" = "מרכז הבקרה";
@@ -1043,6 +1054,23 @@
 "check_updates" = "בדוק עדכונים";
 "update_latest" = "מעודכן";
 "update_failed" = "הבדיקה נכשלה, הקש כדי לנסות שוב";
+"update_title" = "עדכון זמין";
+"update_current_version" = "הגרסה הנוכחית %@";
+"update_changelog" = "מה חדש";
+"update_no_notes" = "אין הערות שחרור לגרסה זו";
+"update_download" = "הורדת עדכון";
+"update_downloading" = "מוריד %d%%";
+"update_cancel" = "ביטול הורדה";
+"update_share" = "שיתוף החבילה";
+"update_view_github" = "הצגת כל הגרסאות ב-GitHub";
+"update_share_hint" = "גיליון השיתוף נפתח אוטומטית עם סיום ההורדה, כדי שתוכלו לשלוח את החבילה למכשיר אחר לחתימה והתקנה.";
+"update_incremental" = "עדכון מצטבר";
+"update_incremental_hint" = "נמצא עותק מקומי של החבילה הקודמת, ולכן מורידים רק את החלקים שהשתנו.";
+"update_incremental_progress" = "הורדה מצטברת %@ / %@";
+"update_preparing" = "מתכונן…";
+"update_preparing_hint" = "קורא את ספריית החבילה כדי לחשב אילו חלקים יש להוריד.";
+"update_downloaded" = "נשמר %@ (קבצים / APP / Updates)";
+"update_install_failed" = "העדכון נכשל: %@";
 "dc_reason_eperm" = "לבנייה הזו אין הרשאת פענוח: חתום מחדש על האפליקציה בתעודת מפתח שמכילה dynamic-codesigning";
 "dc_reason_pages" = "הליבה דחתה כל עמוד (mremap החזיר 0 אך כל העמודים נכשלו) — בדרך כלל אותה בעיית הרשאת חתימה";
 "dc_reason_unchanged" = "התוכן לא השתנה לאחר הפענוח: ייתכן שהקובץ הבינארי כבר מפוענח או פגום";
@@ -1138,3 +1166,15 @@
 "sign_now" = "עבור לחתימה";
 
 "testflight_history_limit" = "TestFlight מציג לבודקים רק את הבנייה הפעילה כרגע; לא ניתן לשחזר בניות שפג תוקפן. הרשימה הזו = בניות פעילות לכל פלטפורמה + בניות שהורדו במכשיר הזה, והיא גדלה ככל שמורידים יותר.";
+"testflight_region" = "אזור";
+"testflight_region_auto" = "אזור החשבון";
+"testflight_region_hint" = "חשבון TestFlight מאזור סין אינו יכול להתקין אפליקציות שאינן זמינות ב-App Store הסיני (למשל Surge). בחרו כאן את אזור החנות של האפליקציה כדי להתקין אותה.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "הצגת התקדמות משימות ומצב רקע ב-Dynamic Island";
+"live_island_download" = "הורדות";
+"live_island_sign" = "חתימה";
+"live_island_decrypt" = "פענוח";
+"live_island_install" = "התקנה";
+"live_island_app" = "אפליקציה ברקע";
+"island_app_phase" = "פועל ברקע";
+"island_app_tap_to_open" = "הקישו על ה-Dynamic Island כדי לחזור";

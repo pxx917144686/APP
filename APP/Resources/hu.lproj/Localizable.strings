@@ -103,8 +103,15 @@
 "download_failed" = "Letöltés sikertelen";
 "download_cancelled" = "Megszakítva";
 "download_waiting" = "Várakozás";
+"download_waiting_sample" = "Sebességminták gyűjtése";
+"chart_hud_detail" = "Hátralévő %@ · Eltelt %@";
+"download_connections" = "Maximális kapcsolat feladatonként";
+"download_connections_hint" = "1–64 között állítható. A tényleges párhuzamosságot a fájlméret és a szerver tartománytámogatása korlátozza, szegmensenként legalább 2 MB.";
+"download_connections_effective" = "%@ · körülbelül %d kapcsolat használatban (szegmensenként legalább 2 MB)";
 "all_start" = "Összes indítása";
 "no_downloads" = "Nincsenek letöltések";
+"no_downloads_hint" = "Keressen egy alkalmazást az áruházban, vagy importáljon egy IPA-t az induláshoz";
+"no_downloads_action" = "Áruház böngészése";
 
 "account" = "Fiók";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Az aláírt IPA nem jött létre.";
 "sign_err_unknown" = "Ismeretlen aláírási hiba.";
 "sign_install_self_warning" = "Az aláírt csomag Bundle ID-ja azonos az alkalmazáséval. Telepítése felülírná az aláíró eszközt. Ossza meg az IPA-t, és telepítse megfelelő Bundle ID/profil mellett, vagy telepítse más eszközre.";
+"sign_install_self_confirm" = "Ennek a csomagnak ugyanaz a Bundle ID-je, mint a jelenlegi alkalmazásé. A telepítés felülírja és kilépteti az alkalmazást; a befejezés után nyissa meg újra a kezdőképernyőről. A telepítés alatt tartsa feloldva a képernyőt.";
+"sign_install_continue" = "Telepítés mindenképp";
+"sign_install_self_trollstore" = "Átadva a TrollStore-nak felülíró telepítésre";
 "sign_cert_detail_title" = "Tanúsítvány részletei";
 "sign_cert_detail_from_profile" = "A részletek a profil DeveloperCertificates tartalmából származnak.";
 "sign_cert_detail_unavailable" = "Régebbi .p12; a Security nem tudja beolvasni. Válasszon profilt a tanúsítványa részleteinek megtekintéséhez.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Rejtett aláírási bejegyzések feloldása";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "A profil App ID-ja %@, amely nem fedi le ezt az IPA-t. Az aláírás a kiválasztott profillal folytatódik; a telepítés elutasítható, ha a profil nem alkalmazható.";
+"sign_use_profile_id" = "A profil App ID-jának használata: %@ (lecseréli az azonos ID-jű alkalmazásokat ezen az eszközön, és eltávolítja az egyező profil nélküli bővítményeket)";
 "sign_team_mismatch_warning" = "A tanúsítvány és a profil különböző teamhez tartozik. Az aláírás megkísérlődik, de a telepítés valószínűleg sikertelen lesz; válasszon ugyanahhoz a teamhez tartozó tanúsítványt és profilt.";
 "sign_import_wrong_type" = "Válasszon .ipa vagy .zip fájlt.";
 "sign_target_control_center" = "Vezérlőközpont";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Frissítések keresése";
 "update_latest" = "Naprakész";
 "update_failed" = "Az ellenőrzés sikertelen, koppintson az újrapróbálkozáshoz";
+"update_title" = "Frissítés érhető el";
+"update_current_version" = "Jelenlegi verzió %@";
+"update_changelog" = "Újdonságok";
+"update_no_notes" = "Ennek a verziónak nincs kiadási megjegyzése";
+"update_download" = "Frissítés letöltése";
+"update_downloading" = "Letöltés %d%%";
+"update_cancel" = "Letöltés megszakítása";
+"update_share" = "Csomag megosztása";
+"update_view_github" = "Összes verzió megtekintése a GitHubon";
+"update_share_hint" = "A letöltés befejezésekor automatikusan megnyílik a megosztópanel, hogy elküldhesse a csomagot másik eszközre aláírás és telepítés céljából.";
+"update_incremental" = "Növekményes frissítés";
+"update_incremental_hint" = "A korábbi csomag helyi másolata megtalálható, így csak a megváltozott részek töltődnek le.";
+"update_incremental_progress" = "Növekményes letöltés %@ / %@";
+"update_preparing" = "Előkészítés…";
+"update_preparing_hint" = "A csomag könyvtárának olvasása, hogy kiszámítsa, mely részek szükségesek.";
+"update_downloaded" = "Mentve: %@ (Fájlok / APP / Updates)";
+"update_install_failed" = "A frissítés sikertelen: %@";
 "dc_reason_eperm" = "Ehhez a buildhez nincs visszafejtési engedély: írja alá újra az appot egy dynamic-codesigning jogosultságú fejlesztői tanúsítvánnyal";
 "dc_reason_pages" = "A kernel minden oldalt elutasított (a mremap 0-t adott vissza, de minden oldal sikertelen) — általában ugyanaz az aláírási engedély probléma";
 "dc_reason_unchanged" = "A tartalom nem változott a visszafejtés után: ez a bináris már visszafejtett vagy sérült lehet";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Ugrás az aláíráshoz";
 
 "testflight_history_limit" = "A TestFlight csak az éppen aktív buildet mutatja a tesztelőknek; a lejárt buildek nem kérhetők le. Ez a lista = az egyes platformok aktív buildjei + az ezen az eszközön letöltött buildek, és minden letöltéssel bővül.";
+"testflight_region" = "Régió";
+"testflight_region_auto" = "Fiók régiója";
+"testflight_region_hint" = "A kínai régiójú TestFlight-fiók nem telepíthet olyan alkalmazásokat, amelyek nem szerepelnek a kínai App Store-ban (pl. Surge). Itt válassza ki az alkalmazás áruházi régióját a telepítéshez.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Feladatok előrehaladása és háttérállapot megjelenítése a Dynamic Islanden";
+"live_island_download" = "Letöltések";
+"live_island_sign" = "Aláírás";
+"live_island_decrypt" = "Visszafejtés";
+"live_island_install" = "Telepítés";
+"live_island_app" = "Alkalmazás a háttérben";
+"island_app_phase" = "Fut a háttérben";
+"island_app_tap_to_open" = "Érintse meg a Dynamic Islandet a visszatéréshez";

@@ -103,8 +103,15 @@
 "download_failed" = "Download mislukt";
 "download_cancelled" = "Geannuleerd";
 "download_waiting" = "Wachten";
+"download_waiting_sample" = "Snelheidsmetingen worden verzameld";
+"chart_hud_detail" = "Resterend %@ · Verstreken %@";
+"download_connections" = "Max. verbindingen per taak";
+"download_connections_hint" = "Instelbaar van 1 tot 64. De werkelijke gelijktijdigheid wordt beperkt door de bestandsgrootte en de range-ondersteuning van de server, met minimaal 2 MB per segment.";
+"download_connections_effective" = "%@ · ongeveer %d verbindingen in gebruik (minimaal 2 MB per segment)";
 "all_start" = "Alle starten";
 "no_downloads" = "Geen downloads";
+"no_downloads_hint" = "Zoek een app in de store of importeer een IPA om te beginnen";
+"no_downloads_action" = "Store bekijken";
 
 "account" = "Account";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "De ondertekende IPA is niet gemaakt.";
 "sign_err_unknown" = "Onbekende ondertekeningsfout.";
 "sign_install_self_warning" = "Het ondertekende pakket heeft dezelfde Bundle ID als deze app. Installatie zou de ondertekeningstool overschrijven. Deel de IPA en installeer deze met een overeenkomende Bundle ID/profiel, of installeer deze op een ander apparaat.";
+"sign_install_self_confirm" = "Dit pakket heeft dezelfde Bundle ID als de huidige app. Bij installatie wordt de app overschreven en afgesloten; open deze daarna opnieuw vanaf het beginscherm. Houd het scherm tijdens de installatie ontgrendeld.";
+"sign_install_continue" = "Toch installeren";
+"sign_install_self_trollstore" = "Overgedragen aan TrollStore voor overschrijdende installatie";
 "sign_cert_detail_title" = "Certificaatdetails";
 "sign_cert_detail_from_profile" = "Details komen uit de DeveloperCertificates van het profiel.";
 "sign_cert_detail_unavailable" = "Verouderde .p12; Security kan deze niet lezen. Selecteer een profiel om de certificaatdetails te bekijken.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Verborgen ondertekeningsitems ontgrendelen";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "De App ID van het profiel is %@, die dekt deze IPA niet. De ondertekening gaat verder met het geselecteerde profiel; de installatie kan worden geweigerd als het profiel niet kan worden toegepast.";
+"sign_use_profile_id" = "App ID van het profiel gebruiken: %@ (vervangt elke app met dezelfde ID op dit apparaat en verwijdert extensies zonder passend profiel)";
 "sign_team_mismatch_warning" = "Het certificaat en het profiel behoren tot verschillende teams. Ondertekening wordt geprobeerd, maar de installatie zal waarschijnlijk mislukken; kies een certificaat en profiel van hetzelfde team.";
 "sign_import_wrong_type" = "Kies een .ipa- of .zip-bestand.";
 "sign_target_control_center" = "Controlecentrum";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Controleren op updates";
 "update_latest" = "Up-to-date";
 "update_failed" = "Controle mislukt, tik om opnieuw te proberen";
+"update_title" = "Update beschikbaar";
+"update_current_version" = "Huidige versie %@";
+"update_changelog" = "Nieuw";
+"update_no_notes" = "Geen release-opmerkingen voor deze versie";
+"update_download" = "Update downloaden";
+"update_downloading" = "Downloaden %d%%";
+"update_cancel" = "Download annuleren";
+"update_share" = "Pakket delen";
+"update_view_github" = "Alle releases op GitHub bekijken";
+"update_share_hint" = "Het deelvenster wordt automatisch geopend wanneer de download klaar is, zodat je het pakket naar een ander apparaat kunt sturen om het te ondertekenen en te installeren.";
+"update_incremental" = "Incrementele update";
+"update_incremental_hint" = "Er is een lokale kopie van het vorige pakket gevonden, dus alleen gewijzigde onderdelen worden gedownload.";
+"update_incremental_progress" = "Incrementele download %@ / %@";
+"update_preparing" = "Voorbereiden…";
+"update_preparing_hint" = "De map van het pakket wordt gelezen om te berekenen welke onderdelen gedownload moeten worden.";
+"update_downloaded" = "Opgeslagen %@ (Bestanden / APP / Updates)";
+"update_install_failed" = "Update mislukt: %@";
 "dc_reason_eperm" = "Deze build heeft geen ontsleutelingsrechten: onderteken de app opnieuw met een ontwikkelaarscertificaat met dynamic-codesigning";
 "dc_reason_pages" = "De kernel weigerde elke pagina (mremap gaf 0 terug, maar alle pagina's faalden) — meestal hetzelfde probleem met ondertekeningsrechten";
 "dc_reason_unchanged" = "De inhoud is na het ontsleutelen niet gewijzigd: deze binary is mogelijk al ontsleuteld of beschadigd";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Naar Ondertekenen";
 
 "testflight_history_limit" = "TestFlight toont testers alleen de momenteel actieve build; verlopen builds zijn niet op te halen. Deze lijst = actieve builds per platform + builds die op dit apparaat zijn gedownload, en groeit naarmate je meer downloadt.";
+"testflight_region" = "Regio";
+"testflight_region_auto" = "Accountregio";
+"testflight_region_hint" = "Een TestFlight-account in de regio China kan geen apps installeren die niet in de Chinese App Store staan (bijv. Surge). Kies hier de store-regio van de app om deze te installeren.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Taakvoortgang en achtergrondstatus tonen in de Dynamic Island";
+"live_island_download" = "Downloads";
+"live_island_sign" = "Ondertekening";
+"live_island_decrypt" = "Ontcijfering";
+"live_island_install" = "Installatie";
+"live_island_app" = "App op achtergrond";
+"island_app_phase" = "Actief op achtergrond";
+"island_app_tap_to_open" = "Tik op de Dynamic Island om terug te keren";

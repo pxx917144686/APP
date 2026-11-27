@@ -799,9 +799,11 @@ final class TestFlightDownloadManager: ObservableObject {
             let transferHandle = TFTransferHandle()
             transferHandles[unifiedTaskID] = transferHandle
             defer { transferHandles[unifiedTaskID] = nil }
+            var unifiedMaxConnections: Int?
             if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) {
                 task.runtime.status = .downloading
                 task.runtime.error = nil
+                unifiedMaxConnections = task.maxConnections
             }
             UnifiedDownloadManager.shared.saveDownloadTasks()
             UnifiedDownloadManager.shared.beginTestFlightTask(taskID: unifiedTaskID)
@@ -843,6 +845,7 @@ final class TestFlightDownloadManager: ObservableObject {
                     versionLabel: versionLabel ?? app.version,
                     platform: "ios",
                     handle: transferHandle,
+                    maxConnections: unifiedMaxConnections,
                     progress: { [weak self] done, total in
                         guard total > 0 else { return }
                         Task { @MainActor in
@@ -850,6 +853,14 @@ final class TestFlightDownloadManager: ObservableObject {
                             if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }),
                                task.runtime.status == .downloading {
                                 task.runtime.updateProgress(completed: done, total: total)
+                            }
+                        }
+                    },
+                    onActiveConnections: { connections in
+                        Task { @MainActor in
+                            if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }),
+                               task.runtime.status == .downloading {
+                                task.runtime.activeConnections = connections
                             }
                         }
                     },
@@ -869,6 +880,7 @@ final class TestFlightDownloadManager: ObservableObject {
                 if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) {
                     task.runtime.updateProgress(completed: Int64(report.outputBytes), total: Int64(report.outputBytes))
                     task.runtime.status = .completed
+                    task.runtime.activeConnections = 0
                     task.localFilePath = report.output.path
                     task.runtime.error = nil
                     task.runtime.speed = ""
@@ -906,6 +918,7 @@ final class TestFlightDownloadManager: ObservableObject {
                 SoundEffects.play(.error)
                 if let task = UnifiedDownloadManager.shared.downloadRequests.first(where: { $0.id == unifiedTaskID }) {
                     task.runtime.status = .failed
+                    task.runtime.activeConnections = 0
                     task.runtime.error = friendly
                 }
                 UnifiedDownloadManager.shared.saveDownloadTasks()

@@ -103,8 +103,15 @@
 "download_failed" = "Unduhan Gagal";
 "download_cancelled" = "Dibatalkan";
 "download_waiting" = "Menunggu";
+"download_waiting_sample" = "Mengumpulkan sampel kecepatan";
+"chart_hud_detail" = "Tersisa %@ · Berlalu %@";
+"download_connections" = "Koneksi Maks. per Tugas";
+"download_connections_hint" = "Dapat diatur dari 1 hingga 64. Konkurensi sebenarnya dibatasi ukuran file dan dukungan range server, dengan minimal 2 MB per segmen.";
+"download_connections_effective" = "%@ · sekitar %d koneksi digunakan (minimal 2 MB per segmen)";
 "all_start" = "Mulai Semua";
 "no_downloads" = "Tidak Ada Unduhan";
+"no_downloads_hint" = "Cari aplikasi di toko, atau impor IPA untuk memulai";
+"no_downloads_action" = "Jelajahi toko";
 
 "account" = "Akun";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "IPA yang ditandatangani tidak dibuat.";
 "sign_err_unknown" = "Kesalahan penandatanganan tidak diketahui.";
 "sign_install_self_warning" = "Paket yang ditandatangani memiliki Bundle ID yang sama dengan aplikasi ini. Menginstalnya akan menimpa alat penandatanganan. Bagikan IPA dan instal dengan Bundle ID/profil yang cocok, atau instal di perangkat lain.";
+"sign_install_self_confirm" = "Paket ini memiliki Bundle ID yang sama dengan aplikasi saat ini. Menginstalnya akan menimpa dan menutup aplikasi; buka kembali dari Home Screen setelah selesai. Jangan kunci layar selama instalasi.";
+"sign_install_continue" = "Tetap Instal";
+"sign_install_self_trollstore" = "Diserahkan ke TrollStore untuk instalasi timpa";
 "sign_cert_detail_title" = "Detail Sertifikat";
 "sign_cert_detail_from_profile" = "Detail berasal dari DeveloperCertificates di profil.";
 "sign_cert_detail_unavailable" = ".p12 lama; Security tidak dapat membacanya. Pilih profil untuk melihat detail sertifikatnya.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Buka kunci catatan penandatanganan tersembunyi";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profil adalah %@, yang tidak mencakup IPA ini. Penandatanganan akan berlanjut dengan profil yang dipilih; instalasi mungkin ditolak jika profil tidak dapat diterapkan.";
+"sign_use_profile_id" = "Gunakan App ID profil: %@ (mengganti aplikasi dengan ID yang sama di perangkat ini dan menghapus ekstensi tanpa profil yang cocok)";
 "sign_team_mismatch_warning" = "Sertifikat dan profil termasuk tim yang berbeda. Penandatanganan akan dicoba, tetapi instalasi kemungkinan gagal; pilih sertifikat dan profil dari tim yang sama.";
 "sign_import_wrong_type" = "Pilih berkas .ipa atau .zip.";
 "sign_target_control_center" = "Pusat Kontrol";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Periksa pembaruan";
 "update_latest" = "Sudah terbaru";
 "update_failed" = "Pemeriksaan gagal, ketuk untuk mencoba lagi";
+"update_title" = "Pembaruan Tersedia";
+"update_current_version" = "Versi saat ini %@";
+"update_changelog" = "Yang Baru";
+"update_no_notes" = "Tidak ada catatan rilis untuk versi ini";
+"update_download" = "Unduh Pembaruan";
+"update_downloading" = "Mengunduh %d%%";
+"update_cancel" = "Batalkan Unduhan";
+"update_share" = "Bagikan Paket";
+"update_view_github" = "Lihat semua rilis di GitHub";
+"update_share_hint" = "Lembar bagikan terbuka otomatis saat unduhan selesai, agar Anda dapat mengirim paket ke perangkat lain untuk ditandatangani dan diinstal.";
+"update_incremental" = "Pembaruan Inkremental";
+"update_incremental_hint" = "Salinan lokal paket sebelumnya ditemukan, jadi hanya bagian yang berubah yang diunduh.";
+"update_incremental_progress" = "Unduhan inkremental %@ / %@";
+"update_preparing" = "Menyiapkan…";
+"update_preparing_hint" = "Membaca direktori paket untuk menghitung bagian yang perlu diunduh.";
+"update_downloaded" = "Tersimpan %@ (File / APP / Updates)";
+"update_install_failed" = "Pembaruan gagal: %@";
 "dc_reason_eperm" = "Build ini tidak memiliki izin dekripsi: tanda tangani ulang aplikasi dengan sertifikat pengembang yang membawa dynamic-codesigning";
 "dc_reason_pages" = "Kernel menolak semua halaman (mremap mengembalikan 0 tetapi semua halaman gagal) — biasanya masalah izin tanda tangan yang sama";
 "dc_reason_unchanged" = "Konten tidak berubah setelah dekripsi: biner ini mungkin sudah didekripsi atau rusak";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Ke Tanda Tangan";
 
 "testflight_history_limit" = "TestFlight hanya menampilkan build yang aktif saat ini kepada penguji; build kedaluwarsa tidak dapat diambil. Daftar ini = build aktif tiap platform + build yang diunduh di perangkat ini, dan bertambah saat Anda mengunduh lebih banyak.";
+"testflight_region" = "Wilayah";
+"testflight_region_auto" = "Wilayah Akun";
+"testflight_region_hint" = "Akun TestFlight wilayah Tiongkok tidak dapat menginstal aplikasi yang tidak ada di App Store Tiongkok (mis. Surge). Pilih wilayah toko aplikasi di sini untuk menginstalnya.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Tampilkan progres tugas dan status latar belakang di Dynamic Island";
+"live_island_download" = "Unduhan";
+"live_island_sign" = "Penandatanganan";
+"live_island_decrypt" = "Dekripsi";
+"live_island_install" = "Instalasi";
+"live_island_app" = "Aplikasi di latar belakang";
+"island_app_phase" = "Berjalan di latar belakang";
+"island_app_tap_to_open" = "Ketuk Dynamic Island untuk kembali";

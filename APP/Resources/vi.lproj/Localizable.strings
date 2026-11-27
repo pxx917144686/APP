@@ -103,8 +103,15 @@
 "download_failed" = "Tải xuống thất bại";
 "download_cancelled" = "Đã hủy";
 "download_waiting" = "Đang chờ";
+"download_waiting_sample" = "Đang thu thập mẫu tốc độ";
+"chart_hud_detail" = "Còn lại %@ · Đã trôi qua %@";
+"download_connections" = "Số kết nối tối đa mỗi tác vụ";
+"download_connections_hint" = "Điều chỉnh được từ 1 đến 64. Độ đồng thời thực tế bị giới hạn bởi kích thước tệp và khả năng hỗ trợ range của máy chủ, mỗi phân đoạn tối thiểu 2 MB.";
+"download_connections_effective" = "%@ · đang dùng khoảng %d kết nối (mỗi phân đoạn tối thiểu 2 MB)";
 "all_start" = "Bắt đầu tất cả";
 "no_downloads" = "Không có tải xuống";
+"no_downloads_hint" = "Tìm ứng dụng trong cửa hàng hoặc nhập IPA để bắt đầu";
+"no_downloads_action" = "Duyệt cửa hàng";
 
 "account" = "Tài khoản";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Không tạo được IPA đã ký.";
 "sign_err_unknown" = "Lỗi ký không xác định.";
 "sign_install_self_warning" = "Gói đã ký có cùng Bundle ID với ứng dụng này. Cài sẽ ghi đè công cụ ký. Hãy chia sẻ IPA và cài bằng Bundle ID/hồ sơ khớp, hoặc cài trên thiết bị khác.";
+"sign_install_self_confirm" = "Gói này có cùng Bundle ID với ứng dụng hiện tại. Cài đặt sẽ ghi đè và làm ứng dụng thoát; sau khi xong hãy mở lại từ Màn hình chính. Trong lúc cài đặt, hãy giữ màn hình không khóa.";
+"sign_install_continue" = "Vẫn cài đặt";
+"sign_install_self_trollstore" = "Đã chuyển cho TrollStore để cài đè";
 "sign_cert_detail_title" = "Chi tiết chứng chỉ";
 "sign_cert_detail_from_profile" = "Chi tiết lấy từ DeveloperCertificates trong hồ sơ.";
 "sign_cert_detail_unavailable" = ".p12 kiểu cũ; Security không đọc được. Chọn hồ sơ để xem chi tiết chứng chỉ của nó.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Mở khóa các bản ghi ký ẩn";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID của hồ sơ là %@, không bao phủ IPA này. Việc ký sẽ tiếp tục bằng hồ sơ đã chọn; cài đặt có thể bị từ chối nếu không áp dụng được hồ sơ.";
+"sign_use_profile_id" = "Dùng App ID của hồ sơ: %@ (sẽ thay thế ứng dụng cùng ID trên máy này và gỡ bỏ tiện ích mở rộng không có hồ sơ tương ứng)";
 "sign_team_mismatch_warning" = "Chứng chỉ và hồ sơ thuộc các nhóm khác nhau. Việc ký vẫn được thử nhưng cài đặt có lẽ sẽ thất bại; hãy chọn chứng chỉ và hồ sơ cùng nhóm.";
 "sign_import_wrong_type" = "Chọn tệp .ipa hoặc .zip.";
 "sign_target_control_center" = "Trung tâm điều khiển";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Kiểm tra cập nhật";
 "update_latest" = "Đã là bản mới nhất";
 "update_failed" = "Kiểm tra thất bại, chạm để thử lại";
+"update_title" = "Có bản cập nhật";
+"update_current_version" = "Phiên bản hiện tại %@";
+"update_changelog" = "Có gì mới";
+"update_no_notes" = "Chưa có ghi chú phát hành cho phiên bản này";
+"update_download" = "Tải bản cập nhật";
+"update_downloading" = "Đang tải %d%%";
+"update_cancel" = "Hủy tải xuống";
+"update_share" = "Chia sẻ gói";
+"update_view_github" = "Xem tất cả các bản phát hành trên GitHub";
+"update_share_hint" = "Khi tải xong, bảng chia sẻ sẽ tự động mở để bạn gửi gói sang thiết bị khác nhằm ký và cài đặt.";
+"update_incremental" = "Cập nhật gia tăng";
+"update_incremental_hint" = "Đã tìm thấy bản sao cục bộ của gói trước đó nên chỉ tải những phần thay đổi.";
+"update_incremental_progress" = "Tải gia tăng %@ / %@";
+"update_preparing" = "Đang chuẩn bị…";
+"update_preparing_hint" = "Đang đọc thư mục của gói để tính toán phần cần tải.";
+"update_downloaded" = "Đã lưu %@ (Tệp / APP / Updates)";
+"update_install_failed" = "Cập nhật thất bại: %@";
 "dc_reason_eperm" = "Bản dựng này không có quyền giải mã: ký lại ứng dụng bằng chứng chỉ nhà phát triển có dynamic-codesigning";
 "dc_reason_pages" = "Kernel từ chối mọi trang (mremap trả về 0 nhưng tất cả trang đều thất bại) — thường là cùng vấn đề quyền ký";
 "dc_reason_unchanged" = "Nội dung không thay đổi sau khi giải mã: tệp nhị phân này có thể đã được giải mã hoặc bị hỏng";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Đến phần Ký";
 
 "testflight_history_limit" = "TestFlight chỉ hiển thị cho người thử bản dựng đang hoạt động; không thể lấy lại bản dựng đã hết hạn. Danh sách này = bản dựng đang hoạt động của từng nền tảng + bản dựng đã tải trên thiết bị này, và dài thêm khi bạn tải nhiều hơn.";
+"testflight_region" = "Vùng";
+"testflight_region_auto" = "Vùng của tài khoản";
+"testflight_region_hint" = "Tài khoản TestFlight vùng Trung Quốc không thể cài ứng dụng không có trên App Store Trung Quốc (ví dụ Surge). Chọn vùng cửa hàng của ứng dụng tại đây để cài.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Hiển thị tiến trình tác vụ và trạng thái nền trên Dynamic Island";
+"live_island_download" = "Tác vụ tải xuống";
+"live_island_sign" = "Tác vụ ký";
+"live_island_decrypt" = "Tác vụ giải mã";
+"live_island_install" = "Tác vụ cài đặt";
+"live_island_app" = "Ứng dụng trong nền";
+"island_app_phase" = "Đang chạy trong nền";
+"island_app_tap_to_open" = "Chạm vào Dynamic Island để quay lại ứng dụng";

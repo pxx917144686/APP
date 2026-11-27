@@ -1,5 +1,22 @@
 import Foundation
 
+/// Control surface forwarded to the segmented download engine while it owns
+/// the transfer; a handle with attached controls routes pause/resume/cancel
+/// to the engine instead of the legacy URLSessionDownloadTask.
+public struct TFEngineControls: @unchecked Sendable {
+    public let pause: () -> Void
+    public let resume: () -> Void
+    public let cancel: () -> Void
+
+    public init(pause: @escaping () -> Void,
+                resume: @escaping () -> Void,
+                cancel: @escaping () -> Void) {
+        self.pause = pause
+        self.resume = resume
+        self.cancel = cancel
+    }
+}
+
 public final class TFTransferHandle: @unchecked Sendable {
     private let lock = NSLock()
     private var task: URLSessionDownloadTask?
@@ -7,6 +24,7 @@ public final class TFTransferHandle: @unchecked Sendable {
     private var paused = false
     private var pauseContinuation: CheckedContinuation<Void, Error>?
     private var pausedResumeData: Data?
+    private var engine: TFEngineControls?
 
     public init() {}
 
@@ -30,7 +48,9 @@ public final class TFTransferHandle: @unchecked Sendable {
         }
         paused = true
         let task = self.task
+        let engine = self.engine
         lock.unlock()
+        engine?.pause()
         task?.cancel(byProducingResumeData: { [weak self] data in
             guard let self, let data, !data.isEmpty else { return }
             self.storePausedResumeData(data)
@@ -46,7 +66,9 @@ public final class TFTransferHandle: @unchecked Sendable {
         paused = false
         let continuation = pauseContinuation
         pauseContinuation = nil
+        let engine = self.engine
         lock.unlock()
+        engine?.resume()
         continuation?.resume()
     }
 
@@ -58,9 +80,27 @@ public final class TFTransferHandle: @unchecked Sendable {
         let task = self.task
         let continuation = pauseContinuation
         pauseContinuation = nil
+        let engine = self.engine
         lock.unlock()
+        engine?.cancel()
         task?.cancel()
         continuation?.resume(throwing: TFError.cancelled)
+    }
+
+    func attachEngine(_ controls: TFEngineControls) {
+        lock.lock()
+        engine = controls
+        let alreadyPaused = paused && !cancelled
+        lock.unlock()
+        if alreadyPaused {
+            controls.pause()
+        }
+    }
+
+    func detachEngine() {
+        lock.lock()
+        engine = nil
+        lock.unlock()
     }
 
     func attach(_ task: URLSessionDownloadTask) {
@@ -126,6 +166,24 @@ private struct TFTransferPausedError: Error {
 }
 
 private struct TFBackgroundFallbackError: Error {}
+
+/// Records pause/cancel intents that may arrive before the segmented engine
+/// has registered its state for a download id.
+final class SegmentedIntentGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _paused = false
+    private var _cancelled = false
+
+    var paused: Bool {
+        get { lock.lock(); defer { lock.unlock() }; return _paused }
+        set { lock.lock(); _paused = newValue; lock.unlock() }
+    }
+
+    var cancelled: Bool {
+        get { lock.lock(); defer { lock.unlock() }; return _cancelled }
+        set { lock.lock(); _cancelled = newValue; lock.unlock() }
+    }
+}
 
 final class TFBackgroundSessionHub: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
     static let shared = TFBackgroundSessionHub()
@@ -368,6 +426,143 @@ public enum TFTransfer {
                     log("cdn: install refreshed, URL changed (accessKey rotated)")
                     current = renewed
                     resumeData = nil
+                }
+            }
+        }
+        throw TFError.networkLost
+    }
+
+    /// Multi-connection transfer through the shared segmented engine
+    /// (`SegmentedIPADownloader`). Bytes stream into `scratchURL` (persistent,
+    /// keeps `.segresume` across process restarts and URL access-key rotation)
+    /// and move to `destination` on success. Pause/resume/cancel are routed
+    /// through the handle to the engine.
+    static func downloadSegmented(url: URL, to destination: URL,
+                                  scratchURL: URL,
+                                  handle: TFTransferHandle,
+                                  maxConnections: Int,
+                                  allowsSystemProxy: Bool,
+                                  progress: @escaping @Sendable (Int64, Int64) -> Void,
+                                  onActiveConnections: (@Sendable (Int) -> Void)? = nil,
+                                  onResume: (@Sendable () -> Void)? = nil,
+                                  refresh: () async throws -> URL?,
+                                  log: @escaping @Sendable (String) -> Void) async throws -> Outcome {
+        var attempts: [String] = []
+        var current = url
+        var failureCount = 0
+
+        func cleanupScratch() {
+            try? FileManager.default.removeItem(at: scratchURL)
+            // Mirrors SegmentedIPADownloader.resumeFilePath(_:).
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: scratchURL.path + ".segresume"))
+        }
+
+        while failureCount < 3 {
+            if handle.isCancelled { throw TFError.cancelled }
+            if handle.isPaused {
+                try await handle.waitWhilePaused()
+                if handle.isCancelled { throw TFError.cancelled }
+                onResume?()
+            }
+
+            let attemptURL = current
+            let downloadId = UUID().uuidString
+            let attemptIndex = failureCount + 1
+            log("cdn: segmented attempt #\(String(attemptIndex)) conns=\(String(maxConnections))")
+            let engine = SegmentedIPADownloader.shared
+
+            // pause/cancel arriving before the engine registers its state are
+            // no-ops engine-side; record the intent and re-apply after start.
+            let gate = SegmentedIntentGate()
+            var finished = false
+            let finishLock = NSLock()
+            let result: Result<(tempFileURL: URL, totalBytes: Int64), DownloadError> = await withTaskCancellationHandler {
+                await withCheckedContinuation { (continuation: CheckedContinuation<Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>, Never>) in
+                    handle.attachEngine(TFEngineControls(
+                        pause: {
+                            gate.paused = true
+                            engine.pause(downloadId: downloadId)
+                        },
+                        resume: {
+                            gate.paused = false
+                            engine.resume(downloadId: downloadId)
+                        },
+                        cancel: {
+                            gate.cancelled = true
+                            engine.cancel(downloadId: downloadId)
+                        }
+                    ))
+                    let finishOnce: @Sendable (Result<(tempFileURL: URL, totalBytes: Int64), DownloadError>) -> Void = { outcome in
+                        finishLock.lock()
+                        let first = !finished
+                        finished = true
+                        finishLock.unlock()
+                        guard first else { return }
+                        handle.detachEngine()
+                        continuation.resume(returning: outcome)
+                    }
+                    Task.detached {
+                        await engine.start(
+                            downloadId: downloadId,
+                            url: attemptURL,
+                            tempFileURL: scratchURL,
+                            maxConnections: maxConnections,
+                            allowsSystemProxy: allowsSystemProxy,
+                            onProgress: { bytes, total, connections in
+                                progress(bytes, total)
+                                onActiveConnections?(connections)
+                            },
+                            onFinish: finishOnce
+                        )
+                        if gate.cancelled {
+                            engine.cancel(downloadId: downloadId)
+                        } else if gate.paused {
+                            engine.pause(downloadId: downloadId)
+                        }
+                    }
+                }
+            } onCancel: {
+                gate.cancelled = true
+                engine.cancel(downloadId: downloadId)
+            }
+
+            switch result {
+            case .success:
+                if handle.isCancelled {
+                    cleanupScratch()
+                    throw TFError.cancelled
+                }
+                do {
+                    try? FileManager.default.removeItem(at: destination)
+                    try FileManager.default.moveItem(at: scratchURL, to: destination)
+                    let bytes = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? Int) ?? -1
+                    attempts.append("#\(String(attemptIndex)) ok \(String(bytes)) B (segmented)")
+                    log("cdn: " + attempts.joined(separator: "; "))
+                    return Outcome(bytes: bytes, attempts: attempts)
+                } catch {
+                    attempts.append("#\(String(attemptIndex)) failed (move \((error as NSError).code))")
+                    log("cdn: " + attempts.joined(separator: "; "))
+                    failureCount += 1
+                }
+            case .failure(let error):
+                if handle.isCancelled {
+                    cleanupScratch()
+                    throw TFError.cancelled
+                }
+                failureCount += 1
+                attempts.append("#\(String(failureCount)) failed (\(error.localizedDescription))")
+                log("cdn: attempt \(String(failureCount)) failed (\(error.localizedDescription))")
+                if failureCount < 3 {
+                    // Rotate the access key before the next attempt; .segresume
+                    // survives because resume validation compares host+path only.
+                    do {
+                        if let renewed = try await refresh(), renewed != current {
+                            log("cdn: install refreshed, URL changed (accessKey rotated)")
+                            current = renewed
+                        }
+                    } catch {
+                        log("cdn: refresh failed (\(String((error as NSError).code)))")
+                    }
                 }
             }
         }

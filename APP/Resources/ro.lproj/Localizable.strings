@@ -103,8 +103,15 @@
 "download_failed" = "Descărcare eșuată";
 "download_cancelled" = "Anulat";
 "download_waiting" = "În așteptare";
+"download_waiting_sample" = "Se colectează mostre de viteză";
+"chart_hud_detail" = "Rămas %@ · Scurs %@";
+"download_connections" = "Conexiuni max. per sarcină";
+"download_connections_hint" = "Reglabil de la 1 la 64. Concurența reală este limitată de dimensiunea fișierului și de suportul de intervale al serverului, cu cel puțin 2 MB pe segment.";
+"download_connections_effective" = "%@ · circa %d conexiuni în uz (minimum 2 MB pe segment)";
 "all_start" = "Pornește toate";
 "no_downloads" = "Fără descărcări";
+"no_downloads_hint" = "Caută o aplicație în magazin sau importă un IPA pentru a începe";
+"no_downloads_action" = "Explorează magazinul";
 
 "account" = "Cont";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "IPA-ul semnat nu a fost creat.";
 "sign_err_unknown" = "Eroare de semnare necunoscută.";
 "sign_install_self_warning" = "Pachetul semnat are același Bundle ID ca această aplicație. Instalarea l-ar suprascrie pe instrumentul de semnare. Partajați IPA-ul și instalați-l cu un Bundle ID/profil corespunzător sau instalați-l pe alt dispozitiv.";
+"sign_install_self_confirm" = "Acest pachet are același Bundle ID ca aplicația curentă. Instalarea va suprascrie și va închide aplicația; redeschide-o din ecranul de pornire la final. Păstrează ecranul deblocat în timpul instalării.";
+"sign_install_continue" = "Instalează oricum";
+"sign_install_self_trollstore" = "Predat la TrollStore pentru instalare prin suprascriere";
 "sign_cert_detail_title" = "Detalii certificat";
 "sign_cert_detail_from_profile" = "Detaliile provin din DeveloperCertificates din profil.";
 "sign_cert_detail_unavailable" = ".p12 vechi; Security nu îl poate citi. Selectați un profil pentru a vedea detaliile certificatului său.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Deblochează înregistrările de semnare ascunse";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID-ul profilului este %@, care nu acoperă acest IPA. Semnarea va continua cu profilul selectat; instalarea poate fi respinsă dacă profilul nu poate fi aplicat.";
+"sign_use_profile_id" = "Folosește App ID-ul profilului: %@ (înlocuiește orice aplicație cu același ID pe acest dispozitiv și elimină extensiile fără profil corespunzător)";
 "sign_team_mismatch_warning" = "Certificatul și profilul aparțin unor team-uri diferite. Semnarea va fi încercată, dar instalarea va eșua probabil; alegeți un certificat și un profil din același team.";
 "sign_import_wrong_type" = "Alegeți un fișier .ipa sau .zip.";
 "sign_target_control_center" = "Centru de control";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Verifică actualizările";
 "update_latest" = "La zi";
 "update_failed" = "Verificarea a eșuat, atinge pentru a reîncerca";
+"update_title" = "Actualizare disponibilă";
+"update_current_version" = "Versiunea actuală %@";
+"update_changelog" = "Noutăți";
+"update_no_notes" = "Fără note de versiune pentru această versiune";
+"update_download" = "Descarcă actualizarea";
+"update_downloading" = "Se descarcă %d%%";
+"update_cancel" = "Anulează descărcarea";
+"update_share" = "Partajează pachetul";
+"update_view_github" = "Vezi toate versiunile pe GitHub";
+"update_share_hint" = "Foaia de partajare se deschide automat la finalul descărcării, pentru a putea trimite pachetul pe alt dispozitiv și a-l semna și instala.";
+"update_incremental" = "Actualizare incrementală";
+"update_incremental_hint" = "S-a găsit o copie locală a pachetului anterior, deci se descarcă doar părțile modificate.";
+"update_incremental_progress" = "Descărcare incrementală %@ / %@";
+"update_preparing" = "Se pregătește…";
+"update_preparing_hint" = "Se citește directorul pachetului pentru a calcula ce părți trebuie descărcate.";
+"update_downloaded" = "Salvat %@ (Fișiere / APP / Updates)";
+"update_install_failed" = "Actualizarea a eșuat: %@";
 "dc_reason_eperm" = "Această compilare nu are permisiune de decriptare: semnează din nou aplicația cu un certificat de dezvoltator care include dynamic-codesigning";
 "dc_reason_pages" = "Kernelul a refuzat fiecare pagină (mremap a returnat 0, dar toate paginile au eșuat) — de obicei aceeași problemă de permisiune la semnare";
 "dc_reason_unchanged" = "Conținutul nu s-a schimbat după decriptare: acest binar este deja decriptat sau malformat";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Mergi la Semnare";
 
 "testflight_history_limit" = "TestFlight le arată testerilor doar compilarea activă în acest moment; compilările expirate nu pot fi recuperate. Această listă = compilările active pentru fiecare platformă + compilările descărcate pe acest dispozitiv și crește pe măsură ce descarci mai multe.";
+"testflight_region" = "Regiune";
+"testflight_region_auto" = "Regiunea contului";
+"testflight_region_hint" = "Un cont TestFlight din regiunea China nu poate instala aplicații care nu figurează în App Store din China (ex. Surge). Alege aici regiunea de magazin a aplicației pentru a o instala.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Afișează progresul sarcinilor și starea în fundal în Dynamic Island";
+"live_island_download" = "Descărcări";
+"live_island_sign" = "Semnare";
+"live_island_decrypt" = "Decriptare";
+"live_island_install" = "Instalare";
+"live_island_app" = "Aplicație în fundal";
+"island_app_phase" = "Rulează în fundal";
+"island_app_tap_to_open" = "Atinge Dynamic Island pentru a reveni";

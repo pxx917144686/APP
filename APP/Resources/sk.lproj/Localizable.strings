@@ -103,8 +103,15 @@
 "download_failed" = "Sťahovanie zlyhalo";
 "download_cancelled" = "Zrušené";
 "download_waiting" = "Čaká sa";
+"download_waiting_sample" = "Zhromažďujú sa vzorky rýchlosti";
+"chart_hud_detail" = "Zostáva %@ · Uplynulo %@";
+"download_connections" = "Max. pripojení na úlohu";
+"download_connections_hint" = "Nastaviteľné od 1 do 64. Skutočná súbežnosť je obmedzená veľkosťou súboru a podporou rozsahov serverom, najmenej 2 MB na segment.";
+"download_connections_effective" = "%@ · používa sa približne %d pripojení (minimálne 2 MB na segment)";
 "all_start" = "Všetko spustiť";
 "no_downloads" = "Žiadne sťahovania";
+"no_downloads_hint" = "Vyhľadajte aplikáciu v obchode alebo importujte IPA a začnite";
+"no_downloads_action" = "Prehliadať obchod";
 
 "account" = "Účet";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Podpísaný IPA nebol vytvorený.";
 "sign_err_unknown" = "Neznáma chyba podpisovania.";
 "sign_install_self_warning" = "Podpísaný balík má rovnaké Bundle ID ako táto aplikácia. Jeho inštaláciou by prepísala nástroj na podpisovanie. Zdieľajte IPA a nainštalujte ho so zodpovedajúcim Bundle ID/profilom alebo na inom zariadení.";
+"sign_install_self_confirm" = "Tento balík má rovnaký Bundle ID ako aktuálna aplikácia. Inštaláciou bude aplikácia prepísaná a ukončená; po dokončení ju znova otvorte z plochy. Počas inštalácie udržiavajte obrazovku odemknutú.";
+"sign_install_continue" = "Napriek tomu nainštalovať";
+"sign_install_self_trollstore" = "Odovzdané TrollStore na inštaláciu s prepísaním";
 "sign_cert_detail_title" = "Podrobnosti certifikátu";
 "sign_cert_detail_from_profile" = "Podrobnosti pochádzajú z DeveloperCertificates v profile.";
 "sign_cert_detail_unavailable" = "Starší formát .p12; framework Security ho nemôže prečítať. Vyberte profil na zobrazenie podrobností jeho certifikátu.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Odomknúť skryté podpisové záznamy";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profilu je %@, čo nepokrýva tento IPA. Podpisovanie bude pokračovať s vybraným profilom; inštalácia môže byť odmietnutá, ak profil nemožno použiť.";
+"sign_use_profile_id" = "Použiť App ID profilu: %@ (nahradí všetky aplikácie s rovnakým ID v tomto zariadení a odstráni rozšírenia bez zodpovedajúceho profilu)";
 "sign_team_mismatch_warning" = "Certifikát a profil patria k rôznym teamom. Podpisovanie bude skúsené, ale inštalácia pravdepodobne zlyhá; vyberte certifikát a profil z rovnakého teamu.";
 "sign_import_wrong_type" = "Vyberte súbor .ipa alebo .zip.";
 "sign_target_control_center" = "Centrum ovládania";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Skontrolovať aktualizácie";
 "update_latest" = "Aktuálne";
 "update_failed" = "Kontrola zlyhala, klepnite pre opakovanie";
+"update_title" = "K dispozícii je aktualizácia";
+"update_current_version" = "Aktuálna verzia %@";
+"update_changelog" = "Novinky";
+"update_no_notes" = "Pre túto verziu neexistujú poznámky k vydaniu";
+"update_download" = "Stiahnuť aktualizáciu";
+"update_downloading" = "Sťahovanie %d%%";
+"update_cancel" = "Zrušiť sťahovanie";
+"update_share" = "Zdieľať balík";
+"update_view_github" = "Zobraziť všetky verzie na GitHube";
+"update_share_hint" = "Po dokončení sťahovania sa automaticky otvorí panel zdieľania, aby ste mohli balík poslať do iného zariadenia na podpis a inštaláciu.";
+"update_incremental" = "Prírastková aktualizácia";
+"update_incremental_hint" = "Bola nájdená lokálna kópia predchádzajúceho balíka, takže sa sťahujú iba zmenené časti.";
+"update_incremental_progress" = "Prírastkové sťahovanie %@ / %@";
+"update_preparing" = "Príprava…";
+"update_preparing_hint" = "Číta sa adresár balíka, aby sa zistilo, ktoré časti je potrebné stiahnuť.";
+"update_downloaded" = "Uložené %@ (Súbory / APP / Updates)";
+"update_install_failed" = "Aktualizácia zlyhala: %@";
 "dc_reason_eperm" = "Toto zostavenie nemá oprávnenie na dešifrovanie: podpíšte aplikáciu znova vývojárskym certifikátom s dynamic-codesigning";
 "dc_reason_pages" = "Jadro odmietlo každú stránku (mremap vrátil 0, ale všetky stránky zlyhali) — zvyčajne rovnaký problém s oprávnením podpisu";
 "dc_reason_unchanged" = "Obsah sa po dešifrovaní nezmenil: táto binárka už môže byť dešifrovaná alebo poškodená";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Prejsť na podpis";
 
 "testflight_history_limit" = "TestFlight zobrazuje testerom iba aktuálne aktívne zostavenie; vypršané zostavenia nie je možné získať. Tento zoznam = aktívne zostavenia pre každú platformu + zostavenia stiahnuté v tomto zariadení a rastie s každým ďalším stiahnutím.";
+"testflight_region" = "Región";
+"testflight_region_auto" = "Región účtu";
+"testflight_region_hint" = "Účet TestFlight z čínskeho regiónu nemôže inštalovať aplikácie, ktoré nie sú v čínskom App Store (napr. Surge). Tu vyberte región obchodu aplikácie a možno ju nainštalovať.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Zobrazovať priebeh úloh a stav na pozadí v Dynamic Island";
+"live_island_download" = "Sťahovanie";
+"live_island_sign" = "Podpis";
+"live_island_decrypt" = "Dešifrovanie";
+"live_island_install" = "Inštalácia";
+"live_island_app" = "Aplikácia na pozadí";
+"island_app_phase" = "Beží na pozadí";
+"island_app_tap_to_open" = "Klepnutím na Dynamic Island sa vrátite";

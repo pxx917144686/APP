@@ -18,8 +18,11 @@ struct UpdateSheet: View {
         return latest.map { [$0] } ?? []
     }
 
-    private var canInstallViaTrollStore: Bool {
-        EnvironmentDetector.shared.isTrollStore && asset != nil
+    private var localBaseIPA: URL? {
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Updates", isDirectory: true)
+            .appendingPathComponent("APP_\(checker.currentVersion).ipa")
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
 
     var body: some View {
@@ -48,6 +51,10 @@ struct UpdateSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .onDisappear { downloader.cancel() }
+        .onChange(of: downloader.phase) { _, phase in
+            guard case .finished(let url) = phase else { return }
+            shareItem = ShareFile(url: url)
+        }
         .sheet(item: $shareItem) { file in
             ActivityView(items: [file.url])
         }
@@ -137,10 +144,10 @@ struct UpdateSheet: View {
 
     private var actionBar: some View {
         VStack(spacing: 10) {
-            if case .downloading(let progress) = downloader.phase {
+            if downloader.isDownloading {
                 HStack {
                     Spacer()
-                    UpdateProgressRing(progress: progress, tint: accent)
+                    UpdateProgressRing(progress: downloader.progressFraction, tint: accent)
                     Spacer()
                 }
                 .padding(.bottom, 2)
@@ -178,17 +185,6 @@ struct UpdateSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if case .finished(let url) = downloader.phase {
-                Button {
-                    shareItem = ShareFile(url: url)
-                } label: {
-                    Text("update_share".localized)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(accent)
-                }
-                .buttonStyle(.plain)
-            }
-
             Button {
                 checker.openReleasesPage()
             } label: {
@@ -204,72 +200,73 @@ struct UpdateSheet: View {
 
     private var primaryTitle: String {
         switch downloader.phase {
+        case .preparing:
+            return "update_preparing".localized
         case .downloading:
             return "update_cancel".localized
         case .finished:
-            return "update_go_sign".localized
+            return "update_share".localized
         default:
-            return canInstallViaTrollStore
-                ? "update_install_trollstore".localized
+            return localBaseIPA != nil
+                ? "update_incremental".localized
                 : "update_download".localized
         }
     }
 
     private var primaryIcon: String {
         switch downloader.phase {
+        case .preparing:
+            return "hourglass"
         case .downloading:
             return "xmark"
         case .finished:
-            return "signature"
+            return "square.and.arrow.up"
         default:
-            return canInstallViaTrollStore ? "arrow.down.circle.fill" : "square.and.arrow.down"
+            return "square.and.arrow.down"
         }
     }
 
     private var hintText: String {
-        if case .finished(let url) = downloader.phase {
+        switch downloader.phase {
+        case .finished(let url):
             return "update_downloaded".localized(url.lastPathComponent)
+        case .preparing:
+            return "update_preparing_hint".localized
+        case .downloading where downloader.isIncremental && downloader.totalBytes > 0:
+            return "update_incremental_progress".localized(
+                DownloadByteFormatter.file.string(fromByteCount: downloader.downloadedBytes),
+                DownloadByteFormatter.file.string(fromByteCount: downloader.totalBytes)
+            )
+        default:
+            return localBaseIPA != nil
+                ? "update_incremental_hint".localized
+                : "update_share_hint".localized
         }
-        return canInstallViaTrollStore
-            ? "update_trollstore_hint".localized
-            : "update_sign_hint".localized
     }
 
     private func primaryAction() {
         switch downloader.phase {
+        case .preparing:
+            break
         case .downloading:
             downloader.cancel()
         case .finished(let url):
-            handOffToSigning(url)
+            shareItem = ShareFile(url: url)
         case .idle, .failed:
             guard let asset else {
                 checker.openReleasesPage()
                 return
             }
-            if canInstallViaTrollStore {
-                installViaTrollStore(asset)
+            if let base = localBaseIPA {
+                downloader.startIncremental(
+                    newURL: asset.browserDownloadURL,
+                    newSize: asset.size,
+                    version: latest?.version ?? "latest",
+                    baseURL: base
+                )
             } else {
                 downloader.start(url: asset.browserDownloadURL, version: latest?.version ?? "latest")
             }
-        }
-    }
-
-    private func installViaTrollStore(_ asset: AppReleaseAsset) {
-        let raw = asset.browserDownloadURL.absoluteString
-        let encoded = raw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? raw
-        guard let url = URL(string: "apple-magnifier://install?url=\(encoded)"),
-              UIApplication.shared.canOpenURL(url) else {
-            downloader.start(url: asset.browserDownloadURL, version: latest?.version ?? "latest")
-            return
-        }
-        UIApplication.shared.open(url)
-    }
-
-    private func handOffToSigning(_ url: URL) {
-        dismiss()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            SigningHandoff.shared.send(url)
-            TabRouter.shared.select(.sign)
         }
     }
 

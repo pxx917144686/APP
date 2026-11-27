@@ -103,8 +103,15 @@
 "download_failed" = "Download mislykkedes";
 "download_cancelled" = "Annulleret";
 "download_waiting" = "Venter";
+"download_waiting_sample" = "Indsamler hastighedsprøver";
+"chart_hud_detail" = "Resterende %@ · Forløbet %@";
+"download_connections" = "Maks. forbindelser pr. opgave";
+"download_connections_hint" = "Justérbar fra 1 til 64. Den faktiske samtidighed er begrænset af filstørrelsen og serverens understøttelse af intervaller, med mindst 2 MB pr. segment.";
+"download_connections_effective" = "%@ · ca. %d forbindelser i brug (mindst 2 MB pr. segment)";
 "all_start" = "Start alle";
 "no_downloads" = "Ingen downloads";
+"no_downloads_hint" = "Søg en app i butikken, eller importér en IPA for at komme i gang";
+"no_downloads_action" = "Gennemse butikken";
 
 "account" = "Konto";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Den signerede IPA blev ikke oprettet.";
 "sign_err_unknown" = "Ukendt signeringsfejl.";
 "sign_install_self_warning" = "Den signerede pakke har samme Bundle ID som appen. Installation ville overskrive signeringsværktøjet. Del IPA’en, og installér den med matchende Bundle ID/profil, eller installér den på en anden enhet.";
+"sign_install_self_confirm" = "Denne pakke har samme Bundle ID som den aktuelle app. Installation overskriver og afslutter appen; åbn den igen fra hjemmeskærmen bagefter. Hold skærmen ulåst under installationen.";
+"sign_install_continue" = "Installér alligevel";
+"sign_install_self_trollstore" = "Overdraget til TrollStore til overskrivende installation";
 "sign_cert_detail_title" = "Certifikatdetaljer";
 "sign_cert_detail_from_profile" = "Detaljer kommer fra profielens DeveloperCertificates.";
 "sign_cert_detail_unavailable" = "Gammel .p12; Security kan ikke læse den. Vælg en profil for at se certifikatdetaljerne.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Lås skjulte signeringsposter op";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "Profilens App ID er %@, hvilket ikke dækker denne IPA. Signeringen fortsætter med den valgte profil; installationen kan blive afvist, hvis profilen ikke kan anvendes.";
+"sign_use_profile_id" = "Brug profilens App ID: %@ (erstatter enhver app med samme ID på denne enhed og fjerner udvidelser uden matchende profil)";
 "sign_team_mismatch_warning" = "Certifikatet og profilen tilhører forskellige teams. Signering forsøges, men installationen vil sandsynligvis mislykkes; vælg et certifikat og en profil fra samme team.";
 "sign_import_wrong_type" = "Vælg en .ipa- eller .zip-fil.";
 "sign_target_control_center" = "Kontrolcenter";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Søg efter opdateringer";
 "update_latest" = "Opdateret";
 "update_failed" = "Kontrollen mislykkedes, tryk for at prøve igen";
+"update_title" = "Opdatering tilgængelig";
+"update_current_version" = "Nuværende version %@";
+"update_changelog" = "Nyheder";
+"update_no_notes" = "Ingen udgivelsesnoter til denne version";
+"update_download" = "Download opdatering";
+"update_downloading" = "Downloader %d%%";
+"update_cancel" = "Annuller download";
+"update_share" = "Del pakke";
+"update_view_github" = "Se alle udgivelser på GitHub";
+"update_share_hint" = "Delingsarket åbnes automatisk, når downloadet er færdigt, så du kan sende pakken til en anden enhed for at signere og installere den.";
+"update_incremental" = "Trinvis opdatering";
+"update_incremental_hint" = "Der blev fundet en lokal kopi af den forrige pakke, så kun ændrede dele downloades.";
+"update_incremental_progress" = "Trinvis download %@ / %@";
+"update_preparing" = "Forbereder…";
+"update_preparing_hint" = "Læser pakkens mappe for at beregne, hvilke dele der skal downloades.";
+"update_downloaded" = "Gemt %@ (Filer / APP / Updates)";
+"update_install_failed" = "Opdatering mislykkedes: %@";
 "dc_reason_eperm" = "Dette build har ingen dekrypteringstilladelse: signér appen igen med et udviklercertifikat, der har dynamic-codesigning";
 "dc_reason_pages" = "Kernen afviste hver side (mremap returnerede 0, men alle sider mislykkedes) – oftest det samme problem med signeringstilladelse";
 "dc_reason_unchanged" = "Indholdet ændrede sig ikke efter dekryptering: denne binærfil er måske allerede dekrypteret eller beskadiget";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Gå til Signér";
 
 "testflight_history_limit" = "TestFlight viser kun den aktuelt aktive build til testere; udløbne builds kan ikke hentes. Denne liste = aktive builds pr. platform + builds downloadet på denne enhed, og vokser, jo mere du downloader.";
+"testflight_region" = "Region";
+"testflight_region_auto" = "Kontoregion";
+"testflight_region_hint" = "En TestFlight-konto i Kina-regionen kan ikke installere apps, der ikke findes i den kinesiske App Store (f.eks. Surge). Vælg appens butiksregion her for at installere den.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Vis opgavefremskridt og baggrundsstatus i Dynamic Island";
+"live_island_download" = "Downloads";
+"live_island_sign" = "Signering";
+"live_island_decrypt" = "Dekryptering";
+"live_island_install" = "Installation";
+"live_island_app" = "App i baggrunden";
+"island_app_phase" = "Kører i baggrunden";
+"island_app_tap_to_open" = "Tryk på Dynamic Island for at vende tilbage";

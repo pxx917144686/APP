@@ -103,8 +103,15 @@
 "download_failed" = "Lataus epäonnistui";
 "download_cancelled" = "Peruutettu";
 "download_waiting" = "Odottaa";
+"download_waiting_sample" = "Kerätään nopeusnäytteitä";
+"chart_hud_detail" = "Jäljellä %@ · Kulunut %@";
+"download_connections" = "Tehtävän enimmäisyhteydet";
+"download_connections_hint" = "Säädettävissä 1–64. Todellinen rinnakkaisuus riippuu tiedostokoosta ja palvelimen aluetuesta, vähintään 2 MB per osa.";
+"download_connections_effective" = "%@ · käytössä noin %d yhteyttä (vähintään 2 MB per osa)";
 "all_start" = "Käynnistä kaikki";
 "no_downloads" = "Ei latauksia";
+"no_downloads_hint" = "Hae sovellus kaupasta tai tuo IPA aloittaaksesi";
+"no_downloads_action" = "Selaa kauppaa";
 
 "account" = "Tili";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Allekirjoitettua IPA:ta ei luotu.";
 "sign_err_unknown" = "Tuntematon allekirjoitusvirhe.";
 "sign_install_self_warning" = "Allekirjoitetulla paketilla on sama Bundle ID kuin tällä sovelluksella. Sen asentaminen korvaisi allekirjoitustyökalun. Jaa IPA ja asenna se vastaavalla Bundle ID:llä/profiililla tai asenna se toiselle laitteelle.";
+"sign_install_self_confirm" = "Tällä paketilla on sama Bundle ID kuin nykyisellä sovelluksella. Asennus ylikirjoittaa sovelluksen ja sulkee sen; avaa se uudelleen aloitusnäytöltä valmistuttua. Pidä näyttö lukitsemattomana asennuksen ajan.";
+"sign_install_continue" = "Asenna silti";
+"sign_install_self_trollstore" = "Siirretty TrollStorelle ylikirjoitusasennusta varten";
 "sign_cert_detail_title" = "Varmenteen tiedot";
 "sign_cert_detail_from_profile" = "Tiedot tulevat profiilin DeveloperCertificatesista.";
 "sign_cert_detail_unavailable" = "Vanha .p12; Security ei voi lukea sitä. Valitse profiili nähdäksesi sen varmennetiedot.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Avaa piilotetut allekirjoitustietueet";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "Profiilin App ID on %@, joka ei kata tätä IPA:ta. Allekirjoitus jatkuu valitulla profiililla; asennus voidaan hylätä, jos profiilia ei voi soveltaa.";
+"sign_use_profile_id" = "Käytä profiilin App ID:tä: %@ (korvaa kaikki saman ID:n sovellukset tällä laitteella ja poistaa laajennukset, joilla ei ole vastaavaa profiilia)";
 "sign_team_mismatch_warning" = "Varmenne ja profiili kuuluvat eri tiimeihin. Allekirjoitusta yritetään, mutta asennus epäonnistuu todennäköisesti; valitse samaan tiimiin kuuluva varmenne ja profiili.";
 "sign_import_wrong_type" = "Valitse .ipa- tai .zip-tiedosto.";
 "sign_target_control_center" = "Ohjauskeskus";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Tarkista päivitykset";
 "update_latest" = "Ajan tasalla";
 "update_failed" = "Tarkistus epäonnistui, napauta yrittääksesi uudelleen";
+"update_title" = "Päivitys saatavilla";
+"update_current_version" = "Nykyinen versio %@";
+"update_changelog" = "Uutta";
+"update_no_notes" = "Ei julkaisutietoja tälle versiolle";
+"update_download" = "Lataa päivitys";
+"update_downloading" = "Ladataan %d%%";
+"update_cancel" = "Peruuta lataus";
+"update_share" = "Jaa paketti";
+"update_view_github" = "Katso kaikki julkaisut GitHubissa";
+"update_share_hint" = "Jakonäkymä avautuu automaattisesti latauksen valmistuttua, jotta voit lähettää paketin toiselle laitteelle allekirjoitettavaksi ja asennettavaksi.";
+"update_incremental" = "Vaiheittainen päivitys";
+"update_incremental_hint" = "Edellisestä paketista löytyi paikallinen kopio, joten ladataan vain muuttuneet osat.";
+"update_incremental_progress" = "Vaiheittainen lataus %@ / %@";
+"update_preparing" = "Valmistellaan…";
+"update_preparing_hint" = "Luetaan paketin hakemistoa ja lasketaan, mitkä osat on ladattava.";
+"update_downloaded" = "Tallennettu %@ (Tiedostot / APP / Updates)";
+"update_install_failed" = "Päivitys epäonnistui: %@";
 "dc_reason_eperm" = "Tässä buildissa ei ole salauksenpurkuoikeutta: allekirjoita sovellus uudelleen kehittäjävarmenteella, jossa on dynamic-codesigning";
 "dc_reason_pages" = "Ydin hylkäsi jokaisen sivun (mremap palautti 0, mutta kaikki sivut epäonnistuivat) – yleensä sama allekirjoitusoikeuden ongelma";
 "dc_reason_unchanged" = "Sisältö ei muuttunut salauksen purun jälkeen: tämä binaari on ehkä jo purettu tai vioittunut";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Siirry allekirjoitukseen";
 
 "testflight_history_limit" = "TestFlight näyttää testaajille vain tällä hetkellä aktiivisen buildin; vanhentuneita buildeja ei voi hakea. Tämä luettelo = kunkin alustan aktiiviset buildit + tälle laitteelle ladatut buildit, ja se kasvaa sitä mukaa kun lataat lisää.";
+"testflight_region" = "Alue";
+"testflight_region_auto" = "Tilin alue";
+"testflight_region_hint" = "Kiinan alueen TestFlight-tili ei voi asentaa sovelluksia, joita ei ole Kiinan App Storessa (esim. Surge). Valitse sovelluksen kauppa-alue tästä asentaaksesi sen.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Näytä tehtävien edistyminen ja taustatila Dynamic Islandissa";
+"live_island_download" = "Lataukset";
+"live_island_sign" = "Allekirjoitus";
+"live_island_decrypt" = "Salauksen purku";
+"live_island_install" = "Asennus";
+"live_island_app" = "Sovellus taustalla";
+"island_app_phase" = "Taustalla";
+"island_app_tap_to_open" = "Palaa napauttamalla Dynamic Islandia";

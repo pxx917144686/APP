@@ -1835,7 +1835,7 @@ struct DownloadCardView: SwiftUI.View {
 
     @ViewBuilder
     private var connectionRow: some SwiftUI.View {
-        if request.runtime.status != .completed, !request.isTestFlight {
+        if request.runtime.status != .completed {
             HStack(spacing: 6) {
                 Image(systemName: "bolt.horizontal.circle.fill")
                     .font(.system(size: 11, weight: .semibold))

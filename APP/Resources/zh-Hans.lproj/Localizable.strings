@@ -660,6 +660,9 @@
 "sign_err_output" = "没有生成签名后的 IPA。";
 "sign_err_unknown" = "未知签名错误。";
 "sign_install_self_warning" = "签名包的 Bundle ID 与当前 App 相同，安装会覆盖签名工具本身。请先分享 IPA，并改用匹配目标 App 的 Bundle ID/描述文件，或在其他设备安装。";
+"sign_install_self_confirm" = "这个签名包与当前 App 的 Bundle ID 相同，安装会覆盖当前 App 并使其退出，完成后从主屏幕重新打开。安装期间请保持屏幕常亮，不要锁屏。";
+"sign_install_continue" = "继续安装";
+"sign_install_self_trollstore" = "已交给 TrollStore 覆盖安装";
 "sign_cert_detail_title" = "证书详情";
 "sign_cert_detail_from_profile" = "详情来自描述文件中的 DeveloperCertificates。";
 "sign_cert_detail_unavailable" = "旧格式 .p12，Security 无法读取；选择描述文件后可查看其中包含的证书详情。";
@@ -877,7 +880,7 @@
 "sign_preflight_matched" = "匹配";
 "sign_preflight_partial" = "部分覆盖";
 "sign_preflight_extensions_missing" = "%d 个扩展未被当前描述文件覆盖；请改用通配描述文件，或移除所有扩展。";
-"sign_install_self_title" = "无法安装此签名包";
+"sign_install_self_title" = "覆盖安装当前 App";
 "sign_self_bundle_warning" = "签名包 Bundle ID 与当前 App 相同。为防止覆盖签名工具，安装已被阻止；请使用分享。";
 "sign_result_title" = "签名完成";
 "sign_result_bundle_id" = "Bundle ID";
@@ -1059,12 +1062,14 @@
 "update_download" = "下载更新包";
 "update_downloading" = "下载中 %d%%";
 "update_cancel" = "取消下载";
-"update_install_trollstore" = "通过 TrollStore 安装";
-"update_go_sign" = "去签名安装";
 "update_share" = "分享安装包";
 "update_view_github" = "在 GitHub 查看全部版本";
-"update_trollstore_hint" = "TrollStore 会直接覆盖安装，完成后 APP 会自动重启。";
-"update_sign_hint" = "当前环境无法直接覆盖安装：先下载更新包，再跳到签名页用你的证书签名安装。";
+"update_share_hint" = "下载完成后会自动弹出分享面板，可以把安装包发送到其他设备签名安装。";
+"update_incremental" = "增量更新";
+"update_incremental_hint" = "检测到本地旧包，只下载变化部分，省流量。";
+"update_incremental_progress" = "增量下载 %@ / %@";
+"update_preparing" = "准备增量…";
+"update_preparing_hint" = "正在解析安装包目录，计算需要下载的部分。";
 "update_downloaded" = "已保存 %@（文件 App / APP / Updates）";
 "update_install_failed" = "更新失败：%@";
 "dc_reason_eperm" = "当前签名没有解密权限：需要带 dynamic-codesigning 的开发者证书重签本应用";

@@ -967,6 +967,8 @@ enum SigningInstallPhase: Equatable {
 
 @MainActor
 enum SigningInstaller {
+    private static var trollStoreServer: LocalInstallServer?
+
     static func install(
         ipaURL: URL,
         onPhase: (@MainActor (SigningInstallPhase) -> Void)? = nil
@@ -978,6 +980,45 @@ enum SigningInstaller {
             print("[SignInstall] Falling back to local HTTPS install: \(error.localizedDescription)")
             try await installViaLocalHTTPS(ipaURL: ipaURL, onPhase: onPhase)
         }
+    }
+
+    static func installViaTrollStore(
+        ipaURL: URL,
+        onPhase: (@MainActor (SigningInstallPhase) -> Void)? = nil
+    ) async throws {
+        onPhase?(.preparing)
+        let info = try SigningIPAInfo.read(url: ipaURL)
+        let server = LocalInstallServer()
+        trollStoreServer?.stop()
+        trollStoreServer = server
+        _ = try await server.start(
+            ipa: ipaURL,
+            bundleId: info.bundleIdentifier,
+            bundleVersion: info.version,
+            title: info.displayName.isEmpty ? info.name : info.displayName
+        )
+        var components = URLComponents()
+        components.scheme = "apple-magnifier"
+        components.host = "install"
+        components.queryItems = [URLQueryItem(name: "url", value: server.payloadURL)]
+        guard let url = components.url, UIApplication.shared.canOpenURL(url) else {
+            server.stop()
+            trollStoreServer = nil
+            throw SigningInstallerError.openFailed
+        }
+        InstallKeepAlive.shared.start()
+        onPhase?(.awaitingSystem)
+        let opened = await withCheckedContinuation { continuation in
+            UIApplication.shared.open(url, options: [:]) { success in
+                continuation.resume(returning: success)
+            }
+        }
+        guard opened else {
+            server.stop()
+            trollStoreServer = nil
+            throw SigningInstallerError.openFailed
+        }
+        print("[SignInstall] TrollStore handed off: \(server.payloadURL)")
     }
 
     static func installViaLocalHTTPS(

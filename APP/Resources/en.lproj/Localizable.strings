@@ -660,6 +660,9 @@
 "sign_err_output" = "The signed IPA was not created.";
 "sign_err_unknown" = "Unknown signing error.";
 "sign_install_self_warning" = "The signed package has the same Bundle ID as this app. Installing it would overwrite the signing tool. Share the IPA and install it with a matching Bundle ID/profile, or install it on another device.";
+"sign_install_self_confirm" = "This package has the same Bundle ID as the current app. Installing it will overwrite and quit the app; reopen it from the Home Screen when done. Keep the screen unlocked during installation.";
+"sign_install_continue" = "Install Anyway";
+"sign_install_self_trollstore" = "Handed off to TrollStore for overwrite install";
 "sign_cert_detail_title" = "Certificate Details";
 "sign_cert_detail_from_profile" = "Details come from the profile's DeveloperCertificates.";
 "sign_cert_detail_unavailable" = "Legacy .p12; Security cannot read it. Select a profile to see its certificate details.";
@@ -877,7 +880,7 @@
 "sign_preflight_matched" = "Matched";
 "sign_preflight_partial" = "Partial";
 "sign_preflight_extensions_missing" = "%d extension(s) are not covered by the current profile. Use a wildcard profile or remove all extensions.";
-"sign_install_self_title" = "Cannot Install This Package";
+"sign_install_self_title" = "Overwrite This App";
 "sign_self_bundle_warning" = "The signed Bundle ID equals this app. Installation is blocked to protect the signing tool; share the IPA instead.";
 "sign_result_title" = "Signing Complete";
 "sign_result_bundle_id" = "Bundle ID";
@@ -1059,12 +1062,14 @@
 "update_download" = "Download Update";
 "update_downloading" = "Downloading %d%%";
 "update_cancel" = "Cancel Download";
-"update_install_trollstore" = "Install via TrollStore";
-"update_go_sign" = "Sign & Install";
 "update_share" = "Share Package";
 "update_view_github" = "View all releases on GitHub";
-"update_trollstore_hint" = "TrollStore installs the update over the current app; the app restarts when it finishes.";
-"update_sign_hint" = "This build cannot overwrite itself. Download the package first, then sign and install it with your certificate on the signing page.";
+"update_share_hint" = "The share sheet opens automatically when the download finishes, so you can send the package to another device to sign and install.";
+"update_incremental" = "Incremental Update";
+"update_incremental_hint" = "A local copy of the previous package was found, so only changed parts are downloaded.";
+"update_incremental_progress" = "Incremental download %@ / %@";
+"update_preparing" = "Preparing…";
+"update_preparing_hint" = "Reading the package directory to work out which parts need downloading.";
 "update_downloaded" = "Saved %@ (Files / APP / Updates)";
 "update_install_failed" = "Update failed: %@";
 "dc_reason_eperm" = "This build has no decryption permission: re-sign the app with a developer certificate that carries dynamic-codesigning";

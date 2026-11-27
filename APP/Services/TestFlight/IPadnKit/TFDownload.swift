@@ -94,7 +94,9 @@ public enum TFDownload {
                            versionLabel: String? = nil,
                            platform: String? = nil,
                            handle: TFTransferHandle = TFTransferHandle(),
+                           maxConnections: Int? = nil,
                            progress: @escaping @Sendable (Int64, Int64) -> Void = { _, _ in },
+                           onActiveConnections: (@Sendable (Int) -> Void)? = nil,
                            stage: (@Sendable (String) -> Void)? = nil,
                            onForegroundFallback: (@Sendable () -> Void)? = nil,
                            refresh: (@Sendable () async -> Data?)? = nil,
@@ -144,12 +146,19 @@ public enum TFDownload {
             stage?("downloading")
         }
         let transportURL = work.appendingPathComponent(bundle + "-transport.bin")
+        let scratchURL = root.appendingPathComponent(bundle + "-partial.bin")
+        let connections = max(1, maxConnections ?? DownloadConnectionSettings.defaultValue)
+        let allowsSystemProxy = !(TFNet.mode == .direct || (TFNet.mode == .auto && TFNet.didBypassProxy))
         let currentURL = url
-        let transfer = try await TFTransfer.download(url: currentURL, to: transportURL,
-                                                     handle: handle, progress: progress,
-                                                     onResume: { stage?("downloading") },
-                                                     onForegroundFallback: onForegroundFallback,
-                                                     refresh: {
+        let transfer = try await TFTransfer.downloadSegmented(url: currentURL, to: transportURL,
+                                                              scratchURL: scratchURL,
+                                                              handle: handle,
+                                                              maxConnections: connections,
+                                                              allowsSystemProxy: allowsSystemProxy,
+                                                              progress: progress,
+                                                              onActiveConnections: onActiveConnections,
+                                                              onResume: { stage?("downloading") },
+                                                              refresh: {
             guard let refresh else { return nil }
             guard let renewed = await refresh() else { return nil }
             var next: String?

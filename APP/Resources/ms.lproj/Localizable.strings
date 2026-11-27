@@ -103,8 +103,15 @@
 "download_failed" = "Muat Turun Gagal";
 "download_cancelled" = "Dibatalkan";
 "download_waiting" = "Menunggu";
+"download_waiting_sample" = "Mengumpulkan sampel kelajuan";
+"chart_hud_detail" = "Baki %@ · Berlalu %@";
+"download_connections" = "Sambungan Maks. setiap Tugasan";
+"download_connections_hint" = "Boleh diatur dari 1 hingga 64. Serentak sebenar dihadkan oleh saiz fail dan sokongan julat pelayan, dengan sekurang-kurangnya 2 MB setiap segmen.";
+"download_connections_effective" = "%@ · kira-kira %d sambungan digunakan (minimum 2 MB setiap segmen)";
 "all_start" = "Mula Semua";
 "no_downloads" = "Tiada Muat Turun";
+"no_downloads_hint" = "Cari aplikasi di kedai, atau import IPA untuk bermula";
+"no_downloads_action" = "Layari kedai";
 
 "account" = "Akaun";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "IPA yang ditandatangani tidak dicipta.";
 "sign_err_unknown" = "Ralat penandatanganan tidak diketahui.";
 "sign_install_self_warning" = "Pakej yang ditandatangani mempunyai Bundle ID yang sama dengan apl ini. Memasangnya akan menulis ganti alat penandatanganan. Kongsi IPA dan pasang dengan Bundle ID/profil sepadan, atau pasang pada peranti lain.";
+"sign_install_self_confirm" = "Paket ini mempunyai Bundle ID yang sama dengan aplikasi semasa. Memasangnya akan menimpa dan menutup aplikasi; buka semula dari Skrin Utama selepas selesai. Jangan kunci skrin semasa pemasangan.";
+"sign_install_continue" = "Pasang Juga";
+"sign_install_self_trollstore" = "Diserahkan kepada TrollStore untuk pemasangan timpa";
 "sign_cert_detail_title" = "Butiran Sijil";
 "sign_cert_detail_from_profile" = "Butiran datang daripada DeveloperCertificates profil.";
 "sign_cert_detail_unavailable" = ".p12 lama; Security tidak dapat membacanya. Pilih profil untuk melihat butiran sijilnya.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Buka kunci rekod penandatanganan tersembunyi";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profil ialah %@, yang tidak meliputi IPA ini. Penandatanganan akan diteruskan dengan profil dipilih; pemasangan mungkin ditolak jika profil tidak dapat digunakan.";
+"sign_use_profile_id" = "Guna App ID profil: %@ (menggantikan mana-mana aplikasi dengan ID sama pada peranti ini dan membuang ekstensi tanpa profil sepadan)";
 "sign_team_mismatch_warning" = "Sijil dan profil tergolong dalam Team berbeza. Penandatanganan akan dicuba, tetapi pemasangan mungkin gagal; pilih sijil dan profil daripada Team yang sama.";
 "sign_import_wrong_type" = "Pilih fail .ipa atau .zip.";
 "sign_target_control_center" = "Pusat Kawalan";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Semak kemas kini";
 "update_latest" = "Terkini";
 "update_failed" = "Semakan gagal, ketik untuk cuba lagi";
+"update_title" = "Kemas Kini Tersedia";
+"update_current_version" = "Versi semasa %@";
+"update_changelog" = "Yang Baharu";
+"update_no_notes" = "Tiada nota keluaran untuk versi ini";
+"update_download" = "Muat Turun Kemas Kini";
+"update_downloading" = "Memuat Turun %d%%";
+"update_cancel" = "Batalkan Muat Turun";
+"update_share" = "Kongsi Paket";
+"update_view_github" = "Lihat semua keluaran di GitHub";
+"update_share_hint" = "Lembar kongsi akan terbuka secara automatik selepas muat turun selesai, supaya anda dapat menghantar paket ke peranti lain untuk ditandatangani dan dipasang.";
+"update_incremental" = "Kemas Kini Inkremen";
+"update_incremental_hint" = "Salinan tempatan paket terdahulu ditemui, jadi hanya bahagian yang berubah dimuat turun.";
+"update_incremental_progress" = "Muat turun inkremen %@ / %@";
+"update_preparing" = "Menyiapkan…";
+"update_preparing_hint" = "Membaca direktori paket untuk mengira bahagian yang perlu dimuat turun.";
+"update_downloaded" = "Disimpan %@ (Fail / APP / Updates)";
+"update_install_failed" = "Kemas kini gagal: %@";
 "dc_reason_eperm" = "Binaan ini tiada kebenaran nyahsulit: tandatangani semula app dengan sijil pembangun yang membawa dynamic-codesigning";
 "dc_reason_pages" = "Kernel menolak semua halaman (mremap memulangkan 0 tetapi semua halaman gagal) — biasanya masalah kebenaran tandatangan yang sama";
 "dc_reason_unchanged" = "Kandungan tidak berubah selepas dinyahsulit: binari ini mungkin sudah dinyahsulit atau rosak";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Pergi ke Tandatangan";
 
 "testflight_history_limit" = "TestFlight hanya memaparkan binaan yang aktif sekarang kepada penguji; binaan tamat tempoh tidak boleh diambil semula. Senarai ini = binaan aktif setiap platform + binaan yang dimuat turun pada peranti ini, dan bertambah apabila anda memuat turun lebih banyak.";
+"testflight_region" = "Wilayah";
+"testflight_region_auto" = "Wilayah Akaun";
+"testflight_region_hint" = "Akaun TestFlight wilayah China tidak dapat memasang aplikasi yang tidak tersenarai di App Store China (cth. Surge). Pilih wilayah kedai aplikasi di sini untuk memasangnya.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Tunjukkan kemajuan tugasan dan status latar belakang di Dynamic Island";
+"live_island_download" = "Muat Turun";
+"live_island_sign" = "Penandatanganan";
+"live_island_decrypt" = "Penyahsulitan";
+"live_island_install" = "Pemasangan";
+"live_island_app" = "Aplikasi di latar belakang";
+"island_app_phase" = "Berjalan di latar belakang";
+"island_app_tap_to_open" = "Ketuk Dynamic Island untuk kembali";

@@ -103,8 +103,15 @@
 "download_failed" = "Nedladdning misslyckades";
 "download_cancelled" = "Avbruten";
 "download_waiting" = "Väntar";
+"download_waiting_sample" = "Samlar hastighetsmätningar";
+"chart_hud_detail" = "Återstår %@ · Förfluten tid %@";
+"download_connections" = "Max antal anslutningar per uppgift";
+"download_connections_hint" = "Justerbart från 1 till 64. Den faktiska samtidigheten begränsas av filstorlek och serverns stöd för intervall, med minst 2 MB per segment.";
+"download_connections_effective" = "%@ · cirka %d anslutningar används (minst 2 MB per segment)";
 "all_start" = "Starta alla";
 "no_downloads" = "Inga nedladdningar";
+"no_downloads_hint" = "Sök en app i butiken eller importera en IPA för att komma igång";
+"no_downloads_action" = "Bläddra i butiken";
 
 "account" = "Konto";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Den signerade IPA-filen skapades inte.";
 "sign_err_unknown" = "Okänt signeringsfel.";
 "sign_install_self_warning" = "Det signerade paketet har samma Bundle ID som appen. Att installera det skulle skriva över signeringsverktyget. Dela IPA-filen och installera den med matchande Bundle ID/profil, eller installera den på en annan enhet.";
+"sign_install_self_confirm" = "Detta paket har samma Bundle ID som den aktuella appen. Installation skriver över och avslutar appen; öppna den igen från hemskärmen efteråt. Håll skärmen olåst under installationen.";
+"sign_install_continue" = "Installera ändå";
+"sign_install_self_trollstore" = "Överlämnad till TrollStore för överskrivande installation";
 "sign_cert_detail_title" = "Certifikatdetaljer";
 "sign_cert_detail_from_profile" = "Uppgifterna kommer från profilens DeveloperCertificates.";
 "sign_cert_detail_unavailable" = "Äldre .p12; Security kan inte läsa den. Välj en profil för att se dess certifikatdetaljer.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Lås upp dolda signeringsposter";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "Profilens App ID är %@, vilket inte täcker denna IPA. Signeringen fortsätter med den valda profilen; installationen kan avvisas om profilen inte kan tillämpas.";
+"sign_use_profile_id" = "Använd profilens App ID: %@ (ersätter alla appar med samma ID på den här enheten och tar bort tillägg utan matchande profil)";
 "sign_team_mismatch_warning" = "Certifikatet och profilen tillhör olika team. Signering försöks, men installationen misslyckas troligen; välj ett certifikat och en profil från samma team.";
 "sign_import_wrong_type" = "Välj en .ipa- eller .zip-fil.";
 "sign_target_control_center" = "Kontrollcenter";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Sök efter uppdateringar";
 "update_latest" = "Uppdaterad";
 "update_failed" = "Kontrollen misslyckades, tryck för att försöka igen";
+"update_title" = "Uppdatering tillgänglig";
+"update_current_version" = "Aktuell version %@";
+"update_changelog" = "Nyheter";
+"update_no_notes" = "Inga versionsanteckningar för den här versionen";
+"update_download" = "Hämta uppdatering";
+"update_downloading" = "Hämtar %d%%";
+"update_cancel" = "Avbryt hämtning";
+"update_share" = "Dela paket";
+"update_view_github" = "Visa alla versioner på GitHub";
+"update_share_hint" = "Delningsarket öppnas automatiskt när hämtningen är klar, så att du kan skicka paketet till en annan enhet för signering och installation.";
+"update_incremental" = "Inkrementell uppdatering";
+"update_incremental_hint" = "En lokal kopia av föregående paket hittades, så endast ändrade delar hämtas.";
+"update_incremental_progress" = "Inkrementell hämtning %@ / %@";
+"update_preparing" = "Förbereder…";
+"update_preparing_hint" = "Läser paketets katalog för att beräkna vilka delar som behöver hämtas.";
+"update_downloaded" = "Sparad %@ (Filer / APP / Updates)";
+"update_install_failed" = "Uppdateringen misslyckades: %@";
 "dc_reason_eperm" = "Det här bygget saknar dekrypteringsbehörighet: signera om appen med ett utvecklarcertifikat som har dynamic-codesigning";
 "dc_reason_pages" = "Kärnan nekade varje sida (mremap returnerade 0 men alla sidor misslyckades) – oftast samma problem med signeringsbehörighet";
 "dc_reason_unchanged" = "Innehållet ändrades inte efter dekryptering: binärfilen är kanske redan dekrypterad eller skadad";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Gå till Signera";
 
 "testflight_history_limit" = "TestFlight visar bara den aktiva bygget för testare; utgångna byggen kan inte hämtas. Den här listan = aktiva byggen per plattform + byggen som hämtats på den här enheten, och blir längre ju mer du hämtar.";
+"testflight_region" = "Region";
+"testflight_region_auto" = "Kontoregion";
+"testflight_region_hint" = "Ett TestFlight-konto i Kina-regionen kan inte installera appar som inte finns i den kinesiska App Store (t.ex. Surge). Välj appens butiksregion här för att installera den.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Visa uppgifternas förlopp och bakgrundsstatus i Dynamic Island";
+"live_island_download" = "Hämtningar";
+"live_island_sign" = "Signering";
+"live_island_decrypt" = "Dekryptering";
+"live_island_install" = "Installation";
+"live_island_app" = "App i bakgrunden";
+"island_app_phase" = "Kör i bakgrunden";
+"island_app_tap_to_open" = "Tryck på Dynamic Island för att återvända";

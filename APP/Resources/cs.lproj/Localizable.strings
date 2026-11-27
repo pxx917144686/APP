@@ -103,8 +103,15 @@
 "download_failed" = "Stahování selhalo";
 "download_cancelled" = "Zrušeno";
 "download_waiting" = "Čekání";
+"download_waiting_sample" = "Shromažďují se vzorky rychlosti";
+"chart_hud_detail" = "Zbývá %@ · Uplynulo %@";
+"download_connections" = "Max. připojení na úlohu";
+"download_connections_hint" = "Nastavitelné od 1 do 64. Skutečná souběžnost je omezena velikostí souboru a podporou rozsahů serverem, nejméně 2 MB na segment.";
+"download_connections_effective" = "%@ · používá se zhruba %d připojení (minimálně 2 MB na segment)";
 "all_start" = "Spustit vše";
 "no_downloads" = "Žádná stahování";
+"no_downloads_hint" = "Vyhledejte aplikaci v obchodě nebo importujte IPA a začněte";
+"no_downloads_action" = "Procházet obchod";
 
 "account" = "Účet";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Podepsaný IPA nebyl vytvořen.";
 "sign_err_unknown" = "Neznámá chyba podepisování.";
 "sign_install_self_warning" = "Podepsaný balíček má stejné Bundle ID jako tato aplikace. Instalací by přepsal nástroj pro podepisování. Sdílejte IPA a nainstalujte jej s odpovídajícím Bundle ID/profilem nebo na jiném zařízení.";
+"sign_install_self_confirm" = "Tento balíček má stejný Bundle ID jako aktuální aplikace. Instalací bude aplikace přepsána a ukončena; po dokončení ji znovu otevřete z plochy. Během instalace udržujte obrazovku odemčenou.";
+"sign_install_continue" = "Přesto nainstalovat";
+"sign_install_self_trollstore" = "Předáno TrollStore k instalaci s přepsáním";
 "sign_cert_detail_title" = "Podrobnosti certifikátu";
 "sign_cert_detail_from_profile" = "Podrobnosti pocházejí z DeveloperCertificates v profilu.";
 "sign_cert_detail_unavailable" = "Starší formát .p12; framework Security jej nemůže přečíst. Vyberte profil pro zobrazení podrobností jeho certifikátu.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Odemknout skryté podpisové záznamy";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profilu je %@, což nepokrývá tento IPA. Podepisování bude pokračovat s vybraným profilem; instalace může být odmítnuta, pokud profil nelze použít.";
+"sign_use_profile_id" = "Použít App ID profilu: %@ (nahradí všechny aplikace se stejným ID v tomto zařízení a odstraní rozšíření bez odpovídajícího profilu)";
 "sign_team_mismatch_warning" = "Certifikát a profil patří k různým teamům. Podepisování bude vyzkoušeno, ale instalace pravděpodobně selže; vyberte certifikát a profil ze stejného teamu.";
 "sign_import_wrong_type" = "Vyberte soubor .ipa nebo .zip.";
 "sign_target_control_center" = "Centrum ovládání";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Zkontrolovat aktualizace";
 "update_latest" = "Aktuální";
 "update_failed" = "Kontrola se nezdařila, klepněte pro opakování";
+"update_title" = "K dispozici je aktualizace";
+"update_current_version" = "Aktuální verze %@";
+"update_changelog" = "Novinky";
+"update_no_notes" = "Pro tuto verzi nejsou poznámky k vydání";
+"update_download" = "Stáhnout aktualizaci";
+"update_downloading" = "Stahování %d%%";
+"update_cancel" = "Zrušit stahování";
+"update_share" = "Sdílet balíček";
+"update_view_github" = "Zobrazit všechny verze na GitHubu";
+"update_share_hint" = "Po dokončení stahování se automaticky otevře nabídka sdílení, abyste mohli balíček poslat do jiného zařízení k podpisu a instalaci.";
+"update_incremental" = "Inkrementální aktualizace";
+"update_incremental_hint" = "Byla nalezena místní kopie předchozího balíčku, takže se stahují pouze změněné části.";
+"update_incremental_progress" = "Inkrementální stahování %@ / %@";
+"update_preparing" = "Příprava…";
+"update_preparing_hint" = "Čte se adresář balíčku, aby se zjistilo, které části je třeba stáhnout.";
+"update_downloaded" = "Uloženo %@ (Soubory / APP / Updates)";
+"update_install_failed" = "Aktualizace se nezdařila: %@";
 "dc_reason_eperm" = "Toto sestavení nemá oprávnění k dešifrování: podepište aplikaci znovu vývojářským certifikátem s dynamic-codesigning";
 "dc_reason_pages" = "Jádro odmítlo každou stránku (mremap vrátil 0, ale všechny stránky selhaly) — obvykle stejný problém s oprávněním podpisu";
 "dc_reason_unchanged" = "Obsah se po dešifrování nezměnil: tato binárka už může být dešifrovaná nebo poškozená";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Přejít na podpis";
 
 "testflight_history_limit" = "TestFlight ukazuje testerům pouze aktuálně aktivní sestavení; vypršelá sestavení nelze získat. Tento seznam = aktivní sestavení pro každou platformu + sestavení stažená na tomto zařízení, a roste s každým dalším stažením.";
+"testflight_region" = "Region";
+"testflight_region_auto" = "Region účtu";
+"testflight_region_hint" = "Účet TestFlight z čínského regionu nemůže instalovat aplikace, které nejsou v čínském App Storu (např. Surge). Zde zvolte region obchodu aplikace a lze ji nainstalovat.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Zobrazovat postup úloh a stav na pozadí v Dynamic Island";
+"live_island_download" = "Stahování";
+"live_island_sign" = "Podpis";
+"live_island_decrypt" = "Dešifrování";
+"live_island_install" = "Instalace";
+"live_island_app" = "Aplikace na pozadí";
+"island_app_phase" = "Běží na pozadí";
+"island_app_tap_to_open" = "Klepnutím na Dynamic Island se vrátíte";

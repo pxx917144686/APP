@@ -1793,11 +1793,6 @@ struct SignView: SwiftUI.View {
     private func attemptAutoInstall() {
         guard autoInstallAfterSign, !didAutoInstall, !isInstalling else { return }
         guard session.outcome == .completed, let output = session.outputURL else { return }
-        guard let info = try? SigningIPAInfo.read(url: output) else { return }
-        guard info.bundleIdentifier != Bundle.main.bundleIdentifier else {
-            didAutoInstall = true
-            return
-        }
         didAutoInstall = true
         installIPA(output)
     }
@@ -1813,16 +1808,52 @@ struct SignView: SwiftUI.View {
             presentError(message: "sign_err_invalid_ipa".localized)
             return
         }
-        guard info.bundleIdentifier != Bundle.main.bundleIdentifier else {
+        if info.bundleIdentifier == Bundle.main.bundleIdentifier {
+            if EnvironmentDetector.shared.isTrollStore {
+                beginTrollStoreInstall(output)
+                return
+            }
             AppPresenter.shared.present(alert: AppAlert(
                 title: "sign_install_self_title".localized,
-                message: "sign_install_self_warning".localized,
-                primaryTitle: "sign_share".localized,
-                onPrimary: { shareOutput() },
+                message: "sign_install_self_confirm".localized,
+                primaryTitle: "sign_install_continue".localized,
+                onPrimary: { self.beginInstall(output) },
                 secondaryTitle: "cancel".localized
             ))
             return
         }
+        beginInstall(output)
+    }
+
+    private func beginTrollStoreInstall(_ output: URL) {
+        isInstalling = true
+        installPhase = .preparing
+        tasks.replace(key: "install") { token in
+            do {
+                try await SigningInstaller.installViaTrollStore(ipaURL: output, onPhase: { phase in
+                    self.installPhase = phase
+                })
+                guard self.tasks.isCurrent(token, for: "install") else { return }
+                self.isInstalling = false
+                TopBannerPresenter.shared.show(TopBanner(
+                    message: "sign_install_self_trollstore".localized,
+                    systemImage: "checkmark.seal.fill"
+                ))
+            } catch {
+                guard self.tasks.isCurrent(token, for: "install") else { return }
+                print("[SignInstall] TrollStore install failed: \(error.localizedDescription)")
+                self.isInstalling = false
+                let localizedFailure = "sign_install_failed_message".localized
+                self.installPhase = .failed(localizedFailure)
+                AppPresenter.shared.present(alert: AppAlert(
+                    title: "sign_error_title".localized,
+                    message: localizedFailure
+                ))
+            }
+        }
+    }
+
+    private func beginInstall(_ output: URL) {
         isInstalling = true
         installPhase = .preparing
         tasks.replace(key: "install") { token in

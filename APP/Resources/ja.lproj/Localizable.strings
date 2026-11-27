@@ -114,8 +114,15 @@
 "download_failed" = "ダウンロード失敗";
 "download_cancelled" = "キャンセル済み";
 "download_waiting" = "待機中";
+"download_waiting_sample" = "速度データを収集中";
+"chart_hud_detail" = "残り %@ · 経過 %@";
+"download_connections" = "タスクあたりの最大接続数";
+"download_connections_hint" = "1～64 で調整可能。実際の同時実行はファイルサイズとサーバーの範囲リクエスト対応に制限され、1セグメントは最低 2 MB です。";
+"download_connections_effective" = "%@ · 実際には約 %d 接続を使用（1セグメント最低 2 MB）";
 "all_start" = "すべて開始";
 "no_downloads" = "ダウンロードはありません";
+"no_downloads_hint" = "ストアでアプリを検索するか、IPA を読み込んで始めましょう";
+"no_downloads_action" = "ストアを見る";
 
 "account" = "アカウント";
 "apple_id" = "Apple ID";
@@ -650,6 +657,9 @@
 "sign_err_output" = "署名済み IPA が生成されませんでした。";
 "sign_err_unknown" = "不明な署名エラーです。";
 "sign_install_self_warning" = "署名済みパッケージの Bundle ID が本アプリと同じです。インストールすると署名ツールが上書きされます。IPA を共有し、一致する Bundle ID/プロファイルでインストールするか、別のデバイスにインストールしてください。";
+"sign_install_self_confirm" = "この署名済みパッケージは現在の App と同じ Bundle ID です。インストールすると現在の App が上書きされて終了するため、完了後にホーム画面から再度開いてください。インストール中は画面をロックしないでください。";
+"sign_install_continue" = "それでもインストール";
+"sign_install_self_trollstore" = "TrollStore に上書きインストールを委任しました";
 "sign_cert_detail_title" = "証明書の詳細";
 "sign_cert_detail_from_profile" = "詳細はプロファイル内の DeveloperCertificates から取得しています。";
 "sign_cert_detail_unavailable" = "旧形式の .p12 のため Security で読み取れません。プロファイルを選択すると、その証明書の詳細を確認できます。";
@@ -996,6 +1006,7 @@
 "sign_history_hidden_auth_reason" = "非表示の署名記録をロック解除";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "プロファイルの App ID は %@ で、この IPA をカバーしていません。選択したプロファイルで署名を続行します。プロファイルを適用できない場合、インストールが拒否される可能性があります。";
+"sign_use_profile_id" = "プロファイルの App ID を使用：%@（この端末上の同じ ID のアプリを置き換え、一致するプロファイルのない拡張を削除します）";
 "sign_team_mismatch_warning" = "証明書とプロファイルが別のチームに属しています。署名は試行されますが、インストールはおそらく失敗します。同じチームの証明書とプロファイルを選択してください。";
 "sign_import_wrong_type" = ".ipa または .zip ファイルを選択してください。";
 "sign_target_control_center" = "コントロールセンター";
@@ -1042,6 +1053,23 @@
 "check_updates" = "アップデートを確認";
 "update_latest" = "最新です";
 "update_failed" = "確認に失敗しました。タップして再試行";
+"update_title" = "アップデートがあります";
+"update_current_version" = "現在のバージョン %@";
+"update_changelog" = "更新内容";
+"update_no_notes" = "このバージョンのリリースノートはありません";
+"update_download" = "アップデートをダウンロード";
+"update_downloading" = "ダウンロード中 %d%%";
+"update_cancel" = "ダウンロードをキャンセル";
+"update_share" = "パッケージを共有";
+"update_view_github" = "GitHub ですべてのリリースを見る";
+"update_share_hint" = "ダウンロードが完了すると共有シートが自動的に開き、インストールパッケージを他の端末に送って署名・インストールできます。";
+"update_incremental" = "差分アップデート";
+"update_incremental_hint" = "前のパッケージのローカルコピーが見つかったため、変更のあった部分だけをダウンロードします。";
+"update_incremental_progress" = "差分ダウンロード %@ / %@";
+"update_preparing" = "差分を準備中…";
+"update_preparing_hint" = "パッケージのディレクトリを解析し、ダウンロードが必要な部分を算出しています。";
+"update_downloaded" = "%@ を保存しました（ファイル / APP / Updates）";
+"update_install_failed" = "アップデート失敗：%@";
 "dc_reason_eperm" = "このビルドには復号権限がありません。dynamic-codesigning を含む開発者証明書で再署名してください";
 "dc_reason_pages" = "カーネルがすべてのページを拒否しました（mremap は 0 を返したが全ページ失敗）。通常は同じ署名権限の問題です";
 "dc_reason_unchanged" = "復号後も内容が変わっていません。このバイナリはすでに復号済みか、構造が異常です";
@@ -1137,3 +1165,15 @@
 "sign_now" = "署名へ";
 
 "testflight_history_limit" = "TestFlight はテスターに現在アクティブな build のみを公開するため、期限切れの build は取得できません。この一覧 = 各プラットフォームの現在の build + この端末でダウンロードした build で、ダウンロードするほど長くなります。";
+"testflight_region" = "地域";
+"testflight_region_auto" = "アカウントに合わせる";
+"testflight_region_hint" = "中国地域の TestFlight アカウントは、中国 App Store に未掲載のアプリ（Surge など）をインストールできません。ここでそのアプリのストア地域を選択すればインストールできます。";
+"live_island" = "ダイナミックアイランド";
+"live_island_desc" = "ダイナミックアイランドにタスクの進行状況とバックグラウンド状態を表示";
+"live_island_download" = "ダウンロードタスク";
+"live_island_sign" = "署名タスク";
+"live_island_decrypt" = "復号タスク";
+"live_island_install" = "インストールタスク";
+"live_island_app" = "バックグラウンドの APP";
+"island_app_phase" = "バックグラウンドで実行中";
+"island_app_tap_to_open" = "アイランドをタップして App に戻る";

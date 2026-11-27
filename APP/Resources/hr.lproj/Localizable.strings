@@ -103,8 +103,15 @@
 "download_failed" = "Preuzimanje nije uspjelo";
 "download_cancelled" = "Otkazano";
 "download_waiting" = "Čekanje";
+"download_waiting_sample" = "Prikupljanje uzoraka brzine";
+"chart_hud_detail" = "Preostalo %@ · Proteklo %@";
+"download_connections" = "Maks. veza po zadatku";
+"download_connections_hint" = "Podesivo od 1 do 64. Stvarna istovremeność ograničena je veličinom datoteke i podrškom raspona na poslužitelju, najmanje 2 MB po segmentu.";
+"download_connections_effective" = "%@ · otprilike %d veza u upotrebi (najmanje 2 MB po segmentu)";
 "all_start" = "Pokreni sve";
 "no_downloads" = "Nema preuzimanja";
+"no_downloads_hint" = "Pretražite aplikaciju u trgovini ili uvezite IPA za početak";
+"no_downloads_action" = "Pregledaj trgovinu";
 
 "account" = "Račun";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "Potpisani IPA nije stvoren.";
 "sign_err_unknown" = "Nepoznata pogreška potpisivanja.";
 "sign_install_self_warning" = "Potpisani paket ima isti Bundle ID kao ova aplikacija. Njegova bi instalacija prebrisala alat za potpisivanje. Podijelite IPA i instalirajte ga s odgovarajućim Bundle ID/profilom ili na drugom uređaju.";
+"sign_install_self_confirm" = "Ovaj paket ima isti Bundle ID kao trenutačna aplikacija. Instalacija će prebrisati i zatvoriti aplikaciju; nakon završetka otvorite je ponovno s početnog zaslona. Tijekom instalacije držite zaslon otključan.";
+"sign_install_continue" = "Svejedno instaliraj";
+"sign_install_self_trollstore" = "Predano TrollStoreu za instalaciju s prebrisivanjem";
 "sign_cert_detail_title" = "Pojedinosti certifikata";
 "sign_cert_detail_from_profile" = "Pojedinosti dolaze iz DeveloperCertificates u profilu.";
 "sign_cert_detail_unavailable" = "Stari .p12; Security ne može ga pročitati. Odaberite profil da biste vidjeli pojedinosti njegovog certifikata.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Otključaj skrivene zapise potpisivanja";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID profila je %@, što ne pokriva ovaj IPA. Potpisivanje će nastaviti s odabranim profilom; instalacija može biti odbijena ako se profil ne može primijeniti.";
+"sign_use_profile_id" = "Koristi App ID profila: %@ (zamjenjuje svaku aplikaciju s istim ID-om na ovom uređaju i uklanja proširenja bez odgovarajućeg profila)";
 "sign_team_mismatch_warning" = "Certifikat i profil pripadaju različitim Teamima. Potpisivanje će se pokušati, ali instalacija će vjerojatno zakazati; odaberite certifikat i profil iz istog Teama.";
 "sign_import_wrong_type" = "Odaberite .ipa ili .zip datoteku.";
 "sign_target_control_center" = "Centar upravljanja";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Provjeri ažuriranja";
 "update_latest" = "Ažurno";
 "update_failed" = "Provjera nije uspjela, dodirnite za ponovni pokušaj";
+"update_title" = "Dostupno ažuriranje";
+"update_current_version" = "Trenutačna verzija %@";
+"update_changelog" = "Novosti";
+"update_no_notes" = "Nema napomena o izdanju za ovu verziju";
+"update_download" = "Preuzmi ažuriranje";
+"update_downloading" = "Preuzimanje %d%%";
+"update_cancel" = "Otkaži preuzimanje";
+"update_share" = "Podijeli paket";
+"update_view_github" = "Pogledaj sva izdanja na GitHubu";
+"update_share_hint" = "List za dijeljenje automatski se otvara nakon preuzimanja, kako biste paket mogli poslati na drugi uređaj radi potpisivanja i instalacije.";
+"update_incremental" = "Inkrementalno ažuriranje";
+"update_incremental_hint" = "Pronađena je lokalna kopija prethodnog paketa pa se preuzimaju samo promijenjeni dijelovi.";
+"update_incremental_progress" = "Inkrementalno preuzimanje %@ / %@";
+"update_preparing" = "Priprema…";
+"update_preparing_hint" = "Čita se direktorij paketa kako bi se utvrdilo koje dijelove treba preuzeti.";
+"update_downloaded" = "Spremljeno %@ (Datoteke / APP / Updates)";
+"update_install_failed" = "Ažuriranje nije uspjelo: %@";
 "dc_reason_eperm" = "Ova verzija nema dopuštenje za dešifriranje: ponovno potpišite aplikaciju razvojnim certifikatom koji sadrži dynamic-codesigning";
 "dc_reason_pages" = "Jezgra je odbila svaku stranicu (mremap je vratio 0, ali sve su stranice neuspjele) — obično isti problem s dopuštenjem potpisa";
 "dc_reason_unchanged" = "Sadržaj se nije promijenio nakon dešifriranja: ova je binarna datoteka možda već dešifrirana ili oštećena";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Idi na potpisivanje";
 
 "testflight_history_limit" = "TestFlight prikazuje testerima samo trenutačno aktivnu verziju; istekle se verzije ne mogu dohvatiti. Ovaj popis = aktivne verzije za svaku platformu + verzije preuzete na ovom uređaju i raste sa svakim novim preuzimanjem.";
+"testflight_region" = "Regija";
+"testflight_region_auto" = "Regija računa";
+"testflight_region_hint" = "TestFlight račun iz Kine ne može instalirati aplikacije koje nisu u kineskom App Storeu (npr. Surge). Ovdje odaberite trgovinsku regiju aplikacije da biste je instalirali.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Prikaz napretka zadataka i statusa u pozadini u Dynamic Islandu";
+"live_island_download" = "Preuzimanja";
+"live_island_sign" = "Potpisivanje";
+"live_island_decrypt" = "Dešifriranje";
+"live_island_install" = "Instalacija";
+"live_island_app" = "Aplikacija u pozadini";
+"island_app_phase" = "Radi u pozadini";
+"island_app_tap_to_open" = "Dodirnite Dynamic Island za povratak";

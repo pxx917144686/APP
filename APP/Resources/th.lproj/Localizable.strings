@@ -103,8 +103,15 @@
 "download_failed" = "ดาวน์โหลดล้มเหลว";
 "download_cancelled" = "ยกเลิกแล้ว";
 "download_waiting" = "รอคิว";
+"download_waiting_sample" = "กำลังเก็บตัวอย่างความเร็ว";
+"chart_hud_detail" = "เหลือ %@ · ใช้ไป %@";
+"download_connections" = "การเชื่อมต่อสูงสุดต่องาน";
+"download_connections_hint" = "ปรับได้ตั้งแต่ 1–64 การทำงานพร้อมกันจริงขึ้นอยู่กับขนาดไฟล์และการรองรับ range ของเซิร์ฟเวอร์ โดยแต่ละส่วนต้องมีอย่างน้อย 2 MB";
+"download_connections_effective" = "%@ · ใช้งานประมาณ %d การเชื่อมต่อ (แต่ละส่วนอย่างน้อย 2 MB)";
 "all_start" = "เริ่มทั้งหมด";
 "no_downloads" = "ไม่มีดาวน์โหลด";
+"no_downloads_hint" = "ค้นหาแอปในร้านค้า หรือนำเข้า IPA เพื่อเริ่มต้น";
+"no_downloads_action" = "เลือกดูร้านค้า";
 
 "account" = "บัญชี";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "ไม่ได้สร้าง IPA ที่ลงนามแล้ว";
 "sign_err_unknown" = "ข้อผิดพลาดการลงนามที่ไม่รู้จัก";
 "sign_install_self_warning" = "แพ็กเกจที่ลงนามแล้วมี Bundle ID เดียวกับแอปนี้ หากติดตั้งจะเขียนทับเครื่องมือลงนาม โปรดแชร์ IPA แล้วติดตั้งด้วย Bundle ID/โปรไฟล์ที่ตรงกัน หรือติดตั้งบนอุปกรณ์อื่น";
+"sign_install_self_confirm" = "แพ็กเกจนี้มี Bundle ID เดียวกับแอปปัจจุบัน การติดตั้งจะเขียนทับและทำให้แอปออก เมื่อเสร็จให้เปิดใหม่จากหน้าจอหลัก ระหว่างติดตั้งกรุณาอย่าล็อกหน้าจอ";
+"sign_install_continue" = "ยังคงติดตั้ง";
+"sign_install_self_trollstore" = "ส่งต่อให้ TrollStore ติดตั้งแบบเขียนทับแล้ว";
 "sign_cert_detail_title" = "รายละเอียดใบรับรอง";
 "sign_cert_detail_from_profile" = "รายละเอียดมาจาก DeveloperCertificates ในโปรไฟล์";
 "sign_cert_detail_unavailable" = ".p12 รูปแบบเก่า Security อ่านไม่ได้ เลือกโปรไฟล์เพื่อดูรายละเอียดใบรับรองของโปรไฟล์นั้น";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "ปลดล็อกรายการลงนามที่ซ่อนไว้";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "App ID ของโปรไฟล์คือ %@ ซึ่งไม่ครอบคลุม IPA นี้ จะลงนามต่อด้วยโปรไฟล์ที่เลือกไว้ หากโปรไฟล์ใช้กับแอปไม่ได้ การติดตั้งอาจถูกปฏิเสธ";
+"sign_use_profile_id" = "ใช้ App ID ของโปรไฟล์: %@ (จะแทนที่แอปที่มี ID เดียวกันในเครื่องนี้ และลบส่วนเสริมที่ไม่มีโปรไฟล์ตรงกัน)";
 "sign_team_mismatch_warning" = "ใบรับรองและโปรไฟล์อยู่ต่างทีมกัน จะพยายามลงนามต่อ แต่การติดตั้งมักล้มเหลว โปรดเลือกใบรับรองและโปรไฟล์จากทีมเดียวกัน";
 "sign_import_wrong_type" = "เลือกไฟล์ .ipa หรือ .zip";
 "sign_target_control_center" = "ศูนย์ควบคุม";
@@ -1043,6 +1054,23 @@
 "check_updates" = "ตรวจหาอัปเดต";
 "update_latest" = "เป็นเวอร์ชันล่าสุด";
 "update_failed" = "ตรวจสอบไม่สำเร็จ แตะเพื่อลองใหม่";
+"update_title" = "มีอัปเดตใหม่";
+"update_current_version" = "เวอร์ชันปัจจุบัน %@";
+"update_changelog" = "มีอะไรใหม่";
+"update_no_notes" = "ไม่มีบันทึกประจำรุ่นสำหรับเวอร์ชันนี้";
+"update_download" = "ดาวน์โหลดอัปเดต";
+"update_downloading" = "กำลังดาวน์โหลด %d%%";
+"update_cancel" = "ยกเลิกการดาวน์โหลด";
+"update_share" = "แชร์แพ็กเกจ";
+"update_view_github" = "ดูทุกรุ่นบน GitHub";
+"update_share_hint" = "เมื่อดาวน์โหลดเสร็จ หน้าแชร์จะเปิดขึ้นอัตโนมัติ เพื่อส่งแพ็กเกจไปยังอุปกรณ์อื่นเพื่อลงนามและติดตั้ง";
+"update_incremental" = "อัปเดตแบบส่วนเพิ่ม";
+"update_incremental_hint" = "พบสำเนาในเครื่องของแพ็กเกจเดิม จึงดาวน์โหลดเฉพาะส่วนที่เปลี่ยนแปลง";
+"update_incremental_progress" = "ดาวน์โหลดส่วนเพิ่ม %@ / %@";
+"update_preparing" = "กำลังเตรียม…";
+"update_preparing_hint" = "กำลังอ่านรายการไฟล์ในแพ็กเกจเพื่อคำนวณส่วนที่ต้องดาวน์โหลด";
+"update_downloaded" = "บันทึก %@ แล้ว (ไฟล์ / APP / Updates)";
+"update_install_failed" = "อัปเดตไม่สำเร็จ: %@";
 "dc_reason_eperm" = "บิลด์นี้ไม่มีสิทธิ์ถอดรหัส: ลงนามแอปใหม่ด้วยใบรับรองนักพัฒนาที่มี dynamic-codesigning";
 "dc_reason_pages" = "เคอร์เนลปฏิเสธทุกหน้า (mremap คืนค่า 0 แต่ทุกหน้าล้มเหลว) มักเป็นปัญหาเดียวกันกับสิทธิ์การลงนาม";
 "dc_reason_unchanged" = "เนื้อหาไม่เปลี่ยนแปลงหลังถอดรหัส: ไบนารีนี้อาจถูกถอดรหัสแล้วหรือเสียหาย";
@@ -1138,3 +1166,15 @@
 "sign_now" = "ไปที่ลงนาม";
 
 "testflight_history_limit" = "TestFlight แสดงเฉพาะ build ที่ใช้งานอยู่ให้ผู้ทดสอบเท่านั้น build ที่หมดอายุจะเรียกคืนไม่ได้ รายการนี้ = build ที่ใช้งานอยู่ของแต่ละแพลตฟอร์ม + build ที่ดาวน์โหลดบนอุปกรณ์นี้ และจะยาวขึ้นเมื่อดาวน์โหลดมากขึ้น";
+"testflight_region" = "ภูมิภาค";
+"testflight_region_auto" = "ภูมิภาคของบัญชี";
+"testflight_region_hint" = "บัญชี TestFlight ภูมิภาคจีนไม่สามารถติดตั้งแอปที่ไม่มีใน App Store จีน (เช่น Surge) เลือกภูมิภาคร้านค้าของแอปที่นี่เพื่อติดตั้ง";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "แสดงความคืบหน้าของงานและสถานะพื้นหลังบน Dynamic Island";
+"live_island_download" = "งานดาวน์โหลด";
+"live_island_sign" = "งานลงนาม";
+"live_island_decrypt" = "งานถอดรหัส";
+"live_island_install" = "งานติดตั้ง";
+"live_island_app" = "แอปในพื้นหลัง";
+"island_app_phase" = "ทำงานอยู่ในพื้นหลัง";
+"island_app_tap_to_open" = "แตะ Dynamic Island เพื่อกลับแอป";

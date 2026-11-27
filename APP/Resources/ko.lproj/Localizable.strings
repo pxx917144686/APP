@@ -114,8 +114,15 @@
 "download_failed" = "다운로드 실패";
 "download_cancelled" = "취소됨";
 "download_waiting" = "대기 중";
+"download_waiting_sample" = "속도 데이터 수집 중";
+"chart_hud_detail" = "남은 시간 %@ · 경과 시간 %@";
+"download_connections" = "작업당 최대 연결 수";
+"download_connections_hint" = "1–64단계로 조정할 수 있습니다. 실제 동시 처리는 파일 크기와 서버의 범위 요청 지원에 따라 제한되며, 세그먼트당 최소 2 MB입니다.";
+"download_connections_effective" = "%@ · 실제 사용 연결 약 %d개(세그먼트당 최소 2 MB)";
 "all_start" = "전체 시작";
 "no_downloads" = "다운로드 없음";
+"no_downloads_hint" = "스토어에서 앱을 검색하거나 IPA를 가져와서 시작하세요";
+"no_downloads_action" = "스토어 둘러보기";
 
 "account" = "계정";
 "apple_id" = "Apple ID";
@@ -650,6 +657,9 @@
 "sign_err_output" = "서명된 IPA가 생성되지 않았습니다.";
 "sign_err_unknown" = "알 수 없는 서명 오류입니다.";
 "sign_install_self_warning" = "서명된 패키지의 Bundle ID가 이 앱과 같습니다. 설치하면 서명 도구를 덮어씁니다. IPA를 공유해 일치하는 Bundle ID/프로파일로 설치하거나, 다른 기기에 설치하세요.";
+"sign_install_self_confirm" = "이 서명 패키지는 현재 앱과 Bundle ID가 같습니다. 설치하면 현재 앱을 덮어쓰고 종료하므로, 완료 후 홈 화면에서 다시 열어 주세요. 설치 중에는 화면을 잠그지 마세요.";
+"sign_install_continue" = "그래도 설치";
+"sign_install_self_trollstore" = "TrollStore에 덮어쓰기 설치를 맡겼습니다";
 "sign_cert_detail_title" = "인증서 세부 정보";
 "sign_cert_detail_from_profile" = "세부 정보는 프로파일의 DeveloperCertificates에서 가져옵니다.";
 "sign_cert_detail_unavailable" = "구형 .p12라서 Security에서 읽을 수 없습니다. 프로파일을 선택하면 그 인증서의 세부 정보를 볼 수 있습니다.";
@@ -996,6 +1006,7 @@
 "sign_history_hidden_auth_reason" = "숨겨진 서명 기록 잠금 해제";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "프로파일 App ID는 %@이며 이 IPA를 커버하지 않습니다. 선택한 프로파일로 서명을 계속합니다. 프로파일을 적용할 수 없으면 설치가 거부될 수 있습니다.";
+"sign_use_profile_id" = "프로파일의 App ID 사용: %@ (이 기기에서 같은 ID의 앱을 대체하며, 일치하는 프로파일이 없는 확장은 제거합니다)";
 "sign_team_mismatch_warning" = "인증서와 프로파일이 서로 다른 팀에 속합니다. 서명은 시도되지만 설치는 실패할 가능성이 높습니다. 같은 팀의 인증서와 프로파일을 선택하세요.";
 "sign_import_wrong_type" = ".ipa 또는 .zip 파일을 선택하세요.";
 "sign_target_control_center" = "제어 센터";
@@ -1042,6 +1053,23 @@
 "check_updates" = "업데이트 확인";
 "update_latest" = "최신 버전입니다";
 "update_failed" = "확인 실패, 탭하여 재시도";
+"update_title" = "새 버전 사용 가능";
+"update_current_version" = "현재 버전 %@";
+"update_changelog" = "업데이트 내용";
+"update_no_notes" = "이 버전의 릴리스 노트가 없습니다";
+"update_download" = "업데이트 다운로드";
+"update_downloading" = "다운로드 중 %d%%";
+"update_cancel" = "다운로드 취소";
+"update_share" = "패키지 공유";
+"update_view_github" = "GitHub에서 모든 릴리스 보기";
+"update_share_hint" = "다운로드가 완료되면 공유 시트가 자동으로 열립니다. 설치 패키지를 다른 기기로 보내 서명 후 설치할 수 있습니다.";
+"update_incremental" = "증분 업데이트";
+"update_incremental_hint" = "이전 패키지의 로컬 사본이 발견되어 변경된 부분만 다운로드합니다.";
+"update_incremental_progress" = "증분 다운로드 %@ / %@";
+"update_preparing" = "준비 중…";
+"update_preparing_hint" = "패키지 디렉터리를 분석하여 다운로드할 부분을 계산하는 중입니다.";
+"update_downloaded" = "%@ 저장됨(파일 / APP / Updates)";
+"update_install_failed" = "업데이트 실패: %@";
 "dc_reason_eperm" = "이 빌드에는 복호화 권한이 없습니다. dynamic-codesigning이 포함된 개발자 인증서로 다시 서명하세요";
 "dc_reason_pages" = "커널이 모든 페이지를 거부했습니다(mremap이 0을 반환했지만 모든 페이지 실패). 보통 같은 서명 권한 문제입니다";
 "dc_reason_unchanged" = "복호화 후에도 내용이 변경되지 않았습니다. 이미 복호화된 바이너리이거나 구조가 비정상입니다";
@@ -1137,3 +1165,15 @@
 "sign_now" = "서명으로 이동";
 
 "testflight_history_limit" = "TestFlight는 테스터에게 현재 활성 빌드만 제공하므로 만료된 빌드는 가져올 수 없습니다. 이 목록 = 각 플랫폼의 활성 빌드 + 이 기기에서 다운로드한 빌드이며, 다운로드할수록 길어집니다.";
+"testflight_region" = "지역";
+"testflight_region_auto" = "계정 지역 따르기";
+"testflight_region_hint" = "중국 지역 TestFlight 계정은 중국 App Store에 없는 앱(예: Surge)을 설치할 수 없습니다. 여기서 해당 앱의 스토어 지역을 선택하면 설치할 수 있습니다.";
+"live_island" = "다이내믹 아일랜드";
+"live_island_desc" = "다이내믹 아일랜드에 작업 진행 상황과 백그라운드 상태 표시";
+"live_island_download" = "다운로드 작업";
+"live_island_sign" = "서명 작업";
+"live_island_decrypt" = "복호화 작업";
+"live_island_install" = "설치 작업";
+"live_island_app" = "백그라운드 APP 표시";
+"island_app_phase" = "백그라운드에서 실행 중";
+"island_app_tap_to_open" = "아일랜드를 탭하여 앱으로 돌아가기";

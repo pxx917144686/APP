@@ -103,8 +103,15 @@
 "download_failed" = "İndirme Başarısız";
 "download_cancelled" = "İptal Edildi";
 "download_waiting" = "Bekliyor";
+"download_waiting_sample" = "Hız örnekleri toplanıyor";
+"chart_hud_detail" = "Kalan %@ · Geçen %@";
+"download_connections" = "Görev başına en fazla bağlantı";
+"download_connections_hint" = "1–64 arası ayarlanabilir. Gerçek eşzamanlılık dosya boyutu ve sunucunun aralık desteğiyle sınırlıdır; segment başına en az 2 MB.";
+"download_connections_effective" = "%@ · yaklaşık %d bağlantı kullanımda (segment başına en az 2 MB)";
 "all_start" = "Tümünü Başlat";
 "no_downloads" = "İndirme Yok";
+"no_downloads_hint" = "Mağazadan bir uygulama arayın veya başlamak için bir IPA içe aktarın";
+"no_downloads_action" = "Mağazaya göz at";
 
 "account" = "Hesap";
 "apple_id" = "Apple Kimliği";
@@ -651,6 +658,9 @@
 "sign_err_output" = "İmzalı IPA oluşturulmadı.";
 "sign_err_unknown" = "Bilinmeyen imzalama hatası.";
 "sign_install_self_warning" = "İmzalı paket bu uygulamayla aynı Bundle ID'ye sahip. Yüklenmesi imzalama aracının üzerine yazardı. IPA'yı paylaşın ve eşleşen bir Bundle ID/profil ile ya da başka bir cihaza yükleyin.";
+"sign_install_self_confirm" = "Bu paket, geçerli uygulamayla aynı Bundle ID'ye sahip. Yükleme uygulamayı üzerine yazacak ve uygulamayı kapatacaktır; bittikten sonra Ana Ekrandan yeniden açın. Yükleme sırasında ekranı kilitli tutmayın.";
+"sign_install_continue" = "Yine de yükle";
+"sign_install_self_trollstore" = "Üzerine yazma yüklentisi için TrollStore'a devredildi";
 "sign_cert_detail_title" = "Sertifika Ayrıntıları";
 "sign_cert_detail_from_profile" = "Ayrıntılar profildeki DeveloperCertificates'ten gelir.";
 "sign_cert_detail_unavailable" = "Eski .p12; Security okuyamıyor. Sertifikasının ayrıntılarını görmek için bir profil seçin.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Gizli imzalama kayıtlarının kilidini aç";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "Profil App ID'si %@ ve bu IPA'yı kapsamıyor. İmzalama seçilen profilyle devam edecek; profil uygulanamazsa yükleme reddedilebilir.";
+"sign_use_profile_id" = "Profilin App ID'sini kullan: %@ (bu cihazda aynı ID'li tüm uygulamaların yerine geçer ve eşleşen profili olmayan uzantıları kaldırır)";
 "sign_team_mismatch_warning" = "Sertifika ve profil farklı Team'lere ait. İmzalama denenecek ancak yükleme büyük olasılıkla başarısız olacak; aynı Team'den sertifika ve profil seçin.";
 "sign_import_wrong_type" = "Bir .ipa veya .zip dosyası seçin.";
 "sign_target_control_center" = "Denetim Merkezi";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Güncellemeleri denetle";
 "update_latest" = "Güncel";
 "update_failed" = "Denetim başarısız, yeniden denemek için dokunun";
+"update_title" = "Güncelleme var";
+"update_current_version" = "Geçerli sürüm %@";
+"update_changelog" = "Yenilikler";
+"update_no_notes" = "Bu sürüm için sürüm notu yok";
+"update_download" = "Güncellemeyi indir";
+"update_downloading" = "İndiriliyor %d%%";
+"update_cancel" = "İndirmeyi iptal et";
+"update_share" = "Paketi paylaş";
+"update_view_github" = "GitHub'da tüm sürümleri gör";
+"update_share_hint" = "İndirme bitince paylaşım sayfası otomatik açılır; paketi başka bir cihaza gönderip imzalayabilir ve yükleyebilirsiniz.";
+"update_incremental" = "Artımlı güncelleme";
+"update_incremental_hint" = "Önceki paketin yerel bir kopyası bulundu, yalnızca değişen bölümler indiriliyor.";
+"update_incremental_progress" = "Artımlı indirme %@ / %@";
+"update_preparing" = "Hazırlanıyor…";
+"update_preparing_hint" = "İndirilmesi gereken bölümleri hesaplamak için paket dizini okunuyor.";
+"update_downloaded" = "Kaydedildi %@ (Dosyalar / APP / Updates)";
+"update_install_failed" = "Güncelleme başarısız: %@";
 "dc_reason_eperm" = "Bu derlemede şifre çözme izni yok: uygulamayı dynamic-codesigning içeren bir geliştirici sertifikasıyla yeniden imzalayın";
 "dc_reason_pages" = "Çekirdek her sayfayı reddetti (mremap 0 döndürdü ama tüm sayfalar başarısız oldu) — genellikle aynı imzalama izni sorunu";
 "dc_reason_unchanged" = "Şifre çözmeden sonra içerik değişmedi: bu ikili dosya zaten çözülmüş veya bozuk olabilir";
@@ -1138,3 +1166,15 @@
 "sign_now" = "İmzalamaya git";
 
 "testflight_history_limit" = "TestFlight test kullanıcılarına yalnızca etkin derlemeyi gösterir; süresi dolmuş derlemeler geri alınamaz. Bu liste = her platformun etkin derlemeleri + bu cihazda indirilen derlemeler olup daha fazla indirdikçe uzar.";
+"testflight_region" = "Bölge";
+"testflight_region_auto" = "Hesap bölgesi";
+"testflight_region_hint" = "Çin bölgesi bir TestFlight hesabı, Çin App Store'da olmayan uygulamaları yükleyemez (ör. Surge). Yüklemek için buradan uygulamanın mağaza bölgesini seçin.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Görev ilerlemesini ve arka plan durumunu Dynamic Island'da göster";
+"live_island_download" = "İndirmeler";
+"live_island_sign" = "İmzalama";
+"live_island_decrypt" = "Şifre çözme";
+"live_island_install" = "Yükleme";
+"live_island_app" = "Arka plandaki uygulama";
+"island_app_phase" = "Arka planda çalışıyor";
+"island_app_tap_to_open" = "Geri dönmek için Dynamic Island'a dokunun";

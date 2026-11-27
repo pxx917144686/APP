@@ -103,8 +103,15 @@
 "download_failed" = "डाउनलोड असफल";
 "download_cancelled" = "रद्द किया गया";
 "download_waiting" = "प्रतीक्षा में";
+"download_waiting_sample" = "स्पीड सैंपल एकत्र किए जा रहे हैं";
+"chart_hud_detail" = "शेष %@ · बीता समय %@";
+"download_connections" = "प्रति टास्क अधिकतम कनेक्शन";
+"download_connections_hint" = "1–64 में समायोज्य। वास्तविक समानांतरता फ़ाइल आकार और सर्वर की रेंज समर्थन से सीमित है, प्रति सेगमेंट न्यूनतम 2 MB।";
+"download_connections_effective" = "%@ · लगभग %d कनेक्शन उपयोग में (प्रति सेगमेंट न्यूनतम 2 MB)";
 "all_start" = "सभी शुरू करें";
 "no_downloads" = "कोई डाउनलोड नहीं";
+"no_downloads_hint" = "शुरू करने के लिए स्टोर में कोई ऐप खोजें या एक IPA इंपोर्ट करें";
+"no_downloads_action" = "स्टोर ब्राउज़ करें";
 
 "account" = "खाता";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "साइन किया गया IPA नहीं बनाया गया।";
 "sign_err_unknown" = "अज्ञात साइनिंग त्रुटि।";
 "sign_install_self_warning" = "साइन किए गए पैकेज का Bundle ID इस ऐप जैसा ही है। इसे इंस्टॉल करने से साइनिंग टूल ओवरराइट हो जाएगा। IPA साझा करें और मैचिंग Bundle ID/प्रोफ़ाइल से इंस्टॉल करें, या इसे किसी अन्य डिवाइस पर इंस्टॉल करें।";
+"sign_install_self_confirm" = "इस पैकेज का Bundle ID मौजूदा ऐप जैसा ही है। इंस्टॉल करने पर ऐप ओवरराइट होकर बंद हो जाएगा; पूरा होने पर होम स्क्रीन से उसे दोबारा खोलें। इंस्टॉलेशन के दौरान स्क्रीन अनलॉक रखें।";
+"sign_install_continue" = "फिर भी इंस्टॉल करें";
+"sign_install_self_trollstore" = "ओवरराइट इंस्टॉल के लिए TrollStore को सौंपा गया";
 "sign_cert_detail_title" = "प्रमाणपत्र विवरण";
 "sign_cert_detail_from_profile" = "विवरण प्रोफ़ाइल के DeveloperCertificates से आते हैं।";
 "sign_cert_detail_unavailable" = "पुराना .p12; Security इसे नहीं पढ़ सकता। प्रमाणपत्र विवरण देखने के लिए प्रोफ़ाइल चुनें।";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "छिपे हुए साइनिंग रिकॉर्ड अनलॉक करें";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "प्रोफ़ाइल का App ID %@ है, जो इस IPA को कवर नहीं करता। चयनित प्रोफ़ाइल से साइनिंग जारी रहेगी; यदि प्रोफ़ाइल लागू नहीं हो सकती तो इंस्टॉलेशन अस्वीकार हो सकता है।";
+"sign_use_profile_id" = "प्रोफ़ाइल का App ID उपयोग करें: %@ (इस डिवाइस पर उसी ID वाले ऐप को बदल देगा और बिना मैचिंग प्रोफ़ाइल वाले एक्सटेंशन हटा देगा)";
 "sign_team_mismatch_warning" = "प्रमाणपत्र और प्रोफ़ाइल अलग-अलग Team के हैं। फिर भी साइनिंग का प्रयास होगा, पर इंस्टॉल संभवतः विफल होगा; एक ही Team के प्रमाणपत्र और प्रोफ़ाइल चुनें।";
 "sign_import_wrong_type" = ".ipa या .zip फ़ाइल चुनें।";
 "sign_target_control_center" = "कंट्रोल सेंटर";
@@ -1043,6 +1054,23 @@
 "check_updates" = "अपडेट जाँचें";
 "update_latest" = "अप टू डेट";
 "update_failed" = "जाँच विफल, पुनः प्रयास के लिए टैप करें";
+"update_title" = "अपडेट उपलब्ध";
+"update_current_version" = "वर्तमान वर्शन %@";
+"update_changelog" = "नया क्या है";
+"update_no_notes" = "इस वर्शन के लिए कोई रिलीज़ नोट नहीं";
+"update_download" = "अपडेट डाउनलोड करें";
+"update_downloading" = "डाउनलोड हो रहा है %d%%";
+"update_cancel" = "डाउनलोड रद्द करें";
+"update_share" = "पैकेज साझा करें";
+"update_view_github" = "GitHub पर सभी रिलीज़ देखें";
+"update_share_hint" = "डाउनलोड पूरा होने पर शेयर शीट अपने आप खुलेगी, ताकि आप पैकेज किसी दूसरे डिवाइस पर भेजकर उसे साइन और इंस्टॉल कर सकें।";
+"update_incremental" = "इंक्रीमेंटल अपडेट";
+"update_incremental_hint" = "पिछले पैकेज की लोकल कॉपी मिली है, इसलिए केवल बदले हिस्से डाउनलोड होंगे।";
+"update_incremental_progress" = "इंक्रीमेंटल डाउनलोड %@ / %@";
+"update_preparing" = "तैयारी हो रही है…";
+"update_preparing_hint" = "पैकेज की डायरेक्टरी पढ़कर गणना की जा रही है कि कौन से हिस्से डाउनलोड करने हैं।";
+"update_downloaded" = "सेव हो गया %@ (फ़ाइलें / APP / Updates)";
+"update_install_failed" = "अपडेट विफल: %@";
 "dc_reason_eperm" = "इस बिल्ड में डिक्रिप्शन अनुमति नहीं है: ऐप को dynamic-codesigning वाले डेवलपर प्रमाणपत्र से फिर से साइन करें";
 "dc_reason_pages" = "कर्नेल ने हर पेज अस्वीकार किया (mremap ने 0 लौटाया पर सभी पेज विफल) — सामान्यतः यही साइनिंग अनुमति की समस्या है";
 "dc_reason_unchanged" = "डिक्रिप्शन के बाद सामग्री नहीं बदली: यह बाइनरी पहले से डिक्रिप्टेड या ख़राब हो सकती है";
@@ -1138,3 +1166,15 @@
 "sign_now" = "साइन पर जाएँ";
 
 "testflight_history_limit" = "TestFlight परीक्षकों को केवल वर्तमान सक्रिय बिल्ड दिखाता है; समाप्त बिल्ड वापस नहीं लाए जा सकते। यह सूची = हर प्लेटफ़ॉर्म की सक्रिय बिल्ड + इस डिवाइस पर डाउनलोड की गई बिल्ड, और जितना अधिक डाउनलोड करेंगे उतनी बढ़ेगी।";
+"testflight_region" = "क्षेत्र";
+"testflight_region_auto" = "अकाउंट क्षेत्र";
+"testflight_region_hint" = "चीन क्षेत्र का TestFlight अकाउंट चीनी App Store पर न उपलब्ध ऐप (जैसे Surge) इंस्टॉल नहीं कर सकता। इंस्टॉल करने के लिए यहाँ ऐप का स्टोर क्षेत्र चुनें।";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Dynamic Island में टास्क की प्रगति और बैकग्राउंड स्थिति दिखाएँ";
+"live_island_download" = "डाउनलोड";
+"live_island_sign" = "साइनिंग";
+"live_island_decrypt" = "डिक्रिप्शन";
+"live_island_install" = "इंस्टॉलेशन";
+"live_island_app" = "बैकग्राउंड में ऐप";
+"island_app_phase" = "बैकग्राउंड में चल रहा है";
+"island_app_tap_to_open" = "वापस आने के लिए Dynamic Island पर टैप करें";

@@ -103,8 +103,15 @@
 "download_failed" = "La baixada ha fallat";
 "download_cancelled" = "Cancel·lat";
 "download_waiting" = "Esperant";
+"download_waiting_sample" = "Recollint mostres de velocitat";
+"chart_hud_detail" = "Restant %@ · Transcorregut %@";
+"download_connections" = "Connexions màx. per tasca";
+"download_connections_hint" = "Ajustable d'1 a 64. La concurrència real està limitada per la mida del fitxer i la compatibilitat de rangs del servidor, amb un mínim de 2 MB per segment.";
+"download_connections_effective" = "%@ · unes %d connexions en ús (mínim 2 MB per segment)";
 "all_start" = "Inicia-ho tot";
 "no_downloads" = "Sense baixades";
+"no_downloads_hint" = "Cerca una app a la botiga o importa un IPA per començar";
+"no_downloads_action" = "Explora la botiga";
 
 "account" = "Compte";
 "apple_id" = "Apple ID";
@@ -651,6 +658,9 @@
 "sign_err_output" = "No s'ha creat l'IPA signat.";
 "sign_err_unknown" = "Error de firma desconegut.";
 "sign_install_self_warning" = "El paquet signat té el mateix Bundle ID que aquesta app. Instal·lar-lo sobreescriuria l'eina de firma. Compartiu l'IPA i instal·leu-lo amb un Bundle ID/perfil coincidents, o instal·leu-lo en un altre dispositiu.";
+"sign_install_self_confirm" = "Aquest paquet té el mateix Bundle ID que l'app actual. En instal·lar-lo l'app s'eliminarà i es tancarà; torna-la a obrir des de la pantalla d'inici en acabar. Mantén la pantalla desbloquejada durant la instal·lació.";
+"sign_install_continue" = "Instal·la igualment";
+"sign_install_self_trollstore" = "Lliurat a TrollStore per instal·lar-lo sobre l'actual";
 "sign_cert_detail_title" = "Detalls del certificat";
 "sign_cert_detail_from_profile" = "Els detalls venen dels DeveloperCertificates del perfil.";
 "sign_cert_detail_unavailable" = ".p12 antic; Security no el pot llegir. Seleccioneu un perfil per veure els detalls del seu certificat.";
@@ -997,6 +1007,7 @@
 "sign_history_hidden_auth_reason" = "Desbloqueja els registres de firma ocults";
 "dl_transfer_left" = "%@";
 "sign_profile_fallback_warning" = "L'App ID del perfil és %@, que no cobreix aquest IPA. La firma continuarà amb el perfil seleccionat; la instal·lació pot ser rebutjada si el perfil no es pot aplicar.";
+"sign_use_profile_id" = "Fes servir l'App ID del perfil: %@ (substitueix qualsevol app amb el mateix ID en aquest dispositiu i elimina les extensions sense perfil coincident)";
 "sign_team_mismatch_warning" = "El certificat i el perfil pertanyen a Teams diferents. S'intentarà la firma, però la instal·lació probablement fallarà; trieu un certificat i un perfil del mateix Team.";
 "sign_import_wrong_type" = "Trieu un fitxer .ipa o .zip.";
 "sign_target_control_center" = "Centre de control";
@@ -1043,6 +1054,23 @@
 "check_updates" = "Comprova si hi ha actualitzacions";
 "update_latest" = "Actualitzat";
 "update_failed" = "La comprovació ha fallat, toca per tornar-ho a provar";
+"update_title" = "Actualització disponible";
+"update_current_version" = "Versió actual %@";
+"update_changelog" = "Novetats";
+"update_no_notes" = "No hi ha notes de versió per a aquesta versió";
+"update_download" = "Baixa l'actualització";
+"update_downloading" = "Baixant %d%%";
+"update_cancel" = "Cancel·la la baixada";
+"update_share" = "Comparteix el paquet";
+"update_view_github" = "Veure totes les versions a GitHub";
+"update_share_hint" = "El full per compartir s'obrirà automàticament en acabar la baixada, perquè puguis enviar el paquet a un altre dispositiu i signar-lo i instal·lar-lo.";
+"update_incremental" = "Actualització incremental";
+"update_incremental_hint" = "S'ha trobat una còpia local del paquet anterior, així que només es baixen les parts modificades.";
+"update_incremental_progress" = "Baixada incremental %@ / %@";
+"update_preparing" = "Preparant…";
+"update_preparing_hint" = "Llegint el directori del paquet per calcular quines parts cal baixar.";
+"update_downloaded" = "Desat %@ (Fitxers / APP / Updates)";
+"update_install_failed" = "L'actualització ha fallat: %@";
 "dc_reason_eperm" = "Aquesta compilació no té permís de desxifrat: torna a signar l'app amb un certificat de desenvolupador que inclogui dynamic-codesigning";
 "dc_reason_pages" = "El nucli ha rebutjat totes les pàgines (mremap ha retornat 0 però totes les pàgines han fallat); normalment és el mateix problema de permís de signatura";
 "dc_reason_unchanged" = "El contingut no ha canviat després del desxifrat: aquest binari ja pot estar desxifrat o malmès";
@@ -1138,3 +1166,15 @@
 "sign_now" = "Ves a Signatura";
 
 "testflight_history_limit" = "TestFlight només mostra als provadors la compilació activa; les compilacions caducades no es poden recuperar. Aquesta llista = compilacions actives de cada plataforma + compilacions baixades en aquest dispositiu, i creix com més en baixis.";
+"testflight_region" = "Regió";
+"testflight_region_auto" = "Regió del compte";
+"testflight_region_hint" = "Un compte de TestFlight de la regió de la Xina no pot instal·lar apps que no són a l'App Store de la Xina (p. ex. Surge). Tria aquí la regió de la botiga de l'app per instal·lar-la.";
+"live_island" = "Dynamic Island";
+"live_island_desc" = "Mostra el progrés de les tasques i l'estat en segon pla a la Dynamic Island";
+"live_island_download" = "Baixades";
+"live_island_sign" = "Signatura";
+"live_island_decrypt" = "Desxifrat";
+"live_island_install" = "Instal·lació";
+"live_island_app" = "App en segon pla";
+"island_app_phase" = "Executant-se en segon pla";
+"island_app_tap_to_open" = "Toca la Dynamic Island per tornar";
