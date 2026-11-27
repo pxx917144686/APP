@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Viimeistellään laitteen vahvistusta";
 "sap_stage_generate_signature" = "Luodaan pyynnön allekirjoitusta";
 "sap_err_interrupted" = "Vahvistus keskeytyi odottamatta. Yritä uudelleen.";
-"price_free" = "Free";
+"price_free" = "Ilmainen";
 "session_reconnecting" = "Yhdistetään uudelleen… (%@/%@)";
 "session_err_reconnect_failed" = "Uudelleenyhdistäminen epäonnistui. Tarkista verkkoyhteys.";
 "session_err_signin_required" = "Kirjaudu sisään uudelleen";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple ei palauttanut kirjautumistietoja. Tarkista tilisi ja yritä uudelleen.";
 "version_unknown" = "Tuntematon versio";
 "dc_action" = "Pura salaus";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Epäonnistui";
 "dc_err_missing" = "Tiedostoa ei löytynyt";
 "dc_err_unzip" = "Paketin purkaminen epäonnistui; paketti voi olla vajaainen";
 "dc_err_no_binary" = "Paketista ei löytynyt suoritettavaa tiedostoa";
@@ -513,9 +513,9 @@
 "detail_devices" = "Laitteet";
 "detail_arch" = "Arkkitehtuurit";
 "detail_size" = "Purkamisen jälkeinen koko";
-"detail_files" = "Files";
+"detail_files" = "Tiedostot";
 "detail_binaries" = "Binääritiedostot";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Perustiedot";
 "detail_encrypted" = "FairPlay-salattu";
 "detail_plain" = "Ei salattu";
 "detail_scinfo" = "Lisenssi";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponentit";
 "detail_section_libraries" = "Linkitetyt kirjastot";
 "dc_err_cancelled" = "Salauksen purku peruutettiin";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Peruuta";
 "dc_share_decrypted" = "Jaa purettu paketti";
 "purchased" = "Ostettu";
 "dc_group_wildcard" = "App ID on wildcard (TEAMID.*); wildcard-tyyppiset App ID:t eivät voi sisältää App Groupsia";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Valmis";
 "dc_status_cancelled" = "Peruutettu";
 "dc_stat_decrypted" = "Purettu";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Salaamaton";
+"dc_stat_total" = "Yhteensä";
 "dc_stat_elapsed" = "Kulunut aika";
 "dc_console_log" = "Reaaliaikaloki";
 "dc_console_waiting" = "Odotetaan moottorin tulostetta…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Purku";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Salauksen purku";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Pakkaus";
+"dc_phase_done" = "Valmis";
 "dc_scanning" = "Skannataan";
 "tab_sign" = "Allekirjoita";
 "sign_title" = "Allekirjoitusstudio";
@@ -816,7 +816,7 @@
 "sig_ent_cat_network" = "Verkko & laajennukset";
 "sig_ent_cat_web" = "Web & verkkotunnukset";
 "sig_ent_cat_icloud" = "iCloud";
-"sig_ent_cat_media" = "Media & Wallet";
+"sig_ent_cat_media" = "Media & lompakko";
 "sig_ent_cat_siri" = "Siri";
 "sig_ent_cat_other" = "Muut";
 "sig_ent_generic_desc" = "Tämän provisioning profiilin ilmoittama entitlement. Vain tässä luetellut oikeudet ovat allekirjoitetun sovelluksen käytettävissä.";
@@ -846,7 +846,7 @@
 "sig_ent_appattest_desc" = "Ympäristö laitevahvistukseen DeviceCheck / App Attest -palveluilla.";
 "sig_ent_icloud_container_title" = "iCloud-säilöt";
 "sig_ent_icloud_container_desc" = "iCloud Documents- ja CloudKit-säilöt, jotka ovat sovelluksen käytettävissä.";
-"sig_ent_icloud_kv_title" = "iCloud Key-Value Store";
+"sig_ent_icloud_kv_title" = "iCloud avain-arvosäilö";
 "sig_ent_icloud_kv_desc" = "iCloud key-value -tallennuksen tunniste, jota sovellus ja laajennukset jakavat.";
 "sign_icloud_container_missing_warning" = "Kohdesovellus käyttää iCloudia/CloudKitia, mutta provisioning profile ei myönnä iCloud-säilöjä. CloudKit ei toimi allekirjoitetussa sovelluksessa.";
 "sig_ent_healthkit_title" = "HealthKit";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Tunnistautuminen epäonnistui";
 "sign_history_auth_failed_hint" = "Piilotettua holvia ei voitu avata.";
 "sign_history_hidden_auth_reason" = "Avaa piilotetut allekirjoitustietueet";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Jäljellä %@";
 "sign_profile_fallback_warning" = "Profiilin App ID on %@, joka ei kata tätä IPA:ta. Allekirjoitus jatkuu valitulla profiililla; asennus voidaan hylätä, jos profiilia ei voi soveltaa.";
 "sign_use_profile_id" = "Käytä profiilin App ID:tä: %@ (korvaa kaikki saman ID:n sovellukset tällä laitteella ja poistaa laajennukset, joilla ei ole vastaavaa profiilia)";
 "sign_team_mismatch_warning" = "Varmenne ja profiili kuuluvat eri tiimeihin. Allekirjoitusta yritetään, mutta asennus epäonnistuu todennäköisesti; valitse samaan tiimiin kuuluva varmenne ja profiili.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Sovellus taustalla";
 "island_app_phase" = "Taustalla";
 "island_app_tap_to_open" = "Palaa napauttamalla Dynamic Islandia";
+
+// Source Code Browser
+"source_browser" = "Lähdekoodiselain";
+"source_browser_latest_commit" = "Viimeisin commit";
+"source_browser_recent_commits" = "Viimeaikaiset commitit";
+"source_browser_filter" = "Suodata tämä kansio";
+"source_browser_loading" = "Ladataan…";
+"source_browser_load_failed" = "Lataus epäonnistui";
+"source_browser_retry" = "Yritä uudelleen";
+"source_browser_empty_dir" = "Tämä kansio on tyhjä";
+"source_browser_copy" = "Kopioi kaikki";
+"source_browser_copied" = "Kopioitu";
+"source_browser_open_github" = "Näytä GitHubissa";
+"source_browser_binary_file" = "Binääritiedosto — tekstiä ei voi esikatsella";
+"source_browser_truncated" = "Tiedosto on liian suuri — näytetään ensimmäiset %d riviä";
+"source_browser_line_count" = "%d riviä";
+"source_browser_rate_limited" = "GitHub API -raja saavutettu — yritä myöhemmin uudelleen";
+"source_browser_not_found" = "Polkua ei löytynyt (saatetaan olla poistettu)";
+
+"zip_err_zip32_overflow" = "IPA ylittää ZIP32-rajan (4 GB)";

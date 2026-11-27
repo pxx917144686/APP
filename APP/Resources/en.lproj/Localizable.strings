@@ -1188,3 +1188,23 @@
 "live_island_app" = "App in background";
 "island_app_phase" = "Running in background";
 "island_app_tap_to_open" = "Tap the island to return";
+
+// Source Code Browser
+"source_browser" = "Source Code Browser";
+"source_browser_latest_commit" = "Latest Commit";
+"source_browser_recent_commits" = "Recent Commits";
+"source_browser_filter" = "Filter this folder";
+"source_browser_loading" = "Loading…";
+"source_browser_load_failed" = "Failed to load";
+"source_browser_retry" = "Retry";
+"source_browser_empty_dir" = "This folder is empty";
+"source_browser_copy" = "Copy All";
+"source_browser_copied" = "Copied";
+"source_browser_open_github" = "View on GitHub";
+"source_browser_binary_file" = "Binary file — text preview unavailable";
+"source_browser_truncated" = "File too large — showing first %d lines";
+"source_browser_line_count" = "%d lines";
+"source_browser_rate_limited" = "GitHub API rate limit reached — try again later";
+"source_browser_not_found" = "Path not found (it may have been deleted)";
+
+"zip_err_zip32_overflow" = "IPA exceeds the 4GB ZIP32 limit";

@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Apparaatverificatie wordt afgerond";
 "sap_stage_generate_signature" = "Verzoekhandtekening genereren";
 "sap_err_interrupted" = "De verificatie is onverwacht onderbroken. Probeer het opnieuw.";
-"price_free" = "Free";
+"price_free" = "Gratis";
 "session_reconnecting" = "Opnieuw verbinden… (%@/%@)";
 "session_err_reconnect_failed" = "Opnieuw verbinden mislukt. Controleer je netwerkverbinding.";
 "session_err_signin_required" = "Log opnieuw in";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple heeft geen aanmeldinformatie teruggestuurd. Controleer je account en probeer het opnieuw.";
 "version_unknown" = "Onbekende versie";
 "dc_action" = "Ontsleutelen";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Mislukt";
 "dc_err_missing" = "Bestand niet gevonden";
 "dc_err_unzip" = "Uitpakken mislukt; het pakket is mogelijk onvolledig";
 "dc_err_no_binary" = "Geen uitvoerbaar bestand gevonden in het pakket";
@@ -513,9 +513,9 @@
 "detail_devices" = "Apparaten";
 "detail_arch" = "Architecturen";
 "detail_size" = "Uitgepakte grootte";
-"detail_files" = "Files";
+"detail_files" = "Bestanden";
 "detail_binaries" = "Binaire bestanden";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Basisgegevens";
 "detail_encrypted" = "FairPlay-versleuteld";
 "detail_plain" = "Niet versleuteld";
 "detail_scinfo" = "Licentie";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Componenten";
 "detail_section_libraries" = "Gekoppelde bibliotheken";
 "dc_err_cancelled" = "Ontsleuteling geannuleerd";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Annuleren";
 "dc_share_decrypted" = "Ontsleuteld pakket delen";
 "purchased" = "Gekocht";
 "dc_group_wildcard" = "App ID is een wildcard (TEAMID.*); wildcard-App ID’s kunnen geen App Groups hebben";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Voltooid";
 "dc_status_cancelled" = "Geannuleerd";
 "dc_stat_decrypted" = "Ontsleuteld";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Klartekst";
+"dc_stat_total" = "Totaal";
 "dc_stat_elapsed" = "Verstreken";
 "dc_console_log" = "Live log";
 "dc_console_waiting" = "Wachten op uitvoer van de engine…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Uitpakken";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Ontsleutelen";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Inpakken";
+"dc_phase_done" = "Klaar";
 "dc_scanning" = "Scannen";
 "tab_sign" = "Ondertekenen";
 "sign_title" = "Ondertekenstudio";
@@ -846,7 +846,7 @@
 "sig_ent_appattest_desc" = "Omgeving voor apparaatvalidatie via DeviceCheck / App Attest.";
 "sig_ent_icloud_container_title" = "iCloud-containers";
 "sig_ent_icloud_container_desc" = "iCloud Documents- en CloudKit-containers die beschikbaar zijn voor de app.";
-"sig_ent_icloud_kv_title" = "iCloud Key-Value Store";
+"sig_ent_icloud_kv_title" = "iCloud sleutel-waardeopslag";
 "sig_ent_icloud_kv_desc" = "Identifier voor iCloud key-value-opslag, gedeeld door de app en extensies.";
 "sign_icloud_container_missing_warning" = "De doel-app gebruikt iCloud/CloudKit, maar het provisioneringsprofiel verleent geen iCloud-containers. CloudKit werkt niet in de ondertekende app.";
 "sig_ent_healthkit_title" = "HealthKit";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Verificatie mislukt";
 "sign_history_auth_failed_hint" = "Kan de verborgen kluis niet ontgrendelen.";
 "sign_history_hidden_auth_reason" = "Verborgen ondertekeningsitems ontgrendelen";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Resterend %@";
 "sign_profile_fallback_warning" = "De App ID van het profiel is %@, die dekt deze IPA niet. De ondertekening gaat verder met het geselecteerde profiel; de installatie kan worden geweigerd als het profiel niet kan worden toegepast.";
 "sign_use_profile_id" = "App ID van het profiel gebruiken: %@ (vervangt elke app met dezelfde ID op dit apparaat en verwijdert extensies zonder passend profiel)";
 "sign_team_mismatch_warning" = "Het certificaat en het profiel behoren tot verschillende teams. Ondertekening wordt geprobeerd, maar de installatie zal waarschijnlijk mislukken; kies een certificaat en profiel van hetzelfde team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App op achtergrond";
 "island_app_phase" = "Actief op achtergrond";
 "island_app_tap_to_open" = "Tik op de Dynamic Island om terug te keren";
+
+// Source Code Browser
+"source_browser" = "Broncodebrowser";
+"source_browser_latest_commit" = "Laatste commit";
+"source_browser_recent_commits" = "Recente commits";
+"source_browser_filter" = "Deze map filteren";
+"source_browser_loading" = "Laden…";
+"source_browser_load_failed" = "Laden mislukt";
+"source_browser_retry" = "Opnieuw proberen";
+"source_browser_empty_dir" = "Deze map is leeg";
+"source_browser_copy" = "Alles kopiëren";
+"source_browser_copied" = "Gekopieerd";
+"source_browser_open_github" = "Bekijken op GitHub";
+"source_browser_binary_file" = "Binair bestand — tekstvoorvertoning niet mogelijk";
+"source_browser_truncated" = "Bestand te groot — eerste %d regels worden getoond";
+"source_browser_line_count" = "%d regels";
+"source_browser_rate_limited" = "GitHub API-limiet bereikt — probeer het later opnieuw";
+"source_browser_not_found" = "Pad niet gevonden (mogelijk verwijderd)";
+
+"zip_err_zip32_overflow" = "IPA overschrijdt de 4 GB ZIP32-limiet";

@@ -231,7 +231,7 @@ struct TabbarView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
             .frame(height: tabHeight)
-            .liquidGlassSurface(cornerRadius: config.cornerRadius)
+            .liquidGlassSurface(cornerRadius: config.cornerRadius, clear: true)
             .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
             .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
             .overlay(
@@ -251,8 +251,8 @@ struct TabbarView: View {
                         Circle()
                             .fill(themeManager.accentColor)
                     } else {
-                        Circle()
-                            .fill(.ultraThinMaterial)
+                        Color.clear
+                            .liquidGlassCircle(clear: true)
                     }
 
                     Image(systemName: "magnifyingglass")
@@ -260,10 +260,6 @@ struct TabbarView: View {
                         .foregroundStyle(selectedTab == .search ? Color.white : Color.primary.opacity(0.7))
                 }
                 .frame(width: tabHeight, height: tabHeight)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(selectedTab == .search ? 0 : 0.15), lineWidth: 0.5)
-                )
                 .shadow(color: Color.black.opacity(0.18), radius: 20, x: 0, y: 8)
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
             }

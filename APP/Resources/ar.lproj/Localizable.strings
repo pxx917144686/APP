@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "جارٍ إنهاء التحقق من الجهاز";
 "sap_stage_generate_signature" = "جارٍ إنشاء توقيع الطلب";
 "sap_err_interrupted" = "تم مقاطعة التحقق بشكل غير متوقع. يرجى المحاولة مرة أخرى.";
-"price_free" = "Free";
+"price_free" = "مجاني";
 "session_reconnecting" = "جارٍ إعادة الاتصال… (%@/%@)";
 "session_err_reconnect_failed" = "فشل إعادة الاتصال. تحقق من اتصال الشبكة لديك.";
 "session_err_signin_required" = "يرجى تسجيل الدخول مرة أخرى";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "لم تُعد Apple معلومات تسجيل الدخول. تحقق من حسابك وحاول مرة أخرى.";
 "version_unknown" = "إصدار غير معروف";
 "dc_action" = "فك التشفير";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "فشل";
 "dc_err_missing" = "الملف غير موجود";
 "dc_err_unzip" = "فشل فك الضغط؛ قد تكون الحزمة غير مكتملة";
 "dc_err_no_binary" = "لم يتم العثور على ملف تنفيذي في الحزمة";
@@ -513,9 +513,9 @@
 "detail_devices" = "الأجهزة";
 "detail_arch" = "البنى";
 "detail_size" = "الحجم بعد فك الضغط";
-"detail_files" = "Files";
+"detail_files" = "الملفات";
 "detail_binaries" = "الملفات الثنائية";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "معلومات أساسية";
 "detail_encrypted" = "مشفر بـ FairPlay";
 "detail_plain" = "غير مشفر";
 "detail_scinfo" = "الترخيص";
@@ -528,7 +528,7 @@
 "detail_section_components" = "المكونات";
 "detail_section_libraries" = "المكتبات المرتبطة";
 "dc_err_cancelled" = "تم إلغاء فك التشفير";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "إلغاء";
 "dc_share_decrypted" = "مشاركة الحزمة بعد فك التشفير";
 "purchased" = "تم الشراء";
 "dc_group_wildcard" = "معرف App هو wildcard (TEAMID.*); معرفات App من نوع wildcard لا يمكن أن تحمل App Group";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "مكتمل";
 "dc_status_cancelled" = "تم الإلغاء";
 "dc_stat_decrypted" = "تم فك التشفير";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "غير مشفر";
+"dc_stat_total" = "الإجمالي";
 "dc_stat_elapsed" = "الوقت المنقضي";
 "dc_console_log" = "السجل المباشر";
 "dc_console_waiting" = "في انتظار مخرجات المحرك…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "الاستخراج";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "فك التشفير";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "التغليف";
+"dc_phase_done" = "تم";
 "dc_scanning" = "جارٍ الفحص";
 "tab_sign" = "توقيع";
 "sign_title" = "استوديو التوقيع";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "فشل المصادقة";
 "sign_history_auth_failed_hint" = "تعذر فتح الخزنة المخفية.";
 "sign_history_hidden_auth_reason" = "فتح سجلات التوقيع المخفية";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "المتبقي %@";
 "sign_profile_fallback_warning" = "الـApp ID في الملف هو %@، وهو لا يغطي هذا الـIPA. سيستمر التوقيع بالملف المحدد؛ قد يُرفض التثبيت إذا تعذر تطبيق الملف.";
 "sign_use_profile_id" = "استخدام App ID الخاص بالملف الشخصي: %@ (يستبدل أي تطبيق بنفس المعرف على هذا الجهاز ويزيل الإضافات بدون ملف تعريف مطابق)";
 "sign_team_mismatch_warning" = "الشهادة والملف ينتميان إلى Team مختلفين. سيُحاول التوقيع على أي حال، لكن التثبيت سيفشل على الأرجح؛ اختر شهادة وملفًا من الـTeam نفسه.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "التطبيق في الخلفية";
 "island_app_phase" = "يعمل في الخلفية";
 "island_app_tap_to_open" = "انقر على Dynamic Island للعودة";
+
+// Source Code Browser
+"source_browser" = "مستعرض الكود المصدري";
+"source_browser_latest_commit" = "آخر إيداع";
+"source_browser_recent_commits" = "الإيداعات الأخيرة";
+"source_browser_filter" = "تصفية هذا المجلد";
+"source_browser_loading" = "جارٍ التحميل…";
+"source_browser_load_failed" = "فشل التحميل";
+"source_browser_retry" = "إعادة المحاولة";
+"source_browser_empty_dir" = "هذا المجلد فارغ";
+"source_browser_copy" = "نسخ الكل";
+"source_browser_copied" = "تم النسخ";
+"source_browser_open_github" = "عرض على GitHub";
+"source_browser_binary_file" = "ملف ثنائي — لا يمكن معاينة النص";
+"source_browser_truncated" = "الملف كبير جدًا — يتم عرض أول %d سطور";
+"source_browser_line_count" = "%d سطور";
+"source_browser_rate_limited" = "تم بلوغ حد طلبات GitHub API — حاول لاحقًا";
+"source_browser_not_found" = "المسار غير موجود (ربما تم حذفه)";
+
+"zip_err_zip32_overflow" = "يتجاوز ملف IPA حد 4GB لـ ZIP32";

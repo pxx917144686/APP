@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Dokončovanie overenia zariadenia";
 "sap_stage_generate_signature" = "Generovanie podpisu požiadavky";
 "sap_err_interrupted" = "Overenie bolo neočakávane prerušené. Skúste to znova.";
-"price_free" = "Free";
+"price_free" = "Zadarmo";
 "session_reconnecting" = "Pripájanie znova… (%@/%@)";
 "session_err_reconnect_failed" = "Opätovné pripojenie zlyhalo. Skontrolujte sieťové pripojenie.";
 "session_err_signin_required" = "Prihláste sa znova";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple nevrátil informácie o prihlásení. Skontrolujte svoj účet a skúste to znova.";
 "version_unknown" = "Neznáma verzia";
 "dc_action" = "Dešifrovať";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Zlyhalo";
 "dc_err_missing" = "Súbor sa nenašiel";
 "dc_err_unzip" = "Rozbalenie zlyhalo; balík môže byť nekompletný";
 "dc_err_no_binary" = "V balíku sa nenašiel spustiteľný súbor";
@@ -513,9 +513,9 @@
 "detail_devices" = "Zariadenia";
 "detail_arch" = "Architektúry";
 "detail_size" = "Veľkosť po rozbalení";
-"detail_files" = "Files";
+"detail_files" = "Súbory";
 "detail_binaries" = "Binárne súbory";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Základné informácie";
 "detail_encrypted" = "Zašifrované FairPlay";
 "detail_plain" = "Nezašifrované";
 "detail_scinfo" = "Licencia";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponenty";
 "detail_section_libraries" = "Prepojené knižnice";
 "dc_err_cancelled" = "Dešifrovanie zrušené";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Zrušiť";
 "dc_share_decrypted" = "Zdieľať dešifrovaný balík";
 "purchased" = "Zakúpené";
 "dc_group_wildcard" = "App ID je wildcard (TEAMID.*); wildcardové App ID nemôžu obsahovať App Groups";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Dokončené";
 "dc_status_cancelled" = "Zrušené";
 "dc_stat_decrypted" = "Dešifrované";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Nešifrované";
+"dc_stat_total" = "Spolu";
 "dc_stat_elapsed" = "Uplynutý čas";
 "dc_console_log" = "Živý protokol";
 "dc_console_waiting" = "Čakanie na výstup motora…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Extrahovanie";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Dešifrovanie";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Balenie";
+"dc_phase_done" = "Hotovo";
 "dc_scanning" = "Skenovanie";
 "tab_sign" = "Podpisovanie";
 "sign_title" = "Štúdio podpisovania";
@@ -713,7 +713,7 @@
 "sign_target_hint" = "Položka sa skopíruje do Frameworks každého cieľa a jej Load Command sa zapíše pred podpísaním.";
 "sign_target_main" = "Hlavná aplikácia";
 "sign_target_widget" = "Widgety (všetky veľkosti)";
-"sign_target_ne" = "Network Extension";
+"sign_target_ne" = "Sieťové rozšírenie (NE)";
 "sign_target_share" = "Rozšírenie Share";
 "sign_target_notification" = "Rozšírenie Notification";
 "sign_target_intents" = "Rozšírenie Intents";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "Umožňuje komunikačné oznámenia s avatarmi a integráciou so Sústredením.";
 "sig_ent_associated_domains_title" = "Priradené domény";
 "sig_ent_associated_domains_desc" = "Domény Universal Links a Web Credentials, ktoré aplikácia môže deklarovať.";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "Sieťové rozšírenie";
 "sig_ent_ne_desc" = "Umožňuje režimy Network Extension deklarované profilom, ako je Packet Tunnel alebo DNS Proxy.";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "Umožňuje aplikácii používať VPN API frameworku NetworkExtension.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Overenie zlyhalo";
 "sign_history_auth_failed_hint" = "Skrytý trezor sa nepodarilo odomknúť.";
 "sign_history_hidden_auth_reason" = "Odomknúť skryté podpisové záznamy";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Zostáva %@";
 "sign_profile_fallback_warning" = "App ID profilu je %@, čo nepokrýva tento IPA. Podpisovanie bude pokračovať s vybraným profilom; inštalácia môže byť odmietnutá, ak profil nemožno použiť.";
 "sign_use_profile_id" = "Použiť App ID profilu: %@ (nahradí všetky aplikácie s rovnakým ID v tomto zariadení a odstráni rozšírenia bez zodpovedajúceho profilu)";
 "sign_team_mismatch_warning" = "Certifikát a profil patria k rôznym teamom. Podpisovanie bude skúsené, ale inštalácia pravdepodobne zlyhá; vyberte certifikát a profil z rovnakého teamu.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Aplikácia na pozadí";
 "island_app_phase" = "Beží na pozadí";
 "island_app_tap_to_open" = "Klepnutím na Dynamic Island sa vrátite";
+
+// Source Code Browser
+"source_browser" = "Prehliadač zdrojového kódu";
+"source_browser_latest_commit" = "Posledný commit";
+"source_browser_recent_commits" = "Nedávne commity";
+"source_browser_filter" = "Filtrovať tento priečinok";
+"source_browser_loading" = "Načítava sa…";
+"source_browser_load_failed" = "Načítanie zlyhalo";
+"source_browser_retry" = "Skúsiť znova";
+"source_browser_empty_dir" = "Tento priečinok je prázdny";
+"source_browser_copy" = "Kopírovať všetko";
+"source_browser_copied" = "Skopírované";
+"source_browser_open_github" = "Zobraziť na GitHube";
+"source_browser_binary_file" = "Binárny súbor — text nie je možné zobraziť";
+"source_browser_truncated" = "Súbor je príliš veľký — zobrazuje sa prvých %d riadkov";
+"source_browser_line_count" = "%d riadkov";
+"source_browser_rate_limited" = "Dosiahnutý limit GitHub API — skúste to neskôr";
+"source_browser_not_found" = "Cesta nenájdená (mohla byť odstránená)";
+
+"zip_err_zip32_overflow" = "IPA prekračuje limit ZIP32 (4 GB)";

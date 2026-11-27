@@ -474,6 +474,9 @@ struct TestFlightDownloadView: View {
                     ShareLink(item: url) {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        SoundEffects.play(.tap)
+                    })
                 }
                 .padding(14)
                 .background(

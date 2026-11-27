@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Se finalizează verificarea dispozitivului";
 "sap_stage_generate_signature" = "Se generează semnătura cererii";
 "sap_err_interrupted" = "Verificarea a fost întreruptă neașteptat. Vă rugăm să încercați din nou.";
-"price_free" = "Free";
+"price_free" = "Gratuit";
 "session_reconnecting" = "Reconectare… (%@/%@)";
 "session_err_reconnect_failed" = "Reconectarea a eșuat. Verificați conexiunea la rețea.";
 "session_err_signin_required" = "Vă rugăm să vă conectați din nou";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple nu a returnat informații de conectare. Verificați contul și încercați din nou.";
 "version_unknown" = "Versiune necunoscută";
 "dc_action" = "Decriptează";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Eșuat";
 "dc_err_missing" = "Fișierul nu a fost găsit";
 "dc_err_unzip" = "Dezarhivarea a eșuat; pachetul poate fi incomplet";
 "dc_err_no_binary" = "Nu s-a găsit executabil în pachet";
@@ -513,9 +513,9 @@
 "detail_devices" = "Dispozitive";
 "detail_arch" = "Arhitecturi";
 "detail_size" = "Dimensiune dezarhivată";
-"detail_files" = "Files";
+"detail_files" = "Fișiere";
 "detail_binaries" = "Fișiere binare";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Informații de bază";
 "detail_encrypted" = "Criptat FairPlay";
 "detail_plain" = "Necriptat";
 "detail_scinfo" = "Licență";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Componente";
 "detail_section_libraries" = "Biblioteci legate";
 "dc_err_cancelled" = "Decriptare anulată";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Anulează";
 "dc_share_decrypted" = "Partajează pachetul decriptat";
 "purchased" = "Achiziționat";
 "dc_group_wildcard" = "App ID este wildcard (TEAMID.*); App ID-urile wildcard nu pot conține App Groups";
@@ -563,7 +563,7 @@
 "dc_status_completed" = "Finalizat";
 "dc_status_cancelled" = "Anulat";
 "dc_stat_decrypted" = "Decriptat";
-"dc_stat_plain" = "Plain";
+"dc_stat_plain" = "Necriptat";
 "dc_stat_total" = "Total";
 "dc_stat_elapsed" = "Timp scurs";
 "dc_console_log" = "Jurnal în direct";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Extragere";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Decriptare";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Împachetare";
+"dc_phase_done" = "Gata";
 "dc_scanning" = "Se scanează";
 "tab_sign" = "Semnare";
 "sign_title" = "Studio de semnare";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Autentificare eșuată";
 "sign_history_auth_failed_hint" = "Nu s-a putut debloca seiful ascuns.";
 "sign_history_hidden_auth_reason" = "Deblochează înregistrările de semnare ascunse";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Rămas %@";
 "sign_profile_fallback_warning" = "App ID-ul profilului este %@, care nu acoperă acest IPA. Semnarea va continua cu profilul selectat; instalarea poate fi respinsă dacă profilul nu poate fi aplicat.";
 "sign_use_profile_id" = "Folosește App ID-ul profilului: %@ (înlocuiește orice aplicație cu același ID pe acest dispozitiv și elimină extensiile fără profil corespunzător)";
 "sign_team_mismatch_warning" = "Certificatul și profilul aparțin unor team-uri diferite. Semnarea va fi încercată, dar instalarea va eșua probabil; alegeți un certificat și un profil din același team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Aplicație în fundal";
 "island_app_phase" = "Rulează în fundal";
 "island_app_tap_to_open" = "Atinge Dynamic Island pentru a reveni";
+
+// Source Code Browser
+"source_browser" = "Browser de cod sursă";
+"source_browser_latest_commit" = "Cel mai recent commit";
+"source_browser_recent_commits" = "Commituri recente";
+"source_browser_filter" = "Filtrează acest dosar";
+"source_browser_loading" = "Se încarcă…";
+"source_browser_load_failed" = "Încărcarea a eșuat";
+"source_browser_retry" = "Încearcă din nou";
+"source_browser_empty_dir" = "Acest dosar este gol";
+"source_browser_copy" = "Copiază tot";
+"source_browser_copied" = "Copiat";
+"source_browser_open_github" = "Vezi pe GitHub";
+"source_browser_binary_file" = "Fișier binar — previzualizarea textului nu este disponibilă";
+"source_browser_truncated" = "Fișier prea mare — se afișează primele %d linii";
+"source_browser_line_count" = "%d linii";
+"source_browser_rate_limited" = "Limita API GitHub atinsă — încearcă mai târziu";
+"source_browser_not_found" = "Calea nu a fost găsită (poate a fost ștearsă)";
+
+"zip_err_zip32_overflow" = "IPA-ul depășește limita ZIP32 de 4 GB";

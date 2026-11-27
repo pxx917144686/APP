@@ -86,36 +86,40 @@ struct LiquidGlassBackdrop: View {
 }
 
 extension View {
+    /// `clear: true` 使用 iOS 26 透明玻璃变体（内容从下方滚过的悬浮件用）;
+    /// 回退路径系统材质没有更薄的档位,行为不变。
     @ViewBuilder
-    func liquidGlassSurface(cornerRadius: CGFloat = 16) -> some View {
+    func liquidGlassSurface(cornerRadius: CGFloat = 16, clear: Bool = false) -> some View {
         if #available(iOS 26.0, *) {
-            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            self
+                .glassEffect(clear ? Glass.clear : .regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .overlay(
+                    GlassGlossOverlay(
+                        shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous),
+                        intensity: 0.65,
+                        showsRim: false
+                    )
+                )
         } else {
             self
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.28), Color.white.opacity(0.06)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 0.6
-                        )
+                    GlassGlossOverlay(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 )
                 .shadow(color: Color.black.opacity(0.14), radius: 18, x: 0, y: 8)
         }
     }
 
     @ViewBuilder
-    func liquidGlassCircle() -> some View {
+    func liquidGlassCircle(clear: Bool = false) -> some View {
         if #available(iOS 26.0, *) {
-            self.glassEffect(.regular, in: Circle())
+            self
+                .glassEffect(clear ? Glass.clear : .regular, in: Circle())
+                .overlay(GlassGlossOverlay(shape: Circle(), intensity: 0.65, showsRim: false))
         } else {
             self
                 .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5))
+                .overlay(GlassGlossOverlay(shape: Circle()))
         }
     }
 }

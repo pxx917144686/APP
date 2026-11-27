@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Menyiapkan pengesahan peranti";
 "sap_stage_generate_signature" = "Menjana tandatangan permintaan";
 "sap_err_interrupted" = "Pengesahan terganggu secara tidak dijangka. Sila cuba lagi.";
-"price_free" = "Free";
+"price_free" = "Percuma";
 "session_reconnecting" = "Menyambung semula… (%@/%@)";
 "session_err_reconnect_failed" = "Sambung semula gagal. Semak sambungan rangkaian anda.";
 "session_err_signin_required" = "Sila log masuk semula";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple tidak memulangkan maklumat log masuk. Semak akaun anda dan cuba lagi.";
 "version_unknown" = "Versi Tidak Diketahui";
 "dc_action" = "Nyahsulit";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Gagal";
 "dc_err_missing" = "Fail tidak ditemukan";
 "dc_err_unzip" = "Nyahzip gagal; pakej mungkin tidak lengkap";
 "dc_err_no_binary" = "Tiada fail boleh laku ditemukan dalam pakej";
@@ -513,9 +513,9 @@
 "detail_devices" = "Peranti";
 "detail_arch" = "Seni Bina";
 "detail_size" = "Saiz Selepas Nyahmampat";
-"detail_files" = "Files";
+"detail_files" = "Fail";
 "detail_binaries" = "Binari";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Maklumat Asas";
 "detail_encrypted" = "Disulitkan FairPlay";
 "detail_plain" = "Tidak Disulitkan";
 "detail_scinfo" = "Lesen";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponen";
 "detail_section_libraries" = "Pustaka Dipautkan";
 "dc_err_cancelled" = "Penyahsulitan dibatalkan";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Batal";
 "dc_share_decrypted" = "Kongsi pakej yang dinyahsulit";
 "purchased" = "Dibeli";
 "dc_group_wildcard" = "App ID ialah wildcard (TEAMID.*); App ID wildcard tidak boleh membawa App Group";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Selesai";
 "dc_status_cancelled" = "Dibatalkan";
 "dc_stat_decrypted" = "Dinyahsulit";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Tidak disulitkan";
+"dc_stat_total" = "Jumlah";
 "dc_stat_elapsed" = "Tempoh Berlalu";
 "dc_console_log" = "Log Langsung";
 "dc_console_waiting" = "Menunggu output enjin…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Ekstrak";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Nyahsulit";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Memungkus";
+"dc_phase_done" = "Selesai";
 "dc_scanning" = "Mengimbas";
 "tab_sign" = "Tandatangan";
 "sign_title" = "Studio Penandatanganan";
@@ -816,7 +816,7 @@
 "sig_ent_cat_network" = "Rangkaian & Sambungan";
 "sig_ent_cat_web" = "Web & Domain";
 "sig_ent_cat_icloud" = "iCloud";
-"sig_ent_cat_media" = "Media & Wallet";
+"sig_ent_cat_media" = "Media & Dompet";
 "sig_ent_cat_siri" = "Siri";
 "sig_ent_cat_other" = "Lain-lain";
 "sig_ent_generic_desc" = "Entitlement yang diisytiharkan oleh Provisioning Profile ini. Apl yang ditandatangani hanya boleh menggunakan kebenaran yang tersenarai di sini.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Pengesahan Gagal";
 "sign_history_auth_failed_hint" = "Tidak dapat membuka kunci peti keselamatan tersembunyi.";
 "sign_history_hidden_auth_reason" = "Buka kunci rekod penandatanganan tersembunyi";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Berbaki %@";
 "sign_profile_fallback_warning" = "App ID profil ialah %@, yang tidak meliputi IPA ini. Penandatanganan akan diteruskan dengan profil dipilih; pemasangan mungkin ditolak jika profil tidak dapat digunakan.";
 "sign_use_profile_id" = "Guna App ID profil: %@ (menggantikan mana-mana aplikasi dengan ID sama pada peranti ini dan membuang ekstensi tanpa profil sepadan)";
 "sign_team_mismatch_warning" = "Sijil dan profil tergolong dalam Team berbeza. Penandatanganan akan dicuba, tetapi pemasangan mungkin gagal; pilih sijil dan profil daripada Team yang sama.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Aplikasi di latar belakang";
 "island_app_phase" = "Berjalan di latar belakang";
 "island_app_tap_to_open" = "Ketuk Dynamic Island untuk kembali";
+
+// Source Code Browser
+"source_browser" = "Pelayar kod sumber";
+"source_browser_latest_commit" = "Komit terkini";
+"source_browser_recent_commits" = "Komit terbaharu";
+"source_browser_filter" = "Tapis folder ini";
+"source_browser_loading" = "Memuatkan…";
+"source_browser_load_failed" = "Gagal memuatkan";
+"source_browser_retry" = "Cuba semula";
+"source_browser_empty_dir" = "Folder ini kosong";
+"source_browser_copy" = "Salin semua";
+"source_browser_copied" = "Disalin";
+"source_browser_open_github" = "Lihat di GitHub";
+"source_browser_binary_file" = "Fail binari — pratinjau teks tidak tersedia";
+"source_browser_truncated" = "Fail terlalu besar — menunjukkan %d baris pertama";
+"source_browser_line_count" = "%d baris";
+"source_browser_rate_limited" = "Had API GitHub dicapai — cuba lagi kemudian";
+"source_browser_not_found" = "Laluan tidak ditemui (mungkin telah dipadamkan)";
+
+"zip_err_zip32_overflow" = "IPA melebihi had 4GB ZIP32";

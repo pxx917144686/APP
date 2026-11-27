@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Finalisation de la vérification de l'appareil";
 "sap_stage_generate_signature" = "Génération de la signature de la requête";
 "sap_err_interrupted" = "La vérification a été interrompue de manière inattendue. Veuillez réessayer.";
-"price_free" = "Free";
+"price_free" = "Gratuit";
 "session_reconnecting" = "Reconnexion… (%@/%@)";
 "session_err_reconnect_failed" = "Échec de la reconnexion. Vérifiez votre connexion réseau.";
 "session_err_signin_required" = "Veuillez vous reconnecter";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple n'a pas renvoyé d'informations de connexion. Vérifiez votre compte et réessayez.";
 "version_unknown" = "Version inconnue";
 "dc_action" = "Déchiffrer";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Échec";
 "dc_err_missing" = "Fichier introuvable";
 "dc_err_unzip" = "Échec de la décompression ; le package est peut-être incomplet";
 "dc_err_no_binary" = "Aucun exécutable trouvé dans le package";
@@ -513,9 +513,9 @@
 "detail_devices" = "Appareils";
 "detail_arch" = "Architectures";
 "detail_size" = "Taille décompressée";
-"detail_files" = "Files";
+"detail_files" = "Fichiers";
 "detail_binaries" = "Binaires";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Informations de base";
 "detail_encrypted" = "Chiffré avec FairPlay";
 "detail_plain" = "Non chiffré";
 "detail_scinfo" = "Licence";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Composants";
 "detail_section_libraries" = "Bibliothèques liées";
 "dc_err_cancelled" = "Déchiffrement annulé";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Annuler";
 "dc_share_decrypted" = "Partager le package déchiffré";
 "purchased" = "Acheté";
 "dc_group_wildcard" = "L'App ID est un wildcard (TEAMID.*) ; les App ID wildcard ne peuvent pas comporter d'App Groups";
@@ -563,7 +563,7 @@
 "dc_status_completed" = "Terminé";
 "dc_status_cancelled" = "Annulé";
 "dc_stat_decrypted" = "Déchiffré";
-"dc_stat_plain" = "Plain";
+"dc_stat_plain" = "En clair";
 "dc_stat_total" = "Total";
 "dc_stat_elapsed" = "Écoulé";
 "dc_console_log" = "Journal en direct";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Extraire";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Déchiffrer";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Empaquetage";
+"dc_phase_done" = "Terminé";
 "dc_scanning" = "Analyse en cours";
 "tab_sign" = "Signer";
 "sign_title" = "Studio de signature";
@@ -713,7 +713,7 @@
 "sign_target_hint" = "L'élément est copié dans les Frameworks de chaque cible et son load command est écrit avant la signature.";
 "sign_target_main" = "App principale";
 "sign_target_widget" = "Widgets (toutes les tailles)";
-"sign_target_ne" = "Network Extension";
+"sign_target_ne" = "Extension réseau (NE)";
 "sign_target_share" = "Extension de partage";
 "sign_target_notification" = "Extension de notification";
 "sign_target_intents" = "Extension Intents";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "Autorise les notifications de communication avec avatars et intégration Focus.";
 "sig_ent_associated_domains_title" = "Domaines associés";
 "sig_ent_associated_domains_desc" = "Domaines Universal Links et Web Credentials que l'app peut revendiquer.";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "Extension réseau";
 "sig_ent_ne_desc" = "Autorise Packet Tunnel, DNS Proxy ou d'autres modes Network Extension déclarés par le profil.";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "Autorise l'app à utiliser les API VPN NetworkExtension.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Échec de l'authentification";
 "sign_history_auth_failed_hint" = "Impossible de déverrouiller le coffre masqué.";
 "sign_history_hidden_auth_reason" = "Déverrouiller les enregistrements de signature masqués";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Restant %@";
 "sign_profile_fallback_warning" = "L'App ID du profil est %@, ce qui ne couvre pas cette IPA. La signature continuera avec le profil sélectionné ; l'installation peut être refusée si le profil ne peut pas être appliqué.";
 "sign_use_profile_id" = "Utiliser l'App ID du profil : %@ (remplace toute app du même ID sur cet appareil et supprime les extensions sans profil correspondant)";
 "sign_team_mismatch_warning" = "Le certificat et le profil appartiennent à des équipes différentes. La signature sera tentée, mais l'installation échouera probablement ; choisissez un certificat et un profil de la même équipe.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App en arrière-plan";
 "island_app_phase" = "En arrière-plan";
 "island_app_tap_to_open" = "Touchez la Dynamic Island pour revenir";
+
+// Source Code Browser
+"source_browser" = "Navigateur de code source";
+"source_browser_latest_commit" = "Dernier commit";
+"source_browser_recent_commits" = "Commits récents";
+"source_browser_filter" = "Filtrer ce dossier";
+"source_browser_loading" = "Chargement…";
+"source_browser_load_failed" = "Échec du chargement";
+"source_browser_retry" = "Réessayer";
+"source_browser_empty_dir" = "Ce dossier est vide";
+"source_browser_copy" = "Tout copier";
+"source_browser_copied" = "Copié";
+"source_browser_open_github" = "Voir sur GitHub";
+"source_browser_binary_file" = "Fichier binaire — aperçu du texte indisponible";
+"source_browser_truncated" = "Fichier trop volumineux — affichage des %d premières lignes";
+"source_browser_line_count" = "%d lignes";
+"source_browser_rate_limited" = "Limite de l'API GitHub atteinte — réessayez plus tard";
+"source_browser_not_found" = "Chemin introuvable (peut-être supprimé)";
+
+"zip_err_zip32_overflow" = "L'IPA dépasse la limite ZIP32 de 4 Go";

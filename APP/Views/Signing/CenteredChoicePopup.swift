@@ -59,8 +59,10 @@ struct CenteredChoicePopup<Content: SwiftUI.View>: SwiftUI.View {
             .frame(maxWidth: 330)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(Color.white.opacity(colorScheme == .dark ? 0.10 : 0.35), lineWidth: 0.5)
+                GlassGlossOverlay(
+                    shape: RoundedRectangle(cornerRadius: 20, style: .continuous),
+                    intensity: 0.8
+                )
             )
             .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.45 : 0.18), radius: 28, x: 0, y: 14)
             .padding(.horizontal, 22)

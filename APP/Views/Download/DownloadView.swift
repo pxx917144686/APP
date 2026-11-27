@@ -932,6 +932,7 @@ struct DownloadView: SwiftUI.View {
                 Button(action: {
                     let impactMed = UIImpactFeedbackGenerator(style: .light)
                     impactMed.impactOccurred()
+                    SoundEffects.play(.tick)
                     withAnimation(.easeInOut(duration: 0.3)) {
                         showThemeSelector.toggle()
                     }
@@ -1532,6 +1533,7 @@ struct DownloadView: SwiftUI.View {
                       UIApplication.shared.canOpenURL(url) else {
                     return
                 }
+                SoundEffects.play(.tap)
                 UIApplication.shared.open(url)
             } label: {
                 Text("view_source_code".localized)
@@ -1847,6 +1849,7 @@ struct DownloadCardView: SwiftUI.View {
                 if connectionEditable {
                     Button {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        SoundEffects.play(.tap)
                         showConnectionsSheet = true
                     } label: {
                         Text(connectionDisplay)

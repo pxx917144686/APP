@@ -61,7 +61,7 @@ struct UpdateSheet: View {
     }
 
     private var headerCard: some View {
-        GlassSurface(cornerRadius: 18, blur: 18, saturation: 1.7, tintOpacity: 0.12) {
+        GlassSurface(cornerRadius: 18, blur: 18, saturation: 1.7, tintOpacity: 0.08) {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)

@@ -114,8 +114,10 @@ struct ActionMenuOverlay: View {
                 .fill(.regularMaterial)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.5)
+            GlassGlossOverlay(
+                shape: RoundedRectangle(cornerRadius: 14, style: .continuous),
+                intensity: 0.8
+            )
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 20)

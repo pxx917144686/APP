@@ -57,8 +57,8 @@
 "confirm_switch" = "切り替えを確定";
 "icon_default" = "デフォルト";
 "icon_author" = "アイコン";
-"icon_love" = "Love";
-"icon_peek" = "Peek";
+"icon_love" = "ハート";
+"icon_peek" = "のぞき見";
 "icon_set_success" = "アイコン設定完了";
 "system_language" = "システム言語";
 "tab_style_default" = "デフォルト";
@@ -459,7 +459,7 @@
 "sap_stage_finish_device_verify" = "デバイス検証を完了しています";
 "sap_stage_generate_signature" = "リクエスト署名を生成しています";
 "sap_err_interrupted" = "検証が予期せず中断されました。もう一度お試しください。";
-"price_free" = "Free";
+"price_free" = "無料";
 "session_reconnecting" = "再接続中... (%@/%@)";
 "session_err_reconnect_failed" = "再接続に失敗しました。ネットワーク接続を確認してください。";
 "session_err_signin_required" = "再度ログインしてください";
@@ -494,7 +494,7 @@
 "auth_err_signin_no_info" = "Appleからログイン情報が返されませんでした。アカウントを確認してもう一度お試しください。";
 "version_unknown" = "不明なバージョン";
 "dc_action" = "復号";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "失敗";
 "dc_err_missing" = "ファイルが見つかりません";
 "dc_err_unzip" = "解凍に失敗しました。パッケージが不完全な可能性があります";
 "dc_err_no_binary" = "パッケージ内に実行ファイルが見つかりません";
@@ -512,9 +512,9 @@
 "detail_devices" = "デバイス";
 "detail_arch" = "アーキテクチャ";
 "detail_size" = "解凍後のサイズ";
-"detail_files" = "Files";
+"detail_files" = "ファイル";
 "detail_binaries" = "バイナリ数";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "基本情報";
 "detail_encrypted" = "FairPlayで暗号化済み";
 "detail_plain" = "暗号化されていません";
 "detail_scinfo" = "ライセンス";
@@ -527,7 +527,7 @@
 "detail_section_components" = "コンポーネント";
 "detail_section_libraries" = "リンク済みライブラリ";
 "dc_err_cancelled" = "復号をキャンセルしました";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "キャンセル";
 "dc_share_decrypted" = "復号済みパッケージを共有";
 "purchased" = "購入済み";
 "dc_group_wildcard" = "App IDはワイルドカード（TEAMID.*）です。ワイルドカードのApp IDはAppグループを利用できません";
@@ -562,8 +562,8 @@
 "dc_status_completed" = "完了";
 "dc_status_cancelled" = "キャンセル済み";
 "dc_stat_decrypted" = "復号済み";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "平文";
+"dc_stat_total" = "合計";
 "dc_stat_elapsed" = "経過時間";
 "dc_console_log" = "リアルタイムログ";
 "dc_console_waiting" = "エンジンの出力を待っています...";
@@ -573,8 +573,8 @@
 "dc_phase_extract" = "展開";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "復号";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "パッキング";
+"dc_phase_done" = "完了";
 "dc_scanning" = "スキャン中";
 "tab_sign" = "署名";
 "sign_title" = "署名スタジオ";
@@ -1004,7 +1004,7 @@
 "sign_history_auth_failed" = "認証に失敗しました";
 "sign_history_auth_failed_hint" = "非表示の保管庫をロック解除できませんでした。";
 "sign_history_hidden_auth_reason" = "非表示の署名記録をロック解除";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "残り %@";
 "sign_profile_fallback_warning" = "プロファイルの App ID は %@ で、この IPA をカバーしていません。選択したプロファイルで署名を続行します。プロファイルを適用できない場合、インストールが拒否される可能性があります。";
 "sign_use_profile_id" = "プロファイルの App ID を使用：%@（この端末上の同じ ID のアプリを置き換え、一致するプロファイルのない拡張を削除します）";
 "sign_team_mismatch_warning" = "証明書とプロファイルが別のチームに属しています。署名は試行されますが、インストールはおそらく失敗します。同じチームの証明書とプロファイルを選択してください。";
@@ -1177,3 +1177,23 @@
 "live_island_app" = "バックグラウンドの APP";
 "island_app_phase" = "バックグラウンドで実行中";
 "island_app_tap_to_open" = "アイランドをタップして App に戻る";
+
+// Source Code Browser
+"source_browser" = "ソースコードブラウザ";
+"source_browser_latest_commit" = "最新のコミット";
+"source_browser_recent_commits" = "最近のコミット";
+"source_browser_filter" = "このフォルダを絞り込む";
+"source_browser_loading" = "読み込み中…";
+"source_browser_load_failed" = "読み込みに失敗しました";
+"source_browser_retry" = "再試行";
+"source_browser_empty_dir" = "このフォルダは空です";
+"source_browser_copy" = "すべてコピー";
+"source_browser_copied" = "コピーしました";
+"source_browser_open_github" = "GitHub で表示";
+"source_browser_binary_file" = "バイナリファイルのためテキストを表示できません";
+"source_browser_truncated" = "ファイルが大きすぎるため、先頭 %d 行のみ表示しています";
+"source_browser_line_count" = "%d 行";
+"source_browser_rate_limited" = "GitHub API の制限に達しました。後でもう一度お試しください";
+"source_browser_not_found" = "パスが見つかりません（削除された可能性があります）";
+
+"zip_err_zip32_overflow" = "IPA が 4GB の ZIP32 上限を超えています";

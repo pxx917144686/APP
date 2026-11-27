@@ -6,6 +6,7 @@ enum UISound: CaseIterable {
     case press
     case tap
     case tick
+    case copy
     case rise
     case fall
     case dismiss
@@ -156,6 +157,10 @@ private extension UISound {
         case .tick:
             return ([Note(pitch: 2600, slidesTo: 2250, glide: 0.006, ring: 0.006, attack: 0.0005)],
                     click: 0.12, length: 0.04, peak: 0.2)
+        case .copy:
+            return ([Note(pitch: 1567.98, ring: 0.045, overtones: Overtone.glass),
+                     Note(at: 0.05, pitch: 2093, ring: 0.06, overtones: Overtone.glass)],
+                    click: 0, length: 0.22, peak: 0.3)
         case .rise:
             return ([Note(pitch: 990, ring: 0.04, overtones: [Overtone(ratio: 2, level: 0.2, ring: 0.5)]),
                      Note(at: 0.05, pitch: 1480, ring: 0.07, overtones: [Overtone(ratio: 2, level: 0.2, ring: 0.5)])],

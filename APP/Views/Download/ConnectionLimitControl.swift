@@ -38,6 +38,7 @@ struct ConnectionLimitControl: View {
                 ForEach(DownloadConnectionSettings.presets, id: \.self) { preset in
                     Button {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        SoundEffects.play(.tick)
                         value = preset
                     } label: {
                         Text("\(preset)")

@@ -1188,3 +1188,23 @@
 "live_island_app" = "背景顯示 APP";
 "island_app_phase" = "在背景執行";
 "island_app_tap_to_open" = "輕點靈動島返回 APP";
+
+// Source Code Browser
+"source_browser" = "原始碼瀏覽器";
+"source_browser_latest_commit" = "最新提交";
+"source_browser_recent_commits" = "最近提交";
+"source_browser_filter" = "篩選目前資料夾";
+"source_browser_loading" = "載入中…";
+"source_browser_load_failed" = "載入失敗";
+"source_browser_retry" = "重試";
+"source_browser_empty_dir" = "此資料夾為空";
+"source_browser_copy" = "拷貝全文";
+"source_browser_copied" = "已拷貝";
+"source_browser_open_github" = "在 GitHub 上檢視";
+"source_browser_binary_file" = "二進位檔案，無法預覽文字內容";
+"source_browser_truncated" = "檔案過大，僅顯示前 %d 行";
+"source_browser_line_count" = "%d 行";
+"source_browser_rate_limited" = "GitHub API 請求受限，請稍後再試";
+"source_browser_not_found" = "找不到該路徑（可能已被刪除）";
+
+"zip_err_zip32_overflow" = "IPA 超出 4GB ZIP32 上限";

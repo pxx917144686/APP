@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "กำลังเสร็จสิ้นการยืนยันอุปกรณ์";
 "sap_stage_generate_signature" = "กำลังสร้างลายเซ็นคำขอ";
 "sap_err_interrupted" = "การยืนยันถูกขัดจังหวะโดยไม่คาดคิด กรุณาลองอีกครั้ง";
-"price_free" = "Free";
+"price_free" = "ฟรี";
 "session_reconnecting" = "กำลังเชื่อมต่อใหม่... (%@/%@)";
 "session_err_reconnect_failed" = "เชื่อมต่อใหม่ล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่าย";
 "session_err_signin_required" = "กรุณาเข้าสู่ระบบอีกครั้ง";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple ไม่ได้ส่งข้อมูลการเข้าสู่ระบบกลับมา กรุณาตรวจสอบบัญชีแล้วลองอีกครั้ง";
 "version_unknown" = "ไม่ทราบเวอร์ชัน";
 "dc_action" = "ถอดรหัส";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "ล้มเหลว";
 "dc_err_missing" = "ไม่พบไฟล์";
 "dc_err_unzip" = "แตกไฟล์ล้มเหลว แพ็กเกจอาจไม่สมบูรณ์";
 "dc_err_no_binary" = "ไม่พบไฟล์ปฏิบัติการในแพ็กเกจ";
@@ -513,9 +513,9 @@
 "detail_devices" = "อุปกรณ์";
 "detail_arch" = "สถาปัตยกรรม";
 "detail_size" = "ขนาดหลังแตกไฟล์";
-"detail_files" = "Files";
+"detail_files" = "ไฟล์";
 "detail_binaries" = "จำนวนไบนารี";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "ข้อมูลพื้นฐาน";
 "detail_encrypted" = "เข้ารหัสด้วย FairPlay";
 "detail_plain" = "ไม่ได้เข้ารหัส";
 "detail_scinfo" = "ไลเซนส์";
@@ -528,7 +528,7 @@
 "detail_section_components" = "องค์ประกอบ";
 "detail_section_libraries" = "ไลบรารีที่ลิงก์ไว้";
 "dc_err_cancelled" = "ยกเลิกการถอดรหัสแล้ว";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "ยกเลิก";
 "dc_share_decrypted" = "แชร์แพ็กเกจที่ถอดรหัสแล้ว";
 "purchased" = "ซื้อแล้ว";
 "dc_group_wildcard" = "App ID เป็นแบบ wildcard (TEAMID.*) ซึ่งใช้ App Group ไม่ได้";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "เสร็จสมบูรณ์";
 "dc_status_cancelled" = "ยกเลิก";
 "dc_stat_decrypted" = "ถอดรหัสแล้ว";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "ไม่เข้ารหัส";
+"dc_stat_total" = "ทั้งหมด";
 "dc_stat_elapsed" = "เวลาที่ใช้ไป";
 "dc_console_log" = "บันทึกแบบเรียลไทม์";
 "dc_console_waiting" = "กำลังรอเอาต์พุตจากเอนจิน...";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "แตกไฟล์";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "ถอดรหัส";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "การแพ็ก";
+"dc_phase_done" = "เสร็จสิ้น";
 "dc_scanning" = "กำลังสแกน";
 "tab_sign" = "ลงนาม";
 "sign_title" = "สตูดิโอลงนาม";
@@ -670,7 +670,7 @@
 "sign_cert_detail_not_before" = "วันที่เริ่มใช้ได้";
 "sign_cert_detail_not_after" = "วันที่ใช้ได้ถึง";
 "sign_cert_detail_issuer" = "ผู้ออกใบรับรอง";
-"sign_cert_detail_subject" = "Subject";
+"sign_cert_detail_subject" = "หัวข้อ";
 "sign_cert_detail_fingerprint" = "ลายนิ้วมือ SHA-256";
 "sign_cert_detail_entitlements" = "Entitlements ของ Provisioning Profile";
 "sign_cert_detail_no_profile" = "เลือก Provisioning Profile เพื่อดูหรือเลือก entitlements";
@@ -713,10 +713,10 @@
 "sign_target_hint" = "รายการจะถูกคัดลอกไปยัง Frameworks ของแต่ละเป้าหมาย และเขียน Load Command ก่อนลงนาม";
 "sign_target_main" = "แอปหลัก";
 "sign_target_widget" = "วิดเจ็ต (ทุกขนาด)";
-"sign_target_ne" = "Network Extension";
-"sign_target_share" = "Share Extension";
-"sign_target_notification" = "Notification Extension";
-"sign_target_intents" = "Intents Extension";
+"sign_target_ne" = "ส่วนเสริมเครือข่าย (NE)";
+"sign_target_share" = "ส่วนเสริมการแชร์";
+"sign_target_notification" = "ส่วนเสริมการแจ้งเตือน";
+"sign_target_intents" = "ส่วนเสริม Intents";
 "sign_target_other" = "Extension อื่น ๆ";
 "sign_target_summary" = "แอปหลัก + Extension %d ตัว";
 "sign_target_summary_extensions" = "Extension %d ตัว";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "อนุญาตการแจ้งเตือนแบบสื่อสารที่มีอวตารและเชื่อมกับโหมดสมาธิ";
 "sig_ent_associated_domains_title" = "โดเมนที่เชื่อมโยง";
 "sig_ent_associated_domains_desc" = "โดเมน Universal Links และ Web Credentials ที่แอปอ้างสิทธิ์ได้";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "ส่วนเสริมเครือข่าย";
 "sig_ent_ne_desc" = "อนุญาตโหมด Packet Tunnel, DNS Proxy หรือ Network Extension อื่น ๆ ที่โปรไฟล์ประกาศ";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "อนุญาตให้แอปใช้ VPN API ของ NetworkExtension";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "การยืนยันตัวตนล้มเหลว";
 "sign_history_auth_failed_hint" = "ปลดล็อกห้องนิรภัยที่ซ่อนไว้ไม่สำเร็จ";
 "sign_history_hidden_auth_reason" = "ปลดล็อกรายการลงนามที่ซ่อนไว้";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "เหลือ %@";
 "sign_profile_fallback_warning" = "App ID ของโปรไฟล์คือ %@ ซึ่งไม่ครอบคลุม IPA นี้ จะลงนามต่อด้วยโปรไฟล์ที่เลือกไว้ หากโปรไฟล์ใช้กับแอปไม่ได้ การติดตั้งอาจถูกปฏิเสธ";
 "sign_use_profile_id" = "ใช้ App ID ของโปรไฟล์: %@ (จะแทนที่แอปที่มี ID เดียวกันในเครื่องนี้ และลบส่วนเสริมที่ไม่มีโปรไฟล์ตรงกัน)";
 "sign_team_mismatch_warning" = "ใบรับรองและโปรไฟล์อยู่ต่างทีมกัน จะพยายามลงนามต่อ แต่การติดตั้งมักล้มเหลว โปรดเลือกใบรับรองและโปรไฟล์จากทีมเดียวกัน";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "แอปในพื้นหลัง";
 "island_app_phase" = "ทำงานอยู่ในพื้นหลัง";
 "island_app_tap_to_open" = "แตะ Dynamic Island เพื่อกลับแอป";
+
+// Source Code Browser
+"source_browser" = "เบราว์เซอร์ซอร์สโค้ด";
+"source_browser_latest_commit" = "คอมมิตล่าสุด";
+"source_browser_recent_commits" = "รายการคอมมิตล่าสุด";
+"source_browser_filter" = "กรองโฟลเดอร์นี้";
+"source_browser_loading" = "กำลังโหลด…";
+"source_browser_load_failed" = "โหลดไม่สำเร็จ";
+"source_browser_retry" = "ลองอีกครั้ง";
+"source_browser_empty_dir" = "โฟลเดอร์นี้ว่างเปล่า";
+"source_browser_copy" = "คัดลอกทั้งหมด";
+"source_browser_copied" = "คัดลอกแล้ว";
+"source_browser_open_github" = "ดูบน GitHub";
+"source_browser_binary_file" = "ไฟล์ไบนารี — ไม่สามารถแสดงตัวอย่างข้อความได้";
+"source_browser_truncated" = "ไฟล์ใหญ่เกินไป — แสดงเพียง %d บรรทัดแรก";
+"source_browser_line_count" = "%d บรรทัด";
+"source_browser_rate_limited" = "ถึงขีดจำกัด GitHub API — โปรดลองอีกครั้งภายหลัง";
+"source_browser_not_found" = "ไม่พบเส้นทาง (อาจถูกลบแล้ว)";
+
+"zip_err_zip32_overflow" = "IPA เกินขีดจำกัด 4GB ของ ZIP32";

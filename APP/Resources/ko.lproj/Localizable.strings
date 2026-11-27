@@ -57,8 +57,8 @@
 "confirm_switch" = "전환 확인";
 "icon_default" = "기본";
 "icon_author" = "아이콘";
-"icon_love" = "Love";
-"icon_peek" = "Peek";
+"icon_love" = "하트";
+"icon_peek" = "훔쳐보기";
 "icon_set_success" = "아이콘 설정 완료";
 "system_language" = "시스템 따르기";
 "tab_style_default" = "기본";
@@ -459,7 +459,7 @@
 "sap_stage_finish_device_verify" = "기기 확인을 마무리하는 중";
 "sap_stage_generate_signature" = "요청 서명을 생성하는 중";
 "sap_err_interrupted" = "확인이 예기치 않게 중단되었습니다. 다시 시도하세요.";
-"price_free" = "Free";
+"price_free" = "무료";
 "session_reconnecting" = "다시 연결 중... (%@/%@)";
 "session_err_reconnect_failed" = "다시 연결하지 못했습니다. 네트워크 연결을 확인하세요.";
 "session_err_signin_required" = "다시 로그인하세요";
@@ -494,7 +494,7 @@
 "auth_err_signin_no_info" = "Apple에서 로그인 정보를 반환하지 않았습니다. 계정을 확인하고 다시 시도하세요.";
 "version_unknown" = "알 수 없는 버전";
 "dc_action" = "복호화";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "실패";
 "dc_err_missing" = "파일을 찾을 수 없습니다";
 "dc_err_unzip" = "압축 해제에 실패했습니다. 패키지가 불완전할 수 있습니다";
 "dc_err_no_binary" = "패키지에서 실행 파일을 찾을 수 없습니다";
@@ -512,9 +512,9 @@
 "detail_devices" = "기기";
 "detail_arch" = "아키텍처";
 "detail_size" = "압축 해제 후 크기";
-"detail_files" = "Files";
+"detail_files" = "파일";
 "detail_binaries" = "바이너리 수";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "기본 정보";
 "detail_encrypted" = "FairPlay 암호화됨";
 "detail_plain" = "암호화되지 않음";
 "detail_scinfo" = "라이선스";
@@ -527,7 +527,7 @@
 "detail_section_components" = "구성 요소";
 "detail_section_libraries" = "연결된 라이브러리";
 "dc_err_cancelled" = "복호화가 취소되었습니다";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "취소";
 "dc_share_decrypted" = "복호화된 패키지 공유";
 "purchased" = "구매됨";
 "dc_group_wildcard" = "App ID가 와일드카드(TEAMID.*)입니다. 와일드카드 App ID는 앱 그룹을 가질 수 없습니다";
@@ -562,8 +562,8 @@
 "dc_status_completed" = "완료됨";
 "dc_status_cancelled" = "취소됨";
 "dc_stat_decrypted" = "복호화됨";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "평문";
+"dc_stat_total" = "합계";
 "dc_stat_elapsed" = "경과 시간";
 "dc_console_log" = "실시간 로그";
 "dc_console_waiting" = "엔진 출력을 기다리는 중...";
@@ -573,8 +573,8 @@
 "dc_phase_extract" = "추출";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "복호화";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "패키징";
+"dc_phase_done" = "완료";
 "dc_scanning" = "스캔 중";
 "tab_sign" = "서명";
 "sign_title" = "서명 스튜디오";
@@ -1004,7 +1004,7 @@
 "sign_history_auth_failed" = "인증 실패";
 "sign_history_auth_failed_hint" = "숨겨진 보관함을 잠금 해제하지 못했습니다.";
 "sign_history_hidden_auth_reason" = "숨겨진 서명 기록 잠금 해제";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "남음 %@";
 "sign_profile_fallback_warning" = "프로파일 App ID는 %@이며 이 IPA를 커버하지 않습니다. 선택한 프로파일로 서명을 계속합니다. 프로파일을 적용할 수 없으면 설치가 거부될 수 있습니다.";
 "sign_use_profile_id" = "프로파일의 App ID 사용: %@ (이 기기에서 같은 ID의 앱을 대체하며, 일치하는 프로파일이 없는 확장은 제거합니다)";
 "sign_team_mismatch_warning" = "인증서와 프로파일이 서로 다른 팀에 속합니다. 서명은 시도되지만 설치는 실패할 가능성이 높습니다. 같은 팀의 인증서와 프로파일을 선택하세요.";
@@ -1177,3 +1177,23 @@
 "live_island_app" = "백그라운드 APP 표시";
 "island_app_phase" = "백그라운드에서 실행 중";
 "island_app_tap_to_open" = "아일랜드를 탭하여 앱으로 돌아가기";
+
+// Source Code Browser
+"source_browser" = "소스 코드 브라우저";
+"source_browser_latest_commit" = "최신 커밋";
+"source_browser_recent_commits" = "최근 커밋";
+"source_browser_filter" = "이 폴더 필터링";
+"source_browser_loading" = "불러오는 중…";
+"source_browser_load_failed" = "불러오기 실패";
+"source_browser_retry" = "다시 시도";
+"source_browser_empty_dir" = "이 폴더는 비어 있습니다";
+"source_browser_copy" = "전체 복사";
+"source_browser_copied" = "복사됨";
+"source_browser_open_github" = "GitHub에서 보기";
+"source_browser_binary_file" = "바이너리 파일 — 텍스트 미리보기 불가";
+"source_browser_truncated" = "파일이 너무 큽니다 — 처음 %d 줄만 표시합니다";
+"source_browser_line_count" = "%d줄";
+"source_browser_rate_limited" = "GitHub API 한도 초과 — 나중에 다시 시도하세요";
+"source_browser_not_found" = "경로를 찾을 수 없습니다(삭제되었을 수 있음)";
+
+"zip_err_zip32_overflow" = "IPA가 4GB ZIP32 한도를 초과합니다";

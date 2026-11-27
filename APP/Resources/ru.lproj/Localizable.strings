@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Завершение проверки устройства";
 "sap_stage_generate_signature" = "Генерация подписи запроса";
 "sap_err_interrupted" = "Проверка была неожиданно прервана. Попробуйте ещё раз.";
-"price_free" = "Free";
+"price_free" = "Бесплатно";
 "session_reconnecting" = "Повторное подключение… (%@/%@)";
 "session_err_reconnect_failed" = "Не удалось повторно подключиться. Проверьте сетевое подключение.";
 "session_err_signin_required" = "Войдите снова";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple не вернул информацию для входа. Проверьте учётную запись и попробуйте ещё раз.";
 "version_unknown" = "Неизвестная версия";
 "dc_action" = "Расшифровать";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Сбой";
 "dc_err_missing" = "Файл не найден";
 "dc_err_unzip" = "Не удалось распаковать архив; пакет может быть неполным";
 "dc_err_no_binary" = "В пакете не найден исполняемый файл";
@@ -513,9 +513,9 @@
 "detail_devices" = "Устройства";
 "detail_arch" = "Архитектуры";
 "detail_size" = "Размер после распаковки";
-"detail_files" = "Files";
+"detail_files" = "Файлы";
 "detail_binaries" = "Бинарные файлы";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Основные сведения";
 "detail_encrypted" = "Зашифровано FairPlay";
 "detail_plain" = "Не зашифровано";
 "detail_scinfo" = "Лицензия";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Компоненты";
 "detail_section_libraries" = "Подключённые библиотеки";
 "dc_err_cancelled" = "Расшифрование отменено";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Отмена";
 "dc_share_decrypted" = "Поделиться расшифрованным пакетом";
 "purchased" = "Куплено";
 "dc_group_wildcard" = "App ID является wildcard (TEAMID.*); wildcard App ID не могут поддерживать App Groups";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Завершено";
 "dc_status_cancelled" = "Отменено";
 "dc_stat_decrypted" = "Расшифровано";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Открытый текст";
+"dc_stat_total" = "Всего";
 "dc_stat_elapsed" = "Затрачено времени";
 "dc_console_log" = "Журнал в реальном времени";
 "dc_console_waiting" = "Ожидание вывода расшифрования…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Распаковка";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Расшифрование";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Упаковка";
+"dc_phase_done" = "Готово";
 "dc_scanning" = "Сканирование";
 "tab_sign" = "Подписание";
 "sign_title" = "Студия подписания";
@@ -713,7 +713,7 @@
 "sign_target_hint" = "Элемент копируется в Frameworks каждой цели, а его Load Command записывается перед подписанием.";
 "sign_target_main" = "Основное приложение";
 "sign_target_widget" = "Виджеты (все размеры)";
-"sign_target_ne" = "Network Extension";
+"sign_target_ne" = "Расширение сети (NE)";
 "sign_target_share" = "Расширение Share";
 "sign_target_notification" = "Расширение Notification";
 "sign_target_intents" = "Расширение Intents";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "Разрешает коммуникационные уведомления с аватарами и интеграцией с режимами фокусирования.";
 "sig_ent_associated_domains_title" = "Связанные домены";
 "sig_ent_associated_domains_desc" = "Домены Universal Links и Web Credentials, которые может объявлять приложение.";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "Расширение сети";
 "sig_ent_ne_desc" = "Разрешает режимы Network Extension, объявленные профилем: Packet Tunnel, DNS Proxy и другие.";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "Разрешает приложению использовать VPN API NetworkExtension.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Не удалось аутентифицировать";
 "sign_history_auth_failed_hint" = "Не удалось разблокировать скрытое хранилище.";
 "sign_history_hidden_auth_reason" = "Разблокировать скрытые записи подписания";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Осталось %@";
 "sign_profile_fallback_warning" = "App ID профиля — %@, он не покрывает этот IPA. Подписание продолжится выбранным профилем; установка может быть отклонена, если профиль не удастся применить.";
 "sign_use_profile_id" = "Использовать App ID профиля: %@ (заменяет любое приложение с тем же ID на этом устройстве и удаляет расширения без подходящего профиля)";
 "sign_team_mismatch_warning" = "Сертификат и профиль принадлежат разным Team. Подписание будет выполнено, но установка, скорее всего, завершится ошибкой; выберите сертификат и профиль одного Team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Приложение в фоне";
 "island_app_phase" = "Работает в фоне";
 "island_app_tap_to_open" = "Коснитесь Dynamic Island, чтобы вернуться";
+
+// Source Code Browser
+"source_browser" = "Браузер исходного кода";
+"source_browser_latest_commit" = "Последний коммит";
+"source_browser_recent_commits" = "Недавние коммиты";
+"source_browser_filter" = "Фильтр по этой папке";
+"source_browser_loading" = "Загрузка…";
+"source_browser_load_failed" = "Не удалось загрузить";
+"source_browser_retry" = "Повторить";
+"source_browser_empty_dir" = "Эта папка пуста";
+"source_browser_copy" = "Копировать всё";
+"source_browser_copied" = "Скопировано";
+"source_browser_open_github" = "Открыть на GitHub";
+"source_browser_binary_file" = "Двоичный файл — текст недоступен для просмотра";
+"source_browser_truncated" = "Файл слишком большой — показаны первые %d строк";
+"source_browser_line_count" = "%d строк";
+"source_browser_rate_limited" = "Достигнут лимит GitHub API — попробуйте позже";
+"source_browser_not_found" = "Путь не найден (возможно, удалён)";
+
+"zip_err_zip32_overflow" = "IPA превышает лимит ZIP32 в 4 ГБ";

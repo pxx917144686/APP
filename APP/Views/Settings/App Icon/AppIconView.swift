@@ -117,15 +117,17 @@ extension AppIconView {
 
 			AppIconManager.shared.setAlternateIconName(iconNameToSet) { success, error in
 				DispatchQueue.main.async {
-					if success {
-						currentIcon = iconNameToSet
-					showingSuccess = true
-					let impactFeedback = UINotificationFeedbackGenerator()
-					impactFeedback.notificationOccurred(.success)
-				} else {
-					let impactFeedback = UINotificationFeedbackGenerator()
-					impactFeedback.notificationOccurred(.error)
-				}
+				if success {
+					currentIcon = iconNameToSet
+				showingSuccess = true
+				SoundEffects.play(.success)
+				let impactFeedback = UINotificationFeedbackGenerator()
+				impactFeedback.notificationOccurred(.success)
+			} else {
+				SoundEffects.play(.error)
+				let impactFeedback = UINotificationFeedbackGenerator()
+				impactFeedback.notificationOccurred(.error)
+			}
 				}
 			}
 		} label: {

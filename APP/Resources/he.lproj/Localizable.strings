@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "מסיים את אימות המכשיר";
 "sap_stage_generate_signature" = "יוצר חתימת בקשה";
 "sap_err_interrupted" = "האימות הופסק באופן בלתי צפוי. אנא נסה שוב.";
-"price_free" = "Free";
+"price_free" = "חינם";
 "session_reconnecting" = "מתחבר מחדש… (%@/%@)";
 "session_err_reconnect_failed" = "ההתחברות מחדש נכשלה. בדוק את חיבור הרשת שלך.";
 "session_err_signin_required" = "אנא היכנס שוב";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple לא החזירה מידע התחברות. בדוק את החשבון שלך ונסה שוב.";
 "version_unknown" = "גרסה לא ידועה";
 "dc_action" = "פענוח";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "נכשל";
 "dc_err_missing" = "הקובץ לא נמצא";
 "dc_err_unzip" = "חילוץ ה-ZIP נכשל; ייתכן שהחבילה חלקית";
 "dc_err_no_binary" = "לא נמצא קובץ הפעלה בחבילה";
@@ -513,9 +513,9 @@
 "detail_devices" = "מכשירים";
 "detail_arch" = "ארכיטקטורות";
 "detail_size" = "גודל לאחר חילוץ";
-"detail_files" = "Files";
+"detail_files" = "קבצים";
 "detail_binaries" = "בינאריים";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "מידע בסיסי";
 "detail_encrypted" = "מוצפן ב-FairPlay";
 "detail_plain" = "לא מוצפן";
 "detail_scinfo" = "רישיון";
@@ -528,7 +528,7 @@
 "detail_section_components" = "רכיבים";
 "detail_section_libraries" = "ספריות מקושרות";
 "dc_err_cancelled" = "הפענוח בוטל";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "ביטול";
 "dc_share_decrypted" = "שיתוף החבילה המפוענחת";
 "purchased" = "נרכש";
 "dc_group_wildcard" = "מזהה ה-App הוא wildcard (TEAMID.*); מזהי App מסוג wildcard אינם יכולים לשאת App Group";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "הושלם";
 "dc_status_cancelled" = "בוטל";
 "dc_stat_decrypted" = "פוענח";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "ללא הצפנה";
+"dc_stat_total" = "סה״כ";
 "dc_stat_elapsed" = "זמן שחלף";
 "dc_console_log" = "יומן חי";
 "dc_console_waiting" = "ממתין לפלט המנוע…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "חילוץ";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "פענוח";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "אריזה";
+"dc_phase_done" = "הושלם";
 "dc_scanning" = "סורק";
 "tab_sign" = "חתימה";
 "sign_title" = "סטודיו החתימה";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "האימות נכשל";
 "sign_history_auth_failed_hint" = "לא ניתן היה לפתוח את הכספת המוסתרת.";
 "sign_history_hidden_auth_reason" = "פתיחת רשומות חתימה מוסתרות";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "נותרו %@";
 "sign_profile_fallback_warning" = "ה-App ID בפרופיל הוא %@, שאינו מכסה את ה-IPA הזה. החתימה תמשיך עם הפרופיל הנבחר; ההתקנה עלולה להידחות אם לא ניתן להחיל את הפרופיל.";
 "sign_use_profile_id" = "להשתמש ב-App ID של הפרופיל: %@ (מחליף כל אפליקציה עם אותו ID במכשיר זה ומסיר הרחבות ללא פרופיל תואם)";
 "sign_team_mismatch_warning" = "התעודה והפרופיל שייכים ל-Teams שונים. החתימה תנוסה בכל זאת, אך ההתקנה כנראה תיכשל; בחרו תעודה ופרופיל מאותו Team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "אפליקציה ברקע";
 "island_app_phase" = "פועל ברקע";
 "island_app_tap_to_open" = "הקישו על ה-Dynamic Island כדי לחזור";
+
+// Source Code Browser
+"source_browser" = "סייר קוד מקור";
+"source_browser_latest_commit" = "הקומיט האחרון";
+"source_browser_recent_commits" = "קומיטים אחרונים";
+"source_browser_filter" = "סינון התיקייה";
+"source_browser_loading" = "טוען…";
+"source_browser_load_failed" = "הטעינה נכשלה";
+"source_browser_retry" = "נסה שוב";
+"source_browser_empty_dir" = "התיקייה ריקה";
+"source_browser_copy" = "העתק הכל";
+"source_browser_copied" = "הועתק";
+"source_browser_open_github" = "הצג ב-GitHub";
+"source_browser_binary_file" = "קובץ בינארי — לא ניתן להציג טקסט";
+"source_browser_truncated" = "הקובץ גדול מדי — מוצגות %d השורות הראשונות";
+"source_browser_line_count" = "%d שורות";
+"source_browser_rate_limited" = "הגבלת GitHub API הושגה — נסה שוב מאוחר יותר";
+"source_browser_not_found" = "הנתיב לא נמצא (ייתכן שנמחק)";
+
+"zip_err_zip32_overflow" = "ה-IPA חורג ממגבלת ה-4GB של ZIP32";

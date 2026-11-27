@@ -101,6 +101,11 @@ struct SettingsView: View {
                     }
                     .liquidGlassSurface(cornerRadius: 16)
 
+                    VStack(spacing: 0) {
+                        sourceBrowserRow
+                    }
+                    .liquidGlassSurface(cornerRadius: 16)
+
                     versionFooter
                 }
                 .padding(.horizontal, 20)
@@ -638,6 +643,7 @@ extension SettingsView {
                                     selectedColorHex = hex
                                     themeManager.accentColor = color
                                 }
+                                SoundEffects.play(.tick)
                                 let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                                 impactFeedback.impactOccurred()
                             }
@@ -793,6 +799,7 @@ extension SettingsView {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         tabBarStyleManager.resetFloatingConfig()
                     }
+                    SoundEffects.play(.tap)
                     let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                     impactFeedback.impactOccurred()
                 }) {
@@ -895,6 +902,31 @@ extension SettingsView {
                     .frame(width: 28, height: 28)
 
                 Text("tab_order_title".localized)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary.opacity(0.6))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle(), sound: .tick)
+    }
+
+    private var sourceBrowserRow: some View {
+        NavigationLink(destination: SourceBrowserView()) {
+            HStack(spacing: 12) {
+                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(themeManager.accentColor)
+                    .frame(width: 28, height: 28)
+
+                Text("source_browser".localized)
                     .font(.system(size: 16))
                     .foregroundColor(.primary)
 

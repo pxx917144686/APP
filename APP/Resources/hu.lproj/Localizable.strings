@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Eszközellenőrzés befejezése";
 "sap_stage_generate_signature" = "Kérésaláírás generálása";
 "sap_err_interrupted" = "Az ellenőrzés váratlanul megszakadt. Próbálja újra.";
-"price_free" = "Free";
+"price_free" = "Ingyenes";
 "session_reconnecting" = "Újracsatlakozás… (%@/%@)";
 "session_err_reconnect_failed" = "Az újracsatlakozás sikertelen. Ellenőrizze a hálózati kapcsolatot.";
 "session_err_signin_required" = "Jelentkezzen be újra";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Az Apple nem adott vissza bejelentkezési információkat. Ellenőrizze fiókját, és próbálja újra.";
 "version_unknown" = "Ismeretlen verzió";
 "dc_action" = "Visszafejtés";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Sikertelen";
 "dc_err_missing" = "A fájl nem található";
 "dc_err_unzip" = "A kicsomagolás sikertelen; a csomag lehet hiányos";
 "dc_err_no_binary" = "Nem található futtatható fájl a csomagban";
@@ -513,9 +513,9 @@
 "detail_devices" = "Eszközök";
 "detail_arch" = "Architektúrák";
 "detail_size" = "Kicsomagolt méret";
-"detail_files" = "Files";
+"detail_files" = "Fájlok";
 "detail_binaries" = "Bináris fájlok";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Alapadatok";
 "detail_encrypted" = "FairPlay-titkosított";
 "detail_plain" = "Nincs titkosítva";
 "detail_scinfo" = "Licenc";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponensek";
 "detail_section_libraries" = "Hivatkozott könyvtárak";
 "dc_err_cancelled" = "Visszafejtés megszakítva";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Mégse";
 "dc_share_decrypted" = "Visszafejtett csomag megosztása";
 "purchased" = "Megvásárolva";
 "dc_group_wildcard" = "Az App ID wildcard (TEAMID.*); a wildcard App ID-k nem hordozhatnak App Groups-ot";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Befejezve";
 "dc_status_cancelled" = "Megszakítva";
 "dc_stat_decrypted" = "Visszafejtve";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Titkosítatlan";
+"dc_stat_total" = "Összesen";
 "dc_stat_elapsed" = "Eltelt idő";
 "dc_console_log" = "Élő napló";
 "dc_console_waiting" = "Várakozás a motor kimenetére…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Kinyerés";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Visszafejtés";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Csomagolás";
+"dc_phase_done" = "Kész";
 "dc_scanning" = "Vizsgálat";
 "tab_sign" = "Aláírás";
 "sign_title" = "Aláíró stúdió";
@@ -713,7 +713,7 @@
 "sign_target_hint" = "Az elem minden cél Frameworks mappájába másolódik, és a Load Command az aláírás előtt kerül beírásra.";
 "sign_target_main" = "Főalkalmazás";
 "sign_target_widget" = "Widgetek (minden méret)";
-"sign_target_ne" = "Network Extension";
+"sign_target_ne" = "Hálózati bővítmény (NE)";
 "sign_target_share" = "Share kiterjesztés";
 "sign_target_notification" = "Notification kiterjesztés";
 "sign_target_intents" = "Intents kiterjesztés";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "Lehetővé teszi a kommunikációs értesítéseket avatárokkal és a Fókusz integrációjával.";
 "sig_ent_associated_domains_title" = "Társított domének";
 "sig_ent_associated_domains_desc" = "Universal Links és Web Credentials domainek, amelyeket az alkalmazás igényelhet.";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "Hálózati bővítmény";
 "sig_ent_ne_desc" = "Lehetővé teszi a profil által deklarált Packet Tunnel, DNS Proxy vagy más Network Extension módokat.";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "Lehetővé teszi az alkalmazás számára a NetworkExtension framework VPN API-jainak használatát.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "A hitelesítés sikertelen";
 "sign_history_auth_failed_hint" = "A rejtett széfet nem sikerült feloldani.";
 "sign_history_hidden_auth_reason" = "Rejtett aláírási bejegyzések feloldása";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Hátralévő %@";
 "sign_profile_fallback_warning" = "A profil App ID-ja %@, amely nem fedi le ezt az IPA-t. Az aláírás a kiválasztott profillal folytatódik; a telepítés elutasítható, ha a profil nem alkalmazható.";
 "sign_use_profile_id" = "A profil App ID-jának használata: %@ (lecseréli az azonos ID-jű alkalmazásokat ezen az eszközön, és eltávolítja az egyező profil nélküli bővítményeket)";
 "sign_team_mismatch_warning" = "A tanúsítvány és a profil különböző teamhez tartozik. Az aláírás megkísérlődik, de a telepítés valószínűleg sikertelen lesz; válasszon ugyanahhoz a teamhez tartozó tanúsítványt és profilt.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Alkalmazás a háttérben";
 "island_app_phase" = "Fut a háttérben";
 "island_app_tap_to_open" = "Érintse meg a Dynamic Islandet a visszatéréshez";
+
+// Source Code Browser
+"source_browser" = "Forráskódböngésző";
+"source_browser_latest_commit" = "Legutóbbi commit";
+"source_browser_recent_commits" = "Legutóbbi commitok";
+"source_browser_filter" = "Mappa szűrése";
+"source_browser_loading" = "Betöltés…";
+"source_browser_load_failed" = "A betöltés sikertelen";
+"source_browser_retry" = "Újra próbálkozás";
+"source_browser_empty_dir" = "Ez a mappa üres";
+"source_browser_copy" = "Összes másolása";
+"source_browser_copied" = "Másolva";
+"source_browser_open_github" = "Megtekintés GitHubon";
+"source_browser_binary_file" = "Bináris fájl — a szöveg nem tekinthető elő";
+"source_browser_truncated" = "A fájl túl nagy — az első %d sor látható";
+"source_browser_line_count" = "%d sor";
+"source_browser_rate_limited" = "A GitHub API korlátja elérve — próbálja újra később";
+"source_browser_not_found" = "Az útvonal nem található (lehet, hogy törölték)";
+
+"zip_err_zip32_overflow" = "Az IPA meghaladja a 4 GB-os ZIP32-korlátot";

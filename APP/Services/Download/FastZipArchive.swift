@@ -191,8 +191,10 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
             try source.write(contentsOf: centralDirData)
             try source.write(contentsOf: newCentralDir)
 
+            // ZIP32 条目计数字段只有 16 位，超限按规范写 0xFFFF（ZIP64 标记），避免 UInt16 初始化陷阱
+            let totalEntries = min(existingEntries.count + files.count, Int(UInt16.max))
             let eocdRecord = createEndOfCentralDirectoryRecord(
-                entryCount: UInt16(existingEntries.count + files.count),
+                entryCount: UInt16(totalEntries),
                 centralDirSize: UInt64(centralDirData.count + newCentralDir.count),
                 centralDirOffset: currentOffset
             )
@@ -564,6 +566,14 @@ final class FastZipArchive: NSObject, @unchecked Sendable {
         compressionMethod: UInt16,
         offset: UInt64
     ) throws -> (localHeader: Data, centralHeader: Data) {
+        // 本实现仅支持 ZIP32：条目偏移/尺寸超过 UInt32 上限时必须报错，
+        // 否则 UInt32(truncatingIfNeeded:) 会静默回绕，产出损坏的 zip
+        guard offset <= UInt64(UInt32.max),
+              compressedSize <= UInt64(UInt32.max),
+              uncompressedSize <= UInt64(UInt32.max) else {
+            throw NSError(domain: "FastZip", code: -14, userInfo: [NSLocalizedDescriptionKey: "zip_err_zip32_overflow".localized])
+        }
+
         guard let filenameData = filename.data(using: .utf8) else {
             throw NSError(domain: "FastZip", code: -7, userInfo: [NSLocalizedDescriptionKey: "zip_err_filename_encoding".localized])
         }

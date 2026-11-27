@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "डिवाइस सत्यापन पूरा हो रहा है";
 "sap_stage_generate_signature" = "अनुरोध हस्ताक्षर जेनरेट हो रहा है";
 "sap_err_interrupted" = "सत्यापन अप्रत्याशित रूप से बाधित हुआ। कृपया पुनः प्रयास करें।";
-"price_free" = "Free";
+"price_free" = "मुफ़्त";
 "session_reconnecting" = "पुनः कनेक्ट हो रहा है… (%@/%@)";
 "session_err_reconnect_failed" = "पुनः कनेक्ट विफल हुआ। अपना नेटवर्क कनेक्शन जाँचें।";
 "session_err_signin_required" = "कृपया दोबारा साइन इन करें";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple ने साइन-इन जानकारी नहीं लौटाई। अपना खाता जाँचें और पुनः प्रयास करें।";
 "version_unknown" = "अज्ञात संस्करण";
 "dc_action" = "डिक्रिप्ट करें";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "विफल";
 "dc_err_missing" = "फ़ाइल नहीं मिली";
 "dc_err_unzip" = "अनज़िप विफल; पैकेज अधूरा हो सकता है";
 "dc_err_no_binary" = "पैकेज में कोई निष्पादन योग्य फ़ाइल नहीं मिली";
@@ -513,9 +513,9 @@
 "detail_devices" = "डिवाइस";
 "detail_arch" = "आर्किटेक्चर";
 "detail_size" = "अनपैक किए बाद का आकार";
-"detail_files" = "Files";
+"detail_files" = "फ़ाइलें";
 "detail_binaries" = "बाइनरी";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "बुनियादी जानकारी";
 "detail_encrypted" = "FairPlay एन्क्रिप्टेड";
 "detail_plain" = "एन्क्रिप्टेड नहीं";
 "detail_scinfo" = "लाइसेंस";
@@ -528,7 +528,7 @@
 "detail_section_components" = "घटक";
 "detail_section_libraries" = "लिंक की गई लाइब्रेरी";
 "dc_err_cancelled" = "डिक्रिप्शन रद्द हुआ";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "रद्द करें";
 "dc_share_decrypted" = "डिक्रिप्टेड पैकेज साझा करें";
 "purchased" = "खरीदा गया";
 "dc_group_wildcard" = "App ID wildcard है (TEAMID.*); wildcard App ID में App Group नहीं हो सकता";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "पूर्ण हुआ";
 "dc_status_cancelled" = "रद्द हुआ";
 "dc_stat_decrypted" = "डिक्रिप्ट हुआ";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "बिना एन्क्रिप्शन";
+"dc_stat_total" = "कुल";
 "dc_stat_elapsed" = "बीता समय";
 "dc_console_log" = "लाइव लॉग";
 "dc_console_waiting" = "इंजन आउटपुट की प्रतीक्षा में…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "एक्सट्रैक्ट";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "डिक्रिप्ट";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "पैकिंग";
+"dc_phase_done" = "पूर्ण";
 "dc_scanning" = "स्कैन हो रहा है";
 "tab_sign" = "साइन";
 "sign_title" = "साइनिंग स्टूडियो";
@@ -672,10 +672,10 @@
 "sign_cert_detail_issuer" = "जारीकर्ता";
 "sign_cert_detail_subject" = "सब्जेक्ट";
 "sign_cert_detail_fingerprint" = "SHA-256 फ़िंगरप्रिंट";
-"sign_cert_detail_entitlements" = "Provisioning Profile Entitlements";
+"sign_cert_detail_entitlements" = "प्रोविज़निंग प्रोफ़ाइल एंटाइटलमेंट";
 "sign_cert_detail_no_profile" = "Entitlements देखने या चुनने के लिए Provisioning Profile चुनें।";
 "sign_cert_detail_entitlements_hint" = "रखने के लिए Entitlements चुनें। केवल प्रोफ़ाइल में मौजूद Entitlements ही चुने जा सकते हैं।";
-"sign_entitlements_title" = "Provisioning Profile Entitlements";
+"sign_entitlements_title" = "प्रोविज़निंग प्रोफ़ाइल एंटाइटलमेंट";
 "sign_entitlements_count" = "%d में से %d चयनित";
 "sign_entitlements_select_all" = "सब चुनें";
 "sign_entitlements_clear" = "सब साफ़ करें";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "प्रमाणीकरण विफल";
 "sign_history_auth_failed_hint" = "छिपी वॉल्ट अनलॉक नहीं हो सकी।";
 "sign_history_hidden_auth_reason" = "छिपे हुए साइनिंग रिकॉर्ड अनलॉक करें";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "शेष %@";
 "sign_profile_fallback_warning" = "प्रोफ़ाइल का App ID %@ है, जो इस IPA को कवर नहीं करता। चयनित प्रोफ़ाइल से साइनिंग जारी रहेगी; यदि प्रोफ़ाइल लागू नहीं हो सकती तो इंस्टॉलेशन अस्वीकार हो सकता है।";
 "sign_use_profile_id" = "प्रोफ़ाइल का App ID उपयोग करें: %@ (इस डिवाइस पर उसी ID वाले ऐप को बदल देगा और बिना मैचिंग प्रोफ़ाइल वाले एक्सटेंशन हटा देगा)";
 "sign_team_mismatch_warning" = "प्रमाणपत्र और प्रोफ़ाइल अलग-अलग Team के हैं। फिर भी साइनिंग का प्रयास होगा, पर इंस्टॉल संभवतः विफल होगा; एक ही Team के प्रमाणपत्र और प्रोफ़ाइल चुनें।";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "बैकग्राउंड में ऐप";
 "island_app_phase" = "बैकग्राउंड में चल रहा है";
 "island_app_tap_to_open" = "वापस आने के लिए Dynamic Island पर टैप करें";
+
+// Source Code Browser
+"source_browser" = "सोर्स कोड ब्राउज़र";
+"source_browser_latest_commit" = "नवीनतम कमिट";
+"source_browser_recent_commits" = "हाल के कमिट";
+"source_browser_filter" = "इस फ़ोल्डर को फ़िल्टर करें";
+"source_browser_loading" = "लोड हो रहा है…";
+"source_browser_load_failed" = "लोड करने में विफल";
+"source_browser_retry" = "पुनः प्रयास करें";
+"source_browser_empty_dir" = "यह फ़ोल्डर खाली है";
+"source_browser_copy" = "सब कॉपी करें";
+"source_browser_copied" = "कॉपी हो गया";
+"source_browser_open_github" = "GitHub पर देखें";
+"source_browser_binary_file" = "बाइनरी फ़ाइल — टेक्स्ट प्रीव्यू उपलब्ध नहीं";
+"source_browser_truncated" = "फ़ाइल बहुत बड़ी है — पहली %d पंक्तियाँ दिखाई जा रही हैं";
+"source_browser_line_count" = "%d पंक्तियाँ";
+"source_browser_rate_limited" = "GitHub API सीमा पार — बाद में पुनः प्रयास करें";
+"source_browser_not_found" = "पथ नहीं मिला (शायद हटा दिया गया)";
+
+"zip_err_zip32_overflow" = "IPA, 4GB ZIP32 सीमा से अधिक है";

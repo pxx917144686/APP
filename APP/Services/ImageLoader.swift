@@ -12,7 +12,22 @@ final class ImageLoader {
     private var pendingLowQualityTasks: [URL: Task<UIImage?, Never>] = [:]
     private let decodingQueue = DispatchQueue(label: "com.app.imageloader.decoding", qos: .userInitiated, attributes: .concurrent)
 
-    private init() {}
+    /// 缓存位图的最大边长（pt）。全 App 图标展示最大 ~60pt@3x，超出部分无需保留：
+    /// 原尺寸 512² 位图解码后 ~1MB/张，200 张即 ~200MB 常驻脏内存，
+    /// 大图源（1024²）可达 ~800MB —— 是长下载会话中内存膨胀直至 jetsam 闪退的主因。
+    private static let maxCachedDimension: CGFloat = 240
+
+    private init() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.clearMemoryCache()
+            }
+        }
+    }
 
     func prefetch(_ urls: [URL]) {
         let unique = Array(Set(urls)).prefix(24)
@@ -112,6 +127,13 @@ final class ImageLoader {
         return await task.value
     }
 
+    /// 按缓存上限降采样后的目标尺寸（保持纵横比）
+    private static func clampedSize(for size: CGSize, maxDimension: CGFloat) -> CGSize {
+        guard size.width > 0, size.height > 0 else { return size }
+        let scale = min(maxDimension / size.width, maxDimension / size.height, 1.0)
+        return CGSize(width: size.width * scale, height: size.height * scale)
+    }
+
     private func decodeImageAndCreateLowQuality(from data: Data) async -> (fullQuality: UIImage?, lowQuality: UIImage?) {
         await withCheckedContinuation { continuation in
             decodingQueue.async {
@@ -125,17 +147,15 @@ final class ImageLoader {
                     return
                 }
 
-                UIGraphicsBeginImageContextWithOptions(image.size, false, 1.0)
-                image.draw(at: .zero)
+                let cachedSize = Self.clampedSize(for: image.size, maxDimension: Self.maxCachedDimension)
+                UIGraphicsBeginImageContextWithOptions(cachedSize, false, 1.0)
+                image.draw(in: CGRect(origin: .zero, size: cachedSize))
                 let fullQualityImage = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
 
-                let maxDimension: CGFloat = 100
-                let scale = min(maxDimension / image.size.width, maxDimension / image.size.height, 1.0)
-                let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-
-                UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-                image.draw(in: CGRect(origin: .zero, size: newSize))
+                let lowSize = Self.clampedSize(for: image.size, maxDimension: 100)
+                UIGraphicsBeginImageContextWithOptions(lowSize, false, 1.0)
+                image.draw(in: CGRect(origin: .zero, size: lowSize))
                 let lowQualityImage = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
 
@@ -160,9 +180,7 @@ final class ImageLoader {
                 let targetImage: UIImage?
 
                 if lowQuality {
-                    let maxDimension: CGFloat = 100
-                    let scale = min(maxDimension / image.size.width, maxDimension / image.size.height, 1.0)
-                    let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+                    let newSize = Self.clampedSize(for: image.size, maxDimension: 100)
 
                     UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
                     image.draw(in: CGRect(origin: .zero, size: newSize))
@@ -170,8 +188,9 @@ final class ImageLoader {
                     UIGraphicsEndImageContext()
                     targetImage = lowQualityImage
                 } else {
-                    UIGraphicsBeginImageContextWithOptions(image.size, false, 1.0)
-                    image.draw(at: .zero)
+                    let newSize = Self.clampedSize(for: image.size, maxDimension: Self.maxCachedDimension)
+                    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                    image.draw(in: CGRect(origin: .zero, size: newSize))
                     let decodedImage = UIGraphicsGetImageFromCurrentImageContext()
                     UIGraphicsEndImageContext()
                     targetImage = decodedImage

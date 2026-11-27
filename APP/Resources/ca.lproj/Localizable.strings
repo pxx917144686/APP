@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "S'està finalitzant la verificació del dispositiu";
 "sap_stage_generate_signature" = "S'està generant la signatura de la petició";
 "sap_err_interrupted" = "La verificació s'ha interromput inesperadament. Torna-ho a provar.";
-"price_free" = "Free";
+"price_free" = "Gratuït";
 "session_reconnecting" = "S'està reconnectant… (%@/%@)";
 "session_err_reconnect_failed" = "La reconnectació ha fallat. Comprova la connexió de xarxa.";
 "session_err_signin_required" = "Torna a iniciar la sessió";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple no ha retornat informació d'inici de sessió. Comprova el compte i torna-ho a provar.";
 "version_unknown" = "Versió desconeguda";
 "dc_action" = "Desxifra";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Fallat";
 "dc_err_missing" = "No s'ha trobat el fitxer";
 "dc_err_unzip" = "La descompressió ZIP ha fallat; pot ser que el paquet estigui incomplet";
 "dc_err_no_binary" = "No s'ha trobat cap executable al paquet";
@@ -513,9 +513,9 @@
 "detail_devices" = "Dispositius";
 "detail_arch" = "Arquitectures";
 "detail_size" = "Mida descomprimida";
-"detail_files" = "Files";
+"detail_files" = "Fitxers";
 "detail_binaries" = "Binaris";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Informació bàsica";
 "detail_encrypted" = "Xifrat amb FairPlay";
 "detail_plain" = "No xifrat";
 "detail_scinfo" = "Llicència";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Components";
 "detail_section_libraries" = "Biblioteques enllaçades";
 "dc_err_cancelled" = "Desxifrat cancel·lat";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Cancel·la";
 "dc_share_decrypted" = "Comparteix el paquet desxifrat";
 "purchased" = "Comprada";
 "dc_group_wildcard" = "L'App ID és un wildcard (TEAMID.*); els App ID wildcard no poden portar App Group";
@@ -563,7 +563,7 @@
 "dc_status_completed" = "Completat";
 "dc_status_cancelled" = "Cancel·lat";
 "dc_stat_decrypted" = "Desxifrat";
-"dc_stat_plain" = "Plain";
+"dc_stat_plain" = "Sense xifrar";
 "dc_stat_total" = "Total";
 "dc_stat_elapsed" = "Transcorregut";
 "dc_console_log" = "Registre en directe";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Extracció";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Desxifrat";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Empaquetament";
+"dc_phase_done" = "Fet";
 "dc_scanning" = "S'està escanejant";
 "tab_sign" = "Signa";
 "sign_title" = "Estudi de firma";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "L'autenticació ha fallat";
 "sign_history_auth_failed_hint" = "No s'ha pogut desbloquejar el cofre ocult.";
 "sign_history_hidden_auth_reason" = "Desbloqueja els registres de firma ocults";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Restant %@";
 "sign_profile_fallback_warning" = "L'App ID del perfil és %@, que no cobreix aquest IPA. La firma continuarà amb el perfil seleccionat; la instal·lació pot ser rebutjada si el perfil no es pot aplicar.";
 "sign_use_profile_id" = "Fes servir l'App ID del perfil: %@ (substitueix qualsevol app amb el mateix ID en aquest dispositiu i elimina les extensions sense perfil coincident)";
 "sign_team_mismatch_warning" = "El certificat i el perfil pertanyen a Teams diferents. S'intentarà la firma, però la instal·lació probablement fallarà; trieu un certificat i un perfil del mateix Team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App en segon pla";
 "island_app_phase" = "Executant-se en segon pla";
 "island_app_tap_to_open" = "Toca la Dynamic Island per tornar";
+
+// Source Code Browser
+"source_browser" = "Navegador de codi font";
+"source_browser_latest_commit" = "Última confirmació";
+"source_browser_recent_commits" = "Confirmacions recents";
+"source_browser_filter" = "Filtra aquesta carpeta";
+"source_browser_loading" = "Carregant…";
+"source_browser_load_failed" = "Error en carregar";
+"source_browser_retry" = "Torna-ho a provar";
+"source_browser_empty_dir" = "Aquesta carpeta és buida";
+"source_browser_copy" = "Copia-ho tot";
+"source_browser_copied" = "Copiat";
+"source_browser_open_github" = "Veure a GitHub";
+"source_browser_binary_file" = "Fitxer binari — no es pot previsualitzar el text";
+"source_browser_truncated" = "Fitxer massa gran — es mostren les primeres %d línies";
+"source_browser_line_count" = "%d línies";
+"source_browser_rate_limited" = "Límit de l'API de GitHub assolit — torna-ho a provar més tard";
+"source_browser_not_found" = "Camí no trobat (potser s'ha suprimit)";
+
+"zip_err_zip32_overflow" = "L'IPA supera el límit ZIP32 de 4 GB";

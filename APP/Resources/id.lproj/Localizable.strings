@@ -26,7 +26,7 @@
 "update" = "Perbarui";
 "all" = "Semua";
 "none" = "Tidak Ada";
-"default" = "Default";
+"default" = "Bawaan";
 "copy" = "Salin";
 "share" = "Bagikan";
 "export" = "Ekspor";
@@ -55,7 +55,7 @@
 "language_switch" = "Ganti Bahasa";
 "language_switch_message" = "Antarmuka aplikasi akan segera diperbarui setelah mengganti bahasa. Beberapa komponen sistem mungkin memerlukan mulai ulang untuk berlaku sepenuhnya.";
 "confirm_switch" = "Konfirmasi Ganti";
-"icon_default" = "Default";
+"icon_default" = "Bawaan";
 "icon_author" = "Ikon";
 "icon_love" = "Cinta";
 "icon_peek" = "Mengintip";
@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Menyelesaikan verifikasi perangkat";
 "sap_stage_generate_signature" = "Membuat tanda tangan permintaan";
 "sap_err_interrupted" = "Verifikasi terputus secara tak terduga. Silakan coba lagi.";
-"price_free" = "Free";
+"price_free" = "Gratis";
 "session_reconnecting" = "Menyambungkan ulang... (%@/%@)";
 "session_err_reconnect_failed" = "Gagal menyambungkan ulang. Periksa koneksi jaringan Anda.";
 "session_err_signin_required" = "Silakan masuk kembali";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple tidak mengembalikan informasi masuk. Periksa akun Anda lalu coba lagi.";
 "version_unknown" = "Versi tidak diketahui";
 "dc_action" = "Dekripsi";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Gagal";
 "dc_err_missing" = "File tidak ditemukan";
 "dc_err_unzip" = "Ekstraksi gagal; paket mungkin tidak lengkap";
 "dc_err_no_binary" = "Tidak ditemukan file eksekusi di dalam paket";
@@ -513,9 +513,9 @@
 "detail_devices" = "Perangkat";
 "detail_arch" = "Arsitektur";
 "detail_size" = "Ukuran Setelah Diekstrak";
-"detail_files" = "Files";
+"detail_files" = "File";
 "detail_binaries" = "Jumlah Binary";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Info Dasar";
 "detail_encrypted" = "Terenkripsi dengan FairPlay";
 "detail_plain" = "Tidak terenkripsi";
 "detail_scinfo" = "Lisensi";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponen";
 "detail_section_libraries" = "Pustaka yang Ditautkan";
 "dc_err_cancelled" = "Dekripsi dibatalkan";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Batal";
 "dc_share_decrypted" = "Bagikan Paket Terdekripsi";
 "purchased" = "Dibeli";
 "dc_group_wildcard" = "App ID berupa wildcard (TEAMID.*); App ID wildcard tidak dapat membawa App Group";
@@ -563,7 +563,7 @@
 "dc_status_completed" = "Selesai";
 "dc_status_cancelled" = "Dibatalkan";
 "dc_stat_decrypted" = "Terdekripsi";
-"dc_stat_plain" = "Plain";
+"dc_stat_plain" = "Tanpa enkripsi";
 "dc_stat_total" = "Total";
 "dc_stat_elapsed" = "Waktu Berjalan";
 "dc_console_log" = "Log Waktu Nyata";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Ekstrak";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Dekripsi";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Mengemas";
+"dc_phase_done" = "Selesai";
 "dc_scanning" = "Memindai";
 "tab_sign" = "Tanda Tangan";
 "sign_title" = "Studio Penandatanganan";
@@ -816,7 +816,7 @@
 "sig_ent_cat_network" = "Jaringan & Ekstensi";
 "sig_ent_cat_web" = "Web & Domain";
 "sig_ent_cat_icloud" = "iCloud";
-"sig_ent_cat_media" = "Media & Wallet";
+"sig_ent_cat_media" = "Media & Dompet";
 "sig_ent_cat_siri" = "Siri";
 "sig_ent_cat_other" = "Lainnya";
 "sig_ent_generic_desc" = "Entitlement yang dideklarasikan oleh Provisioning Profile ini. Hanya izin yang tercantum di sini yang dapat digunakan aplikasi yang ditandatangani.";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Autentikasi Gagal";
 "sign_history_auth_failed_hint" = "Tidak dapat membuka kunci brankas tersembunyi.";
 "sign_history_hidden_auth_reason" = "Buka kunci catatan penandatanganan tersembunyi";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Tersisa %@";
 "sign_profile_fallback_warning" = "App ID profil adalah %@, yang tidak mencakup IPA ini. Penandatanganan akan berlanjut dengan profil yang dipilih; instalasi mungkin ditolak jika profil tidak dapat diterapkan.";
 "sign_use_profile_id" = "Gunakan App ID profil: %@ (mengganti aplikasi dengan ID yang sama di perangkat ini dan menghapus ekstensi tanpa profil yang cocok)";
 "sign_team_mismatch_warning" = "Sertifikat dan profil termasuk tim yang berbeda. Penandatanganan akan dicoba, tetapi instalasi kemungkinan gagal; pilih sertifikat dan profil dari tim yang sama.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Aplikasi di latar belakang";
 "island_app_phase" = "Berjalan di latar belakang";
 "island_app_tap_to_open" = "Ketuk Dynamic Island untuk kembali";
+
+// Source Code Browser
+"source_browser" = "Peramban kode sumber";
+"source_browser_latest_commit" = "Commit terbaru";
+"source_browser_recent_commits" = "Commit terkini";
+"source_browser_filter" = "Saring folder ini";
+"source_browser_loading" = "Memuat…";
+"source_browser_load_failed" = "Gagal memuat";
+"source_browser_retry" = "Coba lagi";
+"source_browser_empty_dir" = "Folder ini kosong";
+"source_browser_copy" = "Salin semua";
+"source_browser_copied" = "Tersalin";
+"source_browser_open_github" = "Lihat di GitHub";
+"source_browser_binary_file" = "Berkas biner — pratinjau teks tidak tersedia";
+"source_browser_truncated" = "Berkas terlalu besar — menampilkan %d baris pertama";
+"source_browser_line_count" = "%d baris";
+"source_browser_rate_limited" = "Batas API GitHub tercapai — coba lagi nanti";
+"source_browser_not_found" = "Jalur tidak ditemukan (mungkin telah dihapus)";
+
+"zip_err_zip32_overflow" = "IPA melebihi batas 4GB ZIP32";

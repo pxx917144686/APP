@@ -151,7 +151,7 @@
 "rating" = "Betyg";
 
 "expired" = "Utgången";
-"full" = "Full";
+"full" = "Fullt";
 
 "filter" = "Filter";
 "sort" = "Sortera";
@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Avslutar enhetsverifiering";
 "sap_stage_generate_signature" = "Genererar begärandesignatur";
 "sap_err_interrupted" = "Verifieringen avbröts oväntat. Försök igen.";
-"price_free" = "Free";
+"price_free" = "Gratis";
 "session_reconnecting" = "Ansluter igen… (%@/%@)";
 "session_err_reconnect_failed" = "Återanslutningen misslyckades. Kontrollera nätverksanslutningen.";
 "session_err_signin_required" = "Logga in igen";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple returnerade ingen inloggningsinformation. Kontrollera ditt konto och försök igen.";
 "version_unknown" = "Okänd version";
 "dc_action" = "Dekryptera";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Misslyckades";
 "dc_err_missing" = "Filen hittades inte";
 "dc_err_unzip" = "Uppackningen misslyckades; paketet kan vara ofullständigt";
 "dc_err_no_binary" = "Ingen körbar fil hittades i paketet";
@@ -513,9 +513,9 @@
 "detail_devices" = "Enheter";
 "detail_arch" = "Arkitekturer";
 "detail_size" = "Storlek efter uppackning";
-"detail_files" = "Files";
+"detail_files" = "Filer";
 "detail_binaries" = "Binärfiler";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Grundläggande";
 "detail_encrypted" = "FairPlay-krypterad";
 "detail_plain" = "Inte krypterad";
 "detail_scinfo" = "Licens";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponenter";
 "detail_section_libraries" = "Länkade bibliotek";
 "dc_err_cancelled" = "Dekrypteringen avbröts";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Avbryt";
 "dc_share_decrypted" = "Dela dekrypterat paket";
 "purchased" = "Köpt";
 "dc_group_wildcard" = "App ID är ett wildcard (TEAMID.*); wildcard-App ID:n kan inte ha App Groups";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Slutförd";
 "dc_status_cancelled" = "Avbruten";
 "dc_stat_decrypted" = "Dekrypterat";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Klartext";
+"dc_stat_total" = "Totalt";
 "dc_stat_elapsed" = "Förfluten tid";
 "dc_console_log" = "Livelogg";
 "dc_console_waiting" = "Väntar på utdata från motorn…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Packa upp";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Dekryptera";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Packning";
+"dc_phase_done" = "Klar";
 "dc_scanning" = "Skannar";
 "tab_sign" = "Signera";
 "sign_title" = "Signeringsstudio";
@@ -846,7 +846,7 @@
 "sig_ent_appattest_desc" = "Miljö för enhetsvalidering med DeviceCheck / App Attest.";
 "sig_ent_icloud_container_title" = "iCloud-behållare";
 "sig_ent_icloud_container_desc" = "iCloud Documents- och CloudKit-behållare som är tillgängliga för appen.";
-"sig_ent_icloud_kv_title" = "iCloud Key-Value Store";
+"sig_ent_icloud_kv_title" = "iCloud-nyckelvärdeslagring";
 "sig_ent_icloud_kv_desc" = "Identifierare för iCloud key-value-lagring som delas av appen och tilläggen.";
 "sign_icloud_container_missing_warning" = "Målappen använder iCloud/CloudKit men provisioneringsprofilen beviljar inga iCloud-behållare. CloudKit fungerar inte i den signerade appen.";
 "sig_ent_healthkit_title" = "HealthKit";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Autentiseringen misslyckades";
 "sign_history_auth_failed_hint" = "Det gick inte att låsa upp det dolda valvet.";
 "sign_history_hidden_auth_reason" = "Lås upp dolda signeringsposter";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Återstår %@";
 "sign_profile_fallback_warning" = "Profilens App ID är %@, vilket inte täcker denna IPA. Signeringen fortsätter med den valda profilen; installationen kan avvisas om profilen inte kan tillämpas.";
 "sign_use_profile_id" = "Använd profilens App ID: %@ (ersätter alla appar med samma ID på den här enheten och tar bort tillägg utan matchande profil)";
 "sign_team_mismatch_warning" = "Certifikatet och profilen tillhör olika team. Signering försöks, men installationen misslyckas troligen; välj ett certifikat och en profil från samma team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App i bakgrunden";
 "island_app_phase" = "Kör i bakgrunden";
 "island_app_tap_to_open" = "Tryck på Dynamic Island för att återvända";
+
+// Source Code Browser
+"source_browser" = "Källkodsbläddrare";
+"source_browser_latest_commit" = "Senaste commit";
+"source_browser_recent_commits" = "Nyliga commits";
+"source_browser_filter" = "Filtrera denna mapp";
+"source_browser_loading" = "Läser in…";
+"source_browser_load_failed" = "Det gick inte att läsa in";
+"source_browser_retry" = "Försök igen";
+"source_browser_empty_dir" = "Denna mapp är tom";
+"source_browser_copy" = "Kopiera allt";
+"source_browser_copied" = "Kopierat";
+"source_browser_open_github" = "Visa på GitHub";
+"source_browser_binary_file" = "Binärfil — text kan inte förhandsvisas";
+"source_browser_truncated" = "Filen är för stor — visar de första %d raderna";
+"source_browser_line_count" = "%d rader";
+"source_browser_rate_limited" = "GitHub API-gränsen nådd — försök igen senare";
+"source_browser_not_found" = "Sökvägen hittades inte (kanske borttagen)";
+
+"zip_err_zip32_overflow" = "IPA överskrider ZIP32-gränsen på 4 GB";

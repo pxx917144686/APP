@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Đang hoàn tất xác minh thiết bị";
 "sap_stage_generate_signature" = "Đang tạo chữ ký cho yêu cầu";
 "sap_err_interrupted" = "Xác minh bị gián đoạn bất ngờ. Vui lòng thử lại.";
-"price_free" = "Free";
+"price_free" = "Miễn phí";
 "session_reconnecting" = "Đang kết nối lại... (%@/%@)";
 "session_err_reconnect_failed" = "Kết nối lại thất bại. Hãy kiểm tra kết nối mạng.";
 "session_err_signin_required" = "Vui lòng đăng nhập lại";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple không trả về thông tin đăng nhập. Hãy kiểm tra tài khoản rồi thử lại.";
 "version_unknown" = "Không rõ phiên bản";
 "dc_action" = "Giải mã";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Thất bại";
 "dc_err_missing" = "Không tìm thấy tệp";
 "dc_err_unzip" = "Giải nén thất bại; gói có thể không đầy đủ";
 "dc_err_no_binary" = "Không tìm thấy tệp thực thi trong gói";
@@ -513,9 +513,9 @@
 "detail_devices" = "Thiết bị";
 "detail_arch" = "Kiến trúc";
 "detail_size" = "Kích thước sau giải nén";
-"detail_files" = "Files";
+"detail_files" = "Tệp";
 "detail_binaries" = "Số binary";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Thông tin cơ bản";
 "detail_encrypted" = "Được mã hóa bằng FairPlay";
 "detail_plain" = "Chưa mã hóa";
 "detail_scinfo" = "Giấy phép";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Thành phần";
 "detail_section_libraries" = "Thư viện được liên kết";
 "dc_err_cancelled" = "Đã hủy giải mã";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Hủy";
 "dc_share_decrypted" = "Chia sẻ gói đã giải mã";
 "purchased" = "Đã mua";
 "dc_group_wildcard" = "App ID là dạng wildcard (TEAMID.*); App ID wildcard không thể mang App Group";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Đã hoàn thành";
 "dc_status_cancelled" = "Đã hủy";
 "dc_stat_decrypted" = "Đã giải mã";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Không mã hóa";
+"dc_stat_total" = "Tổng";
 "dc_stat_elapsed" = "Thời gian đã trôi";
 "dc_console_log" = "Nhật ký trực tiếp";
 "dc_console_waiting" = "Đang chờ đầu ra từ engine...";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Trích xuất";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Giải mã";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Đóng gói";
+"dc_phase_done" = "Hoàn tất";
 "dc_scanning" = "Đang quét";
 "tab_sign" = "Ký";
 "sign_title" = "Phòng ký";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Xác thực thất bại";
 "sign_history_auth_failed_hint" = "Không mở khóa được kho ẩn.";
 "sign_history_hidden_auth_reason" = "Mở khóa các bản ghi ký ẩn";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Còn lại %@";
 "sign_profile_fallback_warning" = "App ID của hồ sơ là %@, không bao phủ IPA này. Việc ký sẽ tiếp tục bằng hồ sơ đã chọn; cài đặt có thể bị từ chối nếu không áp dụng được hồ sơ.";
 "sign_use_profile_id" = "Dùng App ID của hồ sơ: %@ (sẽ thay thế ứng dụng cùng ID trên máy này và gỡ bỏ tiện ích mở rộng không có hồ sơ tương ứng)";
 "sign_team_mismatch_warning" = "Chứng chỉ và hồ sơ thuộc các nhóm khác nhau. Việc ký vẫn được thử nhưng cài đặt có lẽ sẽ thất bại; hãy chọn chứng chỉ và hồ sơ cùng nhóm.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "Ứng dụng trong nền";
 "island_app_phase" = "Đang chạy trong nền";
 "island_app_tap_to_open" = "Chạm vào Dynamic Island để quay lại ứng dụng";
+
+// Source Code Browser
+"source_browser" = "Trình duyệt mã nguồn";
+"source_browser_latest_commit" = "Commit mới nhất";
+"source_browser_recent_commits" = "Các commit gần đây";
+"source_browser_filter" = "Lọc thư mục này";
+"source_browser_loading" = "Đang tải…";
+"source_browser_load_failed" = "Không thể tải";
+"source_browser_retry" = "Thử lại";
+"source_browser_empty_dir" = "Thư mục này trống";
+"source_browser_copy" = "Sao chép tất cả";
+"source_browser_copied" = "Đã sao chép";
+"source_browser_open_github" = "Xem trên GitHub";
+"source_browser_binary_file" = "Tệp nhị phân — không xem trước được văn bản";
+"source_browser_truncated" = "Tệp quá lớn — hiển thị %d dòng đầu tiên";
+"source_browser_line_count" = "%d dòng";
+"source_browser_rate_limited" = "Đạt giới hạn GitHub API — thử lại sau";
+"source_browser_not_found" = "Không tìm thấy đường dẫn (có thể đã bị xóa)";
+
+"zip_err_zip32_overflow" = "IPA vượt giới hạn 4GB của ZIP32";

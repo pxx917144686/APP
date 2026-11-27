@@ -118,6 +118,7 @@ struct SigningDeviceUDIDSheet: View {
                 Button {
                     if let value = UIPasteboard.general.string {
                         deviceUDID = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                        SoundEffects.play(.copy)
                     }
                 } label: {
                     Label("sign_device_paste".localized, systemImage: "doc.on.clipboard")

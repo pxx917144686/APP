@@ -151,7 +151,7 @@
 "rating" = "Vurdering";
 
 "expired" = "Utløpt";
-"full" = "Full";
+"full" = "Fullt";
 
 "filter" = "Filter";
 "sort" = "Sorter";
@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Fullfører enhetsverifisering";
 "sap_stage_generate_signature" = "Genererer forespørselssignatur";
 "sap_err_interrupted" = "Verifiseringen ble uventet avbrutt. Prøv igjen.";
-"price_free" = "Free";
+"price_free" = "Gratis";
 "session_reconnecting" = "Kobler til på nytt… (%@/%@)";
 "session_err_reconnect_failed" = "Kunne ikke koble til på nytt. Sjekk nettverkstilkoblingen.";
 "session_err_signin_required" = "Logg inn igjen";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple returnerte ikke påloggingsinformasjon. Sjekk kontoen din og prøv igjen.";
 "version_unknown" = "Ukjent versjon";
 "dc_action" = "Dekrypter";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Mislyktes";
 "dc_err_missing" = "Filen ble ikke funnet";
 "dc_err_unzip" = "Utpakking mislyktes; pakken kan være ufullstendig";
 "dc_err_no_binary" = "Ingen kjørbar fil funnet i pakken";
@@ -513,9 +513,9 @@
 "detail_devices" = "Enheter";
 "detail_arch" = "Arkitekturer";
 "detail_size" = "Størrelse etter utpakking";
-"detail_files" = "Files";
+"detail_files" = "Filer";
 "detail_binaries" = "Binærfiler";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Grunnleggende";
 "detail_encrypted" = "FairPlay-kryptert";
 "detail_plain" = "Ikke kryptert";
 "detail_scinfo" = "Lisens";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponenter";
 "detail_section_libraries" = "Koblede biblioteker";
 "dc_err_cancelled" = "Dekryptering avbrutt";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Avbryt";
 "dc_share_decrypted" = "Del dekryptert pakke";
 "purchased" = "Kjøpt";
 "dc_group_wildcard" = "App ID er et wildcard (TEAMID.*); wildcard-App ID-er kan ikke ha App Groups";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Fullført";
 "dc_status_cancelled" = "Avbrutt";
 "dc_stat_decrypted" = "Dekryptert";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Klartekst";
+"dc_stat_total" = "Totalt";
 "dc_stat_elapsed" = "Forløpt tid";
 "dc_console_log" = "Live-logg";
 "dc_console_waiting" = "Venter på utdata fra motoren…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Pakk ut";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Dekrypter";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Pakking";
+"dc_phase_done" = "Ferdig";
 "dc_scanning" = "Skanner";
 "tab_sign" = "Signer";
 "sign_title" = "Signeringsstudio";
@@ -846,7 +846,7 @@
 "sig_ent_appattest_desc" = "Miljø for enhetsvalidering med DeviceCheck / App Attest.";
 "sig_ent_icloud_container_title" = "iCloud-beholdere";
 "sig_ent_icloud_container_desc" = "iCloud Documents- og CloudKit-beholdere som er tilgjengelige for appen.";
-"sig_ent_icloud_kv_title" = "iCloud Key-Value Store";
+"sig_ent_icloud_kv_title" = "iCloud nøkkel-verdi-lager";
 "sig_ent_icloud_kv_desc" = "Identifikator for iCloud key-value-lagring som deles av appen og utvidelsene.";
 "sign_icloud_container_missing_warning" = "Målappen bruker iCloud/CloudKit, men provisioneringsprofilen gir ingen iCloud-beholdere. CloudKit vil ikke fungere i den signerte appen.";
 "sig_ent_healthkit_title" = "HealthKit";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Autentisering mislyktes";
 "sign_history_auth_failed_hint" = "Kunne ikke låse opp det skjulte hvelvet.";
 "sign_history_hidden_auth_reason" = "Lås opp skjulte signeringsposter";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Gjenstår %@";
 "sign_profile_fallback_warning" = "Profilens App ID er %@, som ikke dekker denne IPA-en. Signeringen fortsetter med den valgte profilen; installasjonen kan avvises hvis profilen ikke kan brukes.";
 "sign_use_profile_id" = "Bruk profilens App ID: %@ (erstatter alle apper med samme ID på denne enheten og fjerner utvidelser uten matchende profil)";
 "sign_team_mismatch_warning" = "Sertifikatet og profilen tilhører forskjellige team. Signering forsøkes, men installasjonen vil trolig mislykkes; velg et sertifikat og en profil fra samme team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App i bakgrunnen";
 "island_app_phase" = "Kjører i bakgrunnen";
 "island_app_tap_to_open" = "Trykk på Dynamic Island for å gå tilbake";
+
+// Source Code Browser
+"source_browser" = "Kildekodeviser";
+"source_browser_latest_commit" = "Siste commit";
+"source_browser_recent_commits" = "Nylige commits";
+"source_browser_filter" = "Filtrer denne mappen";
+"source_browser_loading" = "Laster…";
+"source_browser_load_failed" = "Kunne ikke laste inn";
+"source_browser_retry" = "Prøv igjen";
+"source_browser_empty_dir" = "Denne mappen er tom";
+"source_browser_copy" = "Kopier alt";
+"source_browser_copied" = "Kopiert";
+"source_browser_open_github" = "Se på GitHub";
+"source_browser_binary_file" = "Binærfil — kan ikke forhåndsvise tekst";
+"source_browser_truncated" = "Filen er for stor — viser de første %d linjene";
+"source_browser_line_count" = "%d linjer";
+"source_browser_rate_limited" = "GitHub API-grensen er nådd — prøv igjen senere";
+"source_browser_not_found" = "Fant ikke stien (kanskje slettet)";
+
+"zip_err_zip32_overflow" = "IPA overskrider ZIP32-grensen på 4 GB";

@@ -5,16 +5,18 @@ struct GlassSurface<Content: View>: View {
     var cornerRadius: CGFloat = 16
     var blur: CGFloat = 24
     var saturation: CGFloat = 1.8
-    var tintOpacity: Double = 0.10
+    var tintOpacity: Double = 0.07
     var showsHighlight: Bool = true
 
     let content: Content
 
+    /// iOS 26+ 使用原生液态玻璃(比系统材质 + 白色 tint 更透亮);
+    /// `blur` / `saturation` 仅作用于 iOS 26 以下的 UIVisualEffectView 回退路径。
     init(
         cornerRadius: CGFloat = 16,
         blur: CGFloat = 24,
         saturation: CGFloat = 1.8,
-        tintOpacity: Double = 0.10,
+        tintOpacity: Double = 0.07,
         showsHighlight: Bool = true,
         @ViewBuilder content: () -> Content
     ) {
@@ -27,44 +29,99 @@ struct GlassSurface<Content: View>: View {
     }
 
     var body: some View {
-        content
-            .background {
-                GlassBackdropViewRepresentable(blur: blur, saturation: saturation)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(tintOpacity),
-                                Color.white.opacity(tintOpacity * 0.3),
-                                Color.clear
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .allowsHitTesting(false)
-            }
-            .overlay {
-                if showsHighlight {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.38),
-                                    Color.white.opacity(0.06),
-                                    Color.white.opacity(0.18)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 0.6
-                        )
-                        .allowsHitTesting(false)
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .overlay { tint }
+                .overlay { gloss }
+        } else {
+            content
+                .background {
+                    GlassBackdropViewRepresentable(blur: blur, saturation: saturation)
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 }
+                .overlay { tint }
+                .overlay { gloss }
+        }
+    }
+
+    private var tint: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(tintOpacity),
+                        Color.white.opacity(tintOpacity * 0.3),
+                        Color.clear
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var gloss: some View {
+        if showsHighlight {
+            GlassGlossOverlay(
+                shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+        }
+    }
+}
+
+/// 玻璃亮面装饰:顶部镜面高光带 + 底部厚度阴影 + 边缘轮廓光,随深浅色模式自适应。
+struct GlassGlossOverlay<Shape: InsettableShape>: View {
+    var shape: Shape
+    var intensity: Double = 1
+    var showsRim: Bool = true
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let dark = colorScheme == .dark
+        ZStack {
+            // 顶部镜面高光:光掠过玻璃上沿形成的亮面
+            shape.fill(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity((dark ? 0.30 : 0.50) * intensity),
+                        Color.white.opacity((dark ? 0.10 : 0.16) * intensity),
+                        .clear
+                    ],
+                    startPoint: .top,
+                    endPoint: UnitPoint(x: 0.5, y: 0.36)
+                )
+            )
+            // 底部沉降阴影:玻璃厚度的折射感
+            shape.fill(
+                LinearGradient(
+                    colors: [
+                        .clear,
+                        Color.black.opacity((dark ? 0.22 : 0.07) * intensity)
+                    ],
+                    startPoint: UnitPoint(x: 0.5, y: 0.64),
+                    endPoint: .bottom
+                )
+            )
+            if showsRim {
+                shape.strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity((dark ? 0.42 : 0.55) * intensity),
+                            Color.white.opacity((dark ? 0.08 : 0.14) * intensity),
+                            Color.white.opacity((dark ? 0.20 : 0.30) * intensity)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.6
+                )
             }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

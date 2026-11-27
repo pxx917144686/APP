@@ -98,6 +98,7 @@ struct DecryptLogSheet: SwiftUI.View {
             .map { "\(Self.timeFormatter.string(from: $0.time))  \($0.text)" }
             .joined(separator: "\n")
         UIPasteboard.general.string = text
+        SoundEffects.play(.copy)
         copied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             copied = false

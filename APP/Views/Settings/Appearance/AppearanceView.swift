@@ -12,6 +12,7 @@ struct AppearanceView: View {
                         Button(action: {
                             let impactMed = UIImpactFeedbackGenerator(style: .light)
                             impactMed.impactOccurred()
+                            SoundEffects.play(.tick)
                             themeManager.selectedTheme = theme
                         }) {
                             Text(theme.displayName)

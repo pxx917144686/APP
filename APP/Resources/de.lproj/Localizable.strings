@@ -73,7 +73,7 @@
 "lang_russian" = "Russisch";
 "lang_arabic" = "Arabisch";
 "lang_hindi" = "Hindi";
-"lang_thai" = "Thai";
+"lang_thai" = "Thailändisch";
 "lang_vietnamese" = "Vietnamesisch";
 "lang_indonesian" = "Indonesisch";
 "lang_malay" = "Malaiisch";
@@ -460,7 +460,7 @@
 "sap_stage_finish_device_verify" = "Geräteverifizierung wird abgeschlossen";
 "sap_stage_generate_signature" = "Anfrage-Signatur wird generiert";
 "sap_err_interrupted" = "Die Verifizierung wurde unerwartet unterbrochen. Bitte versuchen Sie es erneut.";
-"price_free" = "Free";
+"price_free" = "Kostenlos";
 "session_reconnecting" = "Wiederverbindung… (%@/%@)";
 "session_err_reconnect_failed" = "Wiederverbindung fehlgeschlagen. Überprüfen Sie Ihre Netzwerkverbindung.";
 "session_err_signin_required" = "Bitte melden Sie sich erneut an";
@@ -495,7 +495,7 @@
 "auth_err_signin_no_info" = "Apple hat keine Anmeldeinformationen zurückgegeben. Überprüfen Sie Ihren Account und versuchen Sie es erneut.";
 "version_unknown" = "Unbekannte Version";
 "dc_action" = "Entschlüsseln";
-"dc_status_failed" = "Failed";
+"dc_status_failed" = "Fehlgeschlagen";
 "dc_err_missing" = "Datei nicht gefunden";
 "dc_err_unzip" = "Entpacken fehlgeschlagen; das Paket ist möglicherweise unvollständig";
 "dc_err_no_binary" = "Keine ausführbare Datei im Paket gefunden";
@@ -513,9 +513,9 @@
 "detail_devices" = "Geräte";
 "detail_arch" = "Architekturen";
 "detail_size" = "Entpackte Größe";
-"detail_files" = "Files";
+"detail_files" = "Dateien";
 "detail_binaries" = "Binaries";
-"detail_section_basics" = "Basics";
+"detail_section_basics" = "Allgemein";
 "detail_encrypted" = "FairPlay-verschlüsselt";
 "detail_plain" = "Nicht verschlüsselt";
 "detail_scinfo" = "Lizenz";
@@ -528,7 +528,7 @@
 "detail_section_components" = "Komponenten";
 "detail_section_libraries" = "Gelinkte Bibliotheken";
 "dc_err_cancelled" = "Entschlüsselung abgebrochen";
-"dc_cancel" = "Cancel";
+"dc_cancel" = "Abbrechen";
 "dc_share_decrypted" = "Entschlüsseltes Paket teilen";
 "purchased" = "Gekauft";
 "dc_group_wildcard" = "Die App-ID ist eine Wildcard (TEAMID.*); Wildcard-App-IDs können keine App Groups enthalten";
@@ -563,8 +563,8 @@
 "dc_status_completed" = "Abgeschlossen";
 "dc_status_cancelled" = "Abgebrochen";
 "dc_stat_decrypted" = "Entschlüsselt";
-"dc_stat_plain" = "Plain";
-"dc_stat_total" = "Total";
+"dc_stat_plain" = "Klartext";
+"dc_stat_total" = "Gesamt";
 "dc_stat_elapsed" = "Verstrichen";
 "dc_console_log" = "Live-Log";
 "dc_console_waiting" = "Warten auf die Ausgabe der Engine…";
@@ -574,8 +574,8 @@
 "dc_phase_extract" = "Entpacken";
 "dc_phase_sinf" = "SINF";
 "dc_phase_decrypt" = "Entschlüsseln";
-"dc_phase_pack" = "Pack";
-"dc_phase_done" = "Done";
+"dc_phase_pack" = "Packen";
+"dc_phase_done" = "Fertig";
 "dc_scanning" = "Wird gescannt";
 "tab_sign" = "Signieren";
 "sign_title" = "Signatur-Studio";
@@ -713,7 +713,7 @@
 "sign_target_hint" = "Das Element wird in die Frameworks jedes Ziels kopiert und sein Load Command wird vor dem Signieren geschrieben.";
 "sign_target_main" = "Haupt-App";
 "sign_target_widget" = "Widgets (alle Größen)";
-"sign_target_ne" = "Network Extension";
+"sign_target_ne" = "Netzwerkerweiterung (NE)";
 "sign_target_share" = "Share-Erweiterung";
 "sign_target_notification" = "Mitteilungs-Erweiterung";
 "sign_target_intents" = "Intents-Erweiterung";
@@ -838,7 +838,7 @@
 "sig_ent_communication_notification_desc" = "Erlaubt Kommunikationsmitteilungen mit Profilbildern und Fokus-Integration.";
 "sig_ent_associated_domains_title" = "Zugeordnete Domains";
 "sig_ent_associated_domains_desc" = "Domains für Universal Links und Web Credentials, die die App beanspruchen darf.";
-"sig_ent_ne_title" = "Network Extension";
+"sig_ent_ne_title" = "Netzwerkerweiterung";
 "sig_ent_ne_desc" = "Erlaubt Packet Tunnel, DNS Proxy oder andere vom Profil deklarierte Network Extension-Modi.";
 "sig_ent_vpn_title" = "VPN API";
 "sig_ent_vpn_desc" = "Erlaubt der App die Verwendung der NetworkExtension-VPN-APIs.";
@@ -846,7 +846,7 @@
 "sig_ent_appattest_desc" = "Umgebung für die Gerätevalidierung über DeviceCheck / App Attest.";
 "sig_ent_icloud_container_title" = "iCloud-Container";
 "sig_ent_icloud_container_desc" = "iCloud Documents- und CloudKit-Container, die für die App verfügbar sind.";
-"sig_ent_icloud_kv_title" = "iCloud Key-Value Store";
+"sig_ent_icloud_kv_title" = "iCloud Key-Value-Speicher";
 "sig_ent_icloud_kv_desc" = "iCloud-Key-Value-Storage-Identifikator, den die App und Erweiterungen gemeinsam nutzen.";
 "sign_icloud_container_missing_warning" = "Die Ziel-App verwendet iCloud/CloudKit, aber das Profil gewährt keine iCloud-Container. CloudKit funktioniert in der signierten App nicht.";
 "sig_ent_healthkit_title" = "HealthKit";
@@ -1005,7 +1005,7 @@
 "sign_history_auth_failed" = "Authentifizierung fehlgeschlagen";
 "sign_history_auth_failed_hint" = "Der versteckte Tresor konnte nicht entsperrt werden.";
 "sign_history_hidden_auth_reason" = "Versteckte Signatureinträge entsperren";
-"dl_transfer_left" = "%@";
+"dl_transfer_left" = "Verbleiben %@";
 "sign_profile_fallback_warning" = "Die App ID des Profils ist %@ und deckt diese IPA nicht ab. Das Signieren wird mit dem ausgewählten Profil fortgesetzt; die Installation kann abgelehnt werden, wenn das Profil nicht angewendet werden kann.";
 "sign_use_profile_id" = "App-ID des Profils verwenden: %@ (ersetzt jede App mit derselben ID auf diesem Gerät und entfernt Erweiterungen ohne passendes Profil)";
 "sign_team_mismatch_warning" = "Zertifikat und Profil gehören zu unterschiedlichen Teams. Das Signieren wird versucht, aber die Installation schlägt wahrscheinlich fehl; wählen Sie Zertifikat und Profil aus demselben Team.";
@@ -1178,3 +1178,23 @@
 "live_island_app" = "App im Hintergrund";
 "island_app_phase" = "Läuft im Hintergrund";
 "island_app_tap_to_open" = "Dynamic Island antippen, um zurückzukehren";
+
+// Source Code Browser
+"source_browser" = "Quellcode-Browser";
+"source_browser_latest_commit" = "Letzter Commit";
+"source_browser_recent_commits" = "Letzte Commits";
+"source_browser_filter" = "Diesen Ordner filtern";
+"source_browser_loading" = "Lädt…";
+"source_browser_load_failed" = "Laden fehlgeschlagen";
+"source_browser_retry" = "Erneut versuchen";
+"source_browser_empty_dir" = "Dieser Ordner ist leer";
+"source_browser_copy" = "Alles kopieren";
+"source_browser_copied" = "Kopiert";
+"source_browser_open_github" = "Auf GitHub ansehen";
+"source_browser_binary_file" = "Binärdatei – Textvorschau nicht möglich";
+"source_browser_truncated" = "Datei zu groß – zeige die ersten %d Zeilen";
+"source_browser_line_count" = "%d Zeilen";
+"source_browser_rate_limited" = "GitHub-API-Limit erreicht – später erneut versuchen";
+"source_browser_not_found" = "Pfad nicht gefunden (möglicherweise gelöscht)";
+
+"zip_err_zip32_overflow" = "IPA überschreitet das 4-GB-ZIP32-Limit";
