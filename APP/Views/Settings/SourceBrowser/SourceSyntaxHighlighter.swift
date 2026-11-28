@@ -1,8 +1,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - 代码语言识别
-
 enum SourceCodeLanguage: String {
     case swift
     case pythonLike
@@ -34,15 +32,11 @@ enum SourceCodeLanguage: String {
     }
 }
 
-// MARK: - 跨行状态（块注释 / 三引号字符串 / 围栏代码块）
-
 struct SourceSyntaxScanState {
     var inBlockComment = false
     var inTripleString = false
     var inCodeFence = false
 }
-
-// MARK: - 轻量语法高亮（GitHub 风格配色，深浅色自适应）
 
 enum SourceSyntaxHighlighter {
 
@@ -71,8 +65,6 @@ enum SourceSyntaxHighlighter {
             return code(line, language: language, state: &state)
         }
     }
-
-    // MARK: 通用代码行
 
     private static func code(_ line: String,
                              language: SourceCodeLanguage,
@@ -126,7 +118,6 @@ enum SourceSyntaxHighlighter {
 
         var i = 0
         while i < n {
-            // 块注释延续
             if state.inBlockComment {
                 if let close = find(["*", "/"], from: i) {
                     slice(i, close + 2, commentColor)
@@ -139,7 +130,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // 三引号字符串延续
             if state.inTripleString {
                 if let close = find(["\"", "\"", "\""], from: i) {
                     slice(i, close + 3, stringColor)
@@ -155,7 +145,6 @@ enum SourceSyntaxHighlighter {
             let c = chars[i]
             let next = i + 1 < n ? chars[i + 1] : nil
 
-            // 行注释
             if usesSlashComments && c == "/" && next == "/" {
                 slice(i, n, commentColor)
                 i = n
@@ -167,7 +156,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // 块注释开始
             if usesSlashComments && c == "/" && next == "*" {
                 if let close = find(["*", "/"], from: i + 2) {
                     slice(i, close + 2, commentColor)
@@ -180,7 +168,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // XML / HTML 标签
             if language == .yamlLike && c == "<" {
                 if let close = find([">"], from: i) {
                     slice(i, close + 1, tagColor)
@@ -192,7 +179,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // 字符串
             if c == "\"" {
                 if supportsTripleQuote && find(["\"", "\"", "\""], from: i) == i {
                     if let close = find(["\"", "\"", "\""], from: i + 3) {
@@ -229,7 +215,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // @属性 / #指令
             if (c == "@" || (c == "#" && (language == .swift || language == .cLike))) && i + 1 < n && isWordChar(chars[i + 1]) {
                 var j = i + 1
                 while j < n && isWordChar(chars[j]) { j += 1 }
@@ -238,7 +223,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // 数字
             if c.isNumber && (i == 0 || !isWordChar(chars[i - 1])) {
                 var j = i
                 while j < n && (isWordChar(chars[j]) || chars[j] == ".") { j += 1 }
@@ -247,7 +231,6 @@ enum SourceSyntaxHighlighter {
                 continue
             }
 
-            // 标识符 / 关键字
             if c.isLetter || c == "_" {
                 var j = i
                 while j < n && isWordChar(chars[j]) { j += 1 }
@@ -267,8 +250,6 @@ enum SourceSyntaxHighlighter {
         flushPlain()
         return out
     }
-
-    // MARK: Markdown
 
     private static func markdown(_ line: String, state: inout SourceSyntaxScanState) -> AttributedString {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -290,7 +271,6 @@ enum SourceSyntaxHighlighter {
             return piece
         }
 
-        // 行内 `code` 片段
         var out = AttributedString()
         let parts = line.split(separator: "`", omittingEmptySubsequences: false)
         for (index, part) in parts.enumerated() {
@@ -309,8 +289,6 @@ enum SourceSyntaxHighlighter {
         }
         return out
     }
-
-    // MARK: 关键字表
 
     private static func keywords(for language: SourceCodeLanguage) -> Set<String> {
         switch language {

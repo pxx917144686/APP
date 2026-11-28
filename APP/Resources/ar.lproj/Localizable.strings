@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "انقر على Dynamic Island للعودة";
 
 // Source Code Browser
-"source_browser" = "مستعرض الكود المصدري";
-"source_browser_latest_commit" = "آخر إيداع";
-"source_browser_recent_commits" = "الإيداعات الأخيرة";
+"source_browser" = "الكود المصدري";
 "source_browser_filter" = "تصفية هذا المجلد";
 "source_browser_loading" = "جارٍ التحميل…";
 "source_browser_load_failed" = "فشل التحميل";

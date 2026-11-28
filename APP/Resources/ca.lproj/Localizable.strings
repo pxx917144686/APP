@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Toca la Dynamic Island per tornar";
 
 // Source Code Browser
-"source_browser" = "Navegador de codi font";
-"source_browser_latest_commit" = "Última confirmació";
-"source_browser_recent_commits" = "Confirmacions recents";
+"source_browser" = "Codi font";
 "source_browser_filter" = "Filtra aquesta carpeta";
 "source_browser_loading" = "Carregant…";
 "source_browser_load_failed" = "Error en carregar";

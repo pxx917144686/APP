@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "वापस आने के लिए Dynamic Island पर टैप करें";
 
 // Source Code Browser
-"source_browser" = "सोर्स कोड ब्राउज़र";
-"source_browser_latest_commit" = "नवीनतम कमिट";
-"source_browser_recent_commits" = "हाल के कमिट";
+"source_browser" = "सोर्स कोड";
 "source_browser_filter" = "इस फ़ोल्डर को फ़िल्टर करें";
 "source_browser_loading" = "लोड हो रहा है…";
 "source_browser_load_failed" = "लोड करने में विफल";

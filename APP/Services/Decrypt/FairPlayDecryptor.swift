@@ -7,22 +7,7 @@ enum FairPlayDecryptor {
     }
 
     static func containerURL() -> URL? {
-        if let group = firstWritableGroup() { return group }
-
-        let manager = FileManager.default
-        if let docs = manager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let dir = docs.appendingPathComponent("FairPlayedWork", isDirectory: true)
-            if (try? manager.createDirectory(at: dir, withIntermediateDirectories: true)) != nil {
-                return dir
-            }
-        }
-
-        guard let caches = manager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-            return nil
-        }
-        let dir = caches.appendingPathComponent("FairPlayedWork", isDirectory: true)
-        try? manager.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
+        firstWritableGroup()
     }
 
     private static func firstWritableGroup() -> URL? {
@@ -46,6 +31,7 @@ enum FairPlayDecryptor {
         case notDecryptable(String)
         case noEntitlement
         case zipFailed(String)
+        case workDirFailed(String)
         case notEnoughSpace(Int64, Int64)
         case cancelled
 
@@ -64,6 +50,8 @@ enum FairPlayDecryptor {
                 return detail.isEmpty ? base : base + "\n" + detail
             case .zipFailed(let detail):
                 return "dc_err_copy".localized(detail)
+            case .workDirFailed(let detail):
+                return "dc_err_workdir".localized + "\n" + detail
             case .cancelled:
                 return "dc_err_cancelled".localized
             case .notEnoughSpace(let free, let needed):
@@ -89,6 +77,7 @@ enum FairPlayDecryptor {
     ) throws -> Outcome {
         guard let groupRoot = containerURL() else { throw DecryptError.noAppGroup }
 
+        Self.failureDetails.removeAll()
         let logHandle = makeDecryptLogHandle()
         defer { try? logHandle?.close() }
         let emit: @Sendable (DecryptEvent) -> Void = { event in
@@ -105,13 +94,18 @@ enum FairPlayDecryptor {
         }
         let workRoot = groupRoot.appendingPathComponent("fpwork-\(UUID().uuidString)", isDirectory: true)
         defer { try? manager.removeItem(at: workRoot) }
-        try manager.createDirectory(at: workRoot, withIntermediateDirectories: true)
+        do {
+            try manager.createDirectory(at: workRoot, withIntermediateDirectories: true)
+        } catch {
+            emit(.line("create work dir failed: \(error.localizedDescription)", .failure))
+            throw DecryptError.workDirFailed(error.localizedDescription)
+        }
 
         let sourceSize = (try? manager.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
         if let capacity = try? groupRoot.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
             .volumeAvailableCapacityForImportantUsage {
-            let needed = sourceSize * 3
+            let needed = sourceSize * 4
             if capacity < needed {
                 emit(.line("not enough space: \(capacity) < \(needed)", .failure))
                 throw DecryptError.notEnoughSpace(capacity, needed)
@@ -124,13 +118,11 @@ enum FairPlayDecryptor {
             emit(.line("abort: 当前签名缺少 dynamic-codesigning，内核不会解密任何页面", .failure))
             throw DecryptError.noEntitlement
         }
-        guard canExec else {
-            emit(.line("abort: 当前签名缺少 dynamic-codesigning，内核不会解密任何页面", .failure))
-            throw DecryptError.noEntitlement
-        }
 
         emit(.phase("EXTRACT"))
-        emit(.line("root    \(groupRoot.path)", .info))
+        emit(.line("root    \(groupRoot.path)  [app-group]", .info))
+        let groupReport = AppGroupDiagnostics.inspect()
+        emit(.line("app-group: \(groupReport.facts.replacingOccurrences(of: "\n", with: " | "))", groupReport.isUsable ? .detail : .warning))
         emit(.line("source  \(ipaURL.lastPathComponent)  \(formatBytes(sourceSize))", .info))
 
         var errBuf = [CChar](repeating: 0, count: 1024)
@@ -160,8 +152,14 @@ enum FairPlayDecryptor {
         emit(.line("payload  \(bundleName)", .info))
 
         emit(.phase("SINF"))
-        let replicated = replicateSinf(appDir: appDir)
-        emit(.line("replicated to \(replicated) paths", replicated > 0 ? .info : .warning))
+        let sinf = replicateSinf(appDir: appDir)
+        if !sinf.hasManifest {
+            emit(.line("SC_Info/Manifest.plist missing; not an App Store package or already repackaged", .warning))
+        } else if !sinf.hasSource {
+            emit(.line("SC_Info present but primary SINF missing; FairPlay ticket unavailable", .warning))
+        } else {
+            emit(.line("SINF replicated to \(sinf.replicated) path(s)", .info))
+        }
 
         var totalBytes: Int64 = 0
         let total = Int(appDir.path.withCString { fp_count_targets($0, &totalBytes) })
@@ -174,7 +172,9 @@ enum FairPlayDecryptor {
         var skippedCount: Int32 = 0
         let box = EventBox(emit, cancelToken: cancelToken)
         box.onFailureDetail = { detail in
-            if Self.firstFailure == nil { Self.firstFailure = detail }
+            if Self.failureDetails.count < 8, !Self.failureDetails.contains(detail) {
+                Self.failureDetails.append(detail)
+            }
         }
 
         let decrypted = withExtendedLifetime(box) { () -> Int32 in
@@ -218,7 +218,12 @@ enum FairPlayDecryptor {
             emit(.line(skippedCount == 0 ? "no Mach-O binaries found in package" : "package is not encrypted, copied as-is", .warning))
             let copyURL = outDir.appendingPathComponent(ipaURL.lastPathComponent)
             try? manager.removeItem(at: copyURL)
-            try manager.copyItem(at: ipaURL, to: copyURL)
+            do {
+                try manager.copyItem(at: ipaURL, to: copyURL)
+            } catch {
+                emit(.line("copy failed: \(error.localizedDescription)", .failure))
+                throw DecryptError.zipFailed(error.localizedDescription)
+            }
             return Outcome(
                 decrypted: 0,
                 plain: Int(skippedCount),
@@ -240,15 +245,16 @@ enum FairPlayDecryptor {
         }
 
         guard decrypted > 0 else {
-            let raw = Self.firstFailure ?? ""
-            Self.firstFailure = nil
+            let attempts = Self.failureDetails
+            Self.failureDetails.removeAll()
+            let raw = attempts.first ?? ""
             let detail = Self.humanReason(for: raw)
             emit(.line("main binary rejected by FairPlay", .failure))
-            if !raw.isEmpty { emit(.line("  \(raw)", .failure)) }
+            for line in attempts { emit(.line("  \(line)", .failure)) }
             if !detail.isEmpty { emit(.line("  → \(detail)", .warning)) }
             throw DecryptError.notDecryptable(detail)
         }
-        Self.firstFailure = nil
+        Self.failureDetails.removeAll()
 
         emit(.phase("PACK"))
         let suffix = failedCount > 0 ? "-PARTIAL" : "-decrypted"
@@ -300,7 +306,7 @@ enum FairPlayDecryptor {
         }
     }
 
-    nonisolated(unsafe) private static var firstFailure: String?
+    nonisolated(unsafe) private static var failureDetails: [String] = []
 
     private static func humanReason(for raw: String) -> String {
         let hasEntitlement = fp_exec_memory_available() == 1
@@ -316,9 +322,6 @@ enum FairPlayDecryptor {
         }
         if lower.contains("errno 12 ") || lower.contains("cannot allocate memory") {
             return "dc_reason_enomem".localized
-        }
-        if lower.contains("errno 1 ") || lower.contains("operation not permitted") {
-            return "dc_reason_eperm".localized
         }
         if lower.contains("mremap=0") && lower.contains("pages=0/") {
             return "dc_reason_pages".localized
@@ -389,18 +392,29 @@ enum FairPlayDecryptor {
         return removed
     }
 
-    @discardableResult
-    private static func replicateSinf(appDir: URL) -> Int {
+    struct SinfStatus {
+        let hasManifest: Bool
+        let hasSource: Bool
+        let replicated: Int
+    }
+
+    private static func replicateSinf(appDir: URL) -> SinfStatus {
         let manager = FileManager.default
         let manifestURL = appDir.appendingPathComponent("SC_Info/Manifest.plist")
         guard let data = try? Data(contentsOf: manifestURL),
               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil),
-              let manifest = plist as? [String: Any] else { return 0 }
+              let manifest = plist as? [String: Any] else {
+            return SinfStatus(hasManifest: false, hasSource: false, replicated: 0)
+        }
 
         let sources = manifest["SinfPaths"] as? [String] ?? []
-        guard let first = sources.first else { return 0 }
+        guard let first = sources.first else {
+            return SinfStatus(hasManifest: true, hasSource: false, replicated: 0)
+        }
         let sourceURL = appDir.appendingPathComponent(first)
-        guard manager.fileExists(atPath: sourceURL.path) else { return 0 }
+        guard manager.fileExists(atPath: sourceURL.path) else {
+            return SinfStatus(hasManifest: true, hasSource: false, replicated: 0)
+        }
 
         let targets = manifest["SinfReplicationPaths"] as? [String] ?? []
         var copied = 0
@@ -415,6 +429,6 @@ enum FairPlayDecryptor {
                 copied += 1
             }
         }
-        return copied
+        return SinfStatus(hasManifest: true, hasSource: true, replicated: copied)
     }
 }

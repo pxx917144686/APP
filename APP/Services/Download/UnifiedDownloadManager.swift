@@ -24,15 +24,9 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
 
     private func downloadPriority(for request: DownloadRequest) -> Int {
         switch request.runtime.status {
-        case .downloading:
-            return 4
-        case .waiting:
-            return 3
-        case .paused:
+        case .downloading, .waiting, .paused:
             return 2
-        case .failed:
-            return 1
-        case .cancelled:
+        case .failed, .cancelled:
             return 1
         case .completed:
             return 0
@@ -160,6 +154,13 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             for: downloadId,
             progressHandler: { downloadProgress in
                 Task { @MainActor in
+                    switch request.runtime.status {
+                    case .paused, .cancelled, .completed, .failed:
+                        return
+                    case .waiting, .downloading:
+                        break
+                    }
+
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
                         total: downloadProgress.totalBytes,
@@ -176,8 +177,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = DownloadStatus.downloading
                     case .paused:
                         request.runtime.status = DownloadStatus.paused
-                request.runtime.activeConnections = 0
-            request.runtime.activeConnections = 0
+                        request.runtime.activeConnections = 0
                     case .completed:
                         request.runtime.status = DownloadStatus.completed
                     case .failed:
@@ -600,6 +600,12 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
             maxConnections: request.maxConnections,
             progressHandler: { downloadProgress in
                 Task { @MainActor in
+                    switch request.runtime.status {
+                    case .paused, .cancelled, .completed, .failed:
+                        return
+                    case .waiting, .downloading:
+                        break
+                    }
 
                     request.runtime.updateProgress(
                         completed: downloadProgress.bytesDownloaded,
@@ -617,8 +623,7 @@ class UnifiedDownloadManager: ObservableObject, @unchecked Sendable {
                         request.runtime.status = DownloadStatus.downloading
                     case .paused:
                         request.runtime.status = DownloadStatus.paused
-                request.runtime.activeConnections = 0
-            request.runtime.activeConnections = 0
+                        request.runtime.activeConnections = 0
                     case .completed:
                         request.runtime.status = DownloadStatus.completed
                     case .failed:

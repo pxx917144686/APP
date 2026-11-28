@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Коснитесь Dynamic Island, чтобы вернуться";
 
 // Source Code Browser
-"source_browser" = "Браузер исходного кода";
-"source_browser_latest_commit" = "Последний коммит";
-"source_browser_recent_commits" = "Недавние коммиты";
+"source_browser" = "Исходный код";
 "source_browser_filter" = "Фильтр по этой папке";
 "source_browser_loading" = "Загрузка…";
 "source_browser_load_failed" = "Не удалось загрузить";

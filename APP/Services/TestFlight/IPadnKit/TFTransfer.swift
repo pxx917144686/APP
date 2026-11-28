@@ -1,8 +1,5 @@
 import Foundation
 
-/// Control surface forwarded to the segmented download engine while it owns
-/// the transfer; a handle with attached controls routes pause/resume/cancel
-/// to the engine instead of the legacy URLSessionDownloadTask.
 public struct TFEngineControls: @unchecked Sendable {
     public let pause: () -> Void
     public let resume: () -> Void
@@ -167,8 +164,6 @@ private struct TFTransferPausedError: Error {
 
 private struct TFBackgroundFallbackError: Error {}
 
-/// Records pause/cancel intents that may arrive before the segmented engine
-/// has registered its state for a download id.
 final class SegmentedIntentGate: @unchecked Sendable {
     private let lock = NSLock()
     private var _paused = false
@@ -432,11 +427,6 @@ public enum TFTransfer {
         throw TFError.networkLost
     }
 
-    /// Multi-connection transfer through the shared segmented engine
-    /// (`SegmentedIPADownloader`). Bytes stream into `scratchURL` (persistent,
-    /// keeps `.segresume` across process restarts and URL access-key rotation)
-    /// and move to `destination` on success. Pause/resume/cancel are routed
-    /// through the handle to the engine.
     static func downloadSegmented(url: URL, to destination: URL,
                                   scratchURL: URL,
                                   handle: TFTransferHandle,
@@ -453,7 +443,6 @@ public enum TFTransfer {
 
         func cleanupScratch() {
             try? FileManager.default.removeItem(at: scratchURL)
-            // Mirrors SegmentedIPADownloader.resumeFilePath(_:).
             try? FileManager.default.removeItem(at: URL(fileURLWithPath: scratchURL.path + ".segresume"))
         }
 
@@ -471,8 +460,6 @@ public enum TFTransfer {
             log("cdn: segmented attempt #\(String(attemptIndex)) conns=\(String(maxConnections))")
             let engine = SegmentedIPADownloader.shared
 
-            // pause/cancel arriving before the engine registers its state are
-            // no-ops engine-side; record the intent and re-apply after start.
             let gate = SegmentedIntentGate()
             var finished = false
             let finishLock = NSLock()
@@ -553,8 +540,6 @@ public enum TFTransfer {
                 attempts.append("#\(String(failureCount)) failed (\(error.localizedDescription))")
                 log("cdn: attempt \(String(failureCount)) failed (\(error.localizedDescription))")
                 if failureCount < 3 {
-                    // Rotate the access key before the next attempt; .segresume
-                    // survives because resume validation compares host+path only.
                     do {
                         if let renewed = try await refresh(), renewed != current {
                             log("cdn: install refreshed, URL changed (accessKey rotated)")

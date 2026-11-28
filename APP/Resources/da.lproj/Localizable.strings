@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Tryk på Dynamic Island for at vende tilbage";
 
 // Source Code Browser
-"source_browser" = "Kildekodebrowser";
-"source_browser_latest_commit" = "Seneste commit";
-"source_browser_recent_commits" = "Seneste commits";
+"source_browser" = "Kildekode";
 "source_browser_filter" = "Filtrér denne mappe";
 "source_browser_loading" = "Indlæser…";
 "source_browser_load_failed" = "Kunne ikke indlæse";

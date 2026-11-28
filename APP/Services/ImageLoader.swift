@@ -12,9 +12,6 @@ final class ImageLoader {
     private var pendingLowQualityTasks: [URL: Task<UIImage?, Never>] = [:]
     private let decodingQueue = DispatchQueue(label: "com.app.imageloader.decoding", qos: .userInitiated, attributes: .concurrent)
 
-    /// 缓存位图的最大边长（pt）。全 App 图标展示最大 ~60pt@3x，超出部分无需保留：
-    /// 原尺寸 512² 位图解码后 ~1MB/张，200 张即 ~200MB 常驻脏内存，
-    /// 大图源（1024²）可达 ~800MB —— 是长下载会话中内存膨胀直至 jetsam 闪退的主因。
     private static let maxCachedDimension: CGFloat = 240
 
     private init() {
@@ -127,7 +124,6 @@ final class ImageLoader {
         return await task.value
     }
 
-    /// 按缓存上限降采样后的目标尺寸（保持纵横比）
     private static func clampedSize(for size: CGSize, maxDimension: CGFloat) -> CGSize {
         guard size.width > 0, size.height > 0 else { return size }
         let scale = min(maxDimension / size.width, maxDimension / size.height, 1.0)

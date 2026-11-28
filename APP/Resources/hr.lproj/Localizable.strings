@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Dodirnite Dynamic Island za povratak";
 
 // Source Code Browser
-"source_browser" = "Preglednik izvornog koda";
-"source_browser_latest_commit" = "Zadnji commit";
-"source_browser_recent_commits" = "Nedavni commitovi";
+"source_browser" = "Izvorni kod";
 "source_browser_filter" = "Filtriraj ovu mapu";
 "source_browser_loading" = "Učitavanje…";
 "source_browser_load_failed" = "Učitavanje nije uspjelo";

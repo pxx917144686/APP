@@ -506,25 +506,23 @@ enum eCSFLAGS
 };
 
 
-/* Requirement expression opcodes (from libsecurity_codesigning/lib/requirement.h) */
 enum eReqExprOp
 {
-	kReqOpFalse = 0,			/* unconditionally false */
-	kReqOpTrue = 1,				/* unconditionally true */
-	kReqOpIdent = 2,			/* match canonical code identity */
-	kReqOpAppleAnchor = 3,		/* signed by Apple as anchor */
-	kReqOpAnchorHash = 4,		/* match anchor certificate hash */
-	kReqOpAnd = 6,				/* logical AND */
-	kReqOpCertField = 11,		/* certificate field match */
-	kReqOpCertGeneric = 14,		/* certificate generic OID match */
-	kReqOpAppleGenericAnchor = 15,	/* signed by Apple or WWDR intermediate */
+	kReqOpFalse = 0,
+	kReqOpTrue = 1,
+	kReqOpIdent = 2,
+	kReqOpAppleAnchor = 3,
+	kReqOpAnchorHash = 4,
+	kReqOpAnd = 6,
+	kReqOpCertField = 11,
+	kReqOpCertGeneric = 14,
+	kReqOpAppleGenericAnchor = 15,
 };
 
-/* Requirement match operations */
 enum eReqMatchOp
 {
-	kReqMatchExists = 0,		/* certificate field/OID exists */
-	kReqMatchEqual = 1,			/* exact string match */
+	kReqMatchExists = 0,
+	kReqMatchEqual = 1,
 };
 
 #pragma pack(push, 1)

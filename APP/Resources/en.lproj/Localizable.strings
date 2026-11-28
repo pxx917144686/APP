@@ -1190,9 +1190,7 @@
 "island_app_tap_to_open" = "Tap the island to return";
 
 // Source Code Browser
-"source_browser" = "Source Code Browser";
-"source_browser_latest_commit" = "Latest Commit";
-"source_browser_recent_commits" = "Recent Commits";
+"source_browser" = "Source Code";
 "source_browser_filter" = "Filter this folder";
 "source_browser_loading" = "Loading…";
 "source_browser_load_failed" = "Failed to load";

@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "แตะ Dynamic Island เพื่อกลับแอป";
 
 // Source Code Browser
-"source_browser" = "เบราว์เซอร์ซอร์สโค้ด";
-"source_browser_latest_commit" = "คอมมิตล่าสุด";
-"source_browser_recent_commits" = "รายการคอมมิตล่าสุด";
+"source_browser" = "ซอร์สโค้ด";
 "source_browser_filter" = "กรองโฟลเดอร์นี้";
 "source_browser_loading" = "กำลังโหลด…";
 "source_browser_load_failed" = "โหลดไม่สำเร็จ";

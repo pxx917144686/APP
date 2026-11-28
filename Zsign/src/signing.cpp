@@ -142,7 +142,6 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 {
 	strOutput.clear();
 
-	// Empty requirement set (ldid-style: magic + length=12 + count=0)
 	if (strBundleID.empty() || strSubjectCN.empty()) {
 		uint32_t magic = BE((uint32_t)CSMAGIC_REQUIREMENTS);
 		uint32_t length = BE((uint32_t)12);
@@ -153,13 +152,11 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 		return true;
 	}
 
-	// Helper: append a uint32 in big-endian
 	auto appendBE32 = [&strOutput](uint32_t val) {
 		uint32_t be = BE(val);
 		strOutput.append((const char*)&be, 4);
 	};
 
-	// Helper: append a padded string (uint32 BE length + data + zero-pad to 4-byte alignment)
 	auto appendPaddedString = [&strOutput, &appendBE32](const string& str) {
 		appendBE32((uint32_t)str.size());
 		strOutput.append(str.data(), str.size());
@@ -167,30 +164,19 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 		if (pad > 0) strOutput.append(pad, '\0');
 	};
 
-	// Apple WWDR intermediate marker OID: 1.2.840.113635.100.6.2.1
 	static const uint8_t kAppleWWDROID[] = { 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x63, 0x64, 0x06, 0x02, 0x01 };
 
-	// -- Build the inner requirement expression blob (CSMAGIC_REQUIREMENT) --
-	// Generates the designated requirement equivalent to:
-	//   identifier "<bundleID>" and anchor apple generic
-	//     and certificate leaf[subject.CN] = "<subjectCN>"
-	//     and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */
 	string strExpr;
 	auto appendExprBE32 = [&strExpr](uint32_t val) {
 		uint32_t be = BE(val);
 		strExpr.append((const char*)&be, 4);
 	};
 
-	// exprForm = 1 (expression follows)
 	appendExprBE32(kReqOpTrue);
 
-	// opAnd( opIdent(bundleID), opAnd( opAppleGenericAnchor, opAnd( opCertField(leaf, "subject.CN", matchEqual, subjectCN), opCertGeneric(1, wwdrOID, matchExists) ) ) )
-
-	// opAnd #1
 	appendExprBE32(kReqOpAnd);
-	// opIdent + bundleID
 	appendExprBE32(kReqOpIdent);
-	{ // padded bundleID
+	{
 		uint32_t len = BE((uint32_t)strBundleID.size());
 		strExpr.append((const char*)&len, 4);
 		strExpr.append(strBundleID.data(), strBundleID.size());
@@ -198,17 +184,13 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 		if (pad > 0) strExpr.append(pad, '\0');
 	}
 
-	// opAnd #2
 	appendExprBE32(kReqOpAnd);
-	// opAppleGenericAnchor
 	appendExprBE32(kReqOpAppleGenericAnchor);
 
-	// opAnd #3
 	appendExprBE32(kReqOpAnd);
-	// opCertField: certificate leaf[subject.CN] = "<subjectCN>"
 	appendExprBE32(kReqOpCertField);
-	appendExprBE32(0); // slot 0 = leaf certificate
-	{ // "subject.CN" padded
+	appendExprBE32(0);
+	{
 		const char kSubjectCN[] = "subject.CN";
 		uint32_t len = BE((uint32_t)(sizeof(kSubjectCN) - 1));
 		strExpr.append((const char*)&len, 4);
@@ -217,7 +199,7 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 		if (pad > 0) strExpr.append(pad, '\0');
 	}
 	appendExprBE32(kReqMatchEqual);
-	{ // padded subjectCN
+	{
 		uint32_t len = BE((uint32_t)strSubjectCN.size());
 		strExpr.append((const char*)&len, 4);
 		strExpr.append(strSubjectCN.data(), strSubjectCN.size());
@@ -225,10 +207,9 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 		if (pad > 0) strExpr.append(pad, '\0');
 	}
 
-	// opCertGeneric: certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */
 	appendExprBE32(kReqOpCertGeneric);
-	appendExprBE32(1); // slot 1 = intermediate certificate
-	{ // WWDR OID padded
+	appendExprBE32(1);
+	{
 		uint32_t len = BE((uint32_t)sizeof(kAppleWWDROID));
 		strExpr.append((const char*)&len, 4);
 		strExpr.append((const char*)kAppleWWDROID, sizeof(kAppleWWDROID));
@@ -237,20 +218,16 @@ bool ZSign::SlotBuildRequirements(const string& strBundleID, const string& strSu
 	}
 	appendExprBE32(kReqMatchExists);
 
-	// -- Build the outer requirements vector (CSMAGIC_REQUIREMENTS) --
-	// Outer header: magic(4) + length(4) + count(4) + BlobIndex[type(4) + offset(4)] = 20 bytes
-	uint32_t reqBlobLen = 8 + (uint32_t)strExpr.size(); // inner magic + inner length + expr
+	uint32_t reqBlobLen = 8 + (uint32_t)strExpr.size();
 	uint32_t outerHeaderLen = 20;
 	uint32_t totalLen = outerHeaderLen + reqBlobLen;
 
-	// Outer: CSMAGIC_REQUIREMENTS header
 	appendBE32(CSMAGIC_REQUIREMENTS);
 	appendBE32(totalLen);
-	appendBE32(1); // count = 1
-	appendBE32(3); // type = 3 (kSecDesignatedRequirementType)
-	appendBE32(outerHeaderLen); // offset to inner blob
+	appendBE32(1);
+	appendBE32(3);
+	appendBE32(outerHeaderLen);
 
-	// Inner: CSMAGIC_REQUIREMENT blob
 	appendBE32(CSMAGIC_REQUIREMENT);
 	appendBE32(reqBlobLen);
 	strOutput.append(strExpr.data(), strExpr.size());
@@ -545,7 +522,7 @@ bool ZSign::SlotBuildCodeDirectory(bool bAlternate,
 	uint32_t uCodeSlotsLength = uCodeSlots * cdHeader.hashSize;
 
 	uint32_t uSlotLength = uHeaderLength + uBundleIDLength + uSpecialSlotsLength + uCodeSlotsLength;
-	strOutput.reserve(uSlotLength + uTeamIDLength); // pre-allocate to avoid reallocations
+	strOutput.reserve(uSlotLength + uTeamIDLength);
 	if (uVersion >= 0x20100) {
 		//todo
 	}
@@ -586,7 +563,7 @@ bool ZSign::SlotBuildCodeDirectory(bool bAlternate,
 	if (NULL != pCodeSlotsData && (uCodeSlotsDataLength == uCodeSlots * cdHeader.hashSize)) { //use exists
 		strOutput.append((const char*)pCodeSlotsData, uCodeSlotsDataLength);
 	} else {
-		uint8_t hash[32]; // large enough for both SHA1 (20) and SHA256 (32)
+		uint8_t hash[32];
 		for (uint32_t i = 0; i < uPages; i++) {
 			if (1 == cdHeader.hashType) {
 				::SHA1(pCodeBase + uPageSize * i, uPageSize, hash);
@@ -679,52 +656,28 @@ bool ZSign::SlotBuildCMSSignature(ZSignAsset* pSignAsset,
 		return true;
 	}
 
-	// The CMS "cdhashes" plist (attr 1.2.840.113635.100.9.1) and the "CDHashes2"
-	// attribute (1.2.840.113635.100.9.2) must only contain hashes of CodeDirectory
-	// blobs that actually exist in the signature. When only one CodeDirectory is
-	// serialized (SHA256-only mode), emitting hashes for a non-existent alternate
-	// CD breaks Apple's code signature verification with errSecCSSignatureFailed
-	// (`codesign --verify` reports "code or signature have been modified"):
-	// verification computes hashes of the real CDs and finds the second entry
-	// doesn't match any actual CD.
-	//
-	// Format rules derived from Apple codesign output:
-	// - cdhashes plist: one entry per CD, value = first 20 bytes of the CD's
-	//   "best" hash. For dual-hash builds (SHA1+SHA256) the primary CD uses SHA1
-	//   directly (20 bytes) and the alternate uses SHA256 truncated to 20.
-	//   For SHA256-only builds the single entry uses SHA256 truncated to 20.
-	// - CDHashes2 attribute: full hash (32 bytes for SHA256) of each CD wrapped
-	//   in `SEQUENCE { OID sha256, OCTET STRING hash }`. The current
-	//   GenerateCMS() implementation consumes a single `strAltnateCodeDirectorySlot256`
-	//   string for this attribute -- when there is no alternate CD we pass the
-	//   SHA256 of the primary CD instead of SHA256(empty).
 	const bool bHasAlternate = !strAltnateCodeDirectorySlot.empty();
 
 	jvalue jvHashes;
 	string strCDHashesPlist;
-	string strCodeDirectorySlotSHA1;   // SHA1 of primary CD (used by CMS detached content & dual-hash plist[0])
-	string strPrimaryCD_SHA256;        // SHA256 of primary CD (used in SHA256-only mode)
-	string strAltnateCD_SHA256;        // SHA256 of alternate CD (dual-hash mode only)
+	string strCodeDirectorySlotSHA1;
+	string strPrimaryCD_SHA256;
+	string strAltnateCD_SHA256;
 	ZSHA::SHA1(strCodeDirectorySlot, strCodeDirectorySlotSHA1);
 	ZSHA::SHA256(strCodeDirectorySlot, strPrimaryCD_SHA256);
 	if (bHasAlternate) {
 		ZSHA::SHA256(strAltnateCodeDirectorySlot, strAltnateCD_SHA256);
 	}
 
-	// 20-byte (truncated) hashes for the CDHashes plist.
 	const size_t kPlistHashLen = 20;
 	if (bHasAlternate) {
 		jvHashes["cdhashes"][0].assign_data(strCodeDirectorySlotSHA1.data(), kPlistHashLen);
 		jvHashes["cdhashes"][1].assign_data(strAltnateCD_SHA256.data(), kPlistHashLen);
 	} else {
-		// SHA256-only: single CD, use its SHA256 truncated to 20 bytes.
 		jvHashes["cdhashes"][0].assign_data(strPrimaryCD_SHA256.data(), kPlistHashLen);
 	}
 	jvHashes.style_write_plist(strCDHashesPlist);
 
-	// Full SHA256 hash to embed in the CDHashes2 signed attribute. In SHA256-only
-	// mode this must be the SHA256 of the primary CD, not SHA256 of an empty
-	// alternate -- the latter is rejected by Apple's verifier.
 	const string& strCDHashes2 = bHasAlternate ? strAltnateCD_SHA256 : strPrimaryCD_SHA256;
 
 	string strCMSData;

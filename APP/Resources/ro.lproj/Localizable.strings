@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Atinge Dynamic Island pentru a reveni";
 
 // Source Code Browser
-"source_browser" = "Browser de cod sursă";
-"source_browser_latest_commit" = "Cel mai recent commit";
-"source_browser_recent_commits" = "Commituri recente";
+"source_browser" = "Cod sursă";
 "source_browser_filter" = "Filtrează acest dosar";
 "source_browser_loading" = "Se încarcă…";
 "source_browser_load_failed" = "Încărcarea a eșuat";

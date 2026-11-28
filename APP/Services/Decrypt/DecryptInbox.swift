@@ -354,6 +354,21 @@ final class DecryptInboxStore: ObservableObject {
     }
 
     private func run(_ job: DecryptJob) {
+        guard FairPlayDecryptor.isAvailable else {
+            let report = AppGroupDiagnostics.inspect()
+            job.state = .failed
+            job.message = report.headline + "\n" + report.facts
+            job.log.reset(title: "NOGROUP")
+            for line in report.facts.split(separator: "\n") {
+                job.log.append(String(line), level: .failure)
+            }
+            job.log.finish()
+            failureAlert = job.displayName + "\n\n" + report.headline
+            SoundEffects.play(.error)
+            pump()
+            return
+        }
+
         SoundEffects.play(.press)
         let token = DecryptCoordinator.shared.begin(requestID: job.id)
         job.state = .running

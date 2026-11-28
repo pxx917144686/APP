@@ -624,7 +624,6 @@ bool ZBundle::SignFolder(ZSignAsset* pSignAsset,
 	ZLog::PrintV(">>> ReadCache: \t%s\n", m_bForceSign ? "NO" : "YES");
 	ZLog::PrintV(">>> Exclude MobileProvision: \t%s\n", excludeProvisioning ? "NO" : "YES");
 
-	// sign bare .dylib files before SignNode so CodeResources seals their final bytes
 	std::function<string(const string&)> relativePath = [&](const string& strPath) -> string {
 		if (strPath.size() <= m_strAppFolder.size()) return "";
 		return strPath.substr(m_strAppFolder.size() + 1);

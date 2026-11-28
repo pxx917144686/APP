@@ -904,8 +904,6 @@ final class SegmentedIPADownloader: NSObject, @unchecked Sendable {
               let state = try? JSONDecoder().decode(ResumeState.self, from: data) else {
             return nil
         }
-        // Compare host+path only: CDNs rotate access tokens in the query string
-        // (e.g. TestFlight accessKey), which must not invalidate resume points.
         guard state.version == 1,
               let savedURL = URL(string: state.url),
               savedURL.host == url.host, savedURL.path == url.path,

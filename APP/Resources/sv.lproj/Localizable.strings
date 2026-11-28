@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Tryck på Dynamic Island för att återvända";
 
 // Source Code Browser
-"source_browser" = "Källkodsbläddrare";
-"source_browser_latest_commit" = "Senaste commit";
-"source_browser_recent_commits" = "Nyliga commits";
+"source_browser" = "Källkod";
 "source_browser_filter" = "Filtrera denna mapp";
 "source_browser_loading" = "Läser in…";
 "source_browser_load_failed" = "Det gick inte att läsa in";

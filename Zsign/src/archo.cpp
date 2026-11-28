@@ -379,19 +379,11 @@ bool ZArchO::BuildCodeSignature(ZSignAsset* pSignAsset,
 
 	uint64_t uExecSegFlags = 0;
 	if (MH_EXECUTE == m_uFileType) {
-		// MAIN_BINARY must be set on the main executable for any signature flavour
-		// (ad-hoc, single-binary, or full CMS). Without it, codesign --verify on
-		// macOS rejects the signature as "invalid".
 		uExecSegFlags = CS_EXECSEG_MAIN_BINARY;
 	}
 
-	// ALLOW_UNSIGNED is a development-only flag. It must be set *only* when
-	// get-task-allow is actually true (debug build), not merely present in
-	// the entitlements plist. Distribution profiles include
-	// <key>get-task-allow</key><false/> and must keep this flag cleared -- Apple
-	// codesign never sets ALLOW_UNSIGNED for such signatures.
 	if (!strEntitlementsSlot.empty()) {
-		const char* pEnt = strEntitlementsSlot.data() + 8; // skip blob header
+		const char* pEnt = strEntitlementsSlot.data() + 8;
 		const char* pKey = strstr(pEnt, "<key>get-task-allow</key>");
 		if (NULL != pKey) {
 			const char* pTrue  = strstr(pKey, "<true/>");
@@ -606,7 +598,7 @@ uint32_t ZArchO::ReallocCodeSignSpace(const string& strNewFile)
 {
 	ZFile::RemoveFile(strNewFile.c_str());
 
-	uint32_t uNewLength = m_uCodeLength + ZUtil::ByteAlign(((m_uCodeLength / 4096) + 1) * (20 + 32), 4096) + 32768; //32K Should Be Enough
+	uint32_t uNewLength = m_uCodeLength + ZUtil::ByteAlign(((m_uCodeLength / 4096) + 1) * (20 + 32), 4096) + 32768;
 	if (NULL == m_pLinkEditSegment || uNewLength <= m_uLength) {
 		return 0;
 	}
@@ -762,7 +754,6 @@ void ZArchO::RemoveDylibs(const set<string>& setDylibs)
 	free(new_load_command_data);
 }
 
-// ===== fork 扩展: 列出 Mach-O 的 LC_LOAD_DYLIB 依赖（App 注入功能使用） =====
 std::vector<std::string> ZArchO::ListDylibs() {
 	std::vector<std::string> dylibList;
 	uint8_t *pLoadCommand = m_pBase + m_uHeaderSize;

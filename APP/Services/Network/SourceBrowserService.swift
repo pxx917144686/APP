@@ -1,8 +1,6 @@
 import Foundation
 import UIKit
 
-// MARK: - Models
-
 struct SourceEntry: Identifiable, Sendable, Codable {
     let path: String
     let name: String
@@ -10,26 +8,6 @@ struct SourceEntry: Identifiable, Sendable, Codable {
     let size: Int64
 
     var id: String { path }
-}
-
-struct SourceCommit: Identifiable, Sendable, Codable {
-    let sha: String
-    let message: String
-    let author: String
-    let date: Date
-    let avatarURL: URL?
-
-    var id: String { sha }
-    var shortSha: String { String(sha.prefix(7)) }
-    var title: String { message.components(separatedBy: "\n").first ?? message }
-}
-
-struct SourceRepoMeta: Sendable, Codable {
-    let repoDescription: String?
-    let stars: Int
-    let forks: Int
-    let language: String?
-    let pushedAt: Date?
 }
 
 enum SourceFileKind: String, Sendable, Codable {
@@ -48,8 +26,6 @@ struct SourceFile: Sendable, Codable {
 
     var shortSha: String { String(sha.prefix(7)) }
 }
-
-// MARK: - Errors
 
 enum SourceBrowserError: LocalizedError {
     case rateLimited
@@ -71,8 +47,6 @@ enum SourceBrowserError: LocalizedError {
     }
 }
 
-// MARK: - Service
-
 @MainActor
 final class SourceBrowserService {
     static let shared = SourceBrowserService()
@@ -84,10 +58,6 @@ final class SourceBrowserService {
 
     static func fileWebURL(path: String, ref: String) -> URL {
         URL(string: "\(repoWebURL.absoluteString)/blob/\(ref)/\(path)")!
-    }
-
-    static func commitWebURL(sha: String) -> URL {
-        URL(string: "\(repoWebURL.absoluteString)/commit/\(sha)")!
     }
 
     private static let imageExtensions: Set<String> = [
@@ -103,14 +73,8 @@ final class SourceBrowserService {
 
     private let directoryCache = LRUCache<String, [SourceEntry]>(capacity: 40)
     private let fileCache = LRUCache<String, SourceFile>(capacity: 20)
-    private let commitCache = LRUCache<String, [SourceCommit]>(capacity: 6)
-    private let tagCache = LRUCache<String, [String]>(capacity: 2)
-    private let metaCache = LRUCache<String, SourceRepoMeta>(capacity: 2)
 
     private let decoder = JSONDecoder()
-    private let isoFormatter = ISO8601DateFormatter()
-
-    // MARK: API
 
     func fetchDirectory(_ path: String, ref: String, force: Bool = false) async throws -> [SourceEntry] {
         let key = "\(ref)#\(path)"
@@ -190,123 +154,13 @@ final class SourceBrowserService {
         }
     }
 
-    func fetchCommits(ref: String, force: Bool = false) async throws -> [SourceCommit] {
-        if !force {
-            if let cached = commitCache.value(forKey: ref) { return cached }
-            if let disk = SourceDiskCache.shared.commits(ref, maxAge: 600) {
-                commitCache[ref] = disk
-                return disk
-            }
-        }
-
-        do {
-            let url = Self.apiURL("commits", query: [
-                URLQueryItem(name: "per_page", value: "30"),
-                URLQueryItem(name: "sha", value: ref)
-            ])
-            let data = try await request(url, accept: "application/vnd.github+json")
-            let list = try decoder.decode([GitHubCommit].self, from: data)
-
-            let commits = list.map { item in
-                SourceCommit(sha: item.sha,
-                             message: item.commit.message,
-                             author: item.commit.author.name,
-                             date: isoFormatter.date(from: item.commit.author.date) ?? Date(),
-                             avatarURL: item.avatarURL)
-            }
-            commitCache[ref] = commits
-            SourceDiskCache.shared.setCommits(ref, commits)
-            return commits
-        } catch {
-            if let stale = SourceDiskCache.shared.commits(ref, maxAge: 0, ignoreAge: true) {
-                return stale
-            }
-            throw error
-        }
-    }
-
-    func fetchTags(force: Bool = false) async throws -> [String] {
-        if !force {
-            if let cached = tagCache.value(forKey: "tags") { return cached }
-            if let disk = SourceDiskCache.shared.tags(maxAge: 24 * 3600) {
-                tagCache["tags"] = disk
-                return disk
-            }
-        }
-
-        do {
-            let url = Self.apiURL("tags", query: [URLQueryItem(name: "per_page", value: "30")])
-            let data = try await request(url, accept: "application/vnd.github+json")
-            let list = try decoder.decode([GitHubTag].self, from: data)
-
-            let names = list.map(\.name)
-            tagCache["tags"] = names
-            SourceDiskCache.shared.setTags(names)
-            return names
-        } catch {
-            if let stale = SourceDiskCache.shared.tags(maxAge: 0, ignoreAge: true) {
-                return stale
-            }
-            throw error
-        }
-    }
-
-    func fetchRepoMeta(force: Bool = false) async throws -> SourceRepoMeta {
-        if !force {
-            if let cached = metaCache.value(forKey: "meta") { return cached }
-            if let disk = SourceDiskCache.shared.meta(maxAge: 1800) {
-                metaCache["meta"] = disk
-                return disk
-            }
-        }
-
-        do {
-            let url = Self.apiGitHubRepoURL
-            let data = try await request(url, accept: "application/vnd.github+json")
-            let repo = try decoder.decode(GitHubRepo.self, from: data)
-
-            let meta = SourceRepoMeta(repoDescription: repo.description,
-                                      stars: repo.stargazersCount,
-                                      forks: repo.forksCount,
-                                      language: repo.language,
-                                      pushedAt: repo.pushedAt.flatMap { isoFormatter.date(from: $0) })
-            metaCache["meta"] = meta
-            SourceDiskCache.shared.setMeta(meta)
-            return meta
-        } catch {
-            if let stale = SourceDiskCache.shared.meta(maxAge: 0, ignoreAge: true) {
-                return stale
-            }
-            throw error
-        }
-    }
-
-    // MARK: 缓存失效（下拉刷新）
-
     func invalidateDirectory(_ path: String, ref: String) {
         directoryCache.removeValue(forKey: "\(ref)#\(path)")
-    }
-
-    func invalidateCommits(ref: String) {
-        commitCache.removeValue(forKey: ref)
-    }
-
-    func invalidateRepoMeta() {
-        metaCache.removeValue(forKey: "meta")
-    }
-
-    func relativeDate(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        formatter.locale = Locale.current
-        return formatter.localizedString(for: date, relativeTo: Date())
     }
 
     func formattedSize(_ size: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
     }
-
-    // MARK: Icon mapping
 
     func icon(for entry: SourceEntry) -> String {
         if entry.isDirectory { return "folder.fill" }
@@ -325,9 +179,6 @@ final class SourceBrowserService {
         return "doc.text"
     }
 
-    // MARK: Private
-
-    /// JSON 版 contents API 对 <1MB 文件返回 base64 content；更大或图片按 download_url 拉 raw。
     private func contentPayload(for content: GitHubContent) async -> Data {
         if let base64 = content.content?.replacingOccurrences(of: "\n", with: ""),
            let decoded = Data(base64Encoded: base64) {
@@ -377,10 +228,6 @@ final class SourceBrowserService {
             .joined(separator: "/")
     }
 
-    private static var apiGitHubRepoURL: URL {
-        URL(string: "https://api.github.com/repos/\(repoOwner)/\(repoName)")!
-    }
-
     private static func apiURL(_ endpoint: String, query: [URLQueryItem]) -> URL {
         var components = URLComponents(string: "https://api.github.com/repos/\(repoOwner)/\(repoName)")!
         if !endpoint.isEmpty {
@@ -391,14 +238,9 @@ final class SourceBrowserService {
     }
 }
 
-// MARK: - 磁盘缓存（限流/断网时回退旧数据）
-
 private struct DiskCacheEnvelope: Codable {
     var directories: [String: TimedDirectory] = [:]
     var files: [String: TimedFile] = [:]
-    var commits: [String: TimedCommits] = [:]
-    var tags: TimedTags?
-    var meta: TimedMeta?
 }
 
 private struct TimedDirectory: Codable {
@@ -408,21 +250,6 @@ private struct TimedDirectory: Codable {
 
 private struct TimedFile: Codable {
     let value: SourceFile
-    let savedAt: Date
-}
-
-private struct TimedCommits: Codable {
-    let value: [SourceCommit]
-    let savedAt: Date
-}
-
-private struct TimedTags: Codable {
-    let value: [String]
-    let savedAt: Date
-}
-
-private struct TimedMeta: Codable {
-    let value: SourceRepoMeta
     let savedAt: Date
 }
 
@@ -465,45 +292,12 @@ final class SourceDiskCache {
     }
 
     func setFile(_ key: String, _ value: SourceFile) {
-        // 超过 1 MB 的文件（图片/大文本）不落盘，避免缓存膨胀
         if value.imageData?.count ?? 0 > 1_048_576 { return }
         if value.text?.utf8.count ?? 0 > 1_048_576 { return }
         envelope.files[key] = TimedFile(value: value, savedAt: Date())
         save()
     }
-
-    func commits(_ ref: String, maxAge: TimeInterval, ignoreAge: Bool = false) -> [SourceCommit]? {
-        guard let hit = envelope.commits[ref], ignoreAge || Date().timeIntervalSince(hit.savedAt) < maxAge else { return nil }
-        return hit.value
-    }
-
-    func setCommits(_ ref: String, _ value: [SourceCommit]) {
-        envelope.commits[ref] = TimedCommits(value: value, savedAt: Date())
-        save()
-    }
-
-    func tags(maxAge: TimeInterval, ignoreAge: Bool = false) -> [String]? {
-        guard let hit = envelope.tags, ignoreAge || Date().timeIntervalSince(hit.savedAt) < maxAge else { return nil }
-        return hit.value
-    }
-
-    func setTags(_ value: [String]) {
-        envelope.tags = TimedTags(value: value, savedAt: Date())
-        save()
-    }
-
-    func meta(maxAge: TimeInterval, ignoreAge: Bool = false) -> SourceRepoMeta? {
-        guard let hit = envelope.meta, ignoreAge || Date().timeIntervalSince(hit.savedAt) < maxAge else { return nil }
-        return hit.value
-    }
-
-    func setMeta(_ value: SourceRepoMeta) {
-        envelope.meta = TimedMeta(value: value, savedAt: Date())
-        save()
-    }
 }
-
-// MARK: - GitHub API DTOs
 
 private struct GitHubContent: Decodable {
     let name: String
@@ -517,48 +311,5 @@ private struct GitHubContent: Decodable {
     enum CodingKeys: String, CodingKey {
         case name, path, type, size, sha, content
         case downloadURL = "download_url"
-    }
-}
-
-private struct GitHubCommit: Decodable {
-    struct Detail: Decodable {
-        struct Author: Decodable {
-            let name: String
-            let date: String
-        }
-        let message: String
-        let author: Author
-    }
-    struct Account: Decodable {
-        let avatarURL: URL?
-
-        enum CodingKeys: String, CodingKey {
-            case avatarURL = "avatar_url"
-        }
-    }
-    let sha: String
-    let commit: Detail
-    let author: Account?
-
-    var avatarURL: URL? { author?.avatarURL }
-}
-
-private struct GitHubTag: Decodable {
-    let name: String
-}
-
-private struct GitHubRepo: Decodable {
-    let description: String?
-    let stargazersCount: Int
-    let forksCount: Int
-    let language: String?
-    let pushedAt: String?
-
-    enum CodingKeys: String, CodingKey {
-        case description
-        case language
-        case stargazersCount = "stargazers_count"
-        case forksCount = "forks_count"
-        case pushedAt = "pushed_at"
     }
 }

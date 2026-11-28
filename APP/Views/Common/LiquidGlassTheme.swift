@@ -86,8 +86,6 @@ struct LiquidGlassBackdrop: View {
 }
 
 extension View {
-    /// `clear: true` 使用 iOS 26 透明玻璃变体（内容从下方滚过的悬浮件用）;
-    /// 回退路径系统材质没有更薄的档位,行为不变。
     @ViewBuilder
     func liquidGlassSurface(cornerRadius: CGFloat = 16, clear: Bool = false) -> some View {
         if #available(iOS 26.0, *) {

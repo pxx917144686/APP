@@ -700,8 +700,6 @@ public enum TFAPI {
         return chosen
     }
 
-    /// The tester API exposes the currently active build per platform only; expired builds are
-    /// not listed for testers. One signed request replaces the old v1…v4 probing.
     public static func buildHistory(appID: String, session: TFSession,
                                     log: @escaping @Sendable (String) -> Void) async throws -> [TFBuild] {
         let account = session.account.isEmpty ? session.dsid : session.account

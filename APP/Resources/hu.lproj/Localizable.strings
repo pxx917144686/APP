@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Érintse meg a Dynamic Islandet a visszatéréshez";
 
 // Source Code Browser
-"source_browser" = "Forráskódböngésző";
-"source_browser_latest_commit" = "Legutóbbi commit";
-"source_browser_recent_commits" = "Legutóbbi commitok";
+"source_browser" = "Forráskód";
 "source_browser_filter" = "Mappa szűrése";
 "source_browser_loading" = "Betöltés…";
 "source_browser_load_failed" = "A betöltés sikertelen";

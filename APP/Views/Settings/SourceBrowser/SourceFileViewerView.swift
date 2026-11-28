@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - 文件内容查看器（GitHub 式等宽 + 行号）
-
 struct SourceFileViewerView: View {
     let path: String
     let ref: String
@@ -87,8 +85,6 @@ struct SourceFileViewerView: View {
         }
     }
 
-    // MARK: 内容分区
-
     @ViewBuilder
     private func content(for file: SourceFile) -> some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -154,7 +150,6 @@ struct SourceFileViewerView: View {
         let gutterWidth = CGFloat(max(2, String(lines.count).count)) * 7.5 + 10
         let language = SourceCodeLanguage.detect(fileName: fileName)
 
-        // 按顺序构建带高亮的行（跨行注释/字符串状态机）
         var scan = SourceSyntaxScanState()
         let highlighted = displayLines.map { line -> AttributedString in
             SourceSyntaxHighlighter.highlight(line.isEmpty ? " " : line,
@@ -239,8 +234,6 @@ struct SourceFileViewerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
     }
-
-    // MARK: 动作
 
     private func copyAll(_ file: SourceFile) {
         UIPasteboard.general.string = file.text

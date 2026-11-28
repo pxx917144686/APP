@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Chạm vào Dynamic Island để quay lại ứng dụng";
 
 // Source Code Browser
-"source_browser" = "Trình duyệt mã nguồn";
-"source_browser_latest_commit" = "Commit mới nhất";
-"source_browser_recent_commits" = "Các commit gần đây";
+"source_browser" = "Mã nguồn";
 "source_browser_filter" = "Lọc thư mục này";
 "source_browser_loading" = "Đang tải…";
 "source_browser_load_failed" = "Không thể tải";

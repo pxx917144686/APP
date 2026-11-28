@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Klepnutím na Dynamic Island sa vrátite";
 
 // Source Code Browser
-"source_browser" = "Prehliadač zdrojového kódu";
-"source_browser_latest_commit" = "Posledný commit";
-"source_browser_recent_commits" = "Nedávne commity";
+"source_browser" = "Zdrojový kód";
 "source_browser_filter" = "Filtrovať tento priečinok";
 "source_browser_loading" = "Načítava sa…";
 "source_browser_load_failed" = "Načítanie zlyhalo";

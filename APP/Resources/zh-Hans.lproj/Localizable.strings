@@ -500,6 +500,7 @@
 "dc_err_unzip" = "解压失败，包可能不完整";
 "dc_err_no_binary" = "包里没有可执行文件";
 "dc_err_copy" = "写入失败：%@";
+"dc_err_workdir" = "无法创建脱壳工作目录，请检查 App Group 容器是否可写";
 
 
 "dc_pending_hint" = "已扫描：加密。点「脱壳」开始。";
@@ -1080,7 +1081,7 @@
 "dc_failed_title" = "脱壳失败";
 "dc_reason_ticket" = "本应用有解密权限，但该安装包的 FairPlay 票据对不上当前设备：通常是用别的 Apple ID 下载的。请用设备已登录的账号重新下载后再脱壳";
 "dc_err_tf_no_sinf" = "该 TestFlight 包缺少 SC_Info/sinf 票据，无法脱壳。请在 TestFlight 页登录后用同一 Apple ID 重新下载";
-"dc_reason_enomem" = "内核拒绝建立解密映射（ENOMEM），可能是票据损坏或文件被重新打包过";
+"dc_reason_enomem" = "内核拒绝建立解密映射（ENOMEM）：fairplayd 读不到该位置的 FairPlay 票据，或票据与当前设备不匹配。请确认本 App 签名包含有效的 App Group，且 IPA 由本机已登录的 Apple ID 从 App Store 下载";
 "dc_err_no_entitlement" = "当前签名的 App 没有 dynamic-codesigning 权限，系统内核不会执行 FairPlay 解密。 请用带该权限的开发者证书重新签名本应用（免费证书、部分签名工具签出来的包不具备此权限）。";
 
 
@@ -1190,9 +1191,7 @@
 "island_app_tap_to_open" = "轻点灵动岛返回 APP";
 
 // Source Code Browser
-"source_browser" = "源代码浏览器";
-"source_browser_latest_commit" = "最新提交";
-"source_browser_recent_commits" = "最近提交";
+"source_browser" = "源代码";
 "source_browser_filter" = "筛选当前目录";
 "source_browser_loading" = "正在加载…";
 "source_browser_load_failed" = "加载失败";

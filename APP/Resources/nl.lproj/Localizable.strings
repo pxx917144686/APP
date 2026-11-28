@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Tik op de Dynamic Island om terug te keren";
 
 // Source Code Browser
-"source_browser" = "Broncodebrowser";
-"source_browser_latest_commit" = "Laatste commit";
-"source_browser_recent_commits" = "Recente commits";
+"source_browser" = "Broncode";
 "source_browser_filter" = "Deze map filteren";
 "source_browser_loading" = "Laden…";
 "source_browser_load_failed" = "Laden mislukt";

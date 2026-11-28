@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "הקישו על ה-Dynamic Island כדי לחזור";
 
 // Source Code Browser
-"source_browser" = "סייר קוד מקור";
-"source_browser_latest_commit" = "הקומיט האחרון";
-"source_browser_recent_commits" = "קומיטים אחרונים";
+"source_browser" = "קוד מקור";
 "source_browser_filter" = "סינון התיקייה";
 "source_browser_loading" = "טוען…";
 "source_browser_load_failed" = "הטעינה נכשלה";

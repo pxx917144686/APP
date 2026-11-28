@@ -1179,9 +1179,7 @@
 "island_app_tap_to_open" = "아일랜드를 탭하여 앱으로 돌아가기";
 
 // Source Code Browser
-"source_browser" = "소스 코드 브라우저";
-"source_browser_latest_commit" = "최신 커밋";
-"source_browser_recent_commits" = "최근 커밋";
+"source_browser" = "소스 코드";
 "source_browser_filter" = "이 폴더 필터링";
 "source_browser_loading" = "불러오는 중…";
 "source_browser_load_failed" = "불러오기 실패";

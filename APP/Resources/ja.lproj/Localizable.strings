@@ -1179,9 +1179,7 @@
 "island_app_tap_to_open" = "アイランドをタップして App に戻る";
 
 // Source Code Browser
-"source_browser" = "ソースコードブラウザ";
-"source_browser_latest_commit" = "最新のコミット";
-"source_browser_recent_commits" = "最近のコミット";
+"source_browser" = "ソースコード";
 "source_browser_filter" = "このフォルダを絞り込む";
 "source_browser_loading" = "読み込み中…";
 "source_browser_load_failed" = "読み込みに失敗しました";

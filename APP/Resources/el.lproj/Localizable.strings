@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Πατήστε τη Dynamic Island για επιστροφή";
 
 // Source Code Browser
-"source_browser" = "Προβολέας πηγαίου κώδικα";
-"source_browser_latest_commit" = "Τελευταία υποβολή";
-"source_browser_recent_commits" = "Πρόσφατες υποβολές";
+"source_browser" = "Πηγαίος κώδικας";
 "source_browser_filter" = "Φιλτράρισμα φακέλου";
 "source_browser_loading" = "Φόρτωση…";
 "source_browser_load_failed" = "Αποτυχία φόρτωσης";

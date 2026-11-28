@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Geri dönmek için Dynamic Island'a dokunun";
 
 // Source Code Browser
-"source_browser" = "Kaynak kod tarayıcısı";
-"source_browser_latest_commit" = "Son commit";
-"source_browser_recent_commits" = "Son commitler";
+"source_browser" = "Kaynak kodu";
 "source_browser_filter" = "Bu klasörü filtrele";
 "source_browser_loading" = "Yükleniyor…";
 "source_browser_load_failed" = "Yükleme başarısız";

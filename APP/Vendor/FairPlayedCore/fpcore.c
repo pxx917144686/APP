@@ -342,15 +342,25 @@ int fp_attempt(const char *path, const fp_slice_t *s, int mode, bool addsigs, ui
 }
 
 void fp_attempt_describe(const fp_attempt_t *a, char *buf, size_t len) {
+    char pages[48];
+    char firstfail[48];
+    if (a->pages_total) {
+        snprintf(pages, sizeof pages, "%llu/%llu",
+                 (unsigned long long)a->pages_ok, (unsigned long long)a->pages_total);
+        snprintf(firstfail, sizeof firstfail, "kr%d@0x%llx",
+                 a->first_fail_kr, (unsigned long long)a->first_fail_off);
+    } else {
+        snprintf(pages, sizeof pages, "n/a");
+        snprintf(firstfail, sizeof firstfail, "n/a");
+    }
     snprintf(buf, len,
-             "%s%s: sig=%s mmap=%s mremap=%d(errno %d %s) pages=%llu/%llu firstfail=kr%d@0x%llx changed=%d "
+             "%s%s: sig=%s mmap=%s mremap=%d(errno %d %s) pages=%s firstfail=%s changed=%d "
              "code-words %u->%u entropy %.3f->%.3f (%.0f ms)",
              fp_mode_name(a->mode), a->addsigs ? "+sigs" : "",
              a->addsigs ? (a->sig_errno ? strerror(a->sig_errno) : "ok") : "-",
              a->mmap_errno ? strerror(a->mmap_errno) : "ok",
              a->mremap_ret, a->mremap_errno, a->mremap_errno ? strerror(a->mremap_errno) : "ok",
-             (unsigned long long)a->pages_ok, (unsigned long long)a->pages_total,
-             a->first_fail_kr, (unsigned long long)a->first_fail_off, a->changed,
+             pages, firstfail, a->changed,
              a->ret_before, a->ret_after, a->ent_before, a->ent_after, a->ms);
 }
 

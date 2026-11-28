@@ -1190,9 +1190,7 @@
 "island_app_tap_to_open" = "輕點靈動島返回 APP";
 
 // Source Code Browser
-"source_browser" = "原始碼瀏覽器";
-"source_browser_latest_commit" = "最新提交";
-"source_browser_recent_commits" = "最近提交";
+"source_browser" = "原始碼";
 "source_browser_filter" = "篩選目前資料夾";
 "source_browser_loading" = "載入中…";
 "source_browser_load_failed" = "載入失敗";

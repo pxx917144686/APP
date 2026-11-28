@@ -10,8 +10,6 @@ struct GlassSurface<Content: View>: View {
 
     let content: Content
 
-    /// iOS 26+ 使用原生液态玻璃(比系统材质 + 白色 tint 更透亮);
-    /// `blur` / `saturation` 仅作用于 iOS 26 以下的 UIVisualEffectView 回退路径。
     init(
         cornerRadius: CGFloat = 16,
         blur: CGFloat = 24,
@@ -71,7 +69,6 @@ struct GlassSurface<Content: View>: View {
     }
 }
 
-/// 玻璃亮面装饰:顶部镜面高光带 + 底部厚度阴影 + 边缘轮廓光,随深浅色模式自适应。
 struct GlassGlossOverlay<Shape: InsettableShape>: View {
     var shape: Shape
     var intensity: Double = 1
@@ -82,7 +79,6 @@ struct GlassGlossOverlay<Shape: InsettableShape>: View {
     var body: some View {
         let dark = colorScheme == .dark
         ZStack {
-            // 顶部镜面高光:光掠过玻璃上沿形成的亮面
             shape.fill(
                 LinearGradient(
                     colors: [
@@ -94,7 +90,6 @@ struct GlassGlossOverlay<Shape: InsettableShape>: View {
                     endPoint: UnitPoint(x: 0.5, y: 0.36)
                 )
             )
-            // 底部沉降阴影:玻璃厚度的折射感
             shape.fill(
                 LinearGradient(
                     colors: [

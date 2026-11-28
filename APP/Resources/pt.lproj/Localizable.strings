@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Toque na Dynamic Island para voltar";
 
 // Source Code Browser
-"source_browser" = "Navegador de código-fonte";
-"source_browser_latest_commit" = "Último commit";
-"source_browser_recent_commits" = "Commits recentes";
+"source_browser" = "Código-fonte";
 "source_browser_filter" = "Filtrar esta pasta";
 "source_browser_loading" = "A carregar…";
 "source_browser_load_failed" = "Falha ao carregar";

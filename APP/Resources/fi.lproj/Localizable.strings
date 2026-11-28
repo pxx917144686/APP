@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Palaa napauttamalla Dynamic Islandia";
 
 // Source Code Browser
-"source_browser" = "Lähdekoodiselain";
-"source_browser_latest_commit" = "Viimeisin commit";
-"source_browser_recent_commits" = "Viimeaikaiset commitit";
+"source_browser" = "Lähdekoodi";
 "source_browser_filter" = "Suodata tämä kansio";
 "source_browser_loading" = "Ladataan…";
 "source_browser_load_failed" = "Lataus epäonnistui";

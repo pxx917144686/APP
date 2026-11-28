@@ -1180,9 +1180,7 @@
 "island_app_tap_to_open" = "Ketuk Dynamic Island untuk kembali";
 
 // Source Code Browser
-"source_browser" = "Peramban kode sumber";
-"source_browser_latest_commit" = "Commit terbaru";
-"source_browser_recent_commits" = "Commit terkini";
+"source_browser" = "Kode sumber";
 "source_browser_filter" = "Saring folder ini";
 "source_browser_loading" = "Memuat…";
 "source_browser_load_failed" = "Gagal memuat";
